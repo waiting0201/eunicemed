@@ -35,7 +35,7 @@
 |---|---|---|
 | 規格文件 | ✅ | 14 份，見 [CLAUDE.md](CLAUDE.md) §3 |
 | 資料模型 | 🟡 52% | 54 張表完成 28 張 |
-| API | 🟡 42% | 約 90 個端點完成 38 個 |
+| API | 🟡 42% | 約 90 個端點完成 38 個；richtext 與 SVG 淨化已就位 |
 | 前台 `apps/web` | 🟡 | Next.js 15 已建立，2 頁可運作；部署限制已實測 |
 | 後台 `apps/admin` | ⬜ | 尚未建立專案；介面需先跑 `frontend-design` skill |
 | 基礎設施 `infra/` | ⬜ | Bicep 尚未撰寫 |
@@ -121,7 +121,7 @@
 | 舊站匯入 `admin/products/import` | ✅ | 冪等，149 筆 |
 | 產品 `admin/products` | ⬜ | 含 publish / unpublish / related |
 | 分類／子分類／認證／部位 | ⬜ | |
-| 媒體庫 `admin/media` | 🟡 | 上傳／列表／引用反查／刪除保護／SAS 皆可用；缺 reprocess 與 SVG 清洗 |
+| 媒體庫 `admin/media` | 🟡 | 上傳／列表／引用反查／刪除保護／SAS／SVG 清洗皆可用；缺 reprocess |
 | 頁面區段 `admin/pages` | ✅ | 含 schema 端點、JSON Pointer 驗證、跨語系同步、同步器 |
 | 其餘內容模組 | ⬜ | Phase 6 |
 | 表單收件匣／選單／轉址／設定 | ⬜ | Phase 7 |

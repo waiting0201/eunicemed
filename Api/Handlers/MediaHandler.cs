@@ -64,6 +64,11 @@ public sealed class MediaHandler(
 
         await blobs.EnsureContainersAsync(req.HttpContext.RequestAborted);
 
+        // SVG 不走點陣管線：它是 XML，要清洗而不是重新編碼。
+        // 只有 logo-mark preset 接受 SVG（docs/11 §2）。
+        if (Path.GetExtension(file.FileName).Equals(".svg", StringComparison.OrdinalIgnoreCase))
+            return await UploadSvgAsync(req, file, preset, altText);
+
         using var stream = file.OpenReadStream();
         var rendered = images.Render(stream, file.FileName, preset);
 
@@ -130,6 +135,53 @@ public sealed class MediaHandler(
             rendered.Warnings.Select(w => new UploadWarningDto(w.Code, w.Expected, w.Actual, w.Message)).ToArray());
 
         return new ObjectResult(ApiResponse.Ok(response, "上傳完成。")) { StatusCode = 201 };
+    }
+
+    /// <summary>
+    /// SVG 上傳：清洗後原樣存放，不縮圖（向量本來就無所謂尺寸）。
+    ///
+    /// <para>
+    /// **本專案沒有病毒掃描**（docs/03 §6），格式白名單與 <see cref="SvgSanitizer"/>
+    /// 是唯一防線。SVG 可內嵌 script 與外部參照，未清洗就存進公開容器等於開放 XSS。
+    /// </para>
+    /// </summary>
+    private async Task<IActionResult> UploadSvgAsync(
+        HttpRequest req, IFormFile file, MediaPreset preset, string? altText)
+    {
+        if (!preset.Formats.Contains("svg", StringComparer.OrdinalIgnoreCase))
+            throw AppException.UnsupportedMediaType(
+                $"欄位 '{preset.Key}' 不接受 SVG。目前只有 logo-mark 接受。");
+
+        using var reader = new StreamReader(file.OpenReadStream());
+        var raw = await reader.ReadToEndAsync(req.HttpContext.RequestAborted);
+
+        if (raw.Length > 512 * 1024)
+            throw AppException.PayloadTooLarge("SVG 超過 512 KB —— 這通常表示裡面嵌了點陣圖。");
+
+        var clean = SvgSanitizer.Sanitize(raw);
+        var bytes = System.Text.Encoding.UTF8.GetBytes(clean);
+
+        var name = $"{FileNames.Normalize(Path.GetFileNameWithoutExtension(file.FileName))}-{FileNames.ShortHash(bytes)}.svg";
+        var url = await blobs.UploadMediaAsync(name, bytes, "image/svg+xml", req.HttpContext.RequestAborted);
+
+        var media = new Media
+        {
+            BlobUrl = url, FileName = name, MimeType = "image/svg+xml",
+            SizeBytes = bytes.Length, AltText = altText,
+            PresetKey = preset.Key, CreatedAt = Clock.Now,
+        };
+        db.Media.Add(media);
+        await db.SaveChangesAsync(req.HttpContext.RequestAborted);
+
+        var removed = raw.Length - clean.Length;
+        var warnings = removed > 0
+            ? new[] { new UploadWarningDto("svg_sanitized", null, null,
+                $"已移除 SVG 中的 script／外部參照等內容（{removed} 位元組）。") }
+            : [];
+
+        return new ObjectResult(ApiResponse.Ok(new MediaUploadResponse(
+            media.Id, preset.Key, url, null, null, bytes.Length,
+            new OriginalInfo(0, 0, raw.Length), [], warnings), "上傳完成。")) { StatusCode = 201 };
     }
 
     /// <summary>GET /admin/media?search=&amp;presetKey=</summary>

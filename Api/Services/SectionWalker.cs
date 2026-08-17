@@ -73,6 +73,40 @@ public static class SectionWalker
         }
     }
 
+    /// <summary>
+    /// 就地淨化所有 <c>x-fieldType: "richtext"</c> 欄位。
+    ///
+    /// <para>
+    /// 與媒體同樣由 schema 驅動 —— 這樣新增一個 richtext 欄位時**不需要**
+    /// 記得去某個清單登記，漏掉一個就是一個 XSS 破口。
+    /// </para>
+    /// </summary>
+    public static void SanitizeRichText(JsonNode schema, JsonNode? data, Func<string, string> sanitize)
+    {
+        var targets = new List<string>();
+        Walk(schema, data, "", (path, node, fieldType, _) =>
+        {
+            if (fieldType == "richtext" && node is not null) targets.Add(path);
+        });
+
+        foreach (var path in targets)
+        {
+            var parent = Locate(data, path, out var leaf);
+            if (parent is null || leaf is null) continue;
+
+            switch (parent)
+            {
+                case JsonObject o when o[leaf]?.GetValue<string>() is { } html:
+                    o[leaf] = sanitize(html);
+                    break;
+                case JsonArray a when int.TryParse(leaf, out var i) && i < a.Count
+                                      && a[i]?.GetValue<string>() is { } arrHtml:
+                    a[i] = sanitize(arrHtml);
+                    break;
+            }
+        }
+    }
+
     /// <summary>找出所有標了 <c>x-localeInvariant</c> 的欄位路徑（跨語系同步用）。</summary>
     public static List<string> FindLocaleInvariantPaths(JsonNode schema, JsonNode? data)
     {

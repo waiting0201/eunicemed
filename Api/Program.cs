@@ -76,6 +76,7 @@ var host = new HostBuilder()
         // PageSchemaRegistry 是 Singleton：建構只讀資源名稱清單（字串操作），
         // 各個 schema 到用到才 parse。
         services.AddSingleton<PageSchemaRegistry>();
+        services.AddSingleton<HtmlSanitizers>();
         services.AddSingleton<LoginRateLimiter>();
         services.AddSingleton<ContactRateLimiter>();
 

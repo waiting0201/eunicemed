@@ -74,8 +74,7 @@ token 輪替（單次使用）、帳號鎖定與解鎖、改密碼撤銷所有 s
 引用反查、有引用時 DELETE 回 409、PDF 走 SAS、
 **前端頁面 48 個圖片 URL 全部 200**。
 
-**尚未完成**：`reprocess` 端點、SVG 清洗（`logo-mark` 專用）、
-`MediaUsage` 的自動重建（要等 Phase 5 的 `SectionMediaWalker`；目前只有手動寫入的路徑）。
+**尚未完成**：`reprocess` 端點。SVG 清洗與 `MediaUsage` 自動重建已於 Phase 5 補上。
 
 ### 🟡 Phase 4 — 分類 + 產品（進行中）
 
@@ -115,7 +114,7 @@ Dapper 讀取層、`FacetFolder`、公開端點（products 列表+facets、三�
 
 **尚未完成**：其餘 **54 個 schema**（`home` 7、`products` 4、`partnership` 4、`resources` 5…，
 共 18 頁 60 個區段）。這是內容形狀的工作，機制已就緒，照 `about` 的 6 個複製即可。
-另缺 richtext 的伺服器端淨化（§9.2 的三組白名單）。
+richtext 的伺服器端淨化與 SVG 清洗**已完成**（見下）。
 
 ### ⬜ Phase 6 — 文章 / FAQ / 下載 / 據點 / 應用方案 · 6–8 天
 
@@ -149,6 +148,21 @@ DB 的 `Locale` 是 `varchar(10)`。若 EF/Dapper 送 `NVARCHAR` 參數，SQL Se
 ### 2026-08-17 · Clock 刻意與 Jabez 不同
 
 Jabez 的 `Clock.Now` 回台北時間；本專案回 **UTC**，因為 [05](05-database.md) §1 規定 `datetime2` 存 UTC，且這是對外多語系網站。要顯示營業時間時才用 `Clock.Taipei(utc)`。**從 Jabez 複製程式碼時注意這個差異。**
+
+### 2026-08-17 · 淨化要在驗證之前，且 script 的內容不能當文字留下
+
+兩個順序／細節問題：
+
+1. **淨化必須排在 schema 驗證之前。** 淨化會改變內容長度（移除標籤），
+   先驗後淨的話，通過 `maxLength` 的是淨化前的版本，而實際存下去的是淨化後的 ——
+   等於存了一份沒被驗過的內容。
+2. `KeepChildNodes = true` 是要的（`<h2>標題</h2>` 被移除時「標題」要留下），
+   但它會讓 `<script>alert(1)</script>` 變成可見內文 `alert(1)`。
+   安全上無害，但等於讓攻擊者把任意字串顯示在頁面上。
+   處置：先用 AngleSharp 整棵移除 script / style / template / noscript，再交給 HtmlSanitizer。
+
+淨化與媒體一樣**由 schema 驅動**（`x-fieldType: "richtext"`）——
+新增 richtext 欄位時不需要去某個清單登記，漏登記就是一個 XSS 破口。
 
 ### 2026-08-17 · 跨語系同步必須補建語系列，而「列存在」不等於「可公開渲染」
 

@@ -23,6 +23,7 @@ public sealed class PageHandler(
     AppDbContext        db,
     PageSchemaRegistry  registry,
     MediaUsageWriter    mediaUsage,
+    HtmlSanitizers      sanitizers,
     Microsoft.Extensions.Configuration.IConfiguration cfg)
 {
     /// <summary>
@@ -168,6 +169,15 @@ public sealed class PageHandler(
 
         var data = JsonNode.Parse(body.Data.Value.GetRawText()) as JsonObject
             ?? throw AppException.BadRequest("data 必須是物件。");
+
+        // ── 淨化 richtext ─────────────────────────────────────────────────
+        //
+        // **在驗證之前做**：淨化會改變內容長度（移除標籤），若先驗證後淨化，
+        // 通過 maxLength 的內容可能在淨化後才變成別的東西，而那份沒被驗過。
+        //
+        // 後台的 TipTap 不是安全邊界 —— 任何人都能直接打這個端點。
+        var profile = key == "privacy" ? RichTextProfile.Legal : RichTextProfile.Section;
+        SectionWalker.SanitizeRichText(schema.Raw, data, html => sanitizers.Sanitize(html, profile));
 
         // ── Schema 驗證 ────────────────────────────────────────────────────
         var results = schema.Schema.Evaluate(

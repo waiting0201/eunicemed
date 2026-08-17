@@ -191,3 +191,57 @@ Authorization: Bearer {{at}}
 ### 8b. 該媒體現在刪不掉 → 409
 DELETE {{host}}/admin/media/{mediaId}
 Authorization: Bearer {{at}}
+
+###############################################################################
+# 9. Richtext 淨化（伺服器端，白名單制）
+#
+# 後台的 TipTap **不是安全邊界** —— 任何人都能直接打這個端點。
+# 本站沒有 WAF（docs/07 §7.4），應用層是唯一防線。
+#
+# 三組白名單（docs/09 §9.2）：
+#   Section  p strong em ul ol li a
+#   Article  + h2 h3 blockquote figure figcaption img
+#   Legal    Section + h2 h3
+#
+# 淨化在 **schema 驗證之前** 執行：淨化會改變長度，先驗後淨會讓
+# 實際儲存的內容沒被驗過。
+###############################################################################
+
+### 9a. 逐一送出這些 body，再用 GET /admin/pages/about 檢查儲存結果
+PUT {{host}}/admin/pages/about/sections/story
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "locale": "en", "data": { "title": "Our story", "body": "<script>alert(1)</script>safe" } }
+
+# 實測結果：
+#   <script>alert(1)</script>安全內容        → 安全內容            （連內容一起移除）
+#   <style>body{display:none}</style>正常文字 → 正常文字
+#   <p onclick="alert(1)">點我</p>            → <p>點我</p>
+#   <img src=x onerror=alert(1)>後續文字      → 後續文字            （Section 不允許 img）
+#   <a href="javascript:alert(1)">連結</a>    → <a>連結</a>
+#   <a href="https://example.com">外部</a>    → 自動加 rel="noopener noreferrer" target="_blank"
+#   <a href="/en/about">站內</a>              → 不加 target
+#   <h2>標題</h2><p>內文</p>                  → 標題<p>內文</p>     （標籤移除但文字保留）
+#
+# 注意 script/style 是**連內容一起丟**，其餘標籤是**保留文字**。
+# 前者的內容是程式碼不是文字，留下來只會讓攻擊字串顯示在頁面上。
+
+###############################################################################
+# 10. SVG 清洗（只有 logo-mark preset 接受 SVG）
+#
+# 本專案**沒有病毒掃描**（docs/03 §6），格式白名單與清洗器是唯一防線。
+# SVG 是 XML，可內嵌 script、外部參照與 CSS import。
+###############################################################################
+
+### 10a. 上傳含 script / onclick / 外部 href / foreignObject / @import 的 SVG
+#   curl -X POST {{host}}/admin/media -H "Authorization: Bearer $AT" \
+#     -F "file=@evil.svg" -F "presetKey=logo-mark"
+#
+# 應回 201 並帶 svg_sanitized 警告；下載存進 Blob 的檔案檢查：
+#   ✓ <script> 已移除          ✓ 事件處理器已移除
+#   ✓ 外部參照已移除            ✓ @import 已移除
+#   ✓ foreignObject 已移除      ✓ 合法圖形與文字保留
+
+### 10b. SVG 丟到不接受 SVG 的 preset → 415
+#   -F "presetKey=square"
