@@ -4,6 +4,11 @@
 > - `標準EuniceMed logo 及其他圖形使用規範.pdf` — CIS logo/色彩規範
 > - `EuniceMed Website Ref_Weypro.pdf` — subkarma「Website Sitemap Design Reference」260626 V01（品牌定位、字型、網站架構與風格方向）
 > - `EuniceMed 素材整理新版 20250110.ai` — 包裝/型錄素材總表（icon、認證標章、色票、logo 變體）
+>
+> **適用範圍：對外品牌與公開網站**。版面已由 `mockup4/` 鎖定，照著切即可。
+> **本文件不涵蓋 CMS 後台介面** —— 後台沒有 mockup、沒有設計稿，是要現場設計的：
+> 沿用本文件 §2–§4 的品牌色與字型 token，但版面規則與設計流程另見 [03-cms.md](03-cms.md) §8.1，
+> 且**動手前必須先啟動 `frontend-design` skill**。
 
 ---
 

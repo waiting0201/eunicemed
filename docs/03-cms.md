@@ -173,15 +173,49 @@ Draft（草稿） ──提交──► Review（待審，選用） ──發布
 |------|------|
 | 框架 | React 19 + Vite + TypeScript |
 | 路由/狀態 | React Router + TanStack Query |
-| UI | shadcn/ui 或 Ant Design（表格/表單成熟） |
+| **樣式** | **Tailwind CSS**（與公開站同一套設計 token，見 [08-design.md](08-design.md) §2–§4） |
+| UI 元件 | **shadcn/ui**（Tailwind 基底、複製進專案、可改） |
 | 表單 | React Hook Form + zod |
 | RTE | TipTap（輸出 HTML/JSON，淨化 sanitize；允許標籤集見 [09](09-page-blocks.md) §9.2） |
 | 拖拉排序 | dnd-kit |
 | 表單生成 | 由 `GET /admin/page-schema/{key}` 的 JSON Schema 動態生成頁面區段表單；型別以 `x-fieldType` 對應元件 |
 
+> **為什麼不用 Ant Design**（先前版本列為選項之一）：
+> 1. 它有自己的 CSS-in-JS 設計系統，與 Tailwind 並存等於維護兩套樣式來源，且品牌 token 得寫兩次。
+> 2. 後台的打包體積**計入 SWA Free 的 250MB 上限**（與公開站共用同一個 app，見 §1），Ant Design 全量引入約 1.2MB gzip，是 shadcn/ui 的數倍 —— shadcn/ui 是把用到的元件原始碼複製進專案，沒用到的不會進 bundle。
+> 3. shadcn/ui 與公開站共用同一份 Tailwind 設定，品牌色與字型不必分兩處維護。
+
+---
+
+### 8.1 後台介面設計流程（**動手前必讀**）
+
+公開站的版面已由 `mockup4/` 鎖定，照著切即可。**後台沒有任何 mockup、沒有設計稿** —— [08-design.md](08-design.md) 只涵蓋對外品牌與公開站。因此後台介面是**要現場設計的**，不是照抄。
+
+**規則：任何後台 UI 工作（新畫面、改版面、調元件）開始前，必須先啟動 `frontend-design` skill**，取得視覺方向、字級與間距系統、以及避免做出「一看就是模板」的預設樣貌的判準。不得憑感覺直接寫 Tailwind class。
+
+流程：
+
+1. 啟動 `frontend-design` skill，並讀本文件 §5 的 Screen Map 與 [08-design.md](08-design.md) §2–§4（品牌色、字型）。
+2. 先定調：後台是**高密度資料工具**，不是行銷頁面。優先序是可掃視性、表單效率、狀態清晰，不是視覺張力。
+3. 產出該畫面的版面後再寫程式碼；同類型畫面（列表／編輯／設定）**一旦定案就沿用同一個骨架**，不逐頁重新設計。
+
+**後台設計約束**：
+
+| 約束 | 說明 |
+|------|------|
+| 品牌一致但不等同 | 沿用品牌青 `#00B5CD` 作為主要動作色與焦點框，但後台**不套用公開站的大留白與 hero 尺度** —— 那是給訪客看的，不是給每天用八小時的編輯用的 |
+| 中英文並存 | 後台介面語言為繁體中文，但內容欄位會同時顯示 en / zh-TW 分頁。字型需同時處理拉丁與中文，行高以中文為準 |
+| 資料密度 | 列表以表格為主、預設 20 筆／頁；欄寬固定避免跳動；長文字截斷加 tooltip |
+| 狀態必須可辨 | Draft / Published / Archived 三態要能不靠顏色分辨（色盲友善）—— 色塊搭配文字標籤，不只用顏色 |
+| 每個上傳欄位都有尺寸提示 | 見 §5 全域規則，文字來自 `GET /admin/media-presets`，不在畫面寫死 |
+| 打包體積 | 重量級套件（TipTap、dnd-kit、圖表）一律 code-split，`/admin` 全部 lazy load，**不得進入公開頁的 bundle** |
+
 ---
 
 ## 9. 驗收清單
+- [ ] 樣式全為 Tailwind，未混入第二套設計系統；`/admin` bundle 未進入公開頁
+- [ ] 每個後台畫面在動工前都跑過 `frontend-design` skill，同類型畫面共用同一骨架
+- [ ] Draft / Published / Archived 三態不靠顏色也能分辨（色塊 + 文字標籤）
 - [ ] 角色權限正確（API 端強制）
 - [ ] 各內容模組 CRUD + 多語系編輯
 - [ ] 草稿/發布/預覽（純 SSR，發布後即時反映，無需 revalidation）

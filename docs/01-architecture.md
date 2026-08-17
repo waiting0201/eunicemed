@@ -87,7 +87,7 @@
 | 範疇 | 選用 |
 |------|------|
 | 前端框架 | Next.js 15（SSR，部署於 Azure Static Web Apps **Free**）、React 19、TypeScript、Tailwind CSS |
-| 後台框架 | React 19 client-side SPA，**掛在同一個 Next.js app 的 `/admin`** + 元件庫（如 shadcn/ui 或 Ant Design） |
+| 後台框架 | React 19 client-side SPA，**掛在同一個 Next.js app 的 `/admin`**；**Tailwind CSS + shadcn/ui**（不用自帶設計系統的元件庫）。介面設計流程見 [03-cms.md](03-cms.md) §8.1 |
 | API | Azure Functions v4、.NET 10 isolated、C#、**Flex Consumption（Linux）**；單一 `Api` 專案 + catch-all Router（見 [04-api.md](04-api.md) §8） |
 | 資料存取 | **Dapper 讀 / EF Core 寫**（照 Jabez 慣例，不採 Repository Pattern）；EF 亦負責 Migration |
 | 驗證 | JWT（後台）；公開讀取匿名 |

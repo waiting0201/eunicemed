@@ -78,10 +78,15 @@
 | [docs/09-page-blocks.md](docs/09-page-blocks.md) | **逐頁區段規格（依 mockup4 的 18 頁）**、每頁具名欄位、人體圖互動規格、JSON Schema registry | 切版/開發任一頁面時、規劃後台欄位時 |
 | [docs/10-legacy-content.md](docs/10-legacy-content.md) | 舊站內容盤點、slug 對照、轉址來源 | 內容遷移、對照舊站時 |
 | [docs/11-media-specs.md](docs/11-media-specs.md) | **圖片尺寸 preset 總表（唯一真相來源）**、上傳提示規則、伺服器縮圖規格、欄位↔preset 對照 | 新增任何上傳欄位、處理圖片／縮圖、交付素材時 |
+| [docs/12-local-dev.md](docs/12-local-dev.md) | **本機環境設定與每日啟動指令**、migration 操作、常見問題、多語系參數型別檢查 | **第一次進專案時先讀這份**、環境跑不起來時 |
+| [docs/13-api-roadmap.md](docs/13-api-roadmap.md) | **API 實作進度單一真相來源**：9 個階段的內容與驗收、架構前提、累積的踩坑紀錄 | 接續開發、確認目前做到哪裡時 |
 
 ---
 
-## 4. 倉庫結構（規劃）
+## 4. 倉庫結構
+
+> **目前進度**：`Api/` 已完成骨架與第一個端到端切片（Phase 0–1），`apps/`、`infra/`、`.github/` 尚未建立。
+> 各階段內容與狀態見 [docs/13-api-roadmap.md](docs/13-api-roadmap.md)。本機怎麼跑見 [docs/12-local-dev.md](docs/12-local-dev.md)。
 
 ```
 EuniceMed/
@@ -127,6 +132,13 @@ EuniceMed/
 - 圖片一律用 `next/image`；外部媒體網域（Blob/CDN）需列入 `next.config` 白名單。
 - 樣式：Tailwind CSS + 設計 token；元件庫集中於 `apps/web/components`。
 
+### 5.2a 後台 UI（CMS `/admin`）
+- **樣式一律 Tailwind CSS**，與公開站共用同一份設定與品牌 token。UI 元件用 **shadcn/ui**（Tailwind 基底）。**不使用 Ant Design 或任何自帶設計系統的元件庫** —— 理由見 [docs/03-cms.md](docs/03-cms.md) §8。
+- ⚠️ **任何後台介面工作（新畫面、改版面、調元件）開始前，必須先啟動 `frontend-design` skill。**
+  公開站有 `mockup4/` 可照著切，**後台沒有任何設計稿**，是要現場設計的。不得憑感覺直接寫 Tailwind class。
+  設計約束（資料密度、狀態可辨識性、中英並存、打包體積）見 [docs/03-cms.md](docs/03-cms.md) §8.1。
+- `/admin` 的打包體積計入 SWA Free 的 **250MB** 上限（與公開站同一個 app），重量級套件一律 code-split 且不得進入公開頁 bundle。
+
 ### 5.3 API（Azure Functions, C#）
 - **寫程式前先讀 [Jabez/Api](/Users/tim/webapps/Jabez/Api) 的同類型檔案當範本**，不要憑空想像架構。本專案的骨架刻意與它同源。
 - RESTful、複數名詞、kebab/lower：`GET /api/v1/products`。版本前綴 `v1`。
@@ -166,19 +178,51 @@ EuniceMed/
 ---
 
 ## 7. 尚待確認（Open Questions）
-- [x] CMS 後台管理者驗證：**自建 JWT + Identity**（方案內無 Entra ID 資源，此題已封閉）
-- [x] 表單送出後寄信通知 + 寫 DB：**兩者都要**。寄信走**品牌方既有信箱的 SMTP**（無 Azure Communication Services）；先入庫再寄信，寄信失敗不回錯。**待補：SMTP 主機／埠／帳密，以及該信箱的每日寄送量限制**
-- [ ] 客戶提供的 Azure SQL：是否可設 Entra 管理員以啟用 Managed Identity 連線？備份保留天數與還原程序為何？連線數上限？（影響 API 連線池與 CI 遷移做法）
-- [ ] 客戶的 SQL Server 防火牆是否允許 CI 動態新增／刪除 runner IP 規則？若否，DB 遷移改人工執行
+
+### 🔴 擋住開發，需優先解決
+
+- [ ] **媒體變體階梯是 2 張還是一組寬度階梯？（擋 Phase 3）**
+      [11](docs/11-media-specs.md) §1.2 說輸出「WebP + 原格式」各一張，但 §2 列了 6 個寬度階梯、[04](docs/04-api.md) §6 要求回「含 WebP 與各寬度」給前端 custom loader 挑，而 `UX_MediaVariant (MediaId, Format, Width)` 明顯預期多個寬度。三處說法不一致。
+      建議：每 preset 一組不超過該 preset 寬度的階梯 × {webp, 原格式}，即每次上傳 2–8 個檔。
+      **這決定上傳延遲（2560px WebP 編碼約 0.5–1.5 秒/張）與實例記憶體要 512MB 還是 2048MB。**
+- [ ] **SMTP 主機／埠／帳密，以及該信箱的每日寄送量上限（擋 Phase 7 上線）** —— 上限會回頭決定速率限制的數字
+- [ ] **客戶 Azure SQL 的 collation？** 若為區分大小寫的 `_CS_`，slug 比對在本機與正式站行為不同，只會在上線後才發現（見 [12](docs/12-local-dev.md) §2.1）
+- [ ] **客戶 Azure SQL 的連線數上限？** 決定 `Max Pool Size` 與 Function App 的 `maximumInstanceCount` —— Flex Consumption 每個實例各有一個連線池
+- [ ] 客戶提供的 Azure SQL：是否可設 Entra 管理員以啟用 Managed Identity 連線？備份保留天數與還原程序為何？
+
+### 🟡 規格缺漏，建議一支 migration 一起補
+
+- [ ] `[User]` 沒有 `FailedLoginCount` / `LockedUntil`，但 [03](docs/03-cms.md) §7 與 [07](docs/07-azure-deployment.md) §7.4 都要求登入失敗鎖定
+- [ ] `ContactSubmission` 沒有 `(IpAddress, CreatedAt)` 索引，但 [04](docs/04-api.md) §9 明講要靠它做 DB 端速率限制
+- [ ] `RefreshToken` 在 `UserId` / `TokenHash` 上沒有索引，而 refresh 是熱路徑
+- [ ] `MediaUsage` 的 592 bytes 寬叢集主鍵建議改為 `Id BIGINT IDENTITY` + 該 tuple 作非叢集唯一索引
+
+### 🟢 行為未定義，需拍板
+
+- [ ] **巢狀翻譯的純度**：產品有 `en` 翻譯但它的分類沒有時，該隱藏產品，還是回傳 `category: null`？
+      建議後者 —— 因分類漏翻而整個產品消失，是不會有人發現的靜默內容錯誤
+- [ ] `ProductRelated` 空陣列在 [04](docs/04-api.md) §6 定義為「回到自動計算」，因此編輯者**無法**表達「這裡不要顯示相關產品」。若需要，`Product` 得加 `RelatedMode`（auto / manual / none）
+- [ ] reCAPTCHA 用哪個版本（v2 checkbox / v2 invisible / v3 score）？v3 需決定分數門檻。另 [07](docs/07-azure-deployment.md) §6.4 只有後端 `Recaptcha__SecretKey`，缺前端 site key
+- [ ] `mockup/`、`mockup2/`、`mockup3/`（共約 120MB 的早期版型）要不要納入版控？目前以 `.gitignore` 擋著 —— 圖片進了 git 歷史就拿不掉了
+
+### 🔵 內容與範圍，不擋當前階段
+
 - [ ] 語系是否一開始就上 zh-TW，或先 en 後補？（架構已支援，內容上線時程待定）
 - [ ] 是否需要站內搜尋（Azure AI Search）？（V1 暫不納入，列為 V2）
 - [ ] 既有網站內容/圖片是否需要資料遷移？遷移來源格式為何？
 - [ ] 浮動按鈕的 **AI Agent** 範圍？（Weypro 提案有標示；V1 先做 Contact 浮動鈕、預留擴充位）
-- [x] 英文字型 **Myriad Variable Concept**：品牌方已提供下載點，字型檔入庫 `reference/fonts/myriad-variable-concept/`（來源與授權注意見 docs/08-design.md §4）
-- [x] 網站風格：**客戶已定案採 `mockup4/`**（Clinical Airy 淺色版，18 頁）。後台內容模型已依此重新規劃，見 docs/03、05、09。設計準則見 docs/08-design.md §5.1／§5.1a（該文件內對 `mockup/` 的引用尚未更新，另案處理）
 - [ ] Where to Buy 銷售據點的資料來源與涵蓋範圍（國家/經銷商清單）？國際經銷的 Region 標籤先採自由字串（目前 3 筆）
 - [ ] 首頁客戶見證（Testimonial）影片自架 Blob mp4 或 YouTube/Vimeo 嵌入？影響 `video.source` 欄位型別
 - [ ] 分類／子分類頁的 3 組統計數字自動計算或手填？（暫採手填，`value` 可填 `auto` 由 API 代入產品數）
 - [ ] News 與 Insights 是否視 `sponsorship` 為同一分類？（暫以 `ArticleCategory.Kind` 分流、slug 各自獨立，避免 count 混算）
 - [ ] Downloads 同一份文件是否會有多語版並列？若會需加 `DownloadGroupId`（mockup4 目前每列只顯示一個語言）
 - [ ] 子分類落地頁的敘述文案由誰撰寫？產品數少的子分類（travel-stockings、diabetic-socks）需補足內容否則不發布
+
+### 已封閉
+
+- [x] CMS 後台管理者驗證：**自建 JWT + Identity**（方案內無 Entra ID 資源）
+- [x] API 專案結構、回應格式、Migration 時機、影像套件：**全數對齊 [Jabez/Api](/Users/tim/webapps/Jabez/Api)**，見 [docs/13-api-roadmap.md](docs/13-api-roadmap.md)「架構前提」
+- [x] 表單送出後寄信通知 + 寫 DB：**兩者都要**。寄信走品牌方既有信箱的 SMTP（無 Azure Communication Services）；先入庫再寄信，寄信失敗不回錯。（帳密仍待補，見上方 🔴）
+- [x] ~~客戶 SQL 防火牆是否允許 CI 動態增刪 runner IP 規則？~~ **此題已不存在** —— migration 改為在 Function App 啟動時套用，CI 完全不碰資料庫
+- [x] 英文字型 **Myriad Variable Concept**：品牌方已提供下載點，字型檔入庫 `reference/fonts/myriad-variable-concept/`（來源與授權注意見 docs/08-design.md §4）
+- [x] 網站風格：**客戶已定案採 `mockup4/`**（Clinical Airy 淺色版，18 頁）。後台內容模型已依此重新規劃，見 docs/03、05、09。設計準則見 docs/08-design.md §5.1／§5.1a（該文件內對 `mockup/` 的引用尚未更新，另案處理）
