@@ -9,6 +9,34 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Collection>            Collections            { get; set; }
     public DbSet<CollectionTranslation> CollectionTranslations { get; set; }
 
+    public DbSet<Category>                Categories                { get; set; }
+    public DbSet<CategoryTranslation>     CategoryTranslations      { get; set; }
+    public DbSet<SubCategory>             SubCategories             { get; set; }
+    public DbSet<SubCategoryTranslation>  SubCategoryTranslations   { get; set; }
+    public DbSet<Certification>           Certifications            { get; set; }
+    public DbSet<CertificationTranslation> CertificationTranslations { get; set; }
+    public DbSet<BodyPart>                BodyParts                 { get; set; }
+    public DbSet<Tag>                     Tags                      { get; set; }
+
+    // ── 產品 ────────────────────────────────────────────────────────────
+    public DbSet<Product>              Products             { get; set; }
+    public DbSet<ProductTranslation>   ProductTranslations  { get; set; }
+    public DbSet<ProductImage>         ProductImages        { get; set; }
+    public DbSet<ProductRelated>       ProductRelated       { get; set; }
+    public DbSet<ProductBodyPart>      ProductBodyParts     { get; set; }
+    public DbSet<ProductCertification> ProductCertifications { get; set; }
+    public DbSet<ProductTag>           ProductTags          { get; set; }
+
+    // ── 媒體 ────────────────────────────────────────────────────────────
+    public DbSet<Media> Media { get; set; }
+
+    // ── 使用者與稽核 ────────────────────────────────────────────────────
+    public DbSet<User>         Users         { get; set; }
+    public DbSet<Role>         Roles         { get; set; }
+    public DbSet<UserRole>     UserRoles     { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<AuditLog>     AuditLogs     { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // 自動套用 Configurations/ 下所有 IEntityTypeConfiguration<T>

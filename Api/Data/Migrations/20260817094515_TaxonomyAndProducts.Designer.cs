@@ -4,6 +4,7 @@ using EuniceMed.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EuniceMed.Api.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260817094515_TaxonomyAndProducts")]
+    partial class TaxonomyAndProducts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -292,56 +295,6 @@ namespace EuniceMed.Api.Data.Migrations
                         .HasDatabaseName("UX_CategoryTr");
 
                     b.ToTable("CategoryTranslations");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("91111111-0000-0001-0000-000000000001"),
-                            CategoryId = new Guid("41111111-0000-0000-0000-000000000001"),
-                            Description = "Improve circulation, ease symptoms and slow the progression of varicose veins.",
-                            Locale = "en",
-                            Name = "Medical Compression Stockings"
-                        },
-                        new
-                        {
-                            Id = new Guid("91111111-0000-0002-0000-000000000001"),
-                            CategoryId = new Guid("41111111-0000-0000-0000-000000000001"),
-                            Description = "改善循環、緩解並延緩靜脈曲張。",
-                            Locale = "zh-TW",
-                            Name = "醫療彈性襪"
-                        },
-                        new
-                        {
-                            Id = new Guid("91111111-0000-0001-0000-000000000002"),
-                            CategoryId = new Guid("41111111-0000-0000-0000-000000000002"),
-                            Description = "Stability, alignment and protection for knee, ankle, elbow, wrist and back.",
-                            Locale = "en",
-                            Name = "Orthopedic Support"
-                        },
-                        new
-                        {
-                            Id = new Guid("91111111-0000-0002-0000-000000000002"),
-                            CategoryId = new Guid("41111111-0000-0000-0000-000000000002"),
-                            Description = "膝、踝、肘、腕、背的穩定、對位與保護。",
-                            Locale = "zh-TW",
-                            Name = "矯型護具"
-                        },
-                        new
-                        {
-                            Id = new Guid("91111111-0000-0001-0000-000000000003"),
-                            CategoryId = new Guid("41111111-0000-0000-0000-000000000003"),
-                            Description = "Medical-grade silicone for heel pain, plantar fasciitis and bone spurs.",
-                            Locale = "en",
-                            Name = "Footcare & Insoles"
-                        },
-                        new
-                        {
-                            Id = new Guid("91111111-0000-0002-0000-000000000003"),
-                            CategoryId = new Guid("41111111-0000-0000-0000-000000000003"),
-                            Description = "醫療級矽膠，處理足跟痛、足底筋膜炎、骨刺等。",
-                            Locale = "zh-TW",
-                            Name = "足部護理與鞋墊"
-                        });
                 });
 
             modelBuilder.Entity("EuniceMed.Api.Models.Entities.Certification", b =>
@@ -477,88 +430,6 @@ namespace EuniceMed.Api.Data.Migrations
                         .HasDatabaseName("UX_CertificationTr");
 
                     b.ToTable("CertificationTranslations");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("a1111111-0000-0001-0000-000000000001"),
-                            CertificationId = new Guid("51111111-0000-0000-0000-000000000001"),
-                            Description = "Medical device quality management system certification.",
-                            Locale = "en",
-                            SubLabel = "Quality management"
-                        },
-                        new
-                        {
-                            Id = new Guid("a1111111-0000-0002-0000-000000000001"),
-                            CertificationId = new Guid("51111111-0000-0000-0000-000000000001"),
-                            Description = "醫療器材品質管理系統認證。",
-                            Locale = "zh-TW",
-                            SubLabel = "品質管理系統"
-                        },
-                        new
-                        {
-                            Id = new Guid("a1111111-0000-0001-0000-000000000002"),
-                            CertificationId = new Guid("51111111-0000-0000-0000-000000000002"),
-                            Description = "Conforms to EU health, safety and environmental requirements.",
-                            Locale = "en",
-                            SubLabel = "European conformity"
-                        },
-                        new
-                        {
-                            Id = new Guid("a1111111-0000-0002-0000-000000000002"),
-                            CertificationId = new Guid("51111111-0000-0000-0000-000000000002"),
-                            Description = "符合歐盟健康、安全與環境要求。",
-                            Locale = "zh-TW",
-                            SubLabel = "歐盟符合性"
-                        },
-                        new
-                        {
-                            Id = new Guid("a1111111-0000-0001-0000-000000000003"),
-                            CertificationId = new Guid("51111111-0000-0000-0000-000000000003"),
-                            Description = "Textiles tested free from harmful substances.",
-                            Locale = "en",
-                            SubLabel = "Tested for harmful substances"
-                        },
-                        new
-                        {
-                            Id = new Guid("a1111111-0000-0002-0000-000000000003"),
-                            CertificationId = new Guid("51111111-0000-0000-0000-000000000003"),
-                            Description = "紡織品經檢驗不含有害物質。",
-                            Locale = "zh-TW",
-                            SubLabel = "有害物質檢驗"
-                        },
-                        new
-                        {
-                            Id = new Guid("a1111111-0000-0001-0000-000000000004"),
-                            CertificationId = new Guid("51111111-0000-0000-0000-000000000004"),
-                            Description = "Protected by registered design patents.",
-                            Locale = "en",
-                            SubLabel = "Patented design"
-                        },
-                        new
-                        {
-                            Id = new Guid("a1111111-0000-0002-0000-000000000004"),
-                            CertificationId = new Guid("51111111-0000-0000-0000-000000000004"),
-                            Description = "受註冊設計專利保護。",
-                            Locale = "zh-TW",
-                            SubLabel = "專利設計"
-                        },
-                        new
-                        {
-                            Id = new Guid("a1111111-0000-0001-0000-000000000005"),
-                            CertificationId = new Guid("51111111-0000-0000-0000-000000000005"),
-                            Description = "Designed and manufactured in Taiwan.",
-                            Locale = "en",
-                            SubLabel = "Made in Taiwan"
-                        },
-                        new
-                        {
-                            Id = new Guid("a1111111-0000-0002-0000-000000000005"),
-                            CertificationId = new Guid("51111111-0000-0000-0000-000000000005"),
-                            Description = "台灣設計與製造。",
-                            Locale = "zh-TW",
-                            SubLabel = "台灣製造"
-                        });
                 });
 
             modelBuilder.Entity("EuniceMed.Api.Models.Entities.Collection", b =>

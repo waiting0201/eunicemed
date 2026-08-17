@@ -1,7 +1,10 @@
 using EuniceMed.Api.Data;
+using EuniceMed.Api.Data.Interceptors;
+using EuniceMed.Api.Data.Seed;
 using EuniceMed.Api.Handlers;
 using EuniceMed.Api.Middleware;
 using EuniceMed.Api.Routing;
+using EuniceMed.Api.Services;
 using EuniceMed.Api.Services.Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -46,25 +49,43 @@ var host = new HostBuilder()
         var connStr = cfg["ConnectionStrings:DefaultConnection"]
             ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is required.");
 
+        // 目前操作者。由 AppRouter 在驗證後設定，AuditLogInterceptor 讀取。
+        // 刻意不用 IHttpContextAccessor —— 它在 Functions worker 不會被填充。
+        services.AddScoped<CurrentUser>();
+        services.AddHttpContextAccessor();
+
         // ── EF Core + SQL Server（寫入路徑）────────────────────────────────
         // Max Pool Size 需與客戶 Azure SQL 的連線上限、Function App 的
         // maximumInstanceCount 一起算 —— Flex Consumption 每個實例各有一個 pool。
-        services.AddDbContext<AppDbContext>(opt =>
+        services.AddScoped<AuditLogInterceptor>();
+        services.AddDbContext<AppDbContext>((sp, opt) =>
             opt.UseSqlServer(connStr, sql =>
-            {
-                sql.EnableRetryOnFailure(3);
-                sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-            }));
+               {
+                   sql.EnableRetryOnFailure(3);
+                   sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+               })
+               .AddInterceptors(sp.GetRequiredService<AuditLogInterceptor>()));
 
         // ── Dapper IDbConnection（讀取路徑，與 EF 共用同一 connection string）──
         services.AddScoped<IDbConnection>(_ => new SqlConnection(connStr));
 
+        // ── 無狀態服務（Singleton）─────────────────────────────────────────
+        services.AddSingleton<IJwtService, JwtService>();
+        services.AddSingleton<LoginRateLimiter>();
+        services.AddSingleton<ContactRateLimiter>();
+
         // ── Dapper 讀取服務 ────────────────────────────────────────────────
         services.AddScoped<ICollectionReadService, CollectionReadService>();
+        services.AddScoped<IProductReadService, ProductReadService>();
+        services.AddScoped<ITaxonomyReadService, TaxonomyReadService>();
 
         // ── Handlers ──────────────────────────────────────────────────────
         services.AddScoped<HealthHandler>();
+        services.AddScoped<AuthHandler>();
+        services.AddScoped<UserHandler>();
         services.AddScoped<CollectionHandler>();
+        services.AddScoped<ProductHandler>();
+        services.AddScoped<TaxonomyHandler>();
 
         // ── Router ────────────────────────────────────────────────────────
         services.AddScoped<AppRouter>();
@@ -82,6 +103,18 @@ using (var scope = host.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
+
+    // Seed 失敗只記錄、不重拋 —— 種子資料出問題不該讓整個 Function App 起不來
+    // （照 Jabez importer 的做法）
+    try
+    {
+        var cfg = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+        await AdminUserSeeder.RunAsync(db, cfg);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"[AdminUserSeeder] skipped due to error: {ex.Message}");
+    }
 }
 
 await host.RunAsync();

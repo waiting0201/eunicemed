@@ -1,0 +1,117 @@
+### Phase 4 驗收：分類 + 產品（公開讀取與匯入部分）
+### 前提：func start 執行中，且已跑過 §1 的匯入。
+
+@host = http://localhost:7071/api
+
+### 0. 登入取 token
+# @name login
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "admin@eunicemed.local", "password": "REPLACE_WITH_LOCAL_SEED_PASSWORD" }
+
+@at = {{login.response.body.data.accessToken}}
+
+###############################################################################
+# 1. 舊站資料匯入
+#
+# **冪等性一定要用「空庫連跑三次」驗** —— 只跑一次的話，兩個 bug 都看不出來
+# （同批次 slug 相撞、89 筆無 SKU 的產品被重複建立）。
+#
+# 清空重來（注意 SET QUOTED_IDENTIFIER ON，Products 有篩選索引）：
+#   docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa \
+#     -P '<你的本機密碼>' -C -d EuniceMedDb -Q "SET QUOTED_IDENTIFIER ON;
+#     DELETE FROM ProductBodyParts; DELETE FROM ProductCertifications;
+#     DELETE FROM ProductTags; DELETE FROM ProductRelated;
+#     DELETE FROM ProductImages; DELETE FROM ProductTranslations; DELETE FROM Products;"
+###############################################################################
+
+### 1a. 匯入（第一次應為 新增 149）
+POST {{host}}/admin/products/import
+Authorization: Bearer {{at}}
+
+### 1b. 再跑一次（應為 新增 0、更新 149）
+POST {{host}}/admin/products/import
+Authorization: Bearer {{at}}
+
+### 1c. 第三次（同上，總數必須維持 149）
+POST {{host}}/admin/products/import
+Authorization: Bearer {{at}}
+
+###############################################################################
+# 2. 分面計數（facets）—— Phase 4 最容易寫錯的一段
+#
+# 規則（docs/04 §4）：某維度的計數**不受該維度自身的篩選影響**，
+# 但**受其他維度的篩選影響**。
+###############################################################################
+
+### 2a. 基準（未篩選）
+GET {{host}}/products?locale=en&facets=true&pageSize=1
+
+### 2b. 篩 category 之後
+# categories  → 必須仍顯示全部三類的數字（同維度不收斂）
+# subCategories → 必須只剩該分類底下的（跨維度有收斂）
+GET {{host}}/products?locale=en&category=orthopedic-support&facets=true&pageSize=1
+
+### 2c. 篩 bodyPart 之後 —— bodyParts facet 應仍顯示全部部位
+GET {{host}}/products?locale=en&bodyPart=knee&facets=true&pageSize=1
+
+> bodyParts 是多值維度，其計數總和**會大於** total —— 這是正確行為不是 bug。
+> 另外所有 facet 計數都完全忽略分頁。
+
+###############################################################################
+# 3. 三段路徑歸屬驗證
+# 不做寬鬆比對 —— 若只認 slug，同一產品會有多個可索引 URL（重複內容）。
+###############################################################################
+
+### 3a. 正確路徑 → 200
+GET {{host}}/products/orthopedic-support/knee-support/aergo-knee-support?locale=en
+
+### 3b. 錯的 category → 應 404
+GET {{host}}/products/footcare-insoles/knee-support/aergo-knee-support?locale=en
+
+### 3c. 錯的 sub-category → 應 404
+GET {{host}}/products/orthopedic-support/ankle-support/aergo-knee-support?locale=en
+
+### 3d. 扁平查詢（預覽／舊 URL 301 解析用）→ 200
+GET {{host}}/products/by-slug/aergo-knee-support?locale=en
+
+### 3e. 語言純度：匯入資料只有 en，zh-TW 應 404 而非回英文
+GET {{host}}/products/orthopedic-support/knee-support/aergo-knee-support?locale=zh-TW
+
+###############################################################################
+# 4. 分類 / 子分類 / 認證
+###############################################################################
+
+### 4a. 分類含子分類與產品數
+GET {{host}}/categories?locale=en&include=subCategories
+
+### 4b. 中文
+GET {{host}}/categories?locale=zh-TW
+
+### 4c. 單一分類落地頁
+GET {{host}}/categories/orthopedic-support?locale=en
+
+### 4d. 子分類落地頁
+GET {{host}}/sub-categories/orthopedic-support/knee-support?locale=en
+
+### 4e. 子分類歸屬不符 → 應 404
+GET {{host}}/sub-categories/footcare-insoles/knee-support?locale=en
+
+### 4f. 認證（About 認證帶與產品頁標章列共用）
+GET {{host}}/certifications?locale=zh-TW
+
+###############################################################################
+# 5. 相關產品自動遞補
+# ProductRelated 為空時，自動以 同SubCategory → 同Category → 同BodyPart 補 4 筆
+###############################################################################
+
+### 5a. 詳情內的 relatedProducts 應有 4 筆
+GET {{host}}/products/orthopedic-support/knee-support/aergo-knee-support?locale=en
+
+###############################################################################
+# 尚未實作（Phase 4 剩餘）
+#   GET/POST/PUT/DELETE /admin/products、/publish、/unpublish、/related
+#   後台 分類／子分類／認證／部位 CRUD
+#   產品詳情的 images 與 bodyParts（等 Phase 3 媒體管線）
+###############################################################################

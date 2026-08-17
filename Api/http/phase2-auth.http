@@ -1,0 +1,230 @@
+### Phase 2 驗收：Auth / RBAC / AuditLog / 後台 CRUD 骨架
+### 前提：func start 執行中；local.settings.json 已設 Seed__AdminEmail / Seed__AdminPassword。
+
+@host  = http://localhost:7071/api
+@admin = admin@eunicemed.local
+# 執行前把下一行換成你本機的密碼（見 Api/local.settings.json 的 Seed__AdminPassword，該檔不進版控）
+@pw    = REPLACE_WITH_LOCAL_SEED_PASSWORD
+
+### 1. Health —— 順便看伺服器解析到的 client IP（速率限制以此分區）
+GET {{host}}/health
+
+> ⚠️ 本機的 Core Tools host 會剝掉 X-Forwarded-For，所以 `client.forwardedFor` 是空的、
+> `resolvedIp` 一律是 127.0.0.1 —— 也就是**本機測不出 IP 分區**，所有人共用一個 bucket。
+> 上 Azure 後要用這個端點重新確認正式環境收不收得到 XFF。
+
+### 2. 登入
+# @name login
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "{{admin}}", "password": "{{pw}}" }
+
+@at = {{login.response.body.data.accessToken}}
+@rt = {{login.response.body.data.refreshToken}}
+
+### 3. 未帶 token → 401
+GET {{host}}/admin/users
+
+### 4. 帶 token → 200
+GET {{host}}/admin/users
+Authorization: Bearer {{at}}
+
+### 5. 亂 token → 401
+GET {{host}}/admin/users
+Authorization: Bearer garbage.token.here
+
+###############################################################################
+# RBAC 矩陣
+# 先建立四個角色的測試帳號（下方 §6），再逐一驗證。
+#
+#   端點                          Admin  Editor  Author  Viewer
+#   GET  /admin/users              200    403     403     403
+#   GET  /admin/collections        200    200     200     200
+#   POST /admin/collections        400*   400*    400*    403     *400 = 通過授權、body 空
+#   POST /admin/x/{id}/publish     404*   404*    403     403     *404 = 通過授權、路由未實作
+#
+# 最後一列是 EuniceMed 特有的規則：**Author 可建草稿但不可發布**（docs/03 §2）。
+# 建立得到 400（過授權）而發布得到 403，就是這條規則生效的證據。
+###############################################################################
+
+### 6. 建立測試帳號（重複執行會回 409）
+POST {{host}}/admin/users
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "email": "author@eunicemed.local", "displayName": "Test Author",
+  "password": "TestPassword123!", "roles": ["Author"] }
+
+### 7. 以 Author 登入
+# @name authorLogin
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "author@eunicemed.local", "password": "TestPassword123!" }
+
+@aut = {{authorLogin.response.body.data.accessToken}}
+
+### 8. Author 建立內容 → 應 400（過授權，body 空）
+POST {{host}}/admin/collections
+Authorization: Bearer {{aut}}
+Content-Type: application/json
+
+{}
+
+### 9. Author 發布 → 應 403（**這是 Phase 2 最關鍵的一條**）
+POST {{host}}/admin/collections/00000000-0000-0000-0000-000000000000/publish
+Authorization: Bearer {{aut}}
+
+### 10. Author 存取使用者管理 → 應 403
+GET {{host}}/admin/users
+Authorization: Bearer {{aut}}
+
+###############################################################################
+# Token 生命週期
+###############################################################################
+
+### 11. 換發（單次使用：舊 token 立即失效）
+# @name refresh
+POST {{host}}/auth/refresh
+Content-Type: application/json
+
+{ "refreshToken": "{{rt}}" }
+
+### 12. 用同一張舊 token 再換 → 應 401
+POST {{host}}/auth/refresh
+Content-Type: application/json
+
+{ "refreshToken": "{{rt}}" }
+
+### 13. 登出（冪等）
+POST {{host}}/auth/logout
+Content-Type: application/json
+
+{ "refreshToken": "{{refresh.response.body.data.refreshToken}}" }
+
+### 14. 登出後換發 → 應 401
+POST {{host}}/auth/refresh
+Content-Type: application/json
+
+{ "refreshToken": "{{refresh.response.body.data.refreshToken}}" }
+
+###############################################################################
+# 帳號鎖定：連續 5 次錯誤密碼後鎖 15 分鐘
+# 注意 IP 速率限制是 30/分，刻意遠寬於鎖定門檻 —— 兩者若同為 5，
+# IP 限制會先觸發，帳號鎖定永遠跑不到（初版就是這樣，已修正）。
+###############################################################################
+
+### 15. 連打 5 次錯誤密碼（重複執行本請求 5 次）
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "author@eunicemed.local", "password": "WrongPw!!" }
+
+### 16. 第 6 次用正確密碼 → 應 403「帳號已鎖定」
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "author@eunicemed.local", "password": "TestPassword123!" }
+
+### 17. Admin 解鎖（把 {id} 換成 author 的 id）
+PUT {{host}}/admin/users/{id}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "unlock": true }
+
+###############################################################################
+# 改密碼
+###############################################################################
+
+### 18. 改密碼（成功後所有 refresh token 一併撤銷）
+POST {{host}}/auth/change-password
+Authorization: Bearer {{aut}}
+Content-Type: application/json
+
+{ "currentPassword": "TestPassword123!", "newPassword": "BrandNewPassword99" }
+
+###############################################################################
+# 自我保護：管理者不能把自己鎖在門外
+# 以下三個都應被擋（把 {id} 換成自己的 id）
+###############################################################################
+
+### 19. 停用自己 → 應被擋
+PUT {{host}}/admin/users/{id}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "isActive": false }
+
+### 20. 移除自己的 Admin 角色 → 應被擋
+PUT {{host}}/admin/users/{id}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "roles": ["Viewer"] }
+
+### 21. 刪除自己 → 應被擋
+DELETE {{host}}/admin/users/{id}
+Authorization: Bearer {{at}}
+
+###############################################################################
+# 後台 CRUD 骨架（Collection 為參考實作）
+###############################################################################
+
+### 22. 建立
+# @name createCol
+POST {{host}}/admin/collections
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "slug": "test-series", "strength": 2, "sortOrder": 9,
+  "translations": {
+    "en":    { "name": "Test Series", "description": "created by acceptance test" },
+    "zh-TW": { "name": "測試系列",     "description": "驗收測試建立" } } }
+
+@cid = {{createCol.response.body.data.id}}
+
+### 23. slug 重複 → 應 409
+POST {{host}}/admin/collections
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "slug": "test-series", "translations": { "en": { "name": "dup" } } }
+
+### 24. 只更新 en —— zh-TW 必須原封不動（避免前端只送單一語系就洗掉翻譯）
+PUT {{host}}/admin/collections/{{cid}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "translations": { "en": { "name": "Test Series v2" } } }
+
+### 25. 公開端點應立即看得到（純 SSR，無需 revalidate）
+GET {{host}}/collections/test-series?locale=zh-TW
+
+### 26. 刪除
+DELETE {{host}}/admin/collections/{{cid}}
+Authorization: Bearer {{at}}
+
+### 27. 刪除後 → 應 404
+GET {{host}}/collections/test-series?locale=en
+
+###############################################################################
+# 稽核紀錄（DB 端驗收）
+#
+# docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa \
+#   -P '<你的本機密碼>' -C -d EuniceMedDb -h -1 -W -Q "SET NOCOUNT ON;
+#   SELECT a.Action + ' ' + a.Entity + ' by ' + ISNULL(u.Email,'SYSTEM')
+#   FROM AuditLogs a LEFT JOIN [User] u ON u.Id = a.UserId
+#   ORDER BY a.Id DESC;"
+#
+# 必須滿足：
+#   1. create / update / delete / login 都有紀錄
+#   2. **by 欄位是實際操作者，不是 SYSTEM** —— IHttpContextAccessor 在 Functions worker
+#      不會被填充，所以操作者是靠 AppRouter 明確設定的 CurrentUser 傳進去的。
+#      若這裡全是 SYSTEM，表示 CurrentUser 沒被設定，稽核就少了「誰」這一半。
+#   3. DataJson 不含 PasswordHash 或 TokenHash：
+#      SELECT CASE WHEN EXISTS(SELECT 1 FROM AuditLogs
+#             WHERE DataJson LIKE '%PasswordHash%' OR DataJson LIKE '%TokenHash%')
+#             THEN 'FAIL' ELSE 'OK' END;
+###############################################################################
