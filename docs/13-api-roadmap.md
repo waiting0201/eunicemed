@@ -63,13 +63,15 @@ token 輪替（單次使用）、帳號鎖定與解鎖、改密碼撤銷所有 s
 > 要等有該欄位的實體（`Product` / `Article` 等 6 張表）才驗得到。`ExceptionMiddleware` 已接好
 > `DbUpdateConcurrencyException → 409`。
 
-### ⬜ Phase 3 — 媒體管線 · 4–5 天 · ⚠️ 被待決事項擋住
+### ⬜ Phase 3 — 媒體管線 · 4–5 天
 
 `Media` / `MediaVariant` / `MediaUsage`。`Media/media-presets.json`（13 個 preset，已建立）+ `GET /admin/media-presets`。
 `ImageService`（SkiaSharp）：依 preset 寬**等比只縮不放** → WebP q78 + 原格式 → 去 EXIF、轉 sRGB、檔名正規化加短雜湊 → 寫 Blob（master / variants / 原檔進 `media-originals`）。
 硬拒絕 415/413/400 與非阻擋 `warnings[]` 兩套規則（[11](11-media-specs.md) §4）。SVG 清洗（僅 `logo-mark` 收 SVG）。
 
-**開工前需先答**：變體階梯是「2 張」還是「一組寬度階梯」？見 [CLAUDE.md](../CLAUDE.md) §7。
+**變體階梯已定案（2026-08-17）**：WebP 出完整階梯、原格式只出 preset 寬度那一張，每次上傳 1–5 個檔。
+定義見 [11-media-specs.md](11-media-specs.md) §2a，程式一律讀 `Api/Media/media-presets.json` 的 `output` 欄位。
+連帶：**Function App 實例需 2048MB**，且上傳端點要有進度回饋（最壞情況 5 次編碼）。
 
 ### 🟡 Phase 4 — 分類 + 產品（進行中）
 

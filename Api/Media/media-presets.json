@@ -1,136 +1,392 @@
 {
   "$comment": "圖片尺寸 preset 的唯一機器可讀真相來源。人類可讀版本見 docs/11-media-specs.md §2。此檔同時供三處使用：ImageService 縮圖、GET /admin/media-presets 的提示文字、PageSchemas 的 x-mediaPreset 展開。新增或修改 preset 時務必兩邊同步。",
-  "resizeWidths": [2560, 1600, 1200, 1000, 800, 400],
+  "resizeWidths": [
+    2560,
+    1600,
+    1200,
+    1000,
+    800,
+    400
+  ],
   "presets": [
     {
       "key": "hero-slide",
-      "label": { "en": "Home hero slide (8:3)", "zh-TW": "首頁 hero 輪播（8:3）" },
+      "label": {
+        "en": "Home hero slide (8:3)",
+        "zh-TW": "首頁 hero 輪播（8:3）"
+      },
       "aspect": "8:3",
       "width": 2560,
       "height": 960,
       "maxBytes": 512000,
-      "formats": ["jpg", "png", "webp"],
-      "note": { "en": "Home hero carousel", "zh-TW": "首頁 hero 輪播" }
+      "formats": [
+        "jpg",
+        "png",
+        "webp"
+      ],
+      "note": {
+        "en": "Home hero carousel",
+        "zh-TW": "首頁 hero 輪播"
+      },
+      "output": {
+        "webp": [
+          2560,
+          1600,
+          1200,
+          800
+        ],
+        "original": [
+          2560
+        ]
+      }
     },
     {
       "key": "page-band",
-      "label": { "en": "Page top band (16:3)", "zh-TW": "頁頂 band（16:3）" },
+      "label": {
+        "en": "Page top band (16:3)",
+        "zh-TW": "頁頂 band（16:3）"
+      },
       "aspect": "16:3",
       "width": 2560,
       "height": 480,
       "maxBytes": 307200,
-      "formats": ["jpg", "png", "webp"],
-      "note": { "en": "Top band on every page", "zh-TW": "各頁頁頂 band" }
+      "formats": [
+        "jpg",
+        "png",
+        "webp"
+      ],
+      "note": {
+        "en": "Top band on every page",
+        "zh-TW": "各頁頁頂 band"
+      },
+      "output": {
+        "webp": [
+          2560,
+          1600,
+          1200,
+          800
+        ],
+        "original": [
+          2560
+        ]
+      }
     },
     {
       "key": "section-bg",
-      "label": { "en": "Section background (2.84:1)", "zh-TW": "區塊背景帶（2.84:1）" },
+      "label": {
+        "en": "Section background (2.84:1)",
+        "zh-TW": "區塊背景帶（2.84:1）"
+      },
       "aspect": "2.84:1",
       "width": 2560,
       "height": 900,
       "maxBytes": 460800,
-      "formats": ["jpg", "png", "webp"],
-      "note": { "en": "Section background bands, Partnership distributor wide card", "zh-TW": "區塊背景帶、Partnership 經銷寬卡" }
+      "formats": [
+        "jpg",
+        "png",
+        "webp"
+      ],
+      "note": {
+        "en": "Section background bands, Partnership distributor wide card",
+        "zh-TW": "區塊背景帶、Partnership 經銷寬卡"
+      },
+      "output": {
+        "webp": [
+          2560,
+          1600,
+          1200,
+          800
+        ],
+        "original": [
+          2560
+        ]
+      }
     },
     {
       "key": "wide-16x9",
-      "label": { "en": "Wide image (16:9)", "zh-TW": "寬圖（16:9）" },
+      "label": {
+        "en": "Wide image (16:9)",
+        "zh-TW": "寬圖（16:9）"
+      },
       "aspect": "16:9",
       "width": 1600,
       "height": 900,
       "maxBytes": 307200,
-      "formats": ["jpg", "png", "webp"],
-      "note": { "en": "Article cover, About manufacturing, Partnership OEM", "zh-TW": "文章封面、About 製造寬圖、Partnership OEM 圖" }
+      "formats": [
+        "jpg",
+        "png",
+        "webp"
+      ],
+      "note": {
+        "en": "Article cover, About manufacturing, Partnership OEM",
+        "zh-TW": "文章封面、About 製造寬圖、Partnership OEM 圖"
+      },
+      "output": {
+        "webp": [
+          1600,
+          1200,
+          800
+        ],
+        "original": [
+          1600
+        ]
+      }
     },
     {
       "key": "wide-16x10",
-      "label": { "en": "Category hero (16:10)", "zh-TW": "分類 hero（16:10）" },
+      "label": {
+        "en": "Category hero (16:10)",
+        "zh-TW": "分類 hero（16:10）"
+      },
       "aspect": "16:10",
       "width": 1200,
       "height": 750,
       "maxBytes": 225280,
-      "formats": ["jpg", "png", "webp"],
-      "note": { "en": "Category / sub-category hero, fitting guide image", "zh-TW": "分類／子分類 hero、穿戴指引圖" }
+      "formats": [
+        "jpg",
+        "png",
+        "webp"
+      ],
+      "note": {
+        "en": "Category / sub-category hero, fitting guide image",
+        "zh-TW": "分類／子分類 hero、穿戴指引圖"
+      },
+      "output": {
+        "webp": [
+          1200,
+          800,
+          400
+        ],
+        "original": [
+          1200
+        ]
+      }
     },
     {
       "key": "photo-4x3",
-      "label": { "en": "Use-case photo (4:3)", "zh-TW": "使用情境照（4:3）" },
+      "label": {
+        "en": "Use-case photo (4:3)",
+        "zh-TW": "使用情境照（4:3）"
+      },
       "aspect": "4:3",
       "width": 1200,
       "height": 900,
       "maxBytes": 225280,
-      "formats": ["jpg", "png", "webp"],
-      "note": { "en": "Product use-case photo, News gallery", "zh-TW": "產品使用情境照、News 圖庫" }
+      "formats": [
+        "jpg",
+        "png",
+        "webp"
+      ],
+      "note": {
+        "en": "Product use-case photo, News gallery",
+        "zh-TW": "產品使用情境照、News 圖庫"
+      },
+      "output": {
+        "webp": [
+          1200,
+          800,
+          400
+        ],
+        "original": [
+          1200
+        ]
+      }
     },
     {
       "key": "content-16x9",
-      "label": { "en": "Inline article image (16:9)", "zh-TW": "文章內嵌圖（16:9）" },
+      "label": {
+        "en": "Inline article image (16:9)",
+        "zh-TW": "文章內嵌圖（16:9）"
+      },
       "aspect": "16:9",
       "width": 1200,
       "height": 675,
       "maxBytes": 204800,
-      "formats": ["jpg", "png", "webp"],
-      "note": { "en": "Inline article image", "zh-TW": "文章內嵌圖" }
+      "formats": [
+        "jpg",
+        "png",
+        "webp"
+      ],
+      "note": {
+        "en": "Inline article image",
+        "zh-TW": "文章內嵌圖"
+      },
+      "output": {
+        "webp": [
+          1200,
+          800,
+          400
+        ],
+        "original": [
+          1200
+        ]
+      }
     },
     {
       "key": "portrait-4x5",
-      "label": { "en": "Portrait (4:5)", "zh-TW": "直式人物照（4:5）" },
+      "label": {
+        "en": "Portrait (4:5)",
+        "zh-TW": "直式人物照（4:5）"
+      },
       "aspect": "4:5",
       "width": 1000,
       "height": 1250,
       "maxBytes": 256000,
-      "formats": ["jpg", "png", "webp"],
-      "note": { "en": "About portrait, Application hero", "zh-TW": "About 人物照、應用方案 hero" }
+      "formats": [
+        "jpg",
+        "png",
+        "webp"
+      ],
+      "note": {
+        "en": "About portrait, Application hero",
+        "zh-TW": "About 人物照、應用方案 hero"
+      },
+      "output": {
+        "webp": [
+          1000,
+          800,
+          400
+        ],
+        "original": [
+          1000
+        ]
+      }
     },
     {
       "key": "square",
-      "label": { "en": "Product image (1:1)", "zh-TW": "產品圖（1:1）" },
+      "label": {
+        "en": "Product image (1:1)",
+        "zh-TW": "產品圖（1:1）"
+      },
       "aspect": "1:1",
       "width": 1200,
       "height": 1200,
       "maxBytes": 256000,
-      "formats": ["jpg", "png", "webp"],
-      "note": { "en": "All product images (only spec site-wide), category card, About square", "zh-TW": "全站產品圖（唯一規格）、分類卡、About 方圖" }
+      "formats": [
+        "jpg",
+        "png",
+        "webp"
+      ],
+      "note": {
+        "en": "All product images (only spec site-wide), category card, About square",
+        "zh-TW": "全站產品圖（唯一規格）、分類卡、About 方圖"
+      },
+      "output": {
+        "webp": [
+          1200,
+          800,
+          400
+        ],
+        "original": [
+          1200
+        ]
+      }
     },
     {
       "key": "card-16x10",
-      "label": { "en": "Card cover (16:10)", "zh-TW": "卡片封面（16:10）" },
+      "label": {
+        "en": "Card cover (16:10)",
+        "zh-TW": "卡片封面（16:10）"
+      },
       "aspect": "16:10",
       "width": 800,
       "height": 500,
       "maxBytes": 153600,
-      "formats": ["jpg", "png", "webp"],
-      "note": { "en": "Card covers (special care / Resources / video poster)", "zh-TW": "卡片封面（特殊照護／Resources／影片 poster）" }
+      "formats": [
+        "jpg",
+        "png",
+        "webp"
+      ],
+      "note": {
+        "en": "Card covers (special care / Resources / video poster)",
+        "zh-TW": "卡片封面（特殊照護／Resources／影片 poster）"
+      },
+      "output": {
+        "webp": [
+          800,
+          400
+        ],
+        "original": [
+          800
+        ]
+      }
     },
     {
       "key": "logo-mark",
-      "label": { "en": "Certification mark (1:1)", "zh-TW": "認證標章（1:1）" },
+      "label": {
+        "en": "Certification mark (1:1)",
+        "zh-TW": "認證標章（1:1）"
+      },
       "aspect": "1:1",
       "width": 400,
       "height": 400,
       "maxBytes": 81920,
-      "formats": ["png", "svg", "webp"],
-      "note": { "en": "Certification mark logo (transparent PNG or SVG)", "zh-TW": "認證標章 logo（PNG 透明底或 SVG）" }
+      "formats": [
+        "png",
+        "svg",
+        "webp"
+      ],
+      "note": {
+        "en": "Certification mark logo (transparent PNG or SVG)",
+        "zh-TW": "認證標章 logo（PNG 透明底或 SVG）"
+      },
+      "output": {
+        "webp": [
+          400
+        ],
+        "original": [
+          400
+        ]
+      }
     },
     {
       "key": "og-image",
-      "label": { "en": "Open Graph image (1.91:1)", "zh-TW": "SEO 分享圖（1.91:1）" },
+      "label": {
+        "en": "Open Graph image (1.91:1)",
+        "zh-TW": "SEO 分享圖（1.91:1）"
+      },
       "aspect": "1.91:1",
       "width": 1200,
       "height": 630,
       "maxBytes": 204800,
-      "formats": ["jpg", "png", "webp"],
-      "note": { "en": "SEO Open Graph image", "zh-TW": "SEO Open Graph 圖" }
+      "formats": [
+        "jpg",
+        "png",
+        "webp"
+      ],
+      "note": {
+        "en": "SEO Open Graph image — original format only; social scrapers handle WebP inconsistently.",
+        "zh-TW": "SEO Open Graph 圖。只出原格式：社群爬蟲對 WebP 支援不一致。"
+      },
+      "output": {
+        "webp": [],
+        "original": [
+          1200
+        ]
+      }
     },
     {
       "key": "document",
-      "label": { "en": "Document (PDF)", "zh-TW": "文件（PDF）" },
+      "label": {
+        "en": "Document (PDF)",
+        "zh-TW": "文件（PDF）"
+      },
       "aspect": null,
       "width": null,
       "height": null,
       "maxBytes": 20971520,
-      "formats": ["pdf"],
-      "note": { "en": "Catalogue / certificate / manual — no resizing", "zh-TW": "型錄／認證文件／使用手冊，不縮圖" }
+      "formats": [
+        "pdf"
+      ],
+      "note": {
+        "en": "Catalogue / certificate / manual — no resizing",
+        "zh-TW": "型錄／認證文件／使用手冊，不縮圖"
+      },
+      "output": {
+        "webp": [],
+        "original": []
+      }
     }
-  ]
+  ],
+  "$outputPolicy": "output.webp / output.original 是**上傳當下要產生的實體檔案寬度**，不是建議值。因為本站無 CDN 且不使用 next/image 即時優化（docs/07 §7.3），沒產生的尺寸就永遠不存在，只能靠 reprocess 補。WebP 出完整階梯供響應式挑選；原格式只出 preset 寬度那一張當退路（WebP 瀏覽器支援率 >97%，退路很少被取用，出全套只是白白拉長上傳時間）。"
 }

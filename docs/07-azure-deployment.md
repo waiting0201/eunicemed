@@ -265,13 +265,17 @@ Flex Consumption **不支援 deployment slot**。API 部署即為就地更新（
 | 資源 | 預估 |
 |------|------|
 | SWA Free | **$0**（100GB/月內） |
-| Function App Flex Consumption | 執行時間 + 執行次數計費，有每月免費額度；always-ready 設 **0**（接受冷啟動）→ 低流量下接近 $0 |
+| Function App Flex Consumption | 執行時間 + 執行次數計費，有每月免費額度；always-ready 設 **0**（接受冷啟動）→ 低流量下接近 $0。**實例記憶體需 2048MB**（見下） |
 | Storage（Blob） | 容量 + 交易 + 對外流量，數十 GB 級距約每月數美元 |
 | Azure SQL | 客戶自負 |
 
 控管重點：
 
 - always-ready 保持 0；若冷啟動不可接受，改設 1–2 個會產生**固定**月費，需另行核可。
+- **實例記憶體必須設 2048MB，不能用 512MB** —— 媒體上傳要解碼最大 8000px 的來源圖並編出
+  最多 5 個尺寸（見 [11-media-specs.md](11-media-specs.md) §2a），512MB 會 OOM。
+  Flex Consumption 按「記憶體 × 執行時間」計費，所以這會讓每次執行的單價變成 4 倍；
+  但因為只有上傳端點吃記憶體、而上傳是低頻動作，實際月費影響有限。
 - 盯 SWA 頻寬：Free 超額無法加購，會直接停止服務。
 - Blob 對外流量是唯一會隨流量線性成長的項目，長 `Cache-Control` 是主要控制手段。
 - 於訂閱層設 Cost Management 預算告警。

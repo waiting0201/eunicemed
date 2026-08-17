@@ -182,10 +182,6 @@ EuniceMed/
 
 ### 🔴 擋住開發，需優先解決
 
-- [ ] **媒體變體階梯是 2 張還是一組寬度階梯？（擋 Phase 3）**
-      [11](docs/11-media-specs.md) §1.2 說輸出「WebP + 原格式」各一張，但 §2 列了 6 個寬度階梯、[04](docs/04-api.md) §6 要求回「含 WebP 與各寬度」給前端 custom loader 挑，而 `UX_MediaVariant (MediaId, Format, Width)` 明顯預期多個寬度。三處說法不一致。
-      建議：每 preset 一組不超過該 preset 寬度的階梯 × {webp, 原格式}，即每次上傳 2–8 個檔。
-      **這決定上傳延遲（2560px WebP 編碼約 0.5–1.5 秒/張）與實例記憶體要 512MB 還是 2048MB。**
 - [ ] **SMTP 主機／埠／帳密，以及該信箱的每日寄送量上限（擋 Phase 7 上線）** —— 上限會回頭決定速率限制的數字
 - [ ] **客戶 Azure SQL 的 collation？** 若為區分大小寫的 `_CS_`，slug 比對在本機與正式站行為不同，只會在上線後才發現（見 [12](docs/12-local-dev.md) §2.1）
 - [ ] **客戶 Azure SQL 的連線數上限？** 決定 `Max Pool Size` 與 Function App 的 `maximumInstanceCount` —— Flex Consumption 每個實例各有一個連線池
@@ -223,6 +219,9 @@ EuniceMed/
 
 - [x] CMS 後台管理者驗證：**自建 JWT + Identity**（方案內無 Entra ID 資源）
 - [x] API 專案結構、回應格式、Migration 時機、影像套件：**全數對齊 [Jabez/Api](/Users/tim/webapps/Jabez/Api)**，見 [docs/13-api-roadmap.md](docs/13-api-roadmap.md)「架構前提」
+- [x] **媒體變體階梯：採階梯**（2026-08-17）。WebP 出完整階梯、原格式只出 preset 寬度那一張，每次上傳 1–5 個檔。
+      階梯定義見 [docs/11-media-specs.md](docs/11-media-specs.md) §2a，機器可讀版在 `Api/Media/media-presets.json` 的 `output` 欄位。
+      **連帶決定：Function App 實例需 2048MB**（512MB 會在解碼大圖時 OOM），見 [docs/07](docs/07-azure-deployment.md) §10。
 - [x] 表單送出後寄信通知 + 寫 DB：**兩者都要**。寄信走品牌方既有信箱的 SMTP（無 Azure Communication Services）；先入庫再寄信，寄信失敗不回錯。（帳密仍待補，見上方 🔴）
 - [x] ~~客戶 SQL 防火牆是否允許 CI 動態增刪 runner IP 規則？~~ **此題已不存在** —— migration 改為在 Function App 啟動時套用，CI 完全不碰資料庫
 - [x] 英文字型 **Myriad Variable Concept**：品牌方已提供下載點，字型檔入庫 `reference/fonts/myriad-variable-concept/`（來源與授權注意見 docs/08-design.md §4）

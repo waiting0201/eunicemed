@@ -12,7 +12,7 @@
 
 ## 一句話現況
 
-後端 API 的骨架、驗證授權、產品與分類的公開讀取已可運作並實測通過；
+後端 API 的骨架、驗證授權、產品與分類的公開讀取已可運作並實測通過；媒體變體階梯已定案，Phase 3 可開工；
 **前端、後台介面、部署都尚未開始**。整體約完成 **15%**。
 
 ---
@@ -66,7 +66,7 @@
 
 | 模組 | 資料表 | 排定 |
 |---|---|---|
-| 媒體變體與引用 | `MediaVariant` `MediaUsage` | Phase 3 🔴 |
+| 媒體變體與引用 | `MediaVariant` `MediaUsage` | Phase 3（階梯已定案，可開工） |
 | 應用方案 | `Application` `ApplicationTranslation` `ProductApplication` | Phase 6 |
 | 文章 | `Article` `ArticleTranslation` `ArticleCategory` `ArticleCategoryTranslation` `ArticleImage` `ArticleTag` `NewsEvent` `NewsEventTranslation` | Phase 6 |
 | FAQ | `Faq` `FaqTranslation` `FaqCategory` `FaqCategoryTranslation` | Phase 6 |
@@ -120,7 +120,7 @@
 | 舊站匯入 `admin/products/import` | ✅ | 冪等，149 筆 |
 | 產品 `admin/products` | ⬜ | 含 publish / unpublish / related |
 | 分類／子分類／認證／部位 | ⬜ | |
-| 媒體庫 `admin/media` | 🔴 | 被變體階梯待決事項擋住 |
+| 媒體庫 `admin/media` | ⬜ | 變體階梯已定案（2026-08-17），可開工 |
 | 頁面區段 `admin/pages` | ⬜ | Phase 5 |
 | 其餘內容模組 | ⬜ | Phase 6 |
 | 表單收件匣／選單／轉址／設定 | ⬜ | Phase 7 |
@@ -197,11 +197,12 @@
 
 | # | 事項 | 擋住 |
 |---|---|---|
-| 1 | **媒體變體階梯是 2 張還是一組寬度？** 三份文件說法不一致；此題決定實例要 512MB 還是 2048MB | Phase 3 全部、產品圖片、後台媒體庫 |
-| 2 | SMTP 主機／帳密／每日寄送上限 | Phase 7 上線 |
-| 3 | 客戶 Azure SQL 的 collation、連線數上限、能否設 Entra 管理員 | 部署 |
-| 4 | 認證文案（5 筆的 SubLabel 與說明目前是佔位） | About 頁與產品頁上線 |
-| 5 | 17 個子分類落地頁的敘述文案 | 子分類頁發布（缺文案者不應發布，會是薄內容頁） |
+| 1 | SMTP 主機／帳密／每日寄送上限 | Phase 7 上線 |
+| 2 | 客戶 Azure SQL 的 collation、連線數上限、能否設 Entra 管理員 | 部署 |
+| 3 | 認證文案（5 筆的 SubLabel 與說明目前是佔位） | About 頁與產品頁上線 |
+| 4 | 17 個子分類落地頁的敘述文案 | 子分類頁發布（缺文案者不應發布，會是薄內容頁） |
+
+> **已解除**：媒體變體階梯（2026-08-17 定案採階梯，見 [docs/11](docs/11-media-specs.md) §2a）—— Phase 3 可開工。
 
 ---
 
