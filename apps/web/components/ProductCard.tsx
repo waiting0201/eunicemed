@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { ProductListItem } from '@/lib/api';
-import { SIZES, srcSetFor } from '@/lib/image';
+import { SIZES, srcSetOf } from '@/lib/image';
 
 /**
  * 產品卡。圖片一律 1:1（preset `square`，docs/11 §2 —— 全站產品圖的唯一規格）。
@@ -19,7 +19,7 @@ export function ProductCard({ item }: { item: ProductListItem }) {
         {item.image ? (
           <img
             src={item.image.url}
-            srcSet={srcSetFor(item.image.url, 'square')}
+            srcSet={srcSetOf(item.image)}
             sizes={SIZES.productGrid}
             alt={item.image.alt ?? item.name}
             loading="lazy"

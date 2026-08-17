@@ -71,6 +71,8 @@ var host = new HostBuilder()
 
         // ── 無狀態服務（Singleton）─────────────────────────────────────────
         services.AddSingleton<IJwtService, JwtService>();
+        services.AddSingleton<ImageService>();
+        services.AddSingleton<IBlobStorageService, BlobStorageService>();
         services.AddSingleton<LoginRateLimiter>();
         services.AddSingleton<ContactRateLimiter>();
 
@@ -86,6 +88,7 @@ var host = new HostBuilder()
         services.AddScoped<CollectionHandler>();
         services.AddScoped<ProductHandler>();
         services.AddScoped<TaxonomyHandler>();
+        services.AddScoped<MediaHandler>();
 
         // ── Router ────────────────────────────────────────────────────────
         services.AddScoped<AppRouter>();

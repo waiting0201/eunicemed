@@ -1,0 +1,129 @@
+### Phase 3 驗收：媒體管線（SkiaSharp）
+### 前提：func start 執行中；**Azurite 必須帶 --skipApiVersionCheck 啟動**
+###       （本機 Azurite 版本比 Azure SDK 的 API 版本舊，否則上傳一律 400）
+
+@host = http://localhost:7071/api
+
+### 0. 登入
+# @name login
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "admin@eunicemed.local", "password": "REPLACE_WITH_LOCAL_SEED_PASSWORD" }
+
+@at = {{login.response.body.data.accessToken}}
+
+###############################################################################
+# 1. Preset 目錄 —— 後台每個上傳欄位的提示文字都來自這裡，不在畫面寫死
+###############################################################################
+
+### 1a. 13 個 preset（12 圖片 + document）
+GET {{host}}/admin/media-presets
+Authorization: Bearer {{at}}
+
+> square 的 hint(zh-TW) 應為：
+> 建議尺寸 1200×1200（1:1）· JPG/PNG/WEBP · 建議 ≤250 KB · 上傳後自動縮至 1200px 寬
+
+###############################################################################
+# 2. 上傳與階梯
+#
+# 產生的檔案數依 preset 而異（docs/11 §2a）：square → jpg×1 + webp×3。
+# **檔名一律用實際輸出寬度**，因為縮圖是「只縮不放」——
+# 來源 1000px 的圖丟 square(1200)，1200 那階實際產出 1000px。
+###############################################################################
+
+### 2a. 正常上傳（用 mockup4 的真實產品圖）
+# curl 版本：
+#   curl -X POST {{host}}/admin/media -H "Authorization: Bearer $AT" \
+#     -F "file=@mockup4/images/products/knee-support-1--aergo-knee-support.jpg" \
+#     -F "presetKey=square" -F "altText=Knee support"
+#
+# 回應應包含：
+#   - master（原格式，無寬度後綴）
+#   - webp 階梯，每個檔名帶實際寬度
+#   - original: 來源尺寸與大小
+#   - warnings: []
+
+###############################################################################
+# 3. 硬拒絕（docs/11 §4）—— 這些會擋下上傳
+###############################################################################
+
+### 3a. 格式不符 → 415
+# -F "file=@t.gif" -F "presetKey=square"
+
+### 3b. 未知 presetKey → 400
+# -F "presetKey=nope"
+
+### 3c. PDF 走圖片端點 → 400（應改走 §5 的 SAS 直傳）
+# -F "presetKey=document"
+
+### 3d. 檔案損毀 → 400
+# -F "file=@random-bytes.jpg"
+
+### 3e. 超過 20MB → 413；長邊 > 8000px 或總像素 > 40MP → 400
+
+###############################################################################
+# 4. 不阻擋的警告 —— 回 201，warnings 由後台原樣顯示
+#
+#   aspect_mismatch  比例偏離 preset 超過 5%
+#   low_resolution   寬度不足 preset 的 80%
+#   oversized        超過建議大小
+#
+# 實測：把 1050×1400 的圖丟進 square 欄位 → 201 且帶兩個警告。
+###############################################################################
+
+###############################################################################
+# 5. PDF 直傳（不佔用 Function）
+###############################################################################
+
+### 5a. 取得寫入 SAS
+POST {{host}}/admin/uploads/sas
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "fileName": "catalogue-2026.pdf", "contentType": "application/pdf" }
+
+### 5b. 非 PDF → 應 415
+POST {{host}}/admin/uploads/sas
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "fileName": "photo.jpg", "contentType": "image/jpeg" }
+
+###############################################################################
+# 6. 媒體庫與刪除保護
+###############################################################################
+
+### 6a. 列表（可依 preset 篩選）
+GET {{host}}/admin/media?presetKey=square
+Authorization: Bearer {{at}}
+
+> `belowPresetWidth` 是**即時計算**不是欄位 —— preset 寬度會調整，
+> 存下來的旗標會過時（docs/05 §3.8）。
+
+### 6b. 引用反查
+GET {{host}}/admin/media/{mediaId}/usages
+Authorization: Bearer {{at}}
+
+### 6c. 刪除有引用的媒體 → 應 409
+DELETE {{host}}/admin/media/{mediaId}
+Authorization: Bearer {{at}}
+
+### 6d. 刪除無引用的媒體 → 200
+DELETE {{host}}/admin/media/{unusedMediaId}
+Authorization: Bearer {{at}}
+
+###############################################################################
+# 7. 端到端：前端真的拿得到圖
+#
+# 公開端點的 media 欄位會帶 `variants` 清單。
+# **前端不應該自己拼檔名** —— 「只縮不放」會讓實際寬度與規劃不同。
+#
+#   GET {{host}}/products?locale=en&subCategory=knee-support&pageSize=1
+#     → items[0].image.variants = [{format,width,url}, ...]
+#
+# 前端頁面驗收（需 apps/web 執行中）：
+#   http://localhost:3000/en/products/orthopedic-support/knee-support
+#   - 每個 <img> 都有 srcSet，且其中每個 URL 都回 200（實測 48/48）
+#   - srcSet 的 URL 來自 API 而非推導
+###############################################################################

@@ -84,6 +84,9 @@ public sealed class ProductReadService(IDbConnection db) : IProductReadService
                (SELECT TOP 1 m.AltText FROM ProductImages pi
                   INNER JOIN Media m ON m.Id = pi.MediaId
                   WHERE pi.ProductId = p.Id ORDER BY pi.IsPrimary DESC, pi.SortOrder) AS ImageAlt,
+               (SELECT TOP 1 m.Id FROM ProductImages pi
+                  INNER JOIN Media m ON m.Id = pi.MediaId
+                  WHERE pi.ProductId = p.Id ORDER BY pi.IsPrimary DESC, pi.SortOrder) AS ImageMediaId,
                STUFF((SELECT ',' + bp.Slug FROM ProductBodyParts pbp
                         INNER JOIN BodyParts bp ON bp.Id = pbp.BodyPartId
                         WHERE pbp.ProductId = p.Id ORDER BY bp.SortOrder
@@ -95,7 +98,7 @@ public sealed class ProductReadService(IDbConnection db) : IProductReadService
         string? CategorySlug, string? CategoryName,
         string? SubCategorySlug, string? SubCategoryName,
         string? CollectionSlug, string? CollectionName,
-        string? FeaturedBlurb, string? ImageUrl, string? ImageAlt, string? BodyPartCsv);
+        string? FeaturedBlurb, string? ImageUrl, string? ImageAlt, Guid? ImageMediaId, string? BodyPartCsv);
 
     public async Task<(IReadOnlyList<ProductListItemDto>, int)> GetListAsync(
         ProductFilter filter, string locale, bool? featured, string? sort, int page, int pageSize)
@@ -133,7 +136,9 @@ public sealed class ProductReadService(IDbConnection db) : IProductReadService
         var rows = await db.QueryAsync<ListRow>(
             $"{ListSelect} {PublishedFrom}{filterSql} ORDER BY {orderBy} OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY", p);
 
-        var items = rows.Select(r => ToListItem(r, locale)).ToList();
+        var list = rows.AsList();
+        var variants = await LoadVariantsAsync(list.Select(r => r.ImageMediaId));
+        var items = list.Select(r => ToListItem(r, locale, variants)).ToList();
         return (items, total);
     }
 
@@ -217,7 +222,10 @@ public sealed class ProductReadService(IDbConnection db) : IProductReadService
             $"{ListSelect} {PublishedFrom} {manual} ORDER BY (SELECT pr.SortOrder FROM ProductRelated pr WHERE pr.ProductId = @pid AND pr.RelatedProductId = p.Id)", p)).ToList();
 
         if (rows.Count > 0)
-            return rows.Select(r => ToListItem(r, locale)).ToList();
+        {
+            var v = await LoadVariantsAsync(rows.Select(r => r.ImageMediaId));
+            return rows.Select(r => ToListItem(r, locale, v)).ToList();
+        }
 
         // 自動遞補。ORDER BY 的三段就是規格的優先序。
         const string auto = """
@@ -237,8 +245,9 @@ public sealed class ProductReadService(IDbConnection db) : IProductReadService
             OFFSET 0 ROWS FETCH NEXT @take ROWS ONLY
             """;
 
-        var fallback = await db.QueryAsync<ListRow>($"{ListSelect} {PublishedFrom} {auto} {autoOrder}", p);
-        return fallback.Select(r => ToListItem(r, locale)).ToList();
+        var fallback = (await db.QueryAsync<ListRow>($"{ListSelect} {PublishedFrom} {auto} {autoOrder}", p)).AsList();
+        var fv = await LoadVariantsAsync(fallback.Select(r => r.ImageMediaId));
+        return fallback.Select(r => ToListItem(r, locale, fv)).ToList();
     }
 
     // ── 內部 ───────────────────────────────────────────────────────────────
@@ -251,10 +260,31 @@ public sealed class ProductReadService(IDbConnection db) : IProductReadService
         return p;
     }
 
+    /// <summary>
+    /// 一次撈完這一頁所有圖片的 variants，避免每張圖一次查詢（N+1）。
+    /// </summary>
+    private async Task<Dictionary<Guid, ImageVariantDto[]>> LoadVariantsAsync(IEnumerable<Guid?> mediaIds)
+    {
+        var ids = mediaIds.Where(i => i.HasValue).Select(i => i!.Value).Distinct().ToArray();
+        if (ids.Length == 0) return [];
+
+        var rows = await db.QueryAsync<(Guid MediaId, string Format, int Width, string BlobUrl)>(
+            """
+            SELECT MediaId, Format, Width, BlobUrl FROM MediaVariants
+            WHERE MediaId IN @ids
+            ORDER BY Width DESC
+            """, new { ids });
+
+        return rows.GroupBy(r => r.MediaId)
+                   .ToDictionary(g => g.Key,
+                                 g => g.Select(r => new ImageVariantDto(r.Format, r.Width, r.BlobUrl)).ToArray());
+    }
+
     private static string[] Split(string? csv) =>
         string.IsNullOrEmpty(csv) ? [] : csv.Split(',', StringSplitOptions.RemoveEmptyEntries);
 
-    private static ProductListItemDto ToListItem(ListRow r, string locale) => new(
+    private static ProductListItemDto ToListItem(
+        ListRow r, string locale, Dictionary<Guid, ImageVariantDto[]> variants) => new(
         r.Slug,
         r.Name,
         r.Sku,
@@ -262,7 +292,9 @@ public sealed class ProductReadService(IDbConnection db) : IProductReadService
         Pair(r.SubCategorySlug, r.SubCategoryName),
         Pair(r.CollectionSlug, r.CollectionName),
         Split(r.BodyPartCsv),
-        r.ImageUrl is null ? null : new MediaRefDto(r.ImageUrl, r.ImageAlt),
+        r.ImageUrl is null ? null : new MediaRefDto(
+            r.ImageUrl, r.ImageAlt,
+            r.ImageMediaId is { } mid ? variants.GetValueOrDefault(mid) : null),
         r.FeaturedBlurb,
         ProductUrl(locale, r.CategorySlug, r.SubCategorySlug, r.Slug));
 

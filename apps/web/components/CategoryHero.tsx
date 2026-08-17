@@ -1,6 +1,6 @@
 import type { CategoryDetail } from '@/lib/api';
 import type { Locale } from '@/lib/locale';
-import { SIZES, srcSetFor } from '@/lib/image';
+import { SIZES, srcSetOf } from '@/lib/image';
 
 const EYEBROW: Record<Locale, { category: string; subCategory: string }> = {
   en: { category: 'Category', subCategory: 'Sub-category' },
@@ -55,7 +55,7 @@ export function CategoryHero({
           {data.heroImage ? (
             <img
               src={data.heroImage.url}
-              srcSet={srcSetFor(data.heroImage.url, 'wide-16x10')}
+              srcSet={srcSetOf(data.heroImage)}
               sizes={SIZES.hero}
               alt={data.heroImage.alt ?? data.name}
               width={1200}

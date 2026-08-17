@@ -104,7 +104,17 @@ async function getOrNull<T>(path: string, opts?: FetchOptions): Promise<T | null
 
 // ── 型別 ──────────────────────────────────────────────────────────────────
 
-export type MediaRef = { url: string; alt: string | null };
+export type ImageVariant = { format: string; width: number; url: string };
+
+/**
+ * `variants` 是上傳當下產生的實體檔案清單。前端據此組 srcSet，
+ * **不要自己拼檔名**（見 lib/image.ts 的說明）。
+ */
+export type MediaRef = {
+  url: string;
+  alt: string | null;
+  variants: ImageVariant[] | null;
+};
 export type SlugName = { slug: string; name: string };
 
 export type ProductListItem = {

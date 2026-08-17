@@ -12,8 +12,8 @@
 
 ## 一句話現況
 
-後端 API 與前端已首次串通：分類與子分類兩頁可從瀏覽器看到真實資料、雙語切換正確。
-媒體變體階梯已定案，Phase 3 可開工。**後台介面與部署尚未開始**。整體約完成 **20%**。
+後端 API 與前端已串通，媒體管線可運作：分類與子分類兩頁能顯示真實產品圖與響應式 srcSet、雙語切換正確。
+**後台介面與部署尚未開始**。整體約完成 **25%**。
 
 ---
 
@@ -34,8 +34,8 @@
 | 層 | 狀態 | 說明 |
 |---|---|---|
 | 規格文件 | ✅ | 14 份，見 [CLAUDE.md](CLAUDE.md) §3 |
-| 資料模型 | 🟡 43% | 54 張表完成 23 張 |
-| API | 🟡 29% | 約 90 個端點完成 26 個 |
+| 資料模型 | 🟡 46% | 54 張表完成 25 張 |
+| API | 🟡 36% | 約 90 個端點完成 32 個 |
 | 前台 `apps/web` | 🟡 | Next.js 15 已建立，2 頁可運作；部署限制已實測 |
 | 後台 `apps/admin` | ⬜ | 尚未建立專案；介面需先跑 `frontend-design` skill |
 | 基礎設施 `infra/` | ⬜ | Bicep 尚未撰寫 |
@@ -45,7 +45,7 @@
 
 ## 二、資料模型（54 張表）
 
-已建立 **23** 張，4 支 migration。遷移於 Function App 啟動時自動套用。
+已建立 **25** 張，5 支 migration。遷移於 Function App 啟動時自動套用。
 
 ### ✅ 已完成
 
@@ -58,15 +58,15 @@
 | 部位 | `BodyPart` | ✅ 7 筆（4 筆顯示於人體圖） |
 | 標籤 | `Tag` `ProductTag` | — 無 seed |
 | 產品 | `Product` `ProductTranslation` `ProductImage` `ProductRelated` `ProductBodyPart` `ProductCertification` | ✅ 149 筆（皆為草稿） |
-| 媒體 | `Media` | — 僅資料表，管線見 Phase 3 |
+| 媒體 | `Media` `MediaVariant` `MediaUsage` | ✅ 管線可運作，已上傳 12 張測試圖 |
 | 使用者 | `User` `Role` `UserRole` `RefreshToken` | ✅ 4 角色 + 預設管理者（環境變數注入） |
 | 稽核 | `AuditLog` | — |
 
-### ⬜ 未建立（31 張）
+### ⬜ 未建立（29 張）
 
 | 模組 | 資料表 | 排定 |
 |---|---|---|
-| 媒體變體與引用 | `MediaVariant` `MediaUsage` | Phase 3（階梯已定案，可開工） |
+
 | 應用方案 | `Application` `ApplicationTranslation` `ProductApplication` | Phase 6 |
 | 文章 | `Article` `ArticleTranslation` `ArticleCategory` `ArticleCategoryTranslation` `ArticleImage` `ArticleTag` `NewsEvent` `NewsEventTranslation` | Phase 6 |
 | FAQ | `Faq` `FaqTranslation` `FaqCategory` `FaqCategoryTranslation` | Phase 6 |
@@ -80,7 +80,7 @@
 
 ## 三、API 端點
 
-已實作 **26** 個。完整契約見 [docs/api-routes.md](docs/api-routes.md)。
+已實作 **32** 個。完整契約見 [docs/api-routes.md](docs/api-routes.md)。
 
 ### 系統與驗證
 
@@ -100,7 +100,7 @@
 |---|---|---|
 | 系列 `collections` | ✅ | |
 | 產品列表 `products`（含 facets） | ✅ | |
-| 產品詳情（三段路徑 + by-slug） | 🟡 | `images`、`bodyParts` 回空陣列，等 Phase 3 媒體管線 |
+| 產品詳情（三段路徑 + by-slug） | 🟡 | 列表卡的圖已可用；詳情頁的 `images`、`bodyParts` 仍回空陣列 |
 | 分類 `categories` | ✅ | |
 | 子分類 `sub-categories` | ✅ | |
 | 認證 `certifications` | ✅ | |
@@ -120,7 +120,7 @@
 | 舊站匯入 `admin/products/import` | ✅ | 冪等，149 筆 |
 | 產品 `admin/products` | ⬜ | 含 publish / unpublish / related |
 | 分類／子分類／認證／部位 | ⬜ | |
-| 媒體庫 `admin/media` | ⬜ | 變體階梯已定案（2026-08-17），可開工 |
+| 媒體庫 `admin/media` | 🟡 | 上傳／列表／引用反查／刪除保護／SAS 皆可用；缺 reprocess 與 SVG 清洗 |
 | 頁面區段 `admin/pages` | ⬜ | Phase 5 |
 | 其餘內容模組 | ⬜ | Phase 6 |
 | 表單收件匣／選單／轉址／設定 | ⬜ | Phase 7 |
@@ -142,7 +142,7 @@ Next.js **15**（非 16 —— SWA hybrid 的支援是 preview，文件內容仍
 | Products | `/[locale]/products` | 🟡 產品列表就緒，頁面文案未就緒 |
 | Product Category | `/[locale]/products/{category}` | ✅ **已切版可運作** |
 | Sub-category | `/[locale]/products/{category}/{sub}` | ✅ **已切版可運作** |
-| Product Detail | `/[locale]/products/{category}/{sub}/{slug}` | 🟡 缺圖片 |
+| Product Detail | `/[locale]/products/{category}/{sub}/{slug}` | 🟡 API 缺 images／bodyParts；頁面未切 |
 | Applications／Detail | `/[locale]/applications[/{slug}]` | ⬜ |
 | Partnership | `/[locale]/partnership` | ⬜ |
 | Resources | `/[locale]/resources` | ⬜ |

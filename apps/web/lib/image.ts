@@ -1,3 +1,5 @@
+import type { MediaRef } from './api';
+
 /**
  * 圖片來源解析。
  *
@@ -9,50 +11,27 @@
  *
  * <p>
  * 取而代之，所有響應式尺寸在**上傳當下**就由 API 依 preset 階梯產生成實體檔案
- * （docs/11-media-specs.md §2a）。前端只負責挑對的那一張，位元組直接從 Blob 出。
+ * （docs/11-media-specs.md §2a），並由公開端點回傳 <c>variants</c> 清單。
  * </p>
  *
  * <p>
- * 目前 API 回的 media 只有 master 的 `url`。等 Phase 3 的媒體管線完成、
- * 公開端點開始回 variant 清單之後，<see cref="srcSetFor"/> 才會真的產出多個候選；
- * 在那之前它退化成單一來源，行為正確但沒有響應式效益。
+ * ⚠️ **不要自己拼檔名。** 初版曾照 preset 階梯推導 `-1200.webp` 這類名稱，
+ * 但縮圖是「只縮不放」—— 來源圖比 preset 小的時候，1200 那階實際產出的是
+ * 來源寬度的檔案，猜出來的名字必然 404。一律用 API 回的 `variants`。
  * </p>
  */
 
-/** 各 preset 的 WebP 階梯，與 Api/Media/media-presets.json 的 output.webp 一致。 */
-const LADDER: Record<string, number[]> = {
-  'hero-slide': [2560, 1600, 1200, 800],
-  'page-band': [2560, 1600, 1200, 800],
-  'section-bg': [2560, 1600, 1200, 800],
-  'wide-16x9': [1600, 1200, 800],
-  'wide-16x10': [1200, 800, 400],
-  'photo-4x3': [1200, 800, 400],
-  'content-16x9': [1200, 800, 400],
-  'portrait-4x5': [1000, 800, 400],
-  square: [1200, 800, 400],
-  'card-16x10': [800, 400],
-  'logo-mark': [400],
-  'og-image': [],
-};
+/** 由 API 回的 variants 組出 srcSet。沒有 variants 時回 undefined，瀏覽器就只用 src。 */
+export function srcSetOf(media: MediaRef | null | undefined): string | undefined {
+  if (!media?.variants?.length) return undefined;
 
-/**
- * 由 master 網址推導同一張圖各寬度的 srcSet。
- *
- * 命名慣例需與 API 的 ImageService 產出一致（Phase 3 實作時定案）：
- * `name-{hash}.jpg` → `name-{hash}-800.webp`
- *
- * ⚠️ 這個函式與後端的檔名產生規則是**隱含耦合**的。Phase 3 決定命名後，
- * 兩邊要一起改，並在 docs/11 §2a 記下格式。
- */
-export function srcSetFor(masterUrl: string, presetKey: string): string | undefined {
-  const widths = LADDER[presetKey];
-  if (!widths || widths.length === 0) return undefined;
+  const webp = media.variants
+    .filter((v) => v.format === 'webp')
+    .sort((a, b) => a.width - b.width);
 
-  const dot = masterUrl.lastIndexOf('.');
-  if (dot < 0) return undefined;
+  if (webp.length === 0) return undefined;
 
-  const stem = masterUrl.slice(0, dot);
-  return widths.map((w) => `${stem}-${w}.webp ${w}w`).join(', ');
+  return webp.map((v) => `${v.url} ${v.width}w`).join(', ');
 }
 
 /**

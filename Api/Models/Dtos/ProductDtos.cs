@@ -4,7 +4,21 @@ namespace EuniceMed.Api.Models.Dtos;
 
 public sealed record SlugName(string Slug, string Name);
 
-public sealed record MediaRefDto(string Url, string? Alt);
+/// <summary>
+/// 公開端點的媒體引用。
+///
+/// <para>
+/// **一定要帶 <c>Variants</c>**：本站無 CDN、前端不走 next/image 即時優化，
+/// 響應式尺寸全在上傳當下就產生成實體檔案。消費端**不應該自己拼檔名** ——
+/// 「只縮不放」會讓來源較小的圖塌到與規劃不同的寬度，猜名字必然對不上。
+/// </para>
+/// </summary>
+public sealed record MediaRefDto(
+    string             Url,
+    string?            Alt,
+    ImageVariantDto[]? Variants = null);
+
+public sealed record ImageVariantDto(string Format, int Width, string Url);
 
 /// <summary>列表卡／精選卡。</summary>
 public sealed record ProductListItemDto(

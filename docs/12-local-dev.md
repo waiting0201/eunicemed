@@ -80,20 +80,31 @@ Web UI 在 <http://localhost:8025>，可看到 contact 表單送出的通知信�
 # 1. Docker Desktop 要先開著
 docker start sqlserver
 
-# 2. Blob 模擬器
-azurite --silent --location ~/.azurite
+# 2. Blob 模擬器（--skipApiVersionCheck 不可省，見下）
+azurite --silent --skipApiVersionCheck --location ~/.azurite
 
 # 3. API（會自動套用 pending migration）
 cd Api && func start          # http://localhost:7071/api/...
 ```
 
-前端（尚未建立）：`cd apps/web && pnpm dev`。
+```bash
+# 4. 前端
+cd apps/web && pnpm dev              # http://localhost:3000
+```
+
+要驗證**部署到 SWA 上實際跑的那份產物**（而非 dev server）：
+
+```bash
+cd apps/web && pnpm build            # 含 250MB gate
+pnpm start:standalone
+```
 
 **收工**：
 
 ```bash
 pkill -f "func start"
 pkill -f azurite
+kill $(lsof -nP -tiTCP:3000 -sTCP:LISTEN) 2>/dev/null
 docker stop sqlserver
 ```
 
@@ -141,10 +152,12 @@ dotnet ef migrations remove -p Api/Api.csproj -s Api/Api.csproj
 
 | 症狀 | 原因與處理 |
 |------|-----------|
+| 改了程式碼但行為沒變 | **先確認舊的 server 程序真的死了**。`func start` 與 `node server.js` 都可能因 port 被占用而啟動失敗，而你仍在跟舊程序說話 —— curl 回 200 只證明「有東西在聽」。用 `lsof -nP -tiTCP:3000 -sTCP:LISTEN` 取 PID 並比對是否換了，或檢查 log 有無 `EADDRINUSE`。 |
 | `func start` 卡住 180 秒後逾時 | 缺 .NET 8 runtime，見 §1 |
 | 啟動時 `SqlException: A network-related...` | SQL container 沒開 → `docker start sqlserver` |
 | 啟動時 migration 逾時 | Flex Consumption 的 30 秒 app-init 上限在本機不適用，但正式站會炸。檢查是不是在 migration 裡放了大量資料回填 |
-| Blob 上傳失敗 | Azurite 沒開，或 `media` / `media-originals` 容器還沒建立 |
+| Blob 上傳失敗，錯誤訊息提到 `The API version ... is not supported by Azurite` | 本機 Azurite 版本比 Azure SDK 送出的 API 版本舊。**啟動時加 `--skipApiVersionCheck`**（或升級 Azurite）。 |
+| Blob 上傳失敗（其他） | Azurite 沒開，或 `media` / `media-originals` 容器還沒建立（首次上傳會自動建立） |
 | 公開端點很慢 | 查 plan cache 確認 `@locale` 是以 `varchar(10)` 送出，見 §7 |
 | 中文變成問號 | 檢查該欄位是 `NVARCHAR` 而非 `VARCHAR`（只有 `Locale`、`PresetKey` 等固定 ASCII 欄位才用 `VARCHAR`） |
 

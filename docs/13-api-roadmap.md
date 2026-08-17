@@ -63,15 +63,19 @@ token 輪替（單次使用）、帳號鎖定與解鎖、改密碼撤銷所有 s
 > 要等有該欄位的實體（`Product` / `Article` 等 6 張表）才驗得到。`ExceptionMiddleware` 已接好
 > `DbUpdateConcurrencyException → 409`。
 
-### ⬜ Phase 3 — 媒體管線 · 4–5 天
+### ✅ Phase 3 — 媒體管線（SkiaSharp）
 
 `Media` / `MediaVariant` / `MediaUsage`。`Media/media-presets.json`（13 個 preset，已建立）+ `GET /admin/media-presets`。
 `ImageService`（SkiaSharp）：依 preset 寬**等比只縮不放** → WebP q78 + 原格式 → 去 EXIF、轉 sRGB、檔名正規化加短雜湊 → 寫 Blob（master / variants / 原檔進 `media-originals`）。
 硬拒絕 415/413/400 與非阻擋 `warnings[]` 兩套規則（[11](11-media-specs.md) §4）。SVG 清洗（僅 `logo-mark` 收 SVG）。
 
-**變體階梯已定案（2026-08-17）**：WebP 出完整階梯、原格式只出 preset 寬度那一張，每次上傳 1–5 個檔。
-定義見 [11-media-specs.md](11-media-specs.md) §2a，程式一律讀 `Api/Media/media-presets.json` 的 `output` 欄位。
-連帶：**Function App 實例需 2048MB**，且上傳端點要有進度回饋（最壞情況 5 次編碼）。
+**驗收**：[`Api/http/phase3-media.http`](../Api/http/phase3-media.http)。實測通過：
+415/400/413 硬拒絕、aspect_mismatch 與 oversized 警告不阻擋、
+引用反查、有引用時 DELETE 回 409、PDF 走 SAS、
+**前端頁面 48 個圖片 URL 全部 200**。
+
+**尚未完成**：`reprocess` 端點、SVG 清洗（`logo-mark` 專用）、
+`MediaUsage` 的自動重建（要等 Phase 5 的 `SectionMediaWalker`；目前只有手動寫入的路徑）。
 
 ### 🟡 Phase 4 — 分類 + 產品（進行中）
 
@@ -136,6 +140,30 @@ DB 的 `Locale` 是 `varchar(10)`。若 EF/Dapper 送 `NVARCHAR` 參數，SQL Se
 ### 2026-08-17 · Clock 刻意與 Jabez 不同
 
 Jabez 的 `Clock.Now` 回台北時間；本專案回 **UTC**，因為 [05](05-database.md) §1 規定 `datetime2` 存 UTC，且這是對外多語系網站。要顯示營業時間時才用 `Clock.Taipei(utc)`。**從 Jabez 複製程式碼時注意這個差異。**
+
+### 2026-08-17 · 消費端不應該自己拼媒體檔名
+
+前端原本照 preset 階梯推導 `-1200.webp` 這類檔名。但縮圖是**只縮不放** ——
+來源 1000px 的圖丟 square(1200) 欄位，1200 那階實際產出的是 1000px 的檔案。
+猜出來的名字必然 404，而且**只有在來源圖小於 preset 寬度時才會發生**。
+
+兩處都改了：
+1. `ImageService` 一律以**實際輸出寬度**命名並去重（多個階可能塌到同一寬度）。
+2. 公開端點回 `variants` 清單，前端照著用。**耦合直接消除，不是靠註解提醒。**
+
+### 2026-08-17 · SKCodec.Create(Stream) 會接管並關閉該 stream
+
+`ImageService` 初版把同一個 `MemoryStream` 先給 `SKCodec.Create` 判尺寸、
+之後再讀 `ms.Length` → `ObjectDisposedException`。
+處置：一律先取 `byte[]`，再用 `SKData.CreateCopy(bytes)`，所有後續操作都從那裡出發。
+
+### 2026-08-17 · 本機重啟服務要確認 PID 換了
+
+改完程式、rebuild、重啟，結果行為完全沒變 —— 因為舊的 `node server.js` 還占著 3000，
+新程序 `EADDRINUSE` 當場死掉，而我一直在跟舊版說話。
+**`curl` 回 200 只證明「有東西在聽」，不證明那是你剛 build 的東西。**
+處置：用 `lsof -nP -tiTCP:{port} -sTCP:LISTEN` 取 PID 比對，或直接檢查 log 有無 `EADDRINUSE`。
+（與先前把 `DELETE` 的錯誤導到 `/dev/null` 是同一類錯誤：把「沒看到失敗」當成「成功」。）
 
 ### 2026-08-17 · facet 計數必須與列表用同一組條件，否則數字會騙人
 

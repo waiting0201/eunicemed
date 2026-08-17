@@ -30,7 +30,8 @@ public sealed class AppRouter(
     UserHandler        users,
     CollectionHandler  collections,
     ProductHandler     products,
-    TaxonomyHandler    taxonomy)
+    TaxonomyHandler    taxonomy,
+    MediaHandler       media)
 {
     public async Task<IActionResult> RouteAsync(HttpRequest req, string route)
     {
@@ -91,6 +92,15 @@ public sealed class AppRouter(
             ("GET", ["sub-categories"])                            => await taxonomy.GetSubCategoriesAsync(req),
             ("GET", ["sub-categories", var cat, var sub])          => await taxonomy.GetSubCategoryAsync(req, cat, sub),
             ("GET", ["certifications"])                            => await taxonomy.GetCertificationsAsync(req),
+
+            // ── Admin：媒體 ───────────────────────────────────────────────
+            // 順序敏感：media-presets 與 uploads 必須排在 ["admin","media",var id] 之前
+            ("GET",    ["admin", "media-presets"])            => media.GetPresets(),
+            ("POST",   ["admin", "uploads", "sas"])           => await media.CreateSasAsync(req),
+            ("GET",    ["admin", "media"])                    => await media.GetAllAsync(req),
+            ("POST",   ["admin", "media"])                    => await media.UploadAsync(req),
+            ("GET",    ["admin", "media", var id, "usages"])  => await media.GetUsagesAsync(id),
+            ("DELETE", ["admin", "media", var id])            => await media.DeleteAsync(id),
 
             // ── Admin：維護 ───────────────────────────────────────────────
             ("POST", ["admin", "products", "import"])              => await products.ImportLegacyAsync(req),
