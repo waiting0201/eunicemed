@@ -116,9 +116,18 @@ Dapper 讀取層、`FacetFolder`、公開端點（products 列表+facets、三�
 共 18 頁 60 個區段）。這是內容形狀的工作，機制已就緒，照 `about` 的 6 個複製即可。
 richtext 的伺服器端淨化與 SVG 清洗**已完成**（見下）。
 
-### ⬜ Phase 6 — 文章 / FAQ / 下載 / 據點 / 應用方案 · 6–8 天
+### 🟡 Phase 6 — 文章 / FAQ / 下載 / 據點 / 應用方案
 
-`Article` 全家族（含共用 PK 的 `NewsEvent`）、`ArticleCategory`、`Faq`、`Download`、`SalesLocation`、`Application`。`toc` 由 body 的 H2 伺服器端推導並回填 anchor id（AngleSharp）。
+**公開端點已完成並實測**（驗收：`Api/http/phase6-content.http`）：20 張表、13 個端點。
+`Article` 全家族（含共用 PK 的 `NewsEvent`）、`ArticleCategory`、`Faq`、`Download`、`SalesLocation`、`Application` 皆已建表並 seed。
+
+實作時定案的三件事：
+
+- **`toc`** 由 body 的 H2 伺服器端推導，**並把 anchor id 回填進回傳的 body**（`Services/TocBuilder.cs`）。只回 toc 不改 HTML 的話前端會跳到不存在的錨點 —— 兩件事必須同一個函式做。既有 id 沿用、同名標題加序號、CJK 標題退回 `section-N`。
+- **排程發布**：`PublishedAt` 為未來時間者，列表與詳情都查不到（詳情回 404）。依 docs/03 §3「排程發布」。
+- **應用方案的 `productCount`** ＝「`ProductApplications` 手動關聯 ∪ 同 `BodyPart` 的產品」。只認前者的話，149 筆匯入產品在編輯者逐一掛完之前每個部位頁都顯示 0，而那正是上線初期的狀態。
+
+**剩餘**：全部模組的後台 CRUD（見 `docs/api-routes.md`「Phase 6 剩餘」）。
 
 ### ⬜ Phase 7 — 表單 / 設定 / 選單 / 轉址 / sitemap · 3–4 天
 

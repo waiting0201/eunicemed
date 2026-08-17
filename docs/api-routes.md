@@ -102,6 +102,40 @@
 |---|---|---|---|
 | POST | `/admin/products/import?path=` | Admin | 匯入 149 筆舊站產品；冪等（SKU → (子分類,名稱) 備用鍵） |
 
+### 應用方案 Applications
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| GET | `/applications?locale=&type=body-part\|special-care` | 公開 | |
+| GET | `/applications/body-map?locale=` | 公開 | 僅 `ShowOnBodyMap=1`；**路由必須排在 `{slug}` 之前** |
+| GET | `/applications/{slug}?locale=` | 公開 | `stats` 的 `auto` 代入產品數；`supportLevels` 解析為 `collection:{slug,name}` |
+
+> `productCount` ＝「`ProductApplications` 手動關聯 ∪ 同 `BodyPart` 的產品」，
+> 條件與 `/products` 列表一致（含語系 join），兩邊數字才會對得上。
+
+### 文章 News / Insights
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| GET | `/news?locale=&category=&tag=&facets=&page=&pageSize=` | 公開 | |
+| GET | `/news/{slug}?locale=` | 公開 | 含 event / gallery / prev / next |
+| GET | `/insights?locale=&category=&tag=&facets=&page=&pageSize=` | 公開 | |
+| GET | `/insights/{slug}?locale=` | 公開 | `event`/`gallery`/`prev`/`next` 恆為 null |
+| GET | `/article-categories?locale=&kind=news\|insight` | 公開 | 回 `{kind,slug,name,count}` |
+
+> **排程發布**：`PublishedAt` 為未來時間者列表與詳情都查不到（詳情回 404）。
+> **`toc`** 由 body 的 H2 於伺服器端推導，**並回填 anchor id 到回傳的 body**（`Services/TocBuilder.cs`）。
+> **`kind` 欄位不可省**：`ArticleCategory` 唯一鍵是 `(Kind, Slug)`，`sponsorship` 兩種 kind 各一筆。
+
+### FAQ / 下載 / 據點
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| GET | `/faqs?locale=&category=&facets=` | 公開 | 不分頁（折疊面板一次全載） |
+| GET | `/faq-categories?locale=` | 公開 | 未被使用的分類仍回傳，count 為 0 |
+| GET | `/downloads?locale=&type=&productSlug=&facets=` | 公開 | `fileLocale` 是**檔案語言**，與 `?locale=` 無關 |
+| GET | `/sales-locations?locale=` | 公開 | 回 `{domestic,international}`；未填 region 者集中於最後一組 |
+
 ---
 
 ## 待實作
@@ -131,22 +165,10 @@
 | DELETE | `/admin/media/{id}` | Editor+ | 有引用時回 409 |
 | POST | `/admin/uploads/sas` | Author+ | PDF 直傳用的 Blob SAS |
 
-### Phase 6 — 文章、FAQ、下載、據點、應用方案
+### Phase 6 剩餘 — 後台 CRUD
 
 | Method | Path | 權限 | 說明 |
 |---|---|---|---|
-| GET | `/applications?type=` | 公開 | |
-| GET | `/applications/body-map` | 公開 | 僅 `ShowOnBodyMap=1` 的 4 筆 |
-| GET | `/applications/{slug}` | 公開 | |
-| GET | `/news?category=&tag=&facets=true` | 公開 | |
-| GET | `/news/{slug}` | 公開 | 含 event / gallery / prev / next |
-| GET | `/insights?category=&facets=true` | 公開 | |
-| GET | `/insights/{slug}` | 公開 | `toc` 由 body 的 H2 伺服器端推導 |
-| GET | `/article-categories?kind=&facets=true` | 公開 | |
-| GET | `/faqs?category=&facets=true` | 公開 | |
-| GET | `/faq-categories?facets=true` | 公開 | |
-| GET | `/downloads?type=&productSlug=&facets=true` | 公開 | |
-| GET | `/sales-locations` | 公開 | 回 `{domestic,international}`，不分頁 |
 | GET/POST/PUT/DELETE | `/admin/{applications,articles,article-categories,faqs,faq-categories,downloads,sales-locations}[/{id}]` | Editor+ | |
 | POST | `/admin/{applications,articles}/{id}/publish` | **Editor+** | |
 | GET/PUT/DELETE | `/admin/articles/{id}/event` | Editor+ | NewsEvent |

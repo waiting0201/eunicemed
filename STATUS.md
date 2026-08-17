@@ -13,7 +13,8 @@
 ## 一句話現況
 
 後端 API 與前端已串通，媒體管線可運作：分類與子分類兩頁能顯示真實產品圖與響應式 srcSet、雙語切換正確。
-**後台介面與部署尚未開始**。整體約完成 **25%**。
+內容模組（文章／FAQ／下載／據點／應用方案）的**公開端點已全數完成並實測**，含伺服器端 TOC 推導與排程發布。
+**後台介面與部署尚未開始**。整體約完成 **38%**。
 
 ---
 
@@ -34,8 +35,8 @@
 | 層 | 狀態 | 說明 |
 |---|---|---|
 | 規格文件 | ✅ | 14 份，見 [CLAUDE.md](CLAUDE.md) §3 |
-| 資料模型 | 🟡 52% | 54 張表完成 28 張 |
-| API | 🟡 42% | 約 90 個端點完成 38 個；richtext 與 SVG 淨化已就位 |
+| 資料模型 | 🟡 89% | 54 張表完成 48 張 |
+| API | 🟡 57% | 約 90 個端點完成 51 個；richtext／SVG 淨化與伺服器端 TOC 已就位 |
 | 前台 `apps/web` | 🟡 | Next.js 15 已建立，2 頁可運作；部署限制已實測 |
 | 後台 `apps/admin` | ⬜ | 尚未建立專案；介面需先跑 `frontend-design` skill |
 | 基礎設施 `infra/` | ⬜ | Bicep 尚未撰寫 |
@@ -62,18 +63,16 @@
 | 使用者 | `User` `Role` `UserRole` `RefreshToken` | ✅ 4 角色 + 預設管理者（環境變數注入） |
 | 稽核 | `AuditLog` | — |
 | 頁面區段 | `Page` `PageSection` `PageSectionTranslation` | ✅ 18 頁；區段由 schema 目錄同步（目前 6 個） |
+| 應用方案 | `Application` `ApplicationTranslation` `ProductApplication` | ✅ 7 筆 × 雙語（4 筆含人體圖座標）；內容文案待撰寫 |
+| 文章 | `Article` `ArticleTranslation` `ArticleCategory` `ArticleCategoryTranslation` `ArticleImage` `ArticleTag` `NewsEvent` `NewsEventTranslation` | ✅ 分類 6 筆 × 雙語；`NewsEvent` 為共用 PK 的 1:1 |
+| FAQ | `Faq` `FaqTranslation` `FaqCategory` `FaqCategoryTranslation` | ✅ 分類 3 筆 × 雙語；題目待填 |
+| 下載 | `Download` `DownloadTranslation` `ProductDownload` | ✅ 表已建；`FileLocale` 與介面語系刻意分離 |
+| 據點 | `SalesLocation` `SalesLocationTranslation` | ✅ 表已建；資料來源待客戶提供 |
 
-### ⬜ 未建立（26 張）
+### ⬜ 未建立（6 張）
 
 | 模組 | 資料表 | 排定 |
 |---|---|---|
-
-| 應用方案 | `Application` `ApplicationTranslation` `ProductApplication` | Phase 6 |
-| 文章 | `Article` `ArticleTranslation` `ArticleCategory` `ArticleCategoryTranslation` `ArticleImage` `ArticleTag` `NewsEvent` `NewsEventTranslation` | Phase 6 |
-| FAQ | `Faq` `FaqTranslation` `FaqCategory` `FaqCategoryTranslation` | Phase 6 |
-| 下載 | `Download` `DownloadTranslation` `ProductDownload` | Phase 6 |
-| 據點 | `SalesLocation` `SalesLocationTranslation` | Phase 6 |
-
 | 導覽與轉址 | `MenuItem` `MenuItemTranslation` `Redirect` | Phase 7 |
 | 表單與設定 | `ContactSubmission` `Setting` `SettingTranslation` | Phase 7 |
 
@@ -81,7 +80,7 @@
 
 ## 三、API 端點
 
-已實作 **38** 個。完整契約見 [docs/api-routes.md](docs/api-routes.md)。
+已實作 **51** 個。完整契約見 [docs/api-routes.md](docs/api-routes.md)。
 
 ### 系統與驗證
 
@@ -105,9 +104,12 @@
 | 分類 `categories` | ✅ | |
 | 子分類 `sub-categories` | ✅ | |
 | 認證 `certifications` | ✅ | |
-| 應用方案 `applications` / 人體圖 | ⬜ | Phase 6 |
-| 文章 `news` / `insights` | ⬜ | Phase 6 |
-| `faqs` / `downloads` / `sales-locations` | ⬜ | Phase 6 |
+| 應用方案 `applications` / 人體圖 | ✅ | `stats` auto 代入、`supportLevels` 解析系列名、推薦產品自動遞補 |
+| 文章 `news` / `insights` | ✅ | 伺服器端 TOC（含回填 anchor）、排程發布、prev/next、event/gallery |
+| `article-categories` | ✅ | 回 `{kind,slug,name,count}`；`sponsorship` 兩種 kind 各一筆 |
+| `faqs` / `faq-categories` | ✅ | 計數與列表同口徑（皆 join 翻譯表） |
+| `downloads` | ✅ | `fileLocale` 與站台語系分離；type facet 不自我收斂 |
+| `sales-locations` | ✅ | 伺服器端分組；未填 region 者集中於最後一組 |
 | 頁面區段 `pages/{key}` | ✅ | `sections{}` + `refs`、media 已解析、未翻譯區段自動省略 |
 | `menus` / `settings` / `sitemap` | ⬜ | Phase 7 |
 | `POST /contact` | ⬜ | Phase 7 |

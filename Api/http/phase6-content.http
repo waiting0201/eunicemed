@@ -1,0 +1,168 @@
+### Phase 6 驗收：文章 / FAQ / 下載 / 據點 / 應用方案
+### 前提：func start 執行中；已跑過 Phase 3 上傳圖片、Phase 4 匯入 149 筆產品。
+### 測試資料：scratchpad/phase6-testdata.sql（QA 用，不入版控）
+
+@host = http://localhost:7071/api
+
+###############################################################################
+# 1. 應用方案
+###############################################################################
+
+### 1a. 列表（全部 7 筆：4 依部位 + 3 特殊照護）
+GET {{host}}/applications?locale=en
+
+### 1b. 只要特殊照護
+GET {{host}}/applications?locale=en&type=special-care
+
+### 1c. 人體圖（只有 ShowOnBodyMap=1 的 4 筆）
+GET {{host}}/applications/body-map?locale=en
+
+> 驗收：
+> 1. `knee` 的 `productCount` = 16 —— 與 `/products?bodyPart=knee` 的 total 一致。
+>    計數來源是「ProductApplications 手動關聯 ∪ 同 BodyPart 的產品」，
+>    只認前者的話上線初期每個部位都會顯示 0。
+> 2. `map` 原樣輸出座標 JSON（座標屬版面，API 不解讀）。
+
+### 1d. 中文人體圖 —— ankle 沒有 zh-TW 翻譯列，**整筆不應出現**（語言純度）
+GET {{host}}/applications/body-map?locale=zh-TW
+
+### 1e. 詳情（含 stats auto 代入、supportLevels 解析、推薦產品）
+GET {{host}}/applications/knee?locale=en
+
+> 驗收：
+> 1. `stats[0].value` 由 `"auto"` 變成 `"16"`
+> 2. `supportLevels[].collectionSlug` 已換成 `collection: {slug,name}`
+> 3. 第三筆的 slug 不存在 → `collection: null` 但**該項仍在**
+>    （整項藏起來會讓頁面少一塊卻沒有任何訊息，比留白難查）
+> 4. `recommendedProducts` 有 6 筆（無人工關聯 → 退回部位比對）
+> 5. `related` 是同 type 的其他應用方案
+
+### 1f. 順序敏感檢查：body-map 必須排在 {slug} 之前
+### 若排錯，1c 會變成「找不到 slug 為 body-map 的應用方案」→ 404
+
+### 1g. 不存在 → 404
+GET {{host}}/applications/no-such-thing?locale=en
+
+###############################################################################
+# 2. News
+###############################################################################
+
+### 2a. 列表 + facets
+GET {{host}}/news?locale=en&facets=true
+
+> 驗收：
+> 1. `scheduled-announcement`（PublishedAt = 2099）**不在列表內** —— 排程發布
+>    ⚠️ 測試資料的其餘 PublishedAt 必須早於「今天」，否則也會一起被濾掉
+>    而看起來像 bug（第一次跑就踩到了）。
+> 2. `health-rehab-2026` 排第一（IsFeatured）
+> 3. `facets.categories` 只含實際有文章的分類
+
+### 2b. 分類篩選 —— facet 數字**不得**跟著收斂
+GET {{host}}/news?locale=en&category=exhibitions&facets=true
+
+> 驗收：items 只剩 exhibitions 的 2 筆，但 `facets.categories`
+> 仍要同時列出 exhibitions 與 company。這是 facet 唯一難寫對的一條規則
+> （docs/04 §4；多維版本見 Common/FacetFolder.cs）。
+
+### 2c. 中文列表 —— `new-line-launch` 只有 en 翻譯，**不應出現**
+GET {{host}}/news?locale=zh-TW
+
+### 2d. 詳情（含活動面板 + 圖庫 + prev/next）
+GET {{host}}/news/health-rehab-2026?locale=en
+
+> 驗收：
+> 1. `event.datesLabel` / `venue` / `booth` 有值；`startDate` 為 `2026-11-16`
+> 2. `gallery` 有 2 筆
+> 3. `prev.slug` = `new-line-launch`（較早），`next` 為 null（本篇最新）
+> 4. `type` 為 `"news"`；`readMinutes` 為 null
+
+### 2e. 排程文章直接點進去 —— 也應 404，不是只有列表過濾
+GET {{host}}/news/scheduled-announcement?locale=en
+
+###############################################################################
+# 3. Insights + 伺服器端 TOC
+###############################################################################
+
+### 3a. 詳情
+GET {{host}}/insights/why-compression-works?locale=en
+
+> 驗收（TOC 是本階段技術含量最高的一塊）：
+> 1. `toc` 有 3 筆，對應內文的 3 個 H2
+> 2. **`body` 裡的 `<h2>` 已被回填 `id`** —— 只回 toc 不改 HTML 的話，
+>    前端點目錄會跳到不存在的錨點。兩件事必須同一個函式做。
+> 3. 第二個 H2 原本就有 `id="existing-anchor"` → **沿用不覆寫**
+>    （外部連結可能已經指著它）
+> 4. 第三個 H2 與第一個同名 → id 為 `why-compression-works-2`
+> 5. `event` / `gallery` / `prev` / `next` 皆為 null（Insights 不查這幾筆）
+> 6. `tags` 有 `compression` 與 `oem`
+
+### 3b. 中文詳情 —— H2 是中文，Slugify 會濾光 → 應退回 `section-1` / `section-2`
+GET {{host}}/insights/why-compression-works?locale=zh-TW
+
+> 驗收：`toc[0].id` = `section-1`，且 `body` 的第一個 h2 帶同一個 id。
+> 另：`tags` 只剩 `compression`（`oem` 沒有中文譯名 → 隱藏）
+
+### 3c. 草稿不應出現
+GET {{host}}/insights/esg-draft?locale=en
+
+### 3d. 分類清單（側欄 rail；未被使用的分類仍要出現，計數為 0）
+GET {{host}}/article-categories?locale=en
+GET {{host}}/article-categories?locale=en&kind=insight
+
+> 驗收：`sponsorship` 在 news 與 insight 各出現一次 —— 這不是重複資料，
+> `ArticleCategory` 的唯一鍵是 `(Kind, Slug)`。因此回應**必須帶 `kind`**，
+> 否則不帶 `?kind=` 呼叫時會拿到兩個無法區分的同名項目。
+
+###############################################################################
+# 4. FAQ
+###############################################################################
+
+### 4a. 全部 + facets
+GET {{host}}/faqs?locale=en&facets=true
+
+### 4b. 中文 —— 第三題只有 en，不應出現；`use` 的計數應為 1 而非 2
+GET {{host}}/faqs?locale=zh-TW&facets=true
+
+> 驗收：這是「計數與列表口徑一致」的檢查點。計數若沒 join 翻譯表，
+> 中文站會顯示「產品使用 2」但只列出 1 題。
+
+### 4c. 分類清單
+GET {{host}}/faq-categories?locale=en
+
+###############################################################################
+# 5. 下載中心
+###############################################################################
+
+### 5a. 全部 + facets
+GET {{host}}/downloads?locale=en&facets=true
+
+> 驗收：
+> 1. `fileLocale` 為 `EN` / `ZH-TW`，**與 `?locale=` 無關** ——
+>    這是刻意分開的兩件事（docs/05 §3.8），欄位也刻意命名 FileLocale
+> 2. `fileExt` 取自檔名（清單顯示的是 `PDF`）
+> 3. `type` 為 catalog / manual / certificate
+
+### 5b. type 篩選 —— facet 仍要列出全部三種
+GET {{host}}/downloads?locale=en&type=manual&facets=true
+
+### 5c. 綁定產品的下載（把 slug 換成 5a 之外任一產品）
+GET {{host}}/downloads?locale=en&productSlug=REPLACE_WITH_PRODUCT_SLUG
+
+### 5d. 中文 —— 第三筆（ISO 憑證）只有 en 標題，不應出現
+GET {{host}}/downloads?locale=zh-TW
+
+###############################################################################
+# 6. 銷售據點
+###############################################################################
+
+### 6a. en
+GET {{host}}/sales-locations?locale=en
+
+> 驗收：
+> 1. 回的是 `{domestic[], international[]}` 兩塊，不是平坦清單
+> 2. `international` 依 region 分組；`Europe` 有 2 筆
+> 3. **未填 region 的日本集中在最後一組**（region 為空字串），
+>    而不是自成一個單筆分組 —— 否則沒填的據點會變成一堆孤兒分組
+
+### 6b. zh-TW
+GET {{host}}/sales-locations?locale=zh-TW

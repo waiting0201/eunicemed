@@ -32,6 +32,30 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<MediaVariant> MediaVariants { get; set; }
     public DbSet<MediaUsage>   MediaUsages   { get; set; }
 
+    // ── 文章（News / Insights 共用）──────────────────────────────────────
+    public DbSet<ArticleCategory>            ArticleCategories            { get; set; }
+    public DbSet<ArticleCategoryTranslation> ArticleCategoryTranslations  { get; set; }
+    public DbSet<Article>                    Articles                     { get; set; }
+    public DbSet<ArticleTranslation>         ArticleTranslations          { get; set; }
+    public DbSet<NewsEvent>                  NewsEvents                   { get; set; }
+    public DbSet<NewsEventTranslation>       NewsEventTranslations        { get; set; }
+    public DbSet<ArticleImage>               ArticleImages                { get; set; }
+    public DbSet<ArticleTag>                 ArticleTags                  { get; set; }
+
+    // ── FAQ / 下載 / 據點 / 應用方案 ──────────────────────────────────────
+    public DbSet<FaqCategory>              FaqCategories             { get; set; }
+    public DbSet<FaqCategoryTranslation>   FaqCategoryTranslations   { get; set; }
+    public DbSet<Faq>                      Faqs                      { get; set; }
+    public DbSet<FaqTranslation>           FaqTranslations           { get; set; }
+    public DbSet<Download>                 Downloads                 { get; set; }
+    public DbSet<DownloadTranslation>      DownloadTranslations      { get; set; }
+    public DbSet<ProductDownload>          ProductDownloads          { get; set; }
+    public DbSet<SalesLocation>            SalesLocations            { get; set; }
+    public DbSet<SalesLocationTranslation> SalesLocationTranslations { get; set; }
+    public DbSet<Application>              Applications              { get; set; }
+    public DbSet<ApplicationTranslation>   ApplicationTranslations   { get; set; }
+    public DbSet<ProductApplication>       ProductApplications       { get; set; }
+
     // ── 頁面區段 ────────────────────────────────────────────────────────
     public DbSet<Page>                   Pages                    { get; set; }
     public DbSet<PageSection>            PageSections             { get; set; }

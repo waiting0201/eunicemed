@@ -187,3 +187,18 @@ docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa \
 必須看到 `(@locale varchar(10))`。出現 `nvarchar` 就是錯的。
 
 同樣規則適用 `CountryCode VARCHAR(2)`、`Menu VARCHAR(20)`、`Format VARCHAR(10)`、`PresetKey VARCHAR(30)`。
+
+---
+
+## 8. Dapper 讀不到 `DateOnly`
+
+`NewsEvent.StartDate` 這類 `date` 欄位在 EF Core 是原生支援的，Dapper 不是。缺對映時會在**執行期**丟：
+
+```
+InvalidOperationException: A parameterless default constructor or one matching signature
+(... System.DateTime StartDate, System.DateTime EndDate ...) is required for XxxDto materialization
+```
+
+訊息只會列出它期待的簽章，**完全不會提到 DateOnly**，很容易誤判成 DTO 欄位順序寫錯而白花時間。
+
+已在 `Program.cs` 全域註冊 `DateOnlyTypeHandler` / `TimeOnlyTypeHandler`（見 `Api/Services/Dapper/DateOnlyTypeHandler.cs`）。新增 `date` / `time` 欄位時不需再做任何事；但若把讀取搬到新的 host 或測試專案，記得一併註冊。

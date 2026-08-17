@@ -32,7 +32,10 @@ public sealed class AppRouter(
     ProductHandler     products,
     TaxonomyHandler    taxonomy,
     MediaHandler       media,
-    PageHandler        pages)
+    PageHandler        pages,
+    ApplicationHandler applications,
+    ArticleHandler     articles,
+    ContentHandler     content)
 {
     public async Task<IActionResult> RouteAsync(HttpRequest req, string route)
     {
@@ -93,6 +96,25 @@ public sealed class AppRouter(
             ("GET", ["sub-categories"])                            => await taxonomy.GetSubCategoriesAsync(req),
             ("GET", ["sub-categories", var cat, var sub])          => await taxonomy.GetSubCategoryAsync(req, cat, sub),
             ("GET", ["certifications"])                            => await taxonomy.GetCertificationsAsync(req),
+
+            // ── 應用方案（公開）───────────────────────────────────────────
+            // 順序敏感：body-map 必須排在 {slug} 之前，否則會被當成 slug
+            ("GET", ["applications"])             => await applications.GetListAsync(req),
+            ("GET", ["applications", "body-map"]) => await applications.GetBodyMapAsync(req),
+            ("GET", ["applications", var slug])   => await applications.GetBySlugAsync(req, slug),
+
+            // ── 文章：News / Insights（公開）──────────────────────────────
+            ("GET", ["news"])                  => await articles.GetNewsListAsync(req),
+            ("GET", ["news", var slug])        => await articles.GetNewsAsync(req, slug),
+            ("GET", ["insights"])              => await articles.GetInsightsListAsync(req),
+            ("GET", ["insights", var slug])    => await articles.GetInsightAsync(req, slug),
+            ("GET", ["article-categories"])    => await articles.GetCategoriesAsync(req),
+
+            // ── FAQ / 下載 / 據點（公開）──────────────────────────────────
+            ("GET", ["faqs"])            => await content.GetFaqsAsync(req),
+            ("GET", ["faq-categories"])  => await content.GetFaqCategoriesAsync(req),
+            ("GET", ["downloads"])       => await content.GetDownloadsAsync(req),
+            ("GET", ["sales-locations"]) => await content.GetSalesLocationsAsync(req),
 
             // ── 頁面區段（公開）───────────────────────────────────────────
             ("GET", ["pages", var pageKey]) => await pages.GetPublicAsync(req, pageKey),

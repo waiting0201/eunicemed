@@ -69,6 +69,11 @@ var host = new HostBuilder()
         // ── Dapper IDbConnection（讀取路徑，與 EF 共用同一 connection string）──
         services.AddScoped<IDbConnection>(_ => new SqlConnection(connStr));
 
+        // DateOnly / TimeOnly：EF Core 原生支援，Dapper 需要 handler。
+        // 缺了它讀 date 欄位會在執行期丟「找不到相符建構式」，訊息不會提到 DateOnly。
+        global::Dapper.SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
+        global::Dapper.SqlMapper.AddTypeHandler(new TimeOnlyTypeHandler());
+
         // ── 無狀態服務（Singleton）─────────────────────────────────────────
         services.AddSingleton<IJwtService, JwtService>();
         services.AddSingleton<ImageService>();
@@ -84,6 +89,9 @@ var host = new HostBuilder()
         services.AddScoped<ICollectionReadService, CollectionReadService>();
         services.AddScoped<IProductReadService, ProductReadService>();
         services.AddScoped<ITaxonomyReadService, TaxonomyReadService>();
+        services.AddScoped<IApplicationReadService, ApplicationReadService>();
+        services.AddScoped<IArticleReadService, ArticleReadService>();
+        services.AddScoped<IContentReadService, ContentReadService>();
 
         // ── Handlers ──────────────────────────────────────────────────────
         services.AddScoped<HealthHandler>();
@@ -94,6 +102,9 @@ var host = new HostBuilder()
         services.AddScoped<TaxonomyHandler>();
         services.AddScoped<MediaHandler>();
         services.AddScoped<PageHandler>();
+        services.AddScoped<ApplicationHandler>();
+        services.AddScoped<ArticleHandler>();
+        services.AddScoped<ContentHandler>();
         services.AddScoped<MediaUsageWriter>();
 
         // ── Router ────────────────────────────────────────────────────────
