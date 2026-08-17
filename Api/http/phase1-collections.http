@@ -1,0 +1,49 @@
+### Phase 1 驗收：Collection 端到端切片
+### 用 VS Code REST Client 執行，或改用 curl。前提：func start 已在 7071 執行。
+
+@host = http://localhost:7071/api
+
+### 1. Health — 應 200，data.status = "healthy"
+GET {{host}}/health
+
+### 2. 系列列表（英文）— 應 3 筆，依 sortOrder 排序，name 為 Care/Protect/Advance
+GET {{host}}/collections?locale=en
+
+### 3. 系列列表（繁中）— 應 3 筆，name 為中文
+GET {{host}}/collections?locale=zh-TW
+
+### 4. 語言純度 — locale=fr 應回空陣列，**不得** fallback 成英文內容
+###    這是 docs/08-design.md §5.2 的核心規則，由 INNER JOIN 的查詢形狀保證
+GET {{host}}/collections?locale=fr
+
+### 5. 未帶 locale — 應套用預設語系 en
+GET {{host}}/collections
+
+### 6. 大小寫正規化 — zh-tw 應等同 zh-TW
+GET {{host}}/collections?locale=zh-tw
+
+### 7. 單筆查詢 — 應 200
+GET {{host}}/collections/protect?locale=en
+
+### 8. 單筆 + 缺該語系 — 應 404（而非回英文內容）
+GET {{host}}/collections/protect?locale=fr
+
+### 9. 不存在的 slug — 應 404
+GET {{host}}/collections/does-not-exist?locale=en
+
+### 10. 不存在的路由 — 應 404，ApiResponse.Fail 格式
+GET {{host}}/nope
+
+###############################################################################
+# 資料庫端驗收（不是 HTTP，但屬於本階段的定義完成條件）
+#
+# docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa \
+#   -P 'Strong@Password123' -C -d EuniceMedDb -h -1 -W -Q "SET NOCOUNT ON;
+#   SELECT TOP 3 SUBSTRING(t.text,1,120) FROM sys.dm_exec_cached_plans p
+#   CROSS APPLY sys.dm_exec_sql_text(p.plan_handle) t
+#   WHERE t.text LIKE '%@locale%' AND t.text NOT LIKE '%dm_exec%';"
+#
+# 必須看到 (@locale varchar(10))。若出現 nvarchar(10)，
+# SQL Server 會在欄位側加隱含轉換、UX_XxxTr 索引失效，
+# 每個公開請求都變成掃描 —— 沒有錯誤訊息，只會慢。
+###############################################################################

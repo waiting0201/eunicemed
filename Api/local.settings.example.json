@@ -1,0 +1,39 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+
+    "Jwt__Secret": "REPLACE_WITH_AT_LEAST_32_CHARS_RANDOM_STRING",
+    "Jwt__Issuer": "eunicemed-api",
+    "Jwt__Audience": "eunicemed-admin",
+    "Jwt__ExpiryMinutes": "15",
+    "Jwt__RefreshExpiryDays": "7",
+
+    "BlobStorageConnection": "UseDevelopmentStorage=true",
+    "Storage__MediaContainer": "media",
+    "Storage__OriginalsContainer": "media-originals",
+    "Storage__PublicBaseUrl": "http://127.0.0.1:10000/devstoreaccount1/media",
+
+    "Smtp__Host": "localhost",
+    "Smtp__Port": "1025",
+    "Smtp__Username": "",
+    "Smtp__Password": "",
+    "Smtp__From": "service@comfortplus-medical.com",
+    "Smtp__To": "service@comfortplus-medical.com",
+    "Smtp__EnableSsl": "false",
+
+    "Recaptcha__Disabled": "true",
+    "Recaptcha__SecretKey": "REPLACE_WITH_RECAPTCHA_SECRET",
+
+    "Maintenance__Key": "dev"
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost,1433;Database=EuniceMedDb;User Id=sa;Password=YOUR_SQL_PASSWORD;TrustServerCertificate=True;Max Pool Size=20;"
+  },
+  "Host": {
+    "LocalHttpPort": 7071,
+    "CORS": "*",
+    "CORSCredentials": false
+  }
+}

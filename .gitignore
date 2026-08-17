@@ -1,0 +1,42 @@
+**/bin/
+**/obj/
+**/temp/
+
+.vs/
+.vscode/
+
+.DS_Store
+Thumbs.db
+
+# Azurite Storage Emulator
+AzuriteConfig
+AzuriteConfig/
+__azurite_db_*__.json
+__blobstorage__/
+__queuestorage__/
+.azurite/
+azurite-debug.log
+
+# Node
+**/node_modules/
+**/dist/
+.next/
+
+# TypeScript incremental compilation
+*.tsbuildinfo
+
+# Azure Functions local settings (contains secrets — never commit)
+Api/local.settings.json
+**/local.settings.json
+
+# 本機產出檔（規劃 PDF 等 — 不進版控）
+output/
+
+# Cloudflare Pages CLI 狀態（cache/pages.json 內含 account_id — 不進版控）
+.wrangler/
+
+# 已被 mockup4 取代的早期版型迭代（各約 38MB）。
+# 需要納入版控時再逐一移除本規則 —— 圖片進了 git 歷史就拿不掉了。
+mockup/
+mockup2/
+mockup3/
