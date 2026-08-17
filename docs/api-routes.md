@@ -96,6 +96,19 @@
 
 > **不提供** `POST` / `DELETE` sections —— 區段集合由 schema registry 與同步器決定（版面鎖定）。
 
+### 後台：媒體
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| GET | `/admin/media-presets` | 登入 | 13 個 preset 的機器可讀規格；後台提示文字來源 |
+| POST | `/admin/media` | Author+ | multipart 代傳，必帶 `presetKey`；415/413/400 硬拒絕、`warnings[]` 軟提醒 |
+| GET | `/admin/media?search=&presetKey=` | 登入 | 媒體庫 |
+| GET | `/admin/media/{id}/usages` | 登入 | 引用反查（含埋在 `DataJson` 內的，schema 驅動） |
+| DELETE | `/admin/media/{id}` | Editor+ | 有引用時回 409 |
+| POST | `/admin/uploads/sas` | Author+ | PDF 直傳用的 Blob SAS |
+
+> 順序敏感：`media-presets` 與 `uploads` 必須排在 `["admin","media",{id}]` 之前。
+
 ### 後台：資料匯入
 
 | Method | Path | 權限 | 說明 |
@@ -153,17 +166,11 @@
 | GET/POST/PUT/DELETE | `/admin/{categories,sub-categories,certifications}[/{id}]` | Editor+ | |
 | GET/PUT | `/admin/body-parts[/{id}]` | Editor+ | ShowOnBodyMap、排序 |
 
-### Phase 3 — 媒體
+### Phase 3 剩餘 — 媒體
 
 | Method | Path | 權限 | 說明 |
 |---|---|---|---|
-| GET | `/admin/media-presets` | 登入 | 13 個 preset 的機器可讀規格；後台提示文字來源 |
-| POST | `/admin/media` | Author+ | multipart 代傳，必帶 `presetKey`；415/413/400 硬拒絕、`warnings[]` 軟提醒 |
-| GET | `/admin/media?search=&presetKey=` | 登入 | 媒體庫 |
-| GET | `/admin/media/{id}/usages` | 登入 | 引用反查 |
 | POST | `/admin/media/{id}/reprocess` | Editor+ | 以目前 preset 重新輸出 master 與 variants |
-| DELETE | `/admin/media/{id}` | Editor+ | 有引用時回 409 |
-| POST | `/admin/uploads/sas` | Author+ | PDF 直傳用的 Blob SAS |
 
 ### Phase 6 剩餘 — 後台 CRUD
 
