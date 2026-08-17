@@ -33,21 +33,77 @@
 | GET | `/collections?locale=` | 公開 | 全部系列，依 SortOrder |
 | GET | `/collections/{slug}?locale=` | 公開 | 單一系列；缺該語系回 404 |
 
+### 驗證 Auth
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| POST | `/auth/login` | 公開 | 回 accessToken + refreshToken + user。IP 限流 30/分；連續失敗 5 次鎖 15 分鐘 |
+| POST | `/auth/refresh` | 公開 | **單次使用**：舊 token 立即撤銷並發新的一組 |
+| POST | `/auth/logout` | 公開 | 撤銷該 refresh token；冪等，找不到也回 200 |
+| POST | `/auth/change-password` | 登入 | 成功後撤銷該使用者所有 refresh token |
+
+### 後台：使用者
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| GET | `/admin/users` | Admin | |
+| POST | `/admin/users` | Admin | 建立的帳號一律 `mustChangePassword = true` |
+| GET | `/admin/users/{id}` | Admin | |
+| PUT/PATCH | `/admin/users/{id}` | Admin | 可改名／角色／啟用狀態／重設密碼／`unlock` 解鎖 |
+| DELETE | `/admin/users/{id}` | Admin | 擋：刪自己、刪最後一個 Admin |
+
+> 自我保護：不可停用自己、不可移除自己的 Admin 角色、不可刪除自己。
+
+### 後台：產品系列（後台 CRUD 的參考實作）
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| GET | `/admin/collections` | 登入 | 回全部語系（後台要對照翻譯） |
+| POST | `/admin/collections` | Author+ | slug 重複回 409 |
+| GET | `/admin/collections/{id}` | 登入 | |
+| PUT/PATCH | `/admin/collections/{id}` | Author+ | 翻譯 upsert：**未帶到的語系維持原狀** |
+| DELETE | `/admin/collections/{id}` | Author+ | |
+
+### 產品（公開）
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| GET | `/products?locale=&category=&subCategory=&collection=&bodyPart=&featured=&facets=&page=&pageSize=&sort=` | 公開 | facet 同維度不收斂、跨維度收斂 |
+| GET | `/products/{category}/{sub}/{slug}` | 公開 | 三段皆驗證歸屬，不符回 404 |
+| GET | `/products/by-slug/{slug}` | 公開 | 扁平查詢（預覽、舊 URL 301 解析） |
+
+### 分類 / 子分類 / 認證（公開）
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| GET | `/categories?include=subCategories` | 公開 | `stats[].value = "auto"` 由 API 代入產品數 |
+| GET | `/categories/{slug}` | 公開 | 分類落地頁 |
+| GET | `/sub-categories?category=` | 公開 | 含各子分類的已發布產品數 |
+| GET | `/sub-categories/{category}/{sub}` | 公開 | 兩段驗證歸屬，不符回 404 |
+| GET | `/certifications` | 公開 | About 認證帶與產品頁標章列共用 |
+
+### 後台：資料匯入
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| POST | `/admin/products/import?path=` | Admin | 匯入 149 筆舊站產品；冪等（SKU → (子分類,名稱) 備用鍵） |
+
 ---
 
 ## 待實作
 
-依 [計畫](../README.md) 的階段順序。詳細規格見 [04-api.md](04-api.md) §4–§6。
+依 [13-api-roadmap.md](13-api-roadmap.md) 的階段順序。詳細規格見 [04-api.md](04-api.md) §4–§6。
 
-### Phase 2 — 驗證與後台骨架
+### Phase 4 剩餘 — 後台產品 CRUD
 
 | Method | Path | 權限 | 說明 |
 |---|---|---|---|
-| POST | `/auth/login` | 公開 | 回 accessToken + refreshToken + user；有速率限制與失敗鎖定 |
-| POST | `/auth/refresh` | 公開 | refresh token 單次使用後撤銷並輪替 |
-| POST | `/auth/logout` | 登入 | 撤銷 refresh token |
-| GET/POST/PUT/DELETE | `/admin/users[/{id}]` | Admin | 使用者管理 |
-| GET/POST/PUT/DELETE | `/admin/collections[/{id}]` | Editor+ | 系列 CRUD（後台 CRUD 的參考實作） |
+| GET/POST/PUT/DELETE | `/admin/products[/{id}]` | Author+ | 刪除前須先清 ProductRelated 兩側（FK 為 Restrict） |
+| POST | `/admin/products/{id}/publish` | **Editor+** | Author 呼叫回 403（授權規則已就緒） |
+| POST | `/admin/products/{id}/unpublish` | Editor+ | |
+| GET/PUT | `/admin/products/{id}/related` | Editor+ | 空陣列 = 回到自動計算 |
+| GET/POST/PUT/DELETE | `/admin/{categories,sub-categories,certifications}[/{id}]` | Editor+ | |
+| GET/PUT | `/admin/body-parts[/{id}]` | Editor+ | ShowOnBodyMap、排序 |
 
 ### Phase 3 — 媒體
 
@@ -60,26 +116,6 @@
 | POST | `/admin/media/{id}/reprocess` | Editor+ | 以目前 preset 重新輸出 master 與 variants |
 | DELETE | `/admin/media/{id}` | Editor+ | 有引用時回 409 |
 | POST | `/admin/uploads/sas` | Author+ | PDF 直傳用的 Blob SAS |
-
-### Phase 4 — 分類與產品
-
-| Method | Path | 權限 | 說明 |
-|---|---|---|---|
-| GET | `/products?...&facets=true` | 公開 | 列表 + 分面計數；篩選見 04 §4 |
-| GET | `/products/{category}/{sub}/{slug}` | 公開 | 三段歸屬皆驗證，不符回 404 |
-| GET | `/products/by-slug/{slug}` | 公開 | 扁平查詢（預覽、舊 URL 301 解析） |
-| GET | `/categories?include=subCategories` | 公開 | |
-| GET | `/categories/{category}` | 公開 | 分類落地頁內容 |
-| GET | `/sub-categories?category=` | 公開 | |
-| GET | `/sub-categories/{category}/{sub}` | 公開 | 子分類落地頁內容 |
-| GET | `/certifications` | 公開 | |
-| GET/POST/PUT/DELETE | `/admin/products[/{id}]` | Author+ | |
-| POST | `/admin/products/{id}/publish` | **Editor+** | Author 呼叫回 403 |
-| POST | `/admin/products/{id}/unpublish` | Editor+ | |
-| GET/PUT | `/admin/products/{id}/related` | Editor+ | 空陣列 = 回到自動計算 |
-| POST | `/admin/products/import` | Admin | 匯入 149 筆舊站產品 |
-| GET/POST/PUT/DELETE | `/admin/{categories,sub-categories,certifications}[/{id}]` | Editor+ | |
-| GET/PUT | `/admin/body-parts[/{id}]` | Editor+ | ShowOnBodyMap、排序 |
 
 ### Phase 5 — 頁面區段
 

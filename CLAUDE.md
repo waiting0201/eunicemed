@@ -66,6 +66,7 @@
 
 | 文件 | 內容 | 何時讀 |
 |------|------|--------|
+| [STATUS.md](STATUS.md) | **專案進度總表（單一真相來源）**：每個模組／端點／頁面的完成狀態、當下擋住的事項 | **每次進專案先看這份**、回報進度時 |
 | [docs/01-architecture.md](docs/01-architecture.md) | 系統架構總覽、元件關係、資料流、環境分層 | 想了解全貌、做跨層決策時 |
 | [docs/02-frontend.md](docs/02-frontend.md) | Next.js 前端：路由、i18n、資料抓取、元件、效能 | 開發前端頁面/元件時 |
 | [docs/03-cms.md](docs/03-cms.md) | 自建 CMS：後台功能、角色權限、內容工作流、媒體管理 | 開發後台/內容模型時 |
@@ -79,14 +80,14 @@
 | [docs/10-legacy-content.md](docs/10-legacy-content.md) | 舊站內容盤點、slug 對照、轉址來源 | 內容遷移、對照舊站時 |
 | [docs/11-media-specs.md](docs/11-media-specs.md) | **圖片尺寸 preset 總表（唯一真相來源）**、上傳提示規則、伺服器縮圖規格、欄位↔preset 對照 | 新增任何上傳欄位、處理圖片／縮圖、交付素材時 |
 | [docs/12-local-dev.md](docs/12-local-dev.md) | **本機環境設定與每日啟動指令**、migration 操作、常見問題、多語系參數型別檢查 | **第一次進專案時先讀這份**、環境跑不起來時 |
-| [docs/13-api-roadmap.md](docs/13-api-roadmap.md) | **API 實作進度單一真相來源**：9 個階段的內容與驗收、架構前提、累積的踩坑紀錄 | 接續開發、確認目前做到哪裡時 |
+| [docs/13-api-roadmap.md](docs/13-api-roadmap.md) | API 各階段的**內容與驗收方式**、架構前提、**累積的踩坑紀錄** | 接續開發時、遇到怪問題時先翻踩坑那節 |
 
 ---
 
 ## 4. 倉庫結構
 
-> **目前進度**：`Api/` 已完成骨架與第一個端到端切片（Phase 0–1），`apps/`、`infra/`、`.github/` 尚未建立。
-> 各階段內容與狀態見 [docs/13-api-roadmap.md](docs/13-api-roadmap.md)。本機怎麼跑見 [docs/12-local-dev.md](docs/12-local-dev.md)。
+> **目前進度見 [STATUS.md](STATUS.md)。** `apps/`、`infra/`、`.github/` 尚未建立。
+> 各階段做法與踩坑見 [docs/13-api-roadmap.md](docs/13-api-roadmap.md)；本機怎麼跑見 [docs/12-local-dev.md](docs/12-local-dev.md)。
 
 ```
 EuniceMed/
