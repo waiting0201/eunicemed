@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "About · 02 Steady growth. Deep roots.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title", "items"],
+  "properties": {
+    "background": {
+      "type": "string", "format": "uuid",
+      "x-fieldType": "media", "x-mediaPreset": "section-bg", "x-localeInvariant": true
+    },
+    "title": { "type": "string", "maxLength": 120, "x-fieldType": "text" },
+    "items": {
+      "type": "array", "minItems": 3, "maxItems": 12, "x-fieldType": "repeatable",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["year", "event"],
+        "properties": {
+          "year":  { "type": "string", "maxLength": 20,  "x-fieldType": "text", "x-localeInvariant": true },
+          "event": { "type": "string", "maxLength": 300, "x-fieldType": "text" }
+        }
+      }
+    }
+  }
+}

@@ -32,6 +32,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<MediaVariant> MediaVariants { get; set; }
     public DbSet<MediaUsage>   MediaUsages   { get; set; }
 
+    // ── 頁面區段 ────────────────────────────────────────────────────────
+    public DbSet<Page>                   Pages                    { get; set; }
+    public DbSet<PageSection>            PageSections             { get; set; }
+    public DbSet<PageSectionTranslation> PageSectionTranslations  { get; set; }
+
     // ── 使用者與稽核 ────────────────────────────────────────────────────
     public DbSet<User>         Users         { get; set; }
     public DbSet<Role>         Roles         { get; set; }

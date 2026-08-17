@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "About · 01 Our story & promise",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title"],
+  "properties": {
+    "title":    { "type": "string", "maxLength": 120, "x-fieldType": "text" },
+    "body":     { "type": "string", "x-fieldType": "richtext" },
+    "portrait": {
+      "type": "string", "format": "uuid",
+      "x-fieldType": "media", "x-mediaPreset": "portrait-4x5", "x-localeInvariant": true
+    }
+  }
+}

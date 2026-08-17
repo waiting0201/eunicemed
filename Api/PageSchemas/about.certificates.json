@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "About · 05 Certified, audited, trusted",
+  "description": "標章文字取自 Certification 實體，與產品頁共用同一份；此處只存引用。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title", "items"],
+  "properties": {
+    "title": { "type": "string", "maxLength": 120, "x-fieldType": "text" },
+    "lead":  { "type": "string", "maxLength": 400, "x-fieldType": "text" },
+    "cta": {
+      "type": "object", "additionalProperties": false,
+      "x-fieldType": "link",
+      "properties": {
+        "label":    { "type": "string", "maxLength": 60, "x-fieldType": "text" },
+        "url":      { "type": "string", "maxLength": 400, "x-fieldType": "text", "x-localeInvariant": true },
+        "external": { "type": "boolean", "x-fieldType": "bool", "x-localeInvariant": true }
+      }
+    },
+    "items": {
+      "type": "array", "minItems": 3, "maxItems": 8, "x-fieldType": "repeatable",
+      "x-localeInvariant": true,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["certification"],
+        "properties": {
+          "certification": {
+            "type": "string", "maxLength": 80,
+            "x-fieldType": "ref", "x-refEntity": "Certification", "x-localeInvariant": true
+          }
+        }
+      }
+    }
+  }
+}

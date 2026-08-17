@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "About · 頁首",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title"],
+  "properties": {
+    "band": {
+      "type": "string", "format": "uuid",
+      "x-fieldType": "media", "x-mediaPreset": "page-band", "x-localeInvariant": true
+    },
+    "eyebrow": { "type": "string", "maxLength": 80,  "x-fieldType": "text" },
+    "title":   { "type": "string", "maxLength": 120, "x-fieldType": "text" },
+    "lead":    { "type": "string", "maxLength": 400, "x-fieldType": "text" }
+  }
+}

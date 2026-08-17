@@ -31,7 +31,8 @@ public sealed class AppRouter(
     CollectionHandler  collections,
     ProductHandler     products,
     TaxonomyHandler    taxonomy,
-    MediaHandler       media)
+    MediaHandler       media,
+    PageHandler        pages)
 {
     public async Task<IActionResult> RouteAsync(HttpRequest req, string route)
     {
@@ -92,6 +93,23 @@ public sealed class AppRouter(
             ("GET", ["sub-categories"])                            => await taxonomy.GetSubCategoriesAsync(req),
             ("GET", ["sub-categories", var cat, var sub])          => await taxonomy.GetSubCategoryAsync(req, cat, sub),
             ("GET", ["certifications"])                            => await taxonomy.GetCertificationsAsync(req),
+
+            // ── 頁面區段（公開）───────────────────────────────────────────
+            ("GET", ["pages", var pageKey]) => await pages.GetPublicAsync(req, pageKey),
+
+            // ── Admin：頁面區段 ───────────────────────────────────────────
+            // 順序敏感：page-schema 與 pages 各自的具體路徑必須排在 catch-all 之前
+            ("GET",   ["admin", "page-schema", var pageKey])  => pages.GetSchemaAsync(pageKey),
+            ("GET",   ["admin", "pages"])                     => await pages.AdminListAsync(),
+            ("GET",   ["admin", "pages", var pageKey])        => await pages.AdminGetAsync(pageKey),
+            ("PUT",   ["admin", "pages", var pageKey, "sections", var sk])
+                => await pages.AdminUpsertSectionAsync(req, pageKey, sk),
+            ("PATCH", ["admin", "pages", var pageKey, "sections", var sk, "enabled"])
+                => await pages.AdminToggleAsync(req, pageKey, sk),
+            // 刻意不提供 POST / DELETE sections —— 區段集合由 schema registry 決定
+
+            ("POST",  ["admin", "maintenance", "sync-page-sections"])
+                => await pages.SyncSectionsAsync(req),
 
             // ── Admin：媒體 ───────────────────────────────────────────────
             // 順序敏感：media-presets 與 uploads 必須排在 ["admin","media",var id] 之前

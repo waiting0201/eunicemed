@@ -1,0 +1,193 @@
+### Phase 5 驗收：頁面區段 + JSON Schema registry
+### 前提：func start 執行中；已跑過 Phase 3 上傳幾張圖。
+
+@host = http://localhost:7071/api
+
+### 0. 登入
+# @name login
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "admin@eunicemed.local", "password": "REPLACE_WITH_LOCAL_SEED_PASSWORD" }
+
+@at = {{login.response.body.data.accessToken}}
+
+###############################################################################
+# 1. Schema registry
+#
+# registry 在**程式碼**裡不在資料庫（docs/09 §9.1）：版面變更走 PR，
+# 不是編輯者按一按就能改。檔名即 {pageKey}.{sectionKey}.json，EmbeddedResource。
+###############################################################################
+
+### 1a. 該頁全部區段的 schema（後台據此生成表單）
+GET {{host}}/admin/page-schema/about
+Authorization: Bearer {{at}}
+
+> 驗收：`milestones.properties.background` 應含由 `x-mediaPreset` 展開的
+> `x-recommendedWidth: 2560`、`x-aspect: "2.84:1"`、`x-hint`。
+> **schema 檔本身不得出現任何尺寸數字**（docs/09 §9.1 的驗收條件）：
+>   grep -l "1200\|2560" Api/PageSchemas/*.json   # 應無輸出
+
+### 1b. 18 頁清單
+GET {{host}}/admin/pages
+Authorization: Bearer {{at}}
+
+###############################################################################
+# 2. Schema 驗證 → JSON Pointer
+#
+# 錯誤每一項以 JSON Pointer 開頭（docs/04 §3.2）。這是選 JsonSchema.Net 的主因：
+# 它的 EvaluationResults.InstanceLocation 本身就是 JSON Pointer，不需要轉換層。
+###############################################################################
+
+### 2a. maxLength 超限 → 400，錯誤指到 /items/1
+PUT {{host}}/admin/pages/about/sections/milestones
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "locale": "en",
+  "data": { "title": "Steady growth", "items": [
+    { "year": "2008", "event": "Founded" },
+    { "year": "THIS-YEAR-STRING-IS-DELIBERATELY-FAR-TOO-LONG-FOR-THE-FIELD", "event": "x" }
+  ]}}
+
+### 2b. minItems 未達（items 要 3–12）→ 400
+PUT {{host}}/admin/pages/about/sections/milestones
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "locale": "en", "data": { "title": "x", "items": [{ "year": "2008", "event": "Founded" }] } }
+
+### 2c. additionalProperties: false → 多餘欄位被擋
+PUT {{host}}/admin/pages/about/sections/hero
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "locale": "en", "data": { "title": "About", "strayField": "should be rejected" } }
+
+###############################################################################
+# 3. 正常儲存（把 {mediaId} 換成 GET /admin/media 取得的 id）
+###############################################################################
+
+### 3a. milestones（en，含 media 與 x-localeInvariant 的 year）
+PUT {{host}}/admin/pages/about/sections/milestones
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "locale": "en",
+  "syncInvariantFields": true,
+  "data": {
+    "background": "{mediaId}",
+    "title": "Steady growth. Deep roots.",
+    "items": [
+      { "year": "2008", "event": "Comfort Plus founded in New Taipei City." },
+      { "year": "2015", "event": "ISO 13485 certification achieved." },
+      { "year": "2023", "event": "EuniceMed brand launched internationally." }
+    ]}}
+
+### 3b. certificates（en，含 ref:Certification）
+PUT {{host}}/admin/pages/about/sections/certificates
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "locale": "en",
+  "data": {
+    "title": "Certified, audited, trusted",
+    "lead": "Independently verified at every stage.",
+    "cta": { "label": "Download certificates", "url": "/en/downloads", "external": false },
+    "items": [{ "certification": "iso-13485" }, { "certification": "ce" }, { "certification": "mit" }]
+  }}
+
+###############################################################################
+# 4. 跨語系同步（docs/09 §9.3）
+#
+# 存 en 並勾 syncInvariantFields 之後：
+#   - 尚不存在的語系列會**被補建**（否則第一次編輯永遠同步不到，
+#     那正是這個功能要消除的成本）
+#   - media / link URL / 年份等標了 x-localeInvariant 的欄位會被帶過去
+#   - **文字欄位不同步**
+###############################################################################
+
+### 4a. 檢查兩個語系的內容
+GET {{host}}/admin/pages/about
+Authorization: Bearer {{at}}
+
+> 驗收：certificates 的 zh-TW 應有 `cta.url` 與 `items`，但 `title` 為空。
+
+###############################################################################
+# 5. 公開端點的回應契約（docs/04 §4）
+###############################################################################
+
+### 5a. en
+GET {{host}}/pages/about?locale=en
+
+### 5b. zh-TW
+GET {{host}}/pages/about?locale=zh-TW
+
+> 驗收：
+> 1. `sections` 是**物件**（key = sectionKey）不是陣列 —— 順序由前端模板決定
+> 2. media 欄位已解析為 `{url, alt, variants[]}`；`ref:Entity` 仍是識別字串
+> 3. `refs.certifications` 已帶出 mark / subLabel / description / logo
+> 4. **只有 invariant、尚未翻譯的區段不會出現** —— 用 schema 的 `required`
+>    當渲染閘門，不需要額外狀態也不會與 schema 脫節
+> 5. 缺整個翻譯列的區段同樣不出現（語言純度）
+
+### 5c. 停用區段：**仍然回傳**但帶 _enabled: false（供後台預覽，模板自行略過）
+PATCH {{host}}/admin/pages/about/sections/milestones/enabled
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "isEnabled": false }
+
+###############################################################################
+# 6. 版面鎖定：不提供 POST / DELETE sections
+#
+# 區段集合由 schema registry 與 seed 同步器決定（docs/09 §0.1）。
+# 兩者都應 404 —— 路由根本不存在。
+###############################################################################
+
+### 6a. POST → 404
+POST {{host}}/admin/pages/about/sections/newone
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{}
+
+### 6b. DELETE → 404
+DELETE {{host}}/admin/pages/about/sections/hero
+Authorization: Bearer {{at}}
+
+###############################################################################
+# 7. 同步器
+#
+# 每次 Function App 啟動時自動跑一次。移除的區段**標記停用而非硬刪** ——
+# 版面改回來時內容還在。
+###############################################################################
+
+### 7a. 手動觸發（連跑三次應都是「未變更 N」）
+POST {{host}}/admin/maintenance/sync-page-sections
+Authorization: Bearer {{at}}
+X-Maintenance-Key: dev
+
+### 7b. 缺 X-Maintenance-Key → 403
+POST {{host}}/admin/maintenance/sync-page-sections
+Authorization: Bearer {{at}}
+
+### 7c. 非 Admin → 403（即使帶了 key）
+
+###############################################################################
+# 8. MediaUsage 自動重建
+#
+# 這是**唯一**能追到藏在 DataJson 裡的 mediaId 的途徑（沒有 FK 可用）。
+# 判準是 schema 上的 x-fieldType: "media"，**絕不用 regex 掃 GUID 形狀的字串** ——
+# 文章 HTML 或任何欄位都可能剛好含 GUID，那會造出查不出原因的幽靈引用。
+###############################################################################
+
+### 8a. 存完區段後，該媒體應被記為引用
+GET {{host}}/admin/media/{mediaId}/usages
+Authorization: Bearer {{at}}
+
+> 應回 `[{ entity: "PageSection", locale: "en", fieldPath: "background" }]`
+
+### 8b. 該媒體現在刪不掉 → 409
+DELETE {{host}}/admin/media/{mediaId}
+Authorization: Bearer {{at}}

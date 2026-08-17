@@ -82,6 +82,20 @@
 | GET | `/sub-categories/{category}/{sub}` | 公開 | 兩段驗證歸屬，不符回 404 |
 | GET | `/certifications` | 公開 | About 認證帶與產品頁標章列共用 |
 
+### 頁面區段
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| GET | `/pages/{key}?locale=` | 公開 | `sections{}` 物件 + `refs`；media 已解析；未翻譯或內容不足的區段省略 |
+| GET | `/admin/page-schema/{key}` | 登入 | 該頁全部區段 schema，`x-mediaPreset` 已展開成尺寸與提示 |
+| GET | `/admin/pages` | 登入 | 18 頁清單 |
+| GET | `/admin/pages/{key}` | 登入 | 全區段 × 全語系（media 回原始 mediaId） |
+| PUT | `/admin/pages/{key}/sections/{sectionKey}` | Author+ | 驗證失敗回 400，errors 帶 JSON Pointer |
+| PATCH | `/admin/pages/{key}/sections/{sectionKey}/enabled` | Author+ | |
+| POST | `/admin/maintenance/sync-page-sections` | Admin + `X-Maintenance-Key` | 手動重跑；啟動時本來就會自動跑 |
+
+> **不提供** `POST` / `DELETE` sections —— 區段集合由 schema registry 與同步器決定（版面鎖定）。
+
 ### 後台：資料匯入
 
 | Method | Path | 權限 | 說明 |
@@ -116,20 +130,6 @@
 | POST | `/admin/media/{id}/reprocess` | Editor+ | 以目前 preset 重新輸出 master 與 variants |
 | DELETE | `/admin/media/{id}` | Editor+ | 有引用時回 409 |
 | POST | `/admin/uploads/sas` | Author+ | PDF 直傳用的 Blob SAS |
-
-### Phase 5 — 頁面區段
-
-| Method | Path | 權限 | 說明 |
-|---|---|---|---|
-| GET | `/pages/{key}?locale=` | 公開 | `sections{}` 物件 + `refs`；缺語系的區段整段省略 |
-| GET | `/admin/page-schema/{key}` | 登入 | 該頁全部區段的 JSON Schema |
-| GET | `/admin/pages` | 登入 | 18 頁清單 |
-| GET | `/admin/pages/{key}` | 登入 | 全區段 × 全語系 |
-| PUT | `/admin/pages/{key}/sections/{sectionKey}` | Editor+ | Schema 驗證失敗回 400，errors 帶 JSON Pointer |
-| PATCH | `/admin/pages/{key}/sections/{sectionKey}/enabled` | Editor+ | |
-| POST | `/admin/maintenance/sync-page-sections` | Admin + `X-Maintenance-Key` | 手動重跑區段同步 |
-
-> **不提供** `POST` / `DELETE` sections —— 區段集合由 schema registry 與 seed 同步器決定。
 
 ### Phase 6 — 文章、FAQ、下載、據點、應用方案
 

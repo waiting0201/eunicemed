@@ -73,6 +73,9 @@ var host = new HostBuilder()
         services.AddSingleton<IJwtService, JwtService>();
         services.AddSingleton<ImageService>();
         services.AddSingleton<IBlobStorageService, BlobStorageService>();
+        // PageSchemaRegistry 是 Singleton：建構只讀資源名稱清單（字串操作），
+        // 各個 schema 到用到才 parse。
+        services.AddSingleton<PageSchemaRegistry>();
         services.AddSingleton<LoginRateLimiter>();
         services.AddSingleton<ContactRateLimiter>();
 
@@ -89,6 +92,8 @@ var host = new HostBuilder()
         services.AddScoped<ProductHandler>();
         services.AddScoped<TaxonomyHandler>();
         services.AddScoped<MediaHandler>();
+        services.AddScoped<PageHandler>();
+        services.AddScoped<MediaUsageWriter>();
 
         // ── Router ────────────────────────────────────────────────────────
         services.AddScoped<AppRouter>();
@@ -113,6 +118,12 @@ using (var scope = host.Services.CreateScope())
     {
         var cfg = scope.ServiceProvider.GetRequiredService<IConfiguration>();
         await AdminUserSeeder.RunAsync(db, cfg);
+
+        // 區段列由 PageSchemas/ 目錄決定，每次啟動同步一次（docs/05 §5）。
+        var registry = scope.ServiceProvider.GetRequiredService<PageSchemaRegistry>();
+        var sync = await PageSectionSynchronizer.RunAsync(db, registry);
+        if (sync.Added.Length + sync.Disabled.Length + sync.Reenabled.Length > 0)
+            Console.WriteLine($"[PageSections] 新增 {sync.Added.Length}、停用 {sync.Disabled.Length}、重啟用 {sync.Reenabled.Length}。");
     }
     catch (Exception ex)
     {

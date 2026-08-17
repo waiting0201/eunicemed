@@ -102,11 +102,20 @@ Dapper 讀取層、`FacetFolder`、公開端點（products 列表+facets、三�
 - 語言純度：產品只有 en 翻譯時，`locale=zh-TW` 回 404
 - 匯入冪等：空庫連跑三次 → 149 / 149 / 149，slug 全唯一
 
-### ⬜ Phase 5 — 頁面區段 + JSON Schema registry · 6–8 天（含約 3 天寫 60 個 schema）
+### 🟡 Phase 5 — 頁面區段 + JSON Schema registry（機制完成，schema 待量產）
 
 `Page` / `PageSection` / `PageSectionTranslation`。`SchemaRegistry`（embedded resource，**lazy per key**）。`JsonSchema.Net` 驗證 → JSON Pointer 錯誤。`x-localeInvariant` 跨語系同步。`SectionMediaWalker`。`refs` 解析。`PageSectionSynchronizer`。
 
-先寫 `about` 的 6 個 schema 打通全流程，再量產其餘 54 個。
+**已完成**：`Page`/`PageSection`/`PageSectionTranslation`、`PageSchemaRegistry`（lazy per key）、
+`JsonSchema.Net` 驗證含 JSON Pointer 錯誤、`SectionWalker`（schema 驅動）、
+`x-localeInvariant` 跨語系同步、`refs` 解析、`MediaUsageWriter` 自動重建、
+`PageSectionSynchronizer`（啟動時自動跑 + 維護端點）、`about` 的 6 個 schema。
+
+**驗收**：[`Api/http/phase5-pages.http`](../Api/http/phase5-pages.http) 全數通過。
+
+**尚未完成**：其餘 **54 個 schema**（`home` 7、`products` 4、`partnership` 4、`resources` 5…，
+共 18 頁 60 個區段）。這是內容形狀的工作，機制已就緒，照 `about` 的 6 個複製即可。
+另缺 richtext 的伺服器端淨化（§9.2 的三組白名單）。
 
 ### ⬜ Phase 6 — 文章 / FAQ / 下載 / 據點 / 應用方案 · 6–8 天
 
@@ -140,6 +149,27 @@ DB 的 `Locale` 是 `varchar(10)`。若 EF/Dapper 送 `NVARCHAR` 參數，SQL Se
 ### 2026-08-17 · Clock 刻意與 Jabez 不同
 
 Jabez 的 `Clock.Now` 回台北時間；本專案回 **UTC**，因為 [05](05-database.md) §1 規定 `datetime2` 存 UTC，且這是對外多語系網站。要顯示營業時間時才用 `Clock.Taipei(utc)`。**從 Jabez 複製程式碼時注意這個差異。**
+
+### 2026-08-17 · 跨語系同步必須補建語系列，而「列存在」不等於「可公開渲染」
+
+`x-localeInvariant` 同步初版只推給**已存在**的語系列。但編輯者的實際流程是
+「填完英文 → 勾同步 → 切到中文分頁」，那時中文列還不存在，於是永遠同步不到 ——
+而那正是這個功能要消除的成本（docs/05 §3.7 rule 1：挑兩次圖）。
+
+改成補建列之後出現第二個問題：只含圖片與連結、還沒翻譯的列會讓該區段
+在公開端點半空地渲染出來。
+
+解法是**用 schema 自己當渲染閘門**：公開端點只回 `required` 欄位都有非空值的區段。
+不需要額外狀態、不會與 schema 脫節，而且語意剛好正確 ——
+「內容不足以構成一個區段」與「還沒翻譯」本來就該是同一件事。
+
+### 2026-08-17 · 第三次命名空間撞名
+
+`SchemaRegistry` 與 `JsonSchema.Net` 的 `Json.Schema.SchemaRegistry` 同名。
+這已經是第三次（`Json` vs `System.Text.Json`、`Media` 命名空間 vs `Media` 實體）。
+**取名前先想一下該名稱是否可能與所依賴套件的公開型別衝突**，
+尤其是 `Json`、`Media`、`Schema`、`Registry` 這類通用詞。
+現名 `PageSchemaRegistry`，語意上也更精確。
 
 ### 2026-08-17 · 消費端不應該自己拼媒體檔名
 

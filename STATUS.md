@@ -34,8 +34,8 @@
 | 層 | 狀態 | 說明 |
 |---|---|---|
 | 規格文件 | ✅ | 14 份，見 [CLAUDE.md](CLAUDE.md) §3 |
-| 資料模型 | 🟡 46% | 54 張表完成 25 張 |
-| API | 🟡 36% | 約 90 個端點完成 32 個 |
+| 資料模型 | 🟡 52% | 54 張表完成 28 張 |
+| API | 🟡 42% | 約 90 個端點完成 38 個 |
 | 前台 `apps/web` | 🟡 | Next.js 15 已建立，2 頁可運作；部署限制已實測 |
 | 後台 `apps/admin` | ⬜ | 尚未建立專案；介面需先跑 `frontend-design` skill |
 | 基礎設施 `infra/` | ⬜ | Bicep 尚未撰寫 |
@@ -45,7 +45,7 @@
 
 ## 二、資料模型（54 張表）
 
-已建立 **25** 張，5 支 migration。遷移於 Function App 啟動時自動套用。
+已建立 **28** 張，6 支 migration。遷移於 Function App 啟動時自動套用。
 
 ### ✅ 已完成
 
@@ -61,8 +61,9 @@
 | 媒體 | `Media` `MediaVariant` `MediaUsage` | ✅ 管線可運作，已上傳 12 張測試圖 |
 | 使用者 | `User` `Role` `UserRole` `RefreshToken` | ✅ 4 角色 + 預設管理者（環境變數注入） |
 | 稽核 | `AuditLog` | — |
+| 頁面區段 | `Page` `PageSection` `PageSectionTranslation` | ✅ 18 頁；區段由 schema 目錄同步（目前 6 個） |
 
-### ⬜ 未建立（29 張）
+### ⬜ 未建立（26 張）
 
 | 模組 | 資料表 | 排定 |
 |---|---|---|
@@ -72,7 +73,7 @@
 | FAQ | `Faq` `FaqTranslation` `FaqCategory` `FaqCategoryTranslation` | Phase 6 |
 | 下載 | `Download` `DownloadTranslation` `ProductDownload` | Phase 6 |
 | 據點 | `SalesLocation` `SalesLocationTranslation` | Phase 6 |
-| 頁面區段 | `Page` `PageSection` `PageSectionTranslation` | Phase 5 |
+
 | 導覽與轉址 | `MenuItem` `MenuItemTranslation` `Redirect` | Phase 7 |
 | 表單與設定 | `ContactSubmission` `Setting` `SettingTranslation` | Phase 7 |
 
@@ -80,7 +81,7 @@
 
 ## 三、API 端點
 
-已實作 **32** 個。完整契約見 [docs/api-routes.md](docs/api-routes.md)。
+已實作 **38** 個。完整契約見 [docs/api-routes.md](docs/api-routes.md)。
 
 ### 系統與驗證
 
@@ -107,7 +108,7 @@
 | 應用方案 `applications` / 人體圖 | ⬜ | Phase 6 |
 | 文章 `news` / `insights` | ⬜ | Phase 6 |
 | `faqs` / `downloads` / `sales-locations` | ⬜ | Phase 6 |
-| 頁面區段 `pages/{key}` | ⬜ | Phase 5 |
+| 頁面區段 `pages/{key}` | ✅ | `sections{}` + `refs`、media 已解析、未翻譯區段自動省略 |
 | `menus` / `settings` / `sitemap` | ⬜ | Phase 7 |
 | `POST /contact` | ⬜ | Phase 7 |
 
@@ -121,7 +122,7 @@
 | 產品 `admin/products` | ⬜ | 含 publish / unpublish / related |
 | 分類／子分類／認證／部位 | ⬜ | |
 | 媒體庫 `admin/media` | 🟡 | 上傳／列表／引用反查／刪除保護／SAS 皆可用；缺 reprocess 與 SVG 清洗 |
-| 頁面區段 `admin/pages` | ⬜ | Phase 5 |
+| 頁面區段 `admin/pages` | ✅ | 含 schema 端點、JSON Pointer 驗證、跨語系同步、同步器 |
 | 其餘內容模組 | ⬜ | Phase 6 |
 | 表單收件匣／選單／轉址／設定 | ⬜ | Phase 7 |
 
@@ -137,8 +138,8 @@ Next.js **15**（非 16 —— SWA hybrid 的支援是 preview，文件內容仍
 
 | 頁面 | 路由 | API 是否就緒 |
 |---|---|---|
-| Home | `/[locale]` | 🟡 暫代頁可運作；正式版型需 `pages/home` |
-| About | `/[locale]/about` | ⬜ 需 `pages/about` |
+| Home | `/[locale]` | 🟡 暫代頁可運作；正式版型需 `home` 的 7 個 schema |
+| About | `/[locale]/about` | 🟡 **API 已就緒**（6 個區段可編輯）；頁面未切 |
 | Products | `/[locale]/products` | 🟡 產品列表就緒，頁面文案未就緒 |
 | Product Category | `/[locale]/products/{category}` | ✅ **已切版可運作** |
 | Sub-category | `/[locale]/products/{category}/{sub}` | ✅ **已切版可運作** |

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "About · 03 核心價值",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title", "items"],
+  "properties": {
+    "title": { "type": "string", "maxLength": 120, "x-fieldType": "text" },
+    "lead":  { "type": "string", "maxLength": 400, "x-fieldType": "text" },
+    "items": {
+      "type": "array", "minItems": 3, "maxItems": 3, "x-fieldType": "repeatable",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "body"],
+        "properties": {
+          "title": { "type": "string", "maxLength": 80,  "x-fieldType": "text" },
+          "body":  { "type": "string", "maxLength": 300, "x-fieldType": "text" }
+        }
+      }
+    }
+  }
+}
