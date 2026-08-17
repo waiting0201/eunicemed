@@ -12,8 +12,8 @@
 
 ## 一句話現況
 
-後端 API 的骨架、驗證授權、產品與分類的公開讀取已可運作並實測通過；媒體變體階梯已定案，Phase 3 可開工；
-**前端、後台介面、部署都尚未開始**。整體約完成 **15%**。
+後端 API 與前端已首次串通：分類與子分類兩頁可從瀏覽器看到真實資料、雙語切換正確。
+媒體變體階梯已定案，Phase 3 可開工。**後台介面與部署尚未開始**。整體約完成 **20%**。
 
 ---
 
@@ -36,7 +36,7 @@
 | 規格文件 | ✅ | 14 份，見 [CLAUDE.md](CLAUDE.md) §3 |
 | 資料模型 | 🟡 43% | 54 張表完成 23 張 |
 | API | 🟡 29% | 約 90 個端點完成 26 個 |
-| 前台 `apps/web` | ⬜ | 尚未建立專案 |
+| 前台 `apps/web` | 🟡 | Next.js 15 已建立，2 頁可運作；部署限制已實測 |
 | 後台 `apps/admin` | ⬜ | 尚未建立專案；介面需先跑 `frontend-design` skill |
 | 基礎設施 `infra/` | ⬜ | Bicep 尚未撰寫 |
 | CI/CD `.github/` | ⬜ | workflow 尚未撰寫 |
@@ -129,15 +129,19 @@
 
 ## 四、前台頁面（18 頁）
 
-`apps/web` **尚未建立**。版型已由 `mockup4/` 鎖定，切版時照著做。
+Next.js **15**（非 16 —— SWA hybrid 的支援是 preview，文件內容仍是 Next 13/14 時期，
+不在已經是 preview 的部署目標上再疊一個未驗證的大版本）。版型由 `mockup4/` 鎖定，切版照著做。
+
+**已驗證可運作**：語系前綴 middleware（含 `.swa` 排除）、`ApiResponse` 信封拆解、
+語言純度（缺翻譯回 404 不 fallback）、facet 篩選、standalone 產物 66MB／250MB。
 
 | 頁面 | 路由 | API 是否就緒 |
 |---|---|---|
-| Home | `/[locale]` | ⬜ 需 `pages/home` |
+| Home | `/[locale]` | 🟡 暫代頁可運作；正式版型需 `pages/home` |
 | About | `/[locale]/about` | ⬜ 需 `pages/about` |
 | Products | `/[locale]/products` | 🟡 產品列表就緒，頁面文案未就緒 |
-| Product Category | `/[locale]/products/{category}` | ✅ |
-| Sub-category | `/[locale]/products/{category}/{sub}` | ✅ |
+| Product Category | `/[locale]/products/{category}` | ✅ **已切版可運作** |
+| Sub-category | `/[locale]/products/{category}/{sub}` | ✅ **已切版可運作** |
 | Product Detail | `/[locale]/products/{category}/{sub}/{slug}` | 🟡 缺圖片 |
 | Applications／Detail | `/[locale]/applications[/{slug}]` | ⬜ |
 | Partnership | `/[locale]/partnership` | ⬜ |
@@ -150,8 +154,9 @@
 | Contact | `/[locale]/contact` | ⬜ |
 | Privacy | `/[locale]/privacy` | ⬜ |
 
-前台共通項目：i18n 語系前綴 ⬜、`output: 'standalone'` 與 250MB gate ⬜、
-圖片走 Blob 直連（**不可用 SWA 圖片優化**）⬜、`.swa` 路徑排除 ⬜、安全標頭 ⬜、sitemap ⬜。
+前台共通項目：i18n 語系前綴 ✅、`output: 'standalone'` 與 250MB gate ✅（目前 66MB）、
+圖片走 Blob 直連（`unoptimized: true` + 自訂 srcSet）✅、`.swa` 路徑排除 ✅、安全標頭 ✅、
+純 SSR 全路由為 `ƒ Dynamic` ✅、sitemap ⬜、robots ⬜。
 
 ---
 

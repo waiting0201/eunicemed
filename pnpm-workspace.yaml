@@ -1,0 +1,8 @@
+packages:
+  - 'apps/*'
+
+# sharp 是 Next.js 圖片優化用的原生套件。本站**不使用** SWA 的圖片優化
+# （圖片走 Blob 直連，見 docs/07 §7.3），但 next build 仍會參照它。
+# 允許它執行安裝腳本，否則 build 會警告。
+onlyBuiltDependencies:
+  - sharp

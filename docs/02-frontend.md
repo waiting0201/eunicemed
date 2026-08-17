@@ -7,6 +7,10 @@
 ## 1. 技術與原則
 
 - **Next.js 15（App Router）+ React 19 + TypeScript**
+  > ⚠️ **刻意鎖在 15，不用 16。** SWA 的 Next.js hybrid 本身就是 preview 功能，
+  > 而其官方文件內容仍是 Next 13/14 時期（連截圖檔名都是 `nextjs-13-`），未宣告支援上限。
+  > 在已經是 preview 的部署目標上再疊一個未驗證的大版本，等於同時押兩個未知數。
+  > 升級前請先在 SWA 預覽環境實測。
 - **託管**：**Azure Static Web Apps（Free 方案）**，採 Next.js **hybrid（純 SSR）**，preview；需設 `output: 'standalone'`（250MB 上限）
 - **Tailwind CSS** + 設計 token（品牌色 `#00B5CD`/`#898989`、系列專色與字型規範見 [08-design.md](08-design.md)）；元件集中 `apps/web/components`
 - **渲染策略**：**純 SSR（伺服器端渲染）**，每次請求於伺服器取 API 並渲染，確保內容即時與 SEO；**不使用 ISR**。**無 CDN／邊緣快取**，尖峰仰賴 API 端快取與 DB 索引。互動（表單、搜尋、篩選）走 client component。
@@ -223,6 +227,14 @@ export async function getProductPage(
 - **`/admin` 後台掛在同一個 app**（方案只有一個 SWA）：以 client-side React 區塊實作，不做 SSR、`noindex`，其打包體積計入 250MB 上限。
 - 自訂網域 `www.eunicemed.com` + apex（Free 上限 **2 個**）+ SWA 免費受管 TLS；**無 Front Door，故無 CDN/WAF**，安全標頭改由 Next.js `headers()` 輸出（見 [07-azure-deployment.md](07-azure-deployment.md) §7）。
 - 部署由 GitHub Actions 觸發（`web.yml`，含 admin build 與 250MB gate）。
+- ⚠️ **monorepo 下 standalone 產物會巢狀**：pnpm workspace 中 `server.js` 實際位於
+  `.next/standalone/apps/web/server.js`，SWA 文件給的複製指令
+  （`cp -r .next/static .next/standalone/.next/`）會把檔案放到沒人讀的位置 ——
+  **build 完全成功，但部署後 CSS 與字型 404**。正確做法見 `apps/web/package.json` 的
+  `postbuild`，該 script 一併執行 250MB gate（`scripts/check-size.mjs`）。
+- ⚠️ **不要加 `generateStaticParams`**：加了之後 `next build` 會把該路由預先靜態化
+  （輸出標成 `● SSG`），後台發布的內容要等下次部署才看得到，且無任何錯誤提示。
+  本站用 `export const dynamic = 'force-dynamic'`，**驗收條件是 build 輸出全部為 `ƒ Dynamic`**。
 
 ---
 

@@ -37,7 +37,7 @@ public sealed class ProductHandler(
         Dictionary<string, FacetCount[]>? facets = null;
         if (string.Equals(req.Query["facets"], "true", StringComparison.OrdinalIgnoreCase))
         {
-            var rows   = await reader.GetFacetRowsAsync();
+            var rows   = await reader.GetFacetRowsAsync(locale);
             var labels = await taxonomy.GetFacetLabelsAsync(locale);
             facets = FacetFolder.Compute(rows, filter,
                 labels.Categories, labels.SubCategories, labels.Collections, labels.BodyParts);

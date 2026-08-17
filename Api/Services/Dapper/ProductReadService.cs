@@ -10,8 +10,10 @@ public interface IProductReadService
     Task<(IReadOnlyList<ProductListItemDto> Items, int Total)> GetListAsync(
         ProductFilter filter, string locale, bool? featured, string? sort, int page, int pageSize);
 
-    /// <summary>facet 折算用的最小投影：只取通過「基礎條件」（已發布）的候選列。</summary>
-    Task<IReadOnlyList<FacetRow>> GetFacetRowsAsync();
+    /// <summary>
+    /// facet 折算用的最小投影：通過「基礎條件」（已發布 **且有該語系翻譯**）的候選列。
+    /// </summary>
+    Task<IReadOnlyList<FacetRow>> GetFacetRowsAsync(string locale);
 
     /// <summary>三段路徑查詢；任一段歸屬不符即回 null（呼叫端轉 404）。</summary>
     Task<ProductRow?> GetByPathAsync(string category, string sub, string slug, string locale);
@@ -135,9 +137,16 @@ public sealed class ProductReadService(IDbConnection db) : IProductReadService
         return (items, total);
     }
 
-    public async Task<IReadOnlyList<FacetRow>> GetFacetRowsAsync()
+    public async Task<IReadOnlyList<FacetRow>> GetFacetRowsAsync(string locale)
     {
-        // facet 的計數不分語系（產品是否存在與語系無關），所以這裡不 join 翻譯表。
+        // ⚠️ **必須 join 翻譯表**，條件要與列表查詢的 PublishedFrom 完全一致。
+        //
+        // 初版沒 join，理由是「產品是否存在與語系無關」—— 那是錯的。
+        // facet 數字對使用者的意思是「點下去會看到幾筆」，而列表因語言純度原則
+        // 會濾掉缺該語系翻譯的產品。兩邊條件不一致時，中文站會出現
+        // 「膝 16」但格線空無一物的情況，等於數字在騙人。
+        //
+        // 這個 bug 只有在翻譯不完整時才看得出來，而那正是內容建置期間的常態。
         const string sql = """
             SELECT c.Slug AS CategorySlug,
                    sc.Slug AS SubCategorySlug,
@@ -146,13 +155,14 @@ public sealed class ProductReadService(IDbConnection db) : IProductReadService
                             INNER JOIN BodyParts bp ON bp.Id = pbp.BodyPartId
                             WHERE pbp.ProductId = p.Id FOR XML PATH('')), 1, 1, '') AS BodyPartCsv
             FROM   Products p
+                   INNER JOIN ProductTranslations pt ON pt.ProductId = p.Id AND pt.Locale = @locale
                    INNER JOIN Categories c ON c.Id = p.CategoryId AND c.IsDeleted = 0
                    LEFT  JOIN SubCategories sc ON sc.Id = p.SubCategoryId AND sc.IsDeleted = 0
                    LEFT  JOIN Collections col  ON col.Id = p.CollectionId
             WHERE  p.IsDeleted = 0 AND p.Status = 1
             """;
 
-        var rows = await db.QueryAsync<(string CategorySlug, string? SubCategorySlug, string? CollectionSlug, string? BodyPartCsv)>(sql);
+        var rows = await db.QueryAsync<(string CategorySlug, string? SubCategorySlug, string? CollectionSlug, string? BodyPartCsv)>(sql, Params(locale));
         return rows.Select(r => new FacetRow(r.CategorySlug, r.SubCategorySlug, r.CollectionSlug, Split(r.BodyPartCsv))).ToList();
     }
 

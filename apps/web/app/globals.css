@@ -1,0 +1,93 @@
+@import 'tailwindcss';
+
+/**
+ * 設計 token —— 取自 mockup4 的 <style> 區塊與 docs/08-design.md §2。
+ * mockup4 是客戶定案的版型，這些值不是喜好問題，改動前先對照 mockup4。
+ */
+@theme {
+  /* 品牌色（docs/08 §2）：青 Pantone 7466c、灰 Pantone 423c */
+  --color-brand: #00b5cd;
+  --color-brand-deep: #0092a8;
+  --color-brand-bright: #2fd1e4;
+  --color-grey: #898989;
+
+  /* mockup4 的文字與底色 */
+  --color-ink: #16333b; /* 標題 */
+  --color-body: #44565d; /* 內文 */
+  --color-tint: #f5fafb; /* 區塊淺底 */
+  --color-tint-deep: #f0f6f8; /* 次級淺底（兄弟分類帶） */
+  --color-hairline: #e3edf0;
+
+  /* 系列專色（docs/08）：Care 7746c / Protect 5415c / Advance 5125c */
+  --color-care: #7ba05b;
+  --color-protect: #5b7f9e;
+  --color-advance: #6b4c7a;
+
+  --font-sans:
+    'Myriad Variable Concept', 'Microsoft JhengHei', 'Noto Sans TC', system-ui, sans-serif;
+
+  /* mockup4 的內容寬度 */
+  --container-content: 1180px;
+}
+
+@font-face {
+  font-family: 'Myriad Variable Concept';
+  src: url('/fonts/MyriadVariableConcept.woff2') format('woff2');
+  font-weight: 300 900;
+  font-stretch: 75% 125%;
+  font-display: swap;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    color: var(--color-body);
+    background: #fff;
+    line-height: 1.7;
+    font-weight: 400;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: var(--color-ink);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+    transition:
+      color 0.2s ease,
+      transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  a:hover {
+    color: var(--color-brand-deep);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-deep);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* mockup4 就有這條，照抄 */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}

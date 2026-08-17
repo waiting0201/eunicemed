@@ -137,6 +137,32 @@ DB 的 `Locale` 是 `varchar(10)`。若 EF/Dapper 送 `NVARCHAR` 參數，SQL Se
 
 Jabez 的 `Clock.Now` 回台北時間；本專案回 **UTC**，因為 [05](05-database.md) §1 規定 `datetime2` 存 UTC，且這是對外多語系網站。要顯示營業時間時才用 `Clock.Taipei(utc)`。**從 Jabez 複製程式碼時注意這個差異。**
 
+### 2026-08-17 · facet 計數必須與列表用同一組條件，否則數字會騙人
+
+`GetFacetRowsAsync` 初版沒 join 翻譯表，理由是「產品是否存在與語系無關」——**那是錯的**。
+facet 數字對使用者的意思是「點下去會看到幾筆」，而列表因語言純度會濾掉缺該語系翻譯的產品。
+結果中文站的篩選 chip 顯示「膝 16」，點進去格線空無一物。
+
+這個 bug **只有實際用中文開頁面才看得出來** —— 單看 API 回應、單看英文站都正常。
+規則：**任何與列表並列的計數，其 WHERE 條件必須與列表查詢逐字一致。**
+
+### 2026-08-17 · `generateStaticParams` 會讓「純 SSR」悄悄變成 build 時靜態化
+
+在 `app/[locale]/layout.tsx` 加了 `generateStaticParams` 之後，`next build` 把首頁
+預先渲染成靜態 HTML（build 輸出標成 `● SSG` 而非 `ƒ Dynamic`）。
+本站沒有 revalidation webhook（docs/04 §7 刻意不做），一旦被靜態化，
+後台發布的內容要等下一次部署才看得到 —— 而且不會有任何錯誤。
+處置：改用 `export const dynamic = 'force-dynamic'`，並**以 build 輸出的 `ƒ` 標記作為驗收條件**。
+
+### 2026-08-17 · pnpm workspace 會讓 standalone 產物巢狀，SWA 文件的指令是錯的
+
+SWA 文件給的 standalone 後處理指令是
+`cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/`，
+那假設非 monorepo。在 pnpm workspace 下，`server.js` 實際在
+`.next/standalone/apps/web/server.js`，上述指令會把檔案複製到沒人讀的地方，
+結果是**部署後 CSS 與字型 404、但 build 完全成功**。
+正確路徑寫在 `apps/web/package.json` 的 `postbuild`，該 script 同時跑 250MB gate。
+
 ### 2026-08-17 · seed 了主表卻沒 seed 翻譯表 = 該實體完全消失
 
 `Categories` 與 `Certifications` 都有 seed，但**忘了 seed 它們的翻譯表**。
