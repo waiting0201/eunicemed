@@ -103,9 +103,9 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
       )}
 
       {intro && (
-        <section className="mx-auto max-w-[--container-content] px-6 py-14 text-center lg:px-16">
+        <section className="mx-auto max-w-content px-6 py-14 text-center lg:px-16">
           {intro.eyebrow && (
-            <p className="text-[0.82rem] font-bold uppercase tracking-[0.16em] text-[--color-brand-deep]">
+            <p className="text-[0.82rem] font-bold uppercase tracking-[0.16em] text-brand-deep">
               {intro.eyebrow}
             </p>
           )}
@@ -122,7 +122,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
 
       {/* 01 精選產品 —— Pinterest 式瀑布流 */}
       {featuredCopy && featured.items.length > 0 && (
-        <section className="mx-auto max-w-[--container-content] px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <SectionHeading index={next()} title={featuredCopy.title ?? ''} />
             {featuredCopy.allLink?.url && (
@@ -173,7 +173,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
           )}
           {!band.background && <div className="absolute inset-0 bg-[#12333c]" />}
 
-          <div className="relative mx-auto grid max-w-[--container-content] gap-12 px-6 lg:grid-cols-2 lg:px-16">
+          <div className="relative mx-auto grid max-w-content gap-12 px-6 lg:grid-cols-2 lg:px-16">
             <div>
               <span className="text-lg font-medium text-white/60">
                 {String(next()).padStart(2, '0')}
@@ -200,7 +200,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
 
       {/* 03 合作優勢 */}
       {why && (
-        <section className="mx-auto max-w-[--container-content] px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
           <SectionHeading index={next()} title={why.title ?? ''} className="mb-8 max-w-[24ch]" />
           {why.items && why.items.length > 0 && (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -218,12 +218,12 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
 
       {/* 04 客戶見證 */}
       {testimonial && (
-        <section className="bg-[--color-tint] py-14">
-          <div className="mx-auto grid max-w-[--container-content] gap-12 px-6 lg:grid-cols-2 lg:px-16">
+        <section className="bg-tint py-14">
+          <div className="mx-auto grid max-w-content gap-12 px-6 lg:grid-cols-2 lg:px-16">
             <div>
               <SectionHeading index={next()} title={testimonial.title ?? ''} />
               {testimonial.quote && (
-                <blockquote className="mt-6 text-[clamp(1.3rem,2.6vw,1.8rem)] leading-[1.35] text-[--color-ink]">
+                <blockquote className="mt-6 text-[clamp(1.3rem,2.6vw,1.8rem)] leading-[1.35] text-ink">
                   {testimonial.quote}
                 </blockquote>
               )}
@@ -231,7 +231,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
                 <p className="mt-4 font-medium">
                   {testimonial.attribution.name}
                   {testimonial.attribution.region && (
-                    <span className="text-[--color-grey]"> · {testimonial.attribution.region}</span>
+                    <span className="text-grey"> · {testimonial.attribution.region}</span>
                   )}
                 </p>
               )}
@@ -241,11 +241,11 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
                   {testimonial.miniQuotes.map((m, i) => (
                     <div
                       key={m.source ?? i}
-                      className="rounded-[14px] border border-[--color-hairline] bg-white p-4"
+                      className="rounded-[14px] border border-hairline bg-white p-4"
                     >
                       {m.quote && <p className="text-[0.95rem]">{m.quote}</p>}
                       {m.source && (
-                        <span className="mt-2 block text-[0.82rem] text-[--color-grey]">
+                        <span className="mt-2 block text-[0.82rem] text-grey">
                           {m.source}
                         </span>
                       )}
@@ -269,11 +269,11 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
                   className="aspect-[16/10] w-full rounded-[20px] object-cover"
                 />
               ) : (
-                <div className="aspect-[16/10] w-full rounded-[20px] bg-[--color-tint-deep]" />
+                <div className="aspect-[16/10] w-full rounded-[20px] bg-tint-deep" />
               )}
 
               {testimonial.floatingChip && (
-                <span className="absolute -bottom-4 left-6 rounded-full bg-white px-5 py-2 text-[0.9rem] font-semibold text-[--color-brand-deep] shadow-[0_10px_28px_rgba(10,60,72,.16)]">
+                <span className="absolute -bottom-4 left-6 rounded-full bg-white px-5 py-2 text-[0.9rem] font-semibold text-brand-deep shadow-[0_10px_28px_rgba(10,60,72,.16)]">
                   {testimonial.floatingChip}
                 </span>
               )}
@@ -284,7 +284,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
 
       {/* 05 最新消息 */}
       {latestCopy && news.items.length > 0 && (
-        <section className="mx-auto max-w-[--container-content] px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <SectionHeading index={next()} title={latestCopy.title ?? ''} />
             {latestCopy.allLink?.url && <CtaLink cta={latestCopy.allLink} variant="text" />}
@@ -318,9 +318,9 @@ function FeaturedMasonry({ items }: { items: ProductListItem[] }) {
         <Link
           key={p.slug}
           href={p.url}
-          className="group mb-5 block break-inside-avoid overflow-hidden rounded-[18px] border border-[--color-hairline] bg-white transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(10,60,72,.10)]"
+          className="group mb-5 block break-inside-avoid overflow-hidden rounded-[18px] border border-hairline bg-white transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(10,60,72,.10)]"
         >
-          <div className={`${RATIOS[i % RATIOS.length]} overflow-hidden bg-[--color-tint]`}>
+          <div className={`${RATIOS[i % RATIOS.length]} overflow-hidden bg-tint`}>
             {p.image && (
               <img
                 src={p.image.url}
@@ -337,7 +337,7 @@ function FeaturedMasonry({ items }: { items: ProductListItem[] }) {
           </div>
           <div className="p-4">
             {p.collection && (
-              <span className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[--color-brand-deep]">
+              <span className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-brand-deep">
                 {p.collection.name}
               </span>
             )}
@@ -352,14 +352,14 @@ function FeaturedMasonry({ items }: { items: ProductListItem[] }) {
 
 function NewsRow({ item, locale }: { item: ArticleListItem; locale: Locale }) {
   return (
-    <Link href={item.url} className="group block border-t border-[--color-hairline] pt-4">
+    <Link href={item.url} className="group block border-t border-hairline pt-4">
       {item.publishedAt && (
-        <p className="text-[0.82rem] text-[--color-grey]">
+        <p className="text-[0.82rem] text-grey">
           {formatDate(item.publishedAt, locale).slice(0, 9)}
         </p>
       )}
       <h3 className="mt-1 text-[1.05rem] font-semibold">{item.title}</h3>
-      <span className="mt-2 inline-block text-[0.9rem] font-semibold text-[--color-brand-deep]">
+      <span className="mt-2 inline-block text-[0.9rem] font-semibold text-brand-deep">
         {locale === 'en' ? 'Read →' : '閱讀 →'}
       </span>
     </Link>
@@ -437,10 +437,10 @@ function CtaLink({
 }) {
   const className = {
     primary:
-      'mt-8 inline-block rounded-full bg-[--color-brand] px-7 py-3 font-semibold text-white shadow-[0_10px_30px_rgba(0,181,205,.32)] transition hover:bg-[--color-brand-deep] hover:text-white',
+      'mt-8 inline-block rounded-full bg-brand px-7 py-3 font-semibold text-white shadow-[0_10px_30px_rgba(0,181,205,.32)] transition hover:bg-brand-deep hover:text-white',
     onDark:
-      'mt-6 inline-block rounded-full bg-white px-7 py-3 font-semibold text-[--color-brand-deep] transition hover:bg-white/90',
-    text: 'font-semibold text-[--color-brand-deep]',
+      'mt-6 inline-block rounded-full bg-white px-7 py-3 font-semibold text-brand-deep transition hover:bg-white/90',
+    text: 'font-semibold text-brand-deep',
   }[variant];
 
   const label = cta.label ?? cta.url!;
@@ -466,7 +466,7 @@ function Highlight({ text }: { text: string }) {
     <>
       {parts.map((part, i) =>
         i % 2 === 1 ? (
-          <span key={i} className="text-[--color-brand]">
+          <span key={i} className="text-brand">
             {part}
           </span>
         ) : (

@@ -36,7 +36,7 @@ export function SideFilter({
 
   return (
     <aside>
-      <p className="mb-3 text-[0.78rem] font-bold uppercase tracking-[0.14em] text-[--color-grey]">
+      <p className="mb-3 text-[0.78rem] font-bold uppercase tracking-[0.14em] text-grey">
         {label}
       </p>
       <div className="flex flex-row gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
@@ -70,12 +70,12 @@ function Row({
       aria-current={active ? 'true' : undefined}
       className={`flex shrink-0 items-center justify-between gap-3 whitespace-nowrap rounded-[12px] border px-4 py-2.5 text-[0.95rem] transition ${
         active
-          ? 'border-[--color-brand] bg-white font-semibold text-[--color-brand-deep]'
-          : 'border-transparent hover:border-[--color-hairline] hover:bg-white'
+          ? 'border-brand bg-white font-semibold text-brand-deep'
+          : 'border-transparent hover:border-hairline hover:bg-white'
       }`}
     >
       <span>{children}</span>
-      <span className="text-[0.8rem] text-[--color-grey]">{count}</span>
+      <span className="text-[0.8rem] text-grey">{count}</span>
     </Link>
   );
 }

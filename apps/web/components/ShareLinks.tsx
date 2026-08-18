@@ -35,7 +35,7 @@ export function ShareLinks({ title, locale }: { title: string; locale: Locale })
 
   return (
     <div>
-      <p className="mb-2 text-[0.78rem] font-bold uppercase tracking-[0.14em] text-[--color-grey]">
+      <p className="mb-2 text-[0.78rem] font-bold uppercase tracking-[0.14em] text-grey">
         {c.share}
       </p>
       <div className="flex gap-2">
@@ -98,7 +98,7 @@ function Btn({
   children: React.ReactNode;
 }) {
   const className =
-    'flex h-9 w-9 items-center justify-center rounded-full border border-[--color-hairline] text-[0.9rem] font-semibold text-[--color-brand-deep] transition hover:border-[--color-brand]';
+    'flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-[0.9rem] font-semibold text-brand-deep transition hover:border-brand';
 
   return as === 'a' ? (
     <a href="#" aria-label={label} title={label} onClick={onClick} className={className}>

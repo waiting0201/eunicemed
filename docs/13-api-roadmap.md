@@ -212,6 +212,34 @@ richtext 的伺服器端淨化與 SVG 清洗**已完成**（見下）。
 
 ## 踩到的坑（累積記錄）
 
+### 2026-08-18 · Tailwind v4 拿掉了 `[--var]` 簡寫，而它是**靜默**失效的
+
+公開站從第一天就寫 `bg-[--color-tint]`、`text-[--color-brand-deep]`、
+`max-w-[--container-content]`，共 **309 處**。Tailwind v3 支援這個簡寫，**v4 移除了**。
+
+它不會報錯，會產生：
+
+```css
+.bg-\[--color-tint\]{background-color:--color-tint}
+```
+
+`--color-tint` 是一個裸的自訂屬性**名稱**，不是 `var(--color-tint)`。
+瀏覽器判定為無效宣告、直接丟棄。也就是說**整個公開站的品牌色、底色、細線
+從頭到尾都沒生效** —— 十幾頁切下來都是這樣。
+
+為什麼一路沒發現：我只驗過 HTML 結構（class 名稱有出現、元素有渲染），
+從沒在瀏覽器裡看過畫面，環境裡也沒有截圖工具。**「class 出現在 HTML 裡」
+不代表「這條規則有作用」** —— 樣式要驗產出的 CSS，不是驗 HTML。
+
+正解是用 v4 由 `@theme` 自動產生的具名 utility：`bg-tint`、`text-brand-deep`、
+`max-w-content`。比 `[--var]` 短、也不會再有這種靜默失效。
+
+順帶：後台的建置產物原本輸出到 `apps/web/public/admin`，被公開站的 Tailwind
+掃進來，於是又產生一批同樣無效的 class。該目錄已加進 `.gitignore` ——
+v4 會自動排除被 gitignore 的路徑。
+
+**檢查方式**：`grep -c '{[a-z-]*:--[a-z-]*}' .next/static/css/*.css` 應為 0。
+
 ### 2026-08-18 · 同一個判準寫兩次，sitemap 就會宣告空白頁
 
 sitemap 的靜態頁那半原本在 Dapper 讀取層，用 SQL 判「該語系有沒有 `PageSectionTranslation` 列」。

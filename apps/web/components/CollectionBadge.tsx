@@ -6,16 +6,16 @@ import type { SlugName } from '@/lib/api';
  * 未知 slug 退回品牌青，不要讓一個沒見過的系列把徽章變透明。
  */
 const TONE: Record<string, string> = {
-  care: 'bg-[--color-care]',
-  protect: 'bg-[--color-protect]',
-  advance: 'bg-[--color-advance]',
+  care: 'bg-care',
+  protect: 'bg-protect',
+  advance: 'bg-advance',
 };
 
 export function CollectionBadge({ collection }: { collection: SlugName }) {
   return (
     <span
       className={`inline-block rounded-full px-3.5 py-1 text-[0.7rem] font-bold uppercase tracking-[0.1em] text-white ${
-        TONE[collection.slug] ?? 'bg-[--color-brand]'
+        TONE[collection.slug] ?? 'bg-brand'
       }`}
     >
       {collection.name}

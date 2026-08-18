@@ -86,20 +86,20 @@ export default async function CategoryPage({
 
       {/* 子分類：唯一有獨立 URL 的產品維度（docs/06 §2），因此用連結而非 chip 篩選 */}
       {data.subCategories.length > 0 && (
-        <section className="border-y border-[--color-hairline] bg-[--color-tint-deep]">
-          <div className="mx-auto flex max-w-[--container-content] flex-wrap gap-x-6 gap-y-2 px-6 py-4 text-sm lg:px-16">
+        <section className="border-y border-hairline bg-tint-deep">
+          <div className="mx-auto flex max-w-content flex-wrap gap-x-6 gap-y-2 px-6 py-4 text-sm lg:px-16">
             {data.subCategories.map((s) => (
               <Link key={s.slug} href={`${basePath}/${s.slug}`} className="hover:underline">
                 {s.name}
-                <span className="ml-1.5 text-[--color-grey]">{s.count}</span>
+                <span className="ml-1.5 text-grey">{s.count}</span>
               </Link>
             ))}
           </div>
         </section>
       )}
 
-      <section id="grid" className="bg-[--color-tint] py-14">
-        <div className="mx-auto max-w-[--container-content] px-6 lg:px-16">
+      <section id="grid" className="bg-tint py-14">
+        <div className="mx-auto max-w-content px-6 lg:px-16">
           <div className="space-y-3">
             <FilterChips
               label={c.collection}
@@ -121,7 +121,7 @@ export default async function CategoryPage({
             />
           </div>
 
-          <p className="mt-6 text-sm text-[--color-grey]">{c.count(result.totalCount)}</p>
+          <p className="mt-6 text-sm text-grey">{c.count(result.totalCount)}</p>
 
           <div className="mt-5">
             <ProductGrid items={result.items} locale={locale} />

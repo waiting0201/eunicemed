@@ -39,11 +39,11 @@ export function SiteHeader({ locale, menu }: { locale: Locale; menu?: MenuNode[]
       : FALLBACK[locale];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[--color-hairline] bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-[--container-content] items-center gap-8 px-6 py-4 lg:px-16">
+    <header className="sticky top-0 z-50 border-b border-hairline bg-white/90 backdrop-blur">
+      <div className="mx-auto flex max-w-content items-center gap-8 px-6 py-4 lg:px-16">
         <Link
           href={`/${locale}`}
-          className="text-lg font-semibold tracking-tight text-[--color-ink]"
+          className="text-lg font-semibold tracking-tight text-ink"
         >
           EuniceMed
         </Link>
@@ -64,8 +64,8 @@ export function SiteHeader({ locale, menu }: { locale: Locale; menu?: MenuNode[]
               aria-current={l === locale ? 'true' : undefined}
               className={
                 l === locale
-                  ? 'font-semibold text-[--color-brand-deep]'
-                  : 'text-[--color-grey]'
+                  ? 'font-semibold text-brand-deep'
+                  : 'text-grey'
               }
             >
               {LOCALE_LABELS[l]}

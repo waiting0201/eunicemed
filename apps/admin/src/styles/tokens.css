@@ -1,0 +1,112 @@
+@import 'tailwindcss';
+
+/**
+ * 後台設計 token。
+ *
+ * 與公開站**同源但不同調**（docs/03 §8.1）：品牌青一致，但這裡是每天用八小時的
+ * 高密度工具，不套用公開站的大留白與 hero 尺度。
+ *
+ * 設計論點：這個站的失效模式是**靜默** —— 語言純度讓未翻譯的內容直接消失，
+ * 不報錯。後台的職責因此正好相反：**讓「缺什麼」大聲**。
+ * 整套視覺借用 EuniceMed 自己的產品語言（分級、量測、符合規格）。
+ */
+@theme {
+  /* 冷灰紙。刻意不是米色（太軟）也不是深色（八小時盯著會累）*/
+  --color-paper: #f2f5f6;
+  --color-surface: #ffffff;
+  --color-ink: #12262c;
+  --color-ink-soft: #4a5f66;
+  --color-ink-faint: #7d9198;
+  --color-rule: #dce5e8;
+  --color-rule-soft: #eaf0f2;
+
+  /* 品牌青。**只給儀表與作用中狀態用** —— 不當一般按鈕底色，
+     否則它就不再代表「量測」這件事了。 */
+  --color-gauge: #00b5cd;
+  --color-gauge-deep: #0092a8;
+
+  /* 缺漏。**全站沒有綠色** —— 完成不是打勾，是儀表填滿。
+     鏽紅與青是色盲友善的一對。 */
+  --color-missing: #a8452b;
+  --color-missing-soft: #f7ece8;
+
+  --font-display: 'Myriad Variable Concept', 'Noto Sans TC', system-ui, sans-serif;
+  --font-sans: system-ui, -apple-system, 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+  /* slug / SKU / ID 用等寬：那些是要逐字比對的字串，不是給人讀的句子。
+     用系統等寬而非外部字型 —— 打包體積計入 SWA Free 的 250MB。 */
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'Roboto Mono', monospace;
+}
+
+@font-face {
+  font-family: 'Myriad Variable Concept';
+  /* 與公開站共用同一份字型檔（apps/web/public/fonts） */
+  src: url('/fonts/MyriadVariableConcept.woff2') format('woff2');
+  font-weight: 300 900;
+  font-stretch: 75% 125%;
+  font-display: swap;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    /* 行高以中文為準（docs/03 §8.1）—— 拉丁字看起來會稍鬆，那是對的取捨 */
+    line-height: 1.65;
+    color: var(--color-ink);
+    background: var(--color-paper);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* 焦點框用品牌青，與公開站一致 */
+  :focus-visible {
+    outline: 2px solid var(--color-gauge-deep);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-gauge) 26%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* 區段標籤：Myriad 的 width 軸壓窄。這是這套字型獨有的能力，
+     用它來做小標籤比換一個字型家族更貼近品牌。 */
+  .label-condensed {
+    font-family: var(--font-display);
+    font-stretch: 82%;
+    font-weight: 620;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-size: 0.68rem;
+  }
+
+  .mono {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* 儀表的交錯重繪：切換語系時讓人「看見」中文軌塌陷。
+   全站唯一的動態，其餘一律靜態。 */
+@keyframes gauge-in {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}

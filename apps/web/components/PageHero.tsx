@@ -13,9 +13,9 @@ export function PageHero({
   lead?: string;
 }) {
   return (
-    <section className="mx-auto max-w-[--container-content] px-6 pt-10 lg:px-16">
+    <section className="mx-auto max-w-content px-6 pt-10 lg:px-16">
       <div className="mx-auto max-w-[760px] text-center">
-        <p className="text-[0.78rem] font-bold uppercase tracking-[0.16em] text-[--color-brand-deep]">
+        <p className="text-[0.78rem] font-bold uppercase tracking-[0.16em] text-brand-deep">
           {eyebrow}
         </p>
         <h1 className="mt-2.5 text-[clamp(2rem,3.6vw,2.8rem)] font-normal">{title}</h1>

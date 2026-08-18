@@ -35,7 +35,7 @@ export function HeroSlider({
   const css = animated ? keyframesFor(n) : '';
 
   return (
-    <section className="relative aspect-[8/3] w-full overflow-hidden bg-[--color-tint-deep]">
+    <section className="relative aspect-[8/3] w-full overflow-hidden bg-tint-deep">
       {animated && <style>{css}</style>}
 
       {withImage.map((slide, i) => (

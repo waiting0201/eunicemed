@@ -106,7 +106,7 @@ export default async function ResourcesPage({ params }: { params: Promise<Params
 
       {/* 四大入口卡 */}
       {hub?.items && hub.items.length > 0 && (
-        <section className="mx-auto max-w-[--container-content] px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {hub.items.map((item, i) => (
               <HubCard key={item.title ?? i} item={item} />
@@ -117,8 +117,8 @@ export default async function ResourcesPage({ params }: { params: Promise<Params
 
       {/* 最新發布 */}
       {recent && recentItems.length > 0 && (
-        <section className="bg-[--color-tint] py-14">
-          <div className="mx-auto max-w-[--container-content] px-6 lg:px-16">
+        <section className="bg-tint py-14">
+          <div className="mx-auto max-w-content px-6 lg:px-16">
             <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
               <h2 className="text-[clamp(1.6rem,3vw,2rem)] font-normal">{recent.title}</h2>
               <SectionCtaLink cta={recent.allLink} variant="text" />
@@ -128,12 +128,12 @@ export default async function ResourcesPage({ params }: { params: Promise<Params
                 <Link
                   key={item.url}
                   href={item.url}
-                  className="rounded-[16px] border border-[--color-hairline] bg-white p-5 transition hover:border-[--color-brand-bright]"
+                  className="rounded-[16px] border border-hairline bg-white p-5 transition hover:border-brand-bright"
                 >
-                  <p className="text-[0.8rem] uppercase tracking-[0.1em] text-[--color-brand-deep]">
+                  <p className="text-[0.8rem] uppercase tracking-[0.1em] text-brand-deep">
                     {item.kind === 'news' ? (locale === 'en' ? 'News' : '消息') : locale === 'en' ? 'Insight' : '專欄'}
                     {item.publishedAt && (
-                      <span className="ml-2 normal-case tracking-normal text-[--color-grey]">
+                      <span className="ml-2 normal-case tracking-normal text-grey">
                         {formatDate(item.publishedAt, locale)}
                       </span>
                     )}
@@ -154,12 +154,12 @@ export default async function ResourcesPage({ params }: { params: Promise<Params
 
       {/* 兩塊底部 CTA */}
       {panels?.items && panels.items.length > 0 && (
-        <section className="mx-auto max-w-[--container-content] px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
           <div className="grid gap-6 sm:grid-cols-2">
             {panels.items.map((panel, i) => (
               <div
                 key={panel.title ?? i}
-                className="rounded-[20px] border border-[--color-hairline] bg-[--color-tint] p-7"
+                className="rounded-[20px] border border-hairline bg-tint p-7"
               >
                 {panel.title && <h3 className="text-[1.2rem] font-semibold">{panel.title}</h3>}
                 {panel.body && <p className="mt-1.5 text-[0.95rem]">{panel.body}</p>}
@@ -194,7 +194,7 @@ function QuickDownloads({
   if (files.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-[--container-content] px-6 py-14 lg:px-16">
+    <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <h2 className="text-[clamp(1.6rem,3vw,2rem)] font-normal">{s.title}</h2>
         <SectionCtaLink cta={s.allLink} variant="text" />
@@ -206,17 +206,17 @@ function QuickDownloads({
             href={d.url!}
             target="_blank"
             rel="noopener"
-            className="flex items-center justify-between gap-4 rounded-[16px] border border-[--color-hairline] p-4 transition hover:border-[--color-brand-bright] hover:bg-[--color-tint]"
+            className="flex items-center justify-between gap-4 rounded-[16px] border border-hairline p-4 transition hover:border-brand-bright hover:bg-tint"
           >
             <span className="min-w-0">
-              <span className="block font-semibold text-[--color-ink]">{d.title}</span>
-              <span className="block text-[0.86rem] text-[--color-grey]">
+              <span className="block font-semibold text-ink">{d.title}</span>
+              <span className="block text-[0.86rem] text-grey">
                 {[d.fileLocale, d.fileExt, formatSize(d.sizeBytes), d.description]
                   .filter(Boolean)
                   .join(' · ')}
               </span>
             </span>
-            <span className="shrink-0 font-semibold text-[--color-brand-deep]">
+            <span className="shrink-0 font-semibold text-brand-deep">
               {locale === 'en' ? 'Download' : '下載'} ↓
             </span>
           </a>
@@ -228,7 +228,7 @@ function QuickDownloads({
 
 function HubCard({ item }: { item: NonNullable<HubCardsSection['items']>[number] }) {
   return (
-    <div className="rounded-[20px] border border-[--color-hairline] p-6">
+    <div className="rounded-[20px] border border-hairline p-6">
       <HubIcon name={item.icon} />
       {item.title && <h3 className="mt-3 text-[1.15rem] font-semibold">{item.title}</h3>}
       {item.body && <p className="mt-1.5 text-[0.92rem]">{item.body}</p>}
@@ -286,7 +286,7 @@ function HubIcon({ name }: { name?: string }) {
       stroke="currentColor"
       strokeWidth="1.6"
       aria-hidden
-      className="text-[--color-brand-deep]"
+      className="text-brand-deep"
     >
       {shape}
     </svg>

@@ -44,9 +44,9 @@ export function SiteFooter({
   const email   = s('company.email', 'service@comfortplus-medical.com');
 
   return (
-    <footer className="mt-20 border-t border-[--color-hairline] bg-[--color-tint]">
-      <div className="mx-auto max-w-[--container-content] px-6 py-12 text-sm lg:px-16">
-        <p className="text-base font-semibold text-[--color-ink]">
+    <footer className="mt-20 border-t border-hairline bg-tint">
+      <div className="mx-auto max-w-content px-6 py-12 text-sm lg:px-16">
+        <p className="text-base font-semibold text-ink">
           Comfort Plus Corporation
         </p>
         <p className="mt-2">{address}</p>
@@ -56,7 +56,7 @@ export function SiteFooter({
           {' · '}
           <a href={`mailto:${email}`}>{email}</a>
         </p>
-        <p className="mt-1 text-[--color-grey]">{hours}</p>
+        <p className="mt-1 text-grey">{hours}</p>
 
         {menu && menu.length > 0 && (
           <nav className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
@@ -68,7 +68,7 @@ export function SiteFooter({
           </nav>
         )}
 
-        <p className="mt-8 text-[--color-grey]">
+        <p className="mt-8 text-grey">
           © {new Date().getFullYear()} Comfort Plus Corporation. {c.rights}
         </p>
       </div>

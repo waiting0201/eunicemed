@@ -80,7 +80,7 @@ export default async function DownloadsPage({
       <ResourcesSubnav locale={locale} active="/downloads" />
       <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />
 
-      <section className="mx-auto max-w-[--container-content] px-6 py-14 lg:px-16">
+      <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
         <div className="grid gap-10 lg:grid-cols-[240px_1fr]">
           <SideFilter
             label={c.categories}
@@ -94,7 +94,7 @@ export default async function DownloadsPage({
 
           <div className="space-y-3">
             {result.items.length === 0 ? (
-              <p className="py-16 text-center text-[--color-grey]">{c.empty}</p>
+              <p className="py-16 text-center text-grey">{c.empty}</p>
             ) : (
               result.items.map((d) => (
                 <a
@@ -104,20 +104,20 @@ export default async function DownloadsPage({
                   // 交給瀏覽器依 Content-Type 決定開啟或下載
                   target="_blank"
                   rel="noopener"
-                  className="flex items-center gap-4 rounded-[16px] border border-[--color-hairline] p-4 transition hover:border-[--color-brand-bright] hover:bg-[--color-tint]"
+                  className="flex items-center gap-4 rounded-[16px] border border-hairline p-4 transition hover:border-brand-bright hover:bg-tint"
                 >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] bg-[#e9f8fa] text-[--color-brand-deep]">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] bg-[#e9f8fa] text-brand-deep">
                     <FileIcon />
                   </span>
 
                   <span className="min-w-0 flex-1">
-                    <span className="block font-semibold text-[--color-ink]">{d.title}</span>
-                    <span className="block text-[0.88rem] text-[--color-grey]">
+                    <span className="block font-semibold text-ink">{d.title}</span>
+                    <span className="block text-[0.88rem] text-grey">
                       {meta(d)}
                     </span>
                   </span>
 
-                  <span className="shrink-0 whitespace-nowrap font-semibold text-[--color-brand-deep]">
+                  <span className="shrink-0 whitespace-nowrap font-semibold text-brand-deep">
                     {c.download} ↓
                   </span>
                 </a>

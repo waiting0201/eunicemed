@@ -37,7 +37,7 @@ export function ProductGallery({
 
   if (images.length === 0) {
     return (
-      <div className="flex aspect-square items-center justify-center rounded-[22px] bg-[--color-tint-deep] text-sm text-[--color-grey]">
+      <div className="flex aspect-square items-center justify-center rounded-[22px] bg-tint-deep text-sm text-grey">
         1:1
       </div>
     );
@@ -47,7 +47,7 @@ export function ProductGallery({
 
   return (
     <div>
-      <div className="aspect-square overflow-hidden rounded-[22px] bg-[--color-tint-deep]">
+      <div className="aspect-square overflow-hidden rounded-[22px] bg-tint-deep">
         <img
           src={main.url}
           srcSet={srcSetOf(main)}
@@ -70,10 +70,10 @@ export function ProductGallery({
               onClick={() => setActive(i)}
               aria-label={thumbLabel(i + 1)}
               aria-current={i === active ? 'true' : undefined}
-              className={`aspect-square overflow-hidden rounded-xl bg-[--color-tint-deep] transition ${
+              className={`aspect-square overflow-hidden rounded-xl bg-tint-deep transition ${
                 i === active
-                  ? 'ring-2 ring-[--color-brand]'
-                  : 'ring-1 ring-[--color-hairline] hover:ring-[--color-brand-bright]'
+                  ? 'ring-2 ring-brand'
+                  : 'ring-1 ring-hairline hover:ring-brand-bright'
               }`}
             >
               <img

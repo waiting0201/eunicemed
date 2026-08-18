@@ -15,7 +15,7 @@ export function ProductGrid({
   locale: Locale;
 }) {
   if (items.length === 0) {
-    return <p className="py-16 text-center text-[--color-grey]">{EMPTY[locale]}</p>;
+    return <p className="py-16 text-center text-grey">{EMPTY[locale]}</p>;
   }
 
   return (

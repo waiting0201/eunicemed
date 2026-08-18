@@ -24,10 +24,10 @@ export function CategoryHero({
   kind: 'category' | 'subCategory';
 }) {
   return (
-    <section className="mx-auto max-w-[--container-content] px-6 pb-12 pt-10 lg:px-16">
+    <section className="mx-auto max-w-content px-6 pb-12 pt-10 lg:px-16">
       <div className="grid gap-10 lg:grid-cols-[1fr_420px] lg:items-center">
         <div>
-          <p className="text-sm uppercase tracking-[0.18em] text-[--color-brand-deep]">
+          <p className="text-sm uppercase tracking-[0.18em] text-brand-deep">
             {kind === 'category' ? EYEBROW[locale].category : EYEBROW[locale].subCategory}
           </p>
 
@@ -40,8 +40,8 @@ export function CategoryHero({
           {data.stats && data.stats.length > 0 && (
             <div className="mt-7 flex flex-wrap gap-x-8 gap-y-3 text-sm">
               {data.stats.map((s, i) => (
-                <span key={i} className="text-[--color-grey]">
-                  <b className="mr-1.5 text-xl font-semibold text-[--color-ink]">
+                <span key={i} className="text-grey">
+                  <b className="mr-1.5 text-xl font-semibold text-ink">
                     {s.value}
                   </b>
                   {s.label}
@@ -51,7 +51,7 @@ export function CategoryHero({
           )}
         </div>
 
-        <div className="aspect-[16/10] overflow-hidden rounded-lg bg-[--color-tint]">
+        <div className="aspect-[16/10] overflow-hidden rounded-lg bg-tint">
           {data.heroImage ? (
             <img
               src={data.heroImage.url}
@@ -63,7 +63,7 @@ export function CategoryHero({
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-xs text-[--color-grey]">
+            <div className="flex h-full items-center justify-center text-xs text-grey">
               16:10 · 1200×750
             </div>
           )}

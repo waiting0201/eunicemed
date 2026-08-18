@@ -9,12 +9,12 @@ import type { SectionCta } from '@/lib/page';
  */
 const STYLES = {
   primary:
-    'inline-block rounded-full bg-[--color-brand] px-7 py-3 font-semibold text-white shadow-[0_10px_30px_rgba(0,181,205,.32)] transition hover:bg-[--color-brand-deep] hover:text-white',
+    'inline-block rounded-full bg-brand px-7 py-3 font-semibold text-white shadow-[0_10px_30px_rgba(0,181,205,.32)] transition hover:bg-brand-deep hover:text-white',
   outline:
-    'inline-block rounded-full border-[1.5px] border-[rgba(0,146,168,.4)] px-6 py-[11px] font-semibold text-[--color-brand-deep]',
+    'inline-block rounded-full border-[1.5px] border-[rgba(0,146,168,.4)] px-6 py-[11px] font-semibold text-brand-deep',
   onDark:
-    'inline-block rounded-full bg-white px-7 py-3 font-semibold text-[--color-brand-deep] transition hover:bg-white/90',
-  text: 'font-semibold text-[--color-brand-deep]',
+    'inline-block rounded-full bg-white px-7 py-3 font-semibold text-brand-deep transition hover:bg-white/90',
+  text: 'font-semibold text-brand-deep',
 } as const;
 
 export function SectionCtaLink({

@@ -108,7 +108,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
       <Breadcrumb locale={locale} product={p} productsLabel={c.products} />
 
       {/* 01 圖庫 + 摘要 */}
-      <section className="mx-auto max-w-[--container-content] px-6 pb-14 pt-2 lg:px-16">
+      <section className="mx-auto max-w-content px-6 pb-14 pt-2 lg:px-16">
         <div className="grid gap-12 lg:grid-cols-2">
           <ProductGallery images={p.images} productName={p.name} locale={locale} />
 
@@ -117,7 +117,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
             <h1 className="mb-1 mt-3.5 text-[clamp(2rem,3.6vw,2.7rem)] font-normal">
               {p.name}
             </h1>
-            {p.sku && <p className="font-medium text-[--color-grey]">{p.sku}</p>}
+            {p.sku && <p className="font-medium text-grey">{p.sku}</p>}
             {p.summary && <p className="my-5 text-[1.08rem]">{p.summary}</p>}
 
             <Chips product={p} />
@@ -125,14 +125,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
             <div className="mt-7 flex flex-wrap gap-3">
               <a
                 href="#inquiry"
-                className="rounded-full bg-[--color-brand] px-8 py-3.5 font-semibold text-white shadow-[0_10px_30px_rgba(0,181,205,.32)] transition hover:bg-[--color-brand-deep] hover:text-white"
+                className="rounded-full bg-brand px-8 py-3.5 font-semibold text-white shadow-[0_10px_30px_rgba(0,181,205,.32)] transition hover:bg-brand-deep hover:text-white"
               >
                 {c.quote}
               </a>
               {(p.specs?.length || p.sizeChart) && (
                 <a
                   href="#specs"
-                  className="rounded-full border-[1.5px] border-[rgba(0,146,168,.4)] px-7 py-3 font-semibold text-[--color-brand-deep]"
+                  className="rounded-full border-[1.5px] border-[rgba(0,146,168,.4)] px-7 py-3 font-semibold text-brand-deep"
                 >
                   {c.viewSpecs}
                 </a>
@@ -144,13 +144,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
 
       {/* 02 特色 */}
       {p.features && p.features.length > 0 && (
-        <section className="bg-[--color-tint] py-14">
-          <div className="mx-auto max-w-[--container-content] px-6 lg:px-16">
+        <section className="bg-tint py-14">
+          <div className="mx-auto max-w-content px-6 lg:px-16">
             <SectionHeading index={next()} title={c.features} className="mb-9" />
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {p.features.map((f, i) => (
                 <div key={f.title ?? i}>
-                  <div className="mb-3.5 flex h-13 w-13 items-center justify-center rounded-[14px] bg-[#e9f8fa] p-3.5 text-[--color-brand-deep]">
+                  <div className="mb-3.5 flex h-13 w-13 items-center justify-center rounded-[14px] bg-[#e9f8fa] p-3.5 text-brand-deep">
                     <FeatureIcon />
                   </div>
                   {f.title && <h3 className="text-[1.08rem] font-semibold">{f.title}</h3>}
@@ -164,7 +164,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
 
       {/* 03 適用時機 */}
       {p.useCases && p.useCases.length > 0 && (
-        <section className="mx-auto max-w-[--container-content] px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
           <div className="grid items-center gap-14 lg:grid-cols-2">
             {p.useCaseImage ? (
               <img
@@ -179,7 +179,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
                 className="aspect-[4/3] w-full rounded-[22px] object-cover"
               />
             ) : (
-              <div className="aspect-[4/3] rounded-[22px] bg-[--color-tint-deep]" />
+              <div className="aspect-[4/3] rounded-[22px] bg-tint-deep" />
             )}
 
             <div>
@@ -187,9 +187,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
               {p.useCases.map((u, i) => (
                 <div
                   key={u.title ?? i}
-                  className="flex gap-3.5 border-b border-[--color-hairline] py-3.5 last:border-0"
+                  className="flex gap-3.5 border-b border-hairline py-3.5 last:border-0"
                 >
-                  <span className="font-bold text-[--color-brand-deep]">
+                  <span className="font-bold text-brand-deep">
                     {String(i + 1).padStart(2, '0')}
                   </span>
                   <div>
@@ -205,8 +205,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
 
       {/* 04 規格與尺寸 */}
       {(p.specs?.length || p.sizeChart) && (
-        <section id="specs" className="bg-[--color-tint] py-14">
-          <div className="mx-auto max-w-[--container-content] px-6 lg:px-16">
+        <section id="specs" className="bg-tint py-14">
+          <div className="mx-auto max-w-content px-6 lg:px-16">
             <SectionHeading index={next()} title={c.specsAndSizes} accent className="mb-9" />
             <div className="grid gap-12 lg:grid-cols-[1fr_1.3fr]">
               {p.specs && p.specs.length > 0 && (
@@ -215,10 +215,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
                   {p.specs.map((s, i) => (
                     <div
                       key={s.label ?? i}
-                      className="flex justify-between gap-4 border-b border-[--color-hairline] py-3"
+                      className="flex justify-between gap-4 border-b border-hairline py-3"
                     >
                       <span>{s.label}</span>
-                      <span className="font-medium text-[--color-ink]">{s.value}</span>
+                      <span className="font-medium text-ink">{s.value}</span>
                     </div>
                   ))}
                 </div>
@@ -237,7 +237,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
 
       {/* 05 認證 + 06 下載 */}
       {(p.certifications.length > 0 || p.downloads.length > 0) && (
-        <section className="mx-auto max-w-[--container-content] px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
           <div className="grid gap-14 lg:grid-cols-2">
             {p.certifications.length > 0 && (
               <div>
@@ -247,7 +247,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
                     <div
                       key={cert.slug}
                       title={cert.subLabel ?? undefined}
-                      className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border border-[--color-hairline] p-2 text-center text-[0.85rem] font-semibold text-[--color-ink]"
+                      className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border border-hairline p-2 text-center text-[0.85rem] font-semibold text-ink"
                     >
                       {cert.logo ? (
                         <img
@@ -277,15 +277,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
                     // 用 target 讓瀏覽器自己決定開啟或下載
                     target="_blank"
                     rel="noopener"
-                    className="mb-3 flex items-center justify-between gap-4 rounded-[14px] border border-[--color-hairline] px-4.5 py-4 transition hover:border-[--color-brand-bright]"
+                    className="mb-3 flex items-center justify-between gap-4 rounded-[14px] border border-hairline px-4.5 py-4 transition hover:border-brand-bright"
                   >
                     <span>
-                      <span className="block font-medium text-[--color-ink]">{d.title}</span>
-                      <span className="text-[0.8rem] text-[--color-grey]">
+                      <span className="block font-medium text-ink">{d.title}</span>
+                      <span className="text-[0.8rem] text-grey">
                         {c.fileMeta(d)}
                       </span>
                     </span>
-                    <span className="font-semibold text-[--color-brand-deep]">↓</span>
+                    <span className="font-semibold text-brand-deep">↓</span>
                   </a>
                 ))}
               </div>
@@ -296,8 +296,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
 
       {/* 07 相關產品 */}
       {p.relatedProducts.length > 0 && (
-        <section className="bg-[--color-tint] py-14">
-          <div className="mx-auto max-w-[--container-content] px-6 lg:px-16">
+        <section className="bg-tint py-14">
+          <div className="mx-auto max-w-content px-6 lg:px-16">
             <SectionHeading index={next()} title={c.related} className="mb-8" />
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {p.relatedProducts.map((r) => (
@@ -352,14 +352,14 @@ function Breadcrumb({
   ].filter(Boolean) as { href: string; label: string }[];
 
   return (
-    <nav className="mx-auto max-w-[--container-content] px-6 py-4 text-[0.85rem] font-medium text-[#66787f] lg:px-16">
+    <nav className="mx-auto max-w-content px-6 py-4 text-[0.85rem] font-medium text-[#66787f] lg:px-16">
       {crumbs.map((crumb) => (
         <span key={crumb.href}>
           <Link href={crumb.href}>{crumb.label}</Link>
           <span className="mx-2 text-[#b7c4c8]">/</span>
         </span>
       ))}
-      <span className="text-[--color-ink]">{product.name}</span>
+      <span className="text-ink">{product.name}</span>
     </nav>
   );
 }
@@ -377,7 +377,7 @@ function Chips({ product }: { product: ProductDetail }) {
       {chips.map((chip) => (
         <span
           key={chip}
-          className="rounded-full border border-[--color-hairline] bg-[--color-tint-deep] px-3.5 py-1.5 text-[0.82rem] font-medium"
+          className="rounded-full border border-hairline bg-tint-deep px-3.5 py-1.5 text-[0.82rem] font-medium"
         >
           {chip}
         </span>
@@ -388,7 +388,7 @@ function Chips({ product }: { product: ProductDetail }) {
 
 function SubHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="mb-3.5 text-base font-semibold uppercase tracking-[0.06em] text-[--color-brand-deep]">
+    <h3 className="mb-3.5 text-base font-semibold uppercase tracking-[0.06em] text-brand-deep">
       {children}
     </h3>
   );

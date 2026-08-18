@@ -20,11 +20,11 @@ export function ArticleCard({
   return (
     <Link
       href={item.url}
-      className={`group overflow-hidden rounded-[20px] border border-[--color-hairline] bg-white transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(10,60,72,.10)] ${
+      className={`group overflow-hidden rounded-[20px] border border-hairline bg-white transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(10,60,72,.10)] ${
         featured ? 'grid gap-0 sm:grid-cols-2' : 'block'
       }`}
     >
-      <div className={`overflow-hidden bg-[--color-tint-deep] ${featured ? 'aspect-[16/10] sm:h-full' : 'aspect-[16/10]'}`}>
+      <div className={`overflow-hidden bg-tint-deep ${featured ? 'aspect-[16/10] sm:h-full' : 'aspect-[16/10]'}`}>
         {item.cover && (
           <img
             src={item.cover.url}
@@ -41,9 +41,9 @@ export function ArticleCard({
       </div>
 
       <div className={featured ? 'p-7' : 'px-5 pb-6 pt-5'}>
-        <p className="flex flex-wrap items-center gap-x-2 text-[0.8rem] text-[--color-grey]">
+        <p className="flex flex-wrap items-center gap-x-2 text-[0.8rem] text-grey">
           {item.category && (
-            <span className="font-bold uppercase tracking-[0.1em] text-[--color-brand-deep]">
+            <span className="font-bold uppercase tracking-[0.1em] text-brand-deep">
               {item.category.name}
             </span>
           )}

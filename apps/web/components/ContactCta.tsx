@@ -17,14 +17,14 @@ export function ContactCta({
   body: string;
 }) {
   return (
-    <div className="mt-10 flex flex-wrap items-center justify-between gap-6 rounded-[20px] border border-[--color-hairline] bg-[--color-tint] p-7">
+    <div className="mt-10 flex flex-wrap items-center justify-between gap-6 rounded-[20px] border border-hairline bg-tint p-7">
       <div>
         <h3 className="text-[1.2rem] font-semibold">{title}</h3>
         <p className="mt-1 max-w-[52ch] text-[0.95rem]">{body}</p>
       </div>
       <Link
         href={`/${locale}/contact`}
-        className="shrink-0 rounded-full bg-[--color-brand] px-7 py-3 font-semibold text-white shadow-[0_10px_30px_rgba(0,181,205,.32)] transition hover:bg-[--color-brand-deep] hover:text-white"
+        className="shrink-0 rounded-full bg-brand px-7 py-3 font-semibold text-white shadow-[0_10px_30px_rgba(0,181,205,.32)] transition hover:bg-brand-deep hover:text-white"
       >
         {CONTACT[locale]}
       </Link>

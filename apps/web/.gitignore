@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 後台 SPA 的建置產物（由 apps/admin `pnpm build` 產生）。
+# 不進版控，也讓 Tailwind 不去掃它 —— 後台有自己的一套 token，
+# 被公開站的 Tailwind 掃到會產生一堆用不到又無效的 class。
+public/admin/

@@ -119,7 +119,7 @@ export default async function ProductsPage({
 
       {/* 三大分類卡 —— 動態取自 GET /categories */}
       {categories.length > 0 && (
-        <section className="mx-auto max-w-[--container-content] px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {categories.map((cat) => (
               <CategoryCard key={cat.slug} category={cat} locale={locale} />
@@ -129,8 +129,8 @@ export default async function ProductsPage({
       )}
 
       {/* 篩選 + 產品格 */}
-      <section id="grid" className="bg-[--color-tint] py-14">
-        <div className="mx-auto max-w-[--container-content] px-6 lg:px-16">
+      <section id="grid" className="bg-tint py-14">
+        <div className="mx-auto max-w-content px-6 lg:px-16">
           <div className="space-y-3">
             <FilterChips
               label={c.category}
@@ -161,7 +161,7 @@ export default async function ProductsPage({
             />
           </div>
 
-          <p className="mt-6 text-sm text-[--color-grey]">{c.count(result.totalCount)}</p>
+          <p className="mt-6 text-sm text-grey">{c.count(result.totalCount)}</p>
 
           <div className="mt-5">
             <ProductGrid items={result.items} locale={locale} />
@@ -189,7 +189,7 @@ export default async function ProductsPage({
             <div className="absolute inset-0 bg-[#12333c]" />
           )}
 
-          <div className="relative mx-auto max-w-[--container-content] px-6 text-center lg:px-16">
+          <div className="relative mx-auto max-w-content px-6 text-center lg:px-16">
             {cta.title && (
               <h2 className="mx-auto max-w-[24ch] text-[clamp(1.8rem,3.4vw,2.3rem)] font-normal text-white">
                 {cta.title}
@@ -223,9 +223,9 @@ function CategoryCard({
   return (
     <Link
       href={`/${locale}/products/${category.slug}`}
-      className="group overflow-hidden rounded-[20px] border border-[--color-hairline] bg-white transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(10,60,72,.10)]"
+      className="group overflow-hidden rounded-[20px] border border-hairline bg-white transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(10,60,72,.10)]"
     >
-      <div className="aspect-[4/3] overflow-hidden bg-[--color-tint-deep]">
+      <div className="aspect-[4/3] overflow-hidden bg-tint-deep">
         {category.heroImage && (
           <img
             src={category.heroImage.url}
@@ -250,7 +250,7 @@ function CategoryCard({
 
 function CtaLink({ cta, primary = false }: { cta: SectionCta; primary?: boolean }) {
   const className = primary
-    ? 'rounded-full bg-white px-7 py-3 font-semibold text-[--color-brand-deep] transition hover:bg-white/90'
+    ? 'rounded-full bg-white px-7 py-3 font-semibold text-brand-deep transition hover:bg-white/90'
     : 'rounded-full border-[1.5px] border-white/50 px-7 py-3 font-semibold text-white transition hover:border-white';
 
   const label = cta.label ?? cta.url!;

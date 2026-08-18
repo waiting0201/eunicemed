@@ -105,17 +105,17 @@ export default async function ApplicationDetailPage({
 
   return (
     <>
-      <nav className="mx-auto max-w-[--container-content] px-6 py-4 text-[0.85rem] font-medium text-[#66787f] lg:px-16">
+      <nav className="mx-auto max-w-content px-6 py-4 text-[0.85rem] font-medium text-[#66787f] lg:px-16">
         <Link href={`/${locale}/applications`}>{c.applications}</Link>
         <span className="mx-2 text-[#b7c4c8]">/</span>
-        <span className="text-[--color-ink]">{a.name}</span>
+        <span className="text-ink">{a.name}</span>
       </nav>
 
       {/* 01 導言 */}
-      <section className="mx-auto max-w-[--container-content] px-6 pb-14 lg:px-16">
+      <section className="mx-auto max-w-content px-6 pb-14 lg:px-16">
         <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
           <div>
-            <p className="text-[0.78rem] font-bold uppercase tracking-[0.16em] text-[--color-brand-deep]">
+            <p className="text-[0.78rem] font-bold uppercase tracking-[0.16em] text-brand-deep">
               {kind}
             </p>
             <h1 className="mt-2.5 text-[clamp(2rem,3.6vw,2.8rem)] font-normal">{a.name}</h1>
@@ -126,9 +126,9 @@ export default async function ApplicationDetailPage({
                 {a.stats.map((s, i) => (
                   <span
                     key={s.label ?? i}
-                    className="rounded-full border border-[--color-hairline] bg-[--color-tint-deep] px-4 py-2 text-[0.9rem]"
+                    className="rounded-full border border-hairline bg-tint-deep px-4 py-2 text-[0.9rem]"
                   >
-                    <b className="text-[--color-ink]">{s.value}</b> {s.label}
+                    <b className="text-ink">{s.value}</b> {s.label}
                   </span>
                 ))}
               </div>
@@ -138,14 +138,14 @@ export default async function ApplicationDetailPage({
               {a.recommendedProducts.length > 0 && (
                 <a
                   href="#products"
-                  className="rounded-full bg-[--color-brand] px-7 py-3 font-semibold text-white shadow-[0_10px_30px_rgba(0,181,205,.32)] transition hover:bg-[--color-brand-deep] hover:text-white"
+                  className="rounded-full bg-brand px-7 py-3 font-semibold text-white shadow-[0_10px_30px_rgba(0,181,205,.32)] transition hover:bg-brand-deep hover:text-white"
                 >
                   {c.seeSolutions}
                 </a>
               )}
               <Link
                 href={`/${locale}/contact`}
-                className="rounded-full border-[1.5px] border-[rgba(0,146,168,.4)] px-6 py-[11px] font-semibold text-[--color-brand-deep]"
+                className="rounded-full border-[1.5px] border-[rgba(0,146,168,.4)] px-6 py-[11px] font-semibold text-brand-deep"
               >
                 {c.ask}
               </Link>
@@ -164,13 +164,13 @@ export default async function ApplicationDetailPage({
               className="aspect-[4/5] w-full rounded-[22px] object-cover"
             />
           ) : (
-            <div className="aspect-[4/5] rounded-[22px] bg-[--color-tint-deep]" />
+            <div className="aspect-[4/5] rounded-[22px] bg-tint-deep" />
           )}
         </div>
 
         {a.body && (
           <div
-            className="mt-10 max-w-[68ch] [&_a]:text-[--color-brand-deep] [&_li]:mt-1 [&_p]:mt-4 [&_ul]:list-disc [&_ul]:pl-5"
+            className="mt-10 max-w-[68ch] [&_a]:text-brand-deep [&_li]:mt-1 [&_p]:mt-4 [&_ul]:list-disc [&_ul]:pl-5"
             // API 已在寫入時以白名單淨化（Services/HtmlSanitizers.cs）。
             // 前端不再淨化一次 —— 兩套規則會互相漂移，安全邊界只留伺服器端一道。
             dangerouslySetInnerHTML={{ __html: a.body }}
@@ -180,14 +180,14 @@ export default async function ApplicationDetailPage({
 
       {/* 02 常見困擾 */}
       {a.concerns && a.concerns.length > 0 && (
-        <section className="bg-[--color-tint] py-14">
-          <div className="mx-auto max-w-[--container-content] px-6 lg:px-16">
+        <section className="bg-tint py-14">
+          <div className="mx-auto max-w-content px-6 lg:px-16">
             <SectionHeading index={next()} title={c.concerns} className="mb-8" />
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {a.concerns.map((x, i) => (
                 <div
                   key={x.title ?? i}
-                  className="rounded-[16px] border border-[--color-hairline] bg-white p-5"
+                  className="rounded-[16px] border border-hairline bg-white p-5"
                 >
                   {x.title && <h3 className="text-[1.05rem] font-semibold">{x.title}</h3>}
                   {x.body && <p className="mt-1.5 text-[0.9rem]">{x.body}</p>}
@@ -200,13 +200,13 @@ export default async function ApplicationDetailPage({
 
       {/* 03 支撐強度 */}
       {a.supportLevels && a.supportLevels.length > 0 && (
-        <section className="mx-auto max-w-[--container-content] px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
           <SectionHeading index={next()} title={c.supportLevels} className="mb-8" />
           <div className="grid gap-6 lg:grid-cols-3">
             {a.supportLevels.map((lv, i) => (
               <div
                 key={lv.collection?.slug ?? i}
-                className="rounded-[18px] border border-[--color-hairline] p-6"
+                className="rounded-[18px] border border-hairline p-6"
               >
                 {lv.collection && (
                   <h3
@@ -218,7 +218,7 @@ export default async function ApplicationDetailPage({
                 )}
                 {lv.body && <p className="mt-2">{lv.body}</p>}
                 {lv.bestFor && (
-                  <p className="mt-3 text-[0.9rem] text-[--color-grey]">
+                  <p className="mt-3 text-[0.9rem] text-grey">
                     {c.bestFor}
                     {lv.bestFor}
                   </p>
@@ -226,7 +226,7 @@ export default async function ApplicationDetailPage({
                 {lv.linkUrl && lv.collection && (
                   <Link
                     href={lv.linkUrl}
-                    className="mt-4 inline-block font-semibold text-[--color-brand-deep]"
+                    className="mt-4 inline-block font-semibold text-brand-deep"
                   >
                     {c.view(lv.collection.name)}
                   </Link>
@@ -239,14 +239,14 @@ export default async function ApplicationDetailPage({
 
       {/* 04 推薦產品 */}
       {a.recommendedProducts.length > 0 && (
-        <section id="products" className="bg-[--color-tint] py-14">
-          <div className="mx-auto max-w-[--container-content] px-6 lg:px-16">
+        <section id="products" className="bg-tint py-14">
+          <div className="mx-auto max-w-content px-6 lg:px-16">
             <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
               <SectionHeading index={next()} title={c.recommended(a.name)} />
               {a.type !== 'special-care' && (
                 <Link
                   href={`/${locale}/products?bodyPart=${a.slug}`}
-                  className="font-semibold text-[--color-brand-deep]"
+                  className="font-semibold text-brand-deep"
                 >
                   {c.allProducts(productTotal(a), a.name)}
                 </Link>
@@ -263,16 +263,16 @@ export default async function ApplicationDetailPage({
 
       {/* 05 如何選擇 */}
       {a.howTo && a.howTo.length > 0 && (
-        <section className="mx-auto max-w-[--container-content] px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
           <div className="grid items-center gap-14 lg:grid-cols-2">
             <div>
               <SectionHeading index={next()} title={c.howTo} className="mb-4" />
               {a.howTo.map((h, i) => (
                 <div
                   key={h.title ?? i}
-                  className="flex gap-3.5 border-b border-[--color-hairline] py-3.5 last:border-0"
+                  className="flex gap-3.5 border-b border-hairline py-3.5 last:border-0"
                 >
-                  <span className="font-bold text-[--color-brand-deep]">
+                  <span className="font-bold text-brand-deep">
                     {String(i + 1).padStart(2, '0')}
                   </span>
                   <div>
@@ -283,7 +283,7 @@ export default async function ApplicationDetailPage({
               ))}
               <Link
                 href={`/${locale}/faq`}
-                className="mt-5 inline-block font-semibold text-[--color-brand-deep]"
+                className="mt-5 inline-block font-semibold text-brand-deep"
               >
                 {c.moreFaq}
               </Link>
@@ -302,7 +302,7 @@ export default async function ApplicationDetailPage({
                 className="aspect-[16/10] w-full rounded-[22px] object-cover"
               />
             ) : (
-              <div className="aspect-[16/10] rounded-[22px] bg-[--color-tint-deep]" />
+              <div className="aspect-[16/10] rounded-[22px] bg-tint-deep" />
             )}
           </div>
         </section>
@@ -311,29 +311,29 @@ export default async function ApplicationDetailPage({
       {/* 醫療免責。**刻意放在區段之外**：它一開始寫在「如何選擇」裡，
           結果該區沒內容時整段免責跟著消失 —— 中文頁就完全看不到。
           這是法務要求的固定文字，未填時用模板預設（docs/09 §應用方案）。 */}
-      <section className="mx-auto max-w-[--container-content] px-6 pb-4 lg:px-16">
-        <p className="text-[0.85rem] text-[--color-grey]">
+      <section className="mx-auto max-w-content px-6 pb-4 lg:px-16">
+        <p className="text-[0.85rem] text-grey">
           {a.disclaimer ?? DEFAULT_DISCLAIMER[locale]}
         </p>
       </section>
 
       {/* 06 相關應用方案 */}
       {a.related.length > 0 && (
-        <section className="bg-[--color-tint] py-14">
-          <div className="mx-auto max-w-[--container-content] px-6 lg:px-16">
+        <section className="bg-tint py-14">
+          <div className="mx-auto max-w-content px-6 lg:px-16">
             <SectionHeading index={next()} title={c.related} className="mb-8" />
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {a.related.map((r) => (
                 <Link
                   key={r.slug}
                   href={r.url}
-                  className="rounded-[14px] border border-[--color-hairline] bg-white p-5 transition hover:border-[--color-brand-bright]"
+                  className="rounded-[14px] border border-hairline bg-white p-5 transition hover:border-brand-bright"
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="text-[1.05rem] font-semibold text-[--color-ink]">
+                    <span className="text-[1.05rem] font-semibold text-ink">
                       {r.name}
                     </span>
-                    <small className="text-[0.8rem] font-bold text-[--color-brand-deep]">
+                    <small className="text-[0.8rem] font-bold text-brand-deep">
                       {r.productCount}
                     </small>
                   </span>

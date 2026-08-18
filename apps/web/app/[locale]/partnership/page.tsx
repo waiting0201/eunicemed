@@ -28,7 +28,7 @@ type BecomePartnerSection = {
 
 const FALLBACK: Record<Locale, string> = { en: 'Partnership', 'zh-TW': '合作夥伴' };
 
-const PROSE = '[&_a]:text-[--color-brand-deep] [&_li]:mt-1 [&_p]:mt-4 [&_ul]:list-disc [&_ul]:pl-5';
+const PROSE = '[&_a]:text-brand-deep [&_li]:mt-1 [&_p]:mt-4 [&_ul]:list-disc [&_ul]:pl-5';
 
 export async function generateMetadata({
   params,
@@ -93,7 +93,7 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
 
       {/* 01 OEM / ODM */}
       {oem && (
-        <section className="mx-auto max-w-[--container-content] px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
               <SectionHeading index={next()} title={oem.title ?? ''} className="mb-4" />
@@ -103,7 +103,7 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
                   {oem.chips.map((chip, i) => (
                     <span
                       key={chip.label ?? i}
-                      className="rounded-full border border-[--color-hairline] bg-[--color-tint-deep] px-3.5 py-1.5 text-[0.85rem] font-medium"
+                      className="rounded-full border border-hairline bg-tint-deep px-3.5 py-1.5 text-[0.85rem] font-medium"
                     >
                       {chip.label}
                     </span>
@@ -124,7 +124,7 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
                 className="aspect-[16/9] w-full rounded-[20px] object-cover"
               />
             ) : (
-              <div className="aspect-[16/9] rounded-[20px] bg-[--color-tint-deep]" />
+              <div className="aspect-[16/9] rounded-[20px] bg-tint-deep" />
             )}
           </div>
         </section>
@@ -150,7 +150,7 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
             <div className="absolute inset-0 bg-[#12333c]" />
           )}
 
-          <div className="relative mx-auto max-w-[--container-content] px-6 lg:px-16">
+          <div className="relative mx-auto max-w-content px-6 lg:px-16">
             <span className="text-lg font-medium text-white/60">
               {String(next()).padStart(2, '0')}
             </span>
@@ -171,7 +171,7 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
 
       {/* 03 成為夥伴 */}
       {become && (
-        <section className="mx-auto max-w-[--container-content] px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
           <SectionHeading index={next()} title={become.title ?? ''} className="mb-8" />
 
           {become.steps && become.steps.length > 0 && (
@@ -179,9 +179,9 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
               {become.steps.map((step, i) => (
                 <div
                   key={step.title ?? i}
-                  className="rounded-[18px] border border-[--color-hairline] p-6"
+                  className="rounded-[18px] border border-hairline p-6"
                 >
-                  <span className="font-bold text-[--color-brand-deep]">
+                  <span className="font-bold text-brand-deep">
                     {String(i + 1).padStart(2, '0')}
                   </span>
                   {step.title && <h3 className="mt-1 text-[1.1rem] font-semibold">{step.title}</h3>}
@@ -198,7 +198,7 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
             **刻意不放一個按下去沒反應的送出鈕**。
           */}
           {(become.formTitle || become.formIntro) && (
-            <div className="mt-10 rounded-[20px] border border-[--color-hairline] bg-[--color-tint] p-7">
+            <div className="mt-10 rounded-[20px] border border-hairline bg-tint p-7">
               {become.formTitle && (
                 <h3 className="text-[1.2rem] font-semibold">{become.formTitle}</h3>
               )}
@@ -209,7 +209,7 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
                   {become.partnershipTypes.map((t, i) => (
                     <span
                       key={t.key ?? i}
-                      className="rounded-full border border-[--color-hairline] bg-white px-3.5 py-1.5 text-[0.85rem] font-medium"
+                      className="rounded-full border border-hairline bg-white px-3.5 py-1.5 text-[0.85rem] font-medium"
                     >
                       {t.label}
                     </span>

@@ -85,8 +85,8 @@ export default async function WhereToBuyPage({ params }: { params: Promise<Param
     <>
       <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />
 
-      <section className="mx-auto max-w-[--container-content] px-6 py-14 lg:px-16">
-        {isEmpty && <p className="py-10 text-center text-[--color-grey]">{c.empty}</p>}
+      <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
+        {isEmpty && <p className="py-10 text-center text-grey">{c.empty}</p>}
 
         {data.domestic.length > 0 && (
           <>
@@ -114,7 +114,7 @@ export default async function WhereToBuyPage({ params }: { params: Promise<Param
                   （`RegionLabel` 是 nullable 但實際資料多為空字串），
                   `??` 接不到空字串，那組會渲染成一行空白標題。
                 */}
-                <p className="text-[0.78rem] font-bold uppercase tracking-[0.14em] text-[--color-brand-deep]">
+                <p className="text-[0.78rem] font-bold uppercase tracking-[0.14em] text-brand-deep">
                   {group.region?.trim() || c.otherRegions}
                 </p>
                 <div className="mt-3 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -135,10 +135,10 @@ export default async function WhereToBuyPage({ params }: { params: Promise<Param
 
 function Card({ loc, visit }: { loc: SalesLocation; visit: string }) {
   return (
-    <div className="rounded-[18px] border border-[--color-hairline] p-6">
+    <div className="rounded-[18px] border border-hairline p-6">
       <h3 className="text-[1.1rem] font-semibold">{loc.name}</h3>
       {loc.address && <p className="mt-2 text-[0.92rem]">{loc.address}</p>}
-      {loc.note && <p className="mt-1 text-[0.88rem] text-[--color-grey]">{loc.note}</p>}
+      {loc.note && <p className="mt-1 text-[0.88rem] text-grey">{loc.note}</p>}
       {loc.phone && (
         <p className="mt-2 text-[0.92rem]">
           {/* 電話用 tel: —— 這頁在手機上的主要用途就是直接撥號 */}
@@ -150,7 +150,7 @@ function Card({ loc, visit }: { loc: SalesLocation; visit: string }) {
           href={loc.websiteUrl}
           target="_blank"
           rel="noopener"
-          className="mt-3 inline-block font-semibold text-[--color-brand-deep]"
+          className="mt-3 inline-block font-semibold text-brand-deep"
         >
           {visit}
         </a>

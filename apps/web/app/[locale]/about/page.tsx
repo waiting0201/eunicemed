@@ -90,9 +90,9 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
     <>
       {hero?.band && <Band media={hero.band} />}
 
-      <section className="mx-auto max-w-[--container-content] px-6 pt-10 lg:px-16">
+      <section className="mx-auto max-w-content px-6 pt-10 lg:px-16">
         <div className="mx-auto max-w-[760px] text-center">
-          <p className="text-[0.78rem] font-bold uppercase tracking-[0.16em] text-[--color-brand-deep]">
+          <p className="text-[0.78rem] font-bold uppercase tracking-[0.16em] text-brand-deep">
             {hero?.eyebrow ?? FALLBACK[locale].eyebrow}
           </p>
           <h1 className="mt-2.5 text-[clamp(2rem,3.6vw,2.8rem)] font-normal">
@@ -104,13 +104,13 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
 
       {/* 01 品牌故事 */}
       {story && (
-        <section className="mx-auto max-w-[--container-content] px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
           <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
             <div>
               <SectionHeading index={next()} title={story.title ?? ''} className="mb-4" />
               {story.body && (
                 <div
-                  className="[&_a]:text-[--color-brand-deep] [&_li]:mt-1 [&_p]:mt-4 [&_ul]:list-disc [&_ul]:pl-5"
+                  className="[&_a]:text-brand-deep [&_li]:mt-1 [&_p]:mt-4 [&_ul]:list-disc [&_ul]:pl-5"
                   // richtext 已在寫入時淨化（Section profile），前端不再處理
                   dangerouslySetInnerHTML={{ __html: story.body }}
                 />
@@ -151,7 +151,7 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
             </>
           )}
 
-          <div className="relative mx-auto max-w-[--container-content] px-6 lg:px-16">
+          <div className="relative mx-auto max-w-content px-6 lg:px-16">
             <span className="text-lg font-medium text-white/60">
               {String(next()).padStart(2, '0')}
             </span>
@@ -177,7 +177,7 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
 
       {/* 03 核心價值 */}
       {values && (
-        <section className="mx-auto max-w-[--container-content] px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
           <SectionHeading index={next()} title={values.title ?? ''} />
           {values.lead && <p className="mt-3 max-w-[68ch] text-[1.05rem]">{values.lead}</p>}
 
@@ -186,7 +186,7 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
               {values.items.map((v, i) => (
                 <div
                   key={v.title ?? i}
-                  className="rounded-[18px] border border-[--color-hairline] p-6"
+                  className="rounded-[18px] border border-hairline p-6"
                 >
                   {v.title && <h3 className="text-[1.2rem] font-semibold">{v.title}</h3>}
                   {v.body && <p className="mt-2">{v.body}</p>}
@@ -199,8 +199,8 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
 
       {/* 04 製造與品質 */}
       {manufacturing && (
-        <section className="bg-[--color-tint] py-14">
-          <div className="mx-auto max-w-[--container-content] px-6 lg:px-16">
+        <section className="bg-tint py-14">
+          <div className="mx-auto max-w-content px-6 lg:px-16">
             <SectionHeading index={next()} title={manufacturing.title ?? ''} className="mb-8" />
 
             {(manufacturing.imageWide || manufacturing.imageSquare) && (
@@ -250,7 +250,7 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
 
       {/* 05 認證 */}
       {certificates && (
-        <section className="mx-auto max-w-[--container-content] px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
           <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr]">
             <div>
               <SectionHeading index={next()} title={certificates.title ?? ''} />
@@ -300,7 +300,7 @@ function Band({ media }: { media: MediaRef }) {
  */
 function Cta({ cta }: { cta: SectionCta }) {
   const className =
-    'mt-5 inline-block rounded-full bg-[--color-brand] px-7 py-3 font-semibold text-white shadow-[0_10px_30px_rgba(0,181,205,.32)] transition hover:bg-[--color-brand-deep] hover:text-white';
+    'mt-5 inline-block rounded-full bg-brand px-7 py-3 font-semibold text-white shadow-[0_10px_30px_rgba(0,181,205,.32)] transition hover:bg-brand-deep hover:text-white';
 
   return cta.external ? (
     <a href={cta.url} target="_blank" rel="noopener" className={className}>
@@ -329,7 +329,7 @@ function CertCard({
   if (!cert) return null;
 
   return (
-    <div className="flex gap-4 rounded-[16px] border border-[--color-hairline] p-5">
+    <div className="flex gap-4 rounded-[16px] border border-hairline p-5">
       {cert.logo && (
         <img
           src={cert.logo.url}
@@ -340,9 +340,9 @@ function CertCard({
         />
       )}
       <div>
-        <div className="font-semibold text-[--color-ink]">{cert.mark}</div>
+        <div className="font-semibold text-ink">{cert.mark}</div>
         {cert.subLabel && (
-          <div className="text-[0.82rem] text-[--color-brand-deep]">{cert.subLabel}</div>
+          <div className="text-[0.82rem] text-brand-deep">{cert.subLabel}</div>
         )}
         {cert.description && (
           <p className="mt-1 text-[0.88rem]">{cert.description}</p>

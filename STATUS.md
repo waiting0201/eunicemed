@@ -41,7 +41,7 @@
 | 資料模型 | 🟡 98% | 54 張表完成 53 張（只剩 `ContactSubmission`）|
 | API | 🟡 96% | 已實作 **133** 條路由。Phase 0–7 除**表單**外全數完成 —— `POST /contact` 與收件匣擋於 SMTP 帳密 |
 | 前台 `apps/web` | 🟡 | Next.js 15 已建立，2 頁可運作；部署限制已實測 |
-| 後台 `apps/admin` | ⬜ | 尚未建立專案；介面需先跑 `frontend-design` skill |
+| 後台 `apps/admin` | 🟡 | 視覺方向已定案（見 [docs/03](docs/03-cms.md) §8.1）；骨架＋登入＋產品列表可運作，其餘 14 個畫面待做 |
 | 基礎設施 `infra/` | ⬜ | Bicep 尚未撰寫 |
 | CI/CD `.github/` | ⬜ | workflow 尚未撰寫 |
 
@@ -180,11 +180,17 @@ facet 篩選、standalone 產物 66MB／250MB。
 ⚠️ **動工前必須先啟動 `frontend-design` skill** —— 後台沒有 mockup、沒有設計稿，
 是要現場設計的。約束見 [docs/03-cms.md](docs/03-cms.md) §8.1。技術選型：Tailwind CSS + shadcn/ui。
 
+> **視覺方向已定案**（2026-08-18，`frontend-design` skill）：見 [docs/03-cms.md](docs/03-cms.md) §8.1。
+> 簽名元素是**完整度儀表** —— 三段軌道 × 雙語系，讓「缺什麼」一眼可見。
+> 側欄每項自帶迷你儀表，**因此不做 Dashboard 頁**。
+
 | 畫面 | 狀態 |
 |---|---|
-| 登入 / Dashboard | ⬜ |
+| 登入 | ✅ 可運作（含 refresh token 單次使用的併發處理）|
+| Dashboard | — 刻意不做，改由側欄儀表取代 |
 | 頁面內容（18 頁動態表單） | ⬜ |
-| 產品 / 分類 / 子分類 / 系列 / 認證 | ⬜ |
+| 產品列表 | ✅ 可運作（搜尋／狀態篩選／分頁／完整度儀表）|
+| 產品編輯 / 分類 / 子分類 / 系列 / 認證 | ⬜ |
 | 應用方案（含人體圖座標選取器） | ⬜ |
 | 文章 / 文章分類 / FAQ / 下載 / 據點 | ⬜ |
 | 媒體庫 | ⬜ |

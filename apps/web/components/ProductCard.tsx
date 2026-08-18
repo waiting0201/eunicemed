@@ -13,9 +13,9 @@ export function ProductCard({ item }: { item: ProductListItem }) {
   return (
     <Link
       href={item.url}
-      className="group block overflow-hidden rounded-lg border border-[--color-hairline] bg-white transition hover:-translate-y-0.5 hover:shadow-lg"
+      className="group block overflow-hidden rounded-lg border border-hairline bg-white transition hover:-translate-y-0.5 hover:shadow-lg"
     >
-      <div className="aspect-square overflow-hidden bg-[--color-tint]">
+      <div className="aspect-square overflow-hidden bg-tint">
         {item.image ? (
           <img
             src={item.image.url}
@@ -29,7 +29,7 @@ export function ProductCard({ item }: { item: ProductListItem }) {
             className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-xs text-[--color-grey]">
+          <div className="flex h-full items-center justify-center text-xs text-grey">
             1:1
           </div>
         )}
@@ -37,12 +37,12 @@ export function ProductCard({ item }: { item: ProductListItem }) {
 
       <div className="p-4">
         {item.collection && (
-          <p className="text-xs uppercase tracking-wide text-[--color-brand-deep]">
+          <p className="text-xs uppercase tracking-wide text-brand-deep">
             {item.collection.name}
           </p>
         )}
         <h3 className="mt-1 text-base font-semibold">{item.name}</h3>
-        {item.sku && <p className="mt-1 text-xs text-[--color-grey]">{item.sku}</p>}
+        {item.sku && <p className="mt-1 text-xs text-grey">{item.sku}</p>}
         {item.featuredBlurb && (
           <p className="mt-2 line-clamp-2 text-sm">{item.featuredBlurb}</p>
         )}

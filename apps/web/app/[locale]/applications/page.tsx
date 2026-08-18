@@ -66,9 +66,9 @@ export default async function ApplicationsPage({ params }: { params: Promise<Par
 
   return (
     <>
-      <section className="mx-auto max-w-[--container-content] px-6 pt-10 lg:px-16">
+      <section className="mx-auto max-w-content px-6 pt-10 lg:px-16">
         <div className="mx-auto max-w-[760px] text-center">
-          <p className="text-[0.78rem] font-bold uppercase tracking-[0.16em] text-[--color-brand-deep]">
+          <p className="text-[0.78rem] font-bold uppercase tracking-[0.16em] text-brand-deep">
             {c.eyebrow}
           </p>
           <h1 className="mt-2.5 text-[clamp(2rem,3.6vw,2.8rem)] font-normal">{c.title}</h1>
@@ -77,24 +77,24 @@ export default async function ApplicationsPage({ params }: { params: Promise<Par
       </section>
 
       {spots.length > 0 && (
-        <section className="mx-auto max-w-[--container-content] px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
           <SectionHeading index={next()} title={c.byBodyPart} className="mb-10" />
           <BodyMap spots={spots} locale={locale} />
         </section>
       )}
 
       {special.length > 0 && (
-        <section className="bg-[--color-tint] py-14">
-          <div className="mx-auto max-w-[--container-content] px-6 lg:px-16">
+        <section className="bg-tint py-14">
+          <div className="mx-auto max-w-content px-6 lg:px-16">
             <SectionHeading index={next()} title={c.bySpecial} className="mb-8" />
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {special.map((a) => (
                 <Link
                   key={a.slug}
                   href={a.url}
-                  className="group overflow-hidden rounded-[20px] border border-[--color-hairline] bg-white transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(10,60,72,.10)]"
+                  className="group overflow-hidden rounded-[20px] border border-hairline bg-white transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(10,60,72,.10)]"
                 >
-                  <div className="aspect-[16/10] overflow-hidden bg-[--color-tint-deep]">
+                  <div className="aspect-[16/10] overflow-hidden bg-tint-deep">
                     {a.image && (
                       <img
                         src={a.image.url}

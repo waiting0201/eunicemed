@@ -18,7 +18,7 @@ export function SizeChart({ chart }: { chart: NonNullable<ProductDetail['sizeCha
   return (
     <div>
       <div
-        className="grid gap-px overflow-hidden rounded-[14px] border border-[--color-hairline] bg-[#edf4f6]"
+        className="grid gap-px overflow-hidden rounded-[14px] border border-hairline bg-[#edf4f6]"
         style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
       >
         {hasRowLabels && <Cell head />}
@@ -39,7 +39,7 @@ export function SizeChart({ chart }: { chart: NonNullable<ProductDetail['sizeCha
       </div>
 
       {chart.footnote && (
-        <p className="mt-3 text-[0.82rem] text-[--color-grey]">{chart.footnote}</p>
+        <p className="mt-3 text-[0.82rem] text-grey">{chart.footnote}</p>
       )}
     </div>
   );
@@ -68,8 +68,8 @@ function Row({
 function Cell({ children, head = false }: { children?: React.ReactNode; head?: boolean }) {
   return (
     <div
-      className={`bg-[--color-tint-deep] p-3.5 text-center ${
-        head ? 'font-semibold text-[--color-brand-deep]' : 'text-sm'
+      className={`bg-tint-deep p-3.5 text-center ${
+        head ? 'font-semibold text-brand-deep' : 'text-sm'
       }`}
     >
       {children}

@@ -46,7 +46,7 @@ export function BodyMap({ spots, locale }: { spots: BodyMapSpot[]; locale: Local
   return (
     <div className="grid items-center gap-10 lg:grid-cols-[440px_1fr] lg:gap-16">
       {/* 人形 + 熱區 + 膠囊 */}
-      <div className="rounded-[28px] border border-[--color-hairline] bg-[linear-gradient(165deg,#fdfefe,#eff7f9)] p-8 shadow-[0_24px_54px_rgba(10,60,72,.08)]">
+      <div className="rounded-[28px] border border-hairline bg-[linear-gradient(165deg,#fdfefe,#eff7f9)] p-8 shadow-[0_24px_54px_rgba(10,60,72,.08)]">
         <div className="relative">
           <svg
             viewBox={`0 0 ${VB.w} ${VB.h}`}
@@ -126,11 +126,11 @@ export function BodyMap({ spots, locale }: { spots: BodyMapSpot[]; locale: Local
               }}
               className={`absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 whitespace-nowrap rounded-full border px-3 py-1.5 text-[0.78rem] font-medium shadow-sm transition ${
                 spot.slug === active.slug
-                  ? 'border-[--color-brand] bg-white text-[--color-brand-deep]'
-                  : 'border-[--color-hairline] bg-white/90 hover:border-[--color-brand-bright]'
+                  ? 'border-brand bg-white text-brand-deep'
+                  : 'border-hairline bg-white/90 hover:border-brand-bright'
               }`}
             >
-              <span className="h-2 w-2 rounded-full bg-[--color-brand] shadow-[0_0_0_4px_rgba(0,181,205,.18)]" />
+              <span className="h-2 w-2 rounded-full bg-brand shadow-[0_0_0_4px_rgba(0,181,205,.18)]" />
               {spot.name}
             </button>
           ))}
@@ -138,8 +138,8 @@ export function BodyMap({ spots, locale }: { spots: BodyMapSpot[]; locale: Local
       </div>
 
       {/* 資訊面板 */}
-      <div className="rounded-[20px] border border-[--color-hairline] bg-white p-8 shadow-[0_18px_44px_rgba(10,60,72,.12)] lg:p-9">
-        <p className="text-[0.78rem] font-bold uppercase tracking-[0.14em] text-[--color-brand-deep]">
+      <div className="rounded-[20px] border border-hairline bg-white p-8 shadow-[0_18px_44px_rgba(10,60,72,.12)] lg:p-9">
+        <p className="text-[0.78rem] font-bold uppercase tracking-[0.14em] text-brand-deep">
           {c.products(active.productCount)}
         </p>
         <h3 className="mb-2.5 mt-2 text-[1.8rem] font-normal">{active.name}</h3>
@@ -147,7 +147,7 @@ export function BodyMap({ spots, locale }: { spots: BodyMapSpot[]; locale: Local
 
         <Link
           href={active.url}
-          className="mt-5 inline-block rounded-full bg-[--color-brand] px-6 py-2.5 font-semibold text-white shadow-[0_8px_22px_rgba(0,150,170,.28)] transition hover:bg-[--color-brand-deep] hover:text-white"
+          className="mt-5 inline-block rounded-full bg-brand px-6 py-2.5 font-semibold text-white shadow-[0_8px_22px_rgba(0,150,170,.28)] transition hover:bg-brand-deep hover:text-white"
         >
           {active.ctaLabel ?? c.fallbackCta}
         </Link>
@@ -160,15 +160,15 @@ export function BodyMap({ spots, locale }: { spots: BodyMapSpot[]; locale: Local
               onClick={() => setActiveSlug(spot.slug)}
               className={`rounded-[14px] border p-4 text-left transition ${
                 spot.slug === active.slug
-                  ? 'border-[--color-brand] bg-[--color-tint]'
-                  : 'border-[--color-hairline] hover:border-[--color-brand-bright]'
+                  ? 'border-brand bg-tint'
+                  : 'border-hairline hover:border-brand-bright'
               }`}
             >
               <span className="flex items-baseline justify-between gap-2">
-                <span className="text-[1.05rem] font-semibold text-[--color-ink]">
+                <span className="text-[1.05rem] font-semibold text-ink">
                   {spot.name}
                 </span>
-                <small className="text-[0.8rem] font-bold text-[--color-brand-deep]">
+                <small className="text-[0.8rem] font-bold text-brand-deep">
                   {spot.productCount}
                 </small>
               </span>

@@ -17,7 +17,7 @@ export function SectionHeading({
   return (
     <div className={className}>
       <span
-        className={`text-lg font-medium ${accent ? 'text-[--color-brand-deep]' : 'text-[#9fb4ba]'}`}
+        className={`text-lg font-medium ${accent ? 'text-brand-deep' : 'text-[#9fb4ba]'}`}
       >
         {String(index).padStart(2, '0')}
       </span>

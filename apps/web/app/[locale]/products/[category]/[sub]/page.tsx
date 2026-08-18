@@ -81,16 +81,16 @@ export default async function SubCategoryPage({
 
   return (
     <>
-      <div className="mx-auto max-w-[--container-content] px-6 pt-6 text-sm lg:px-16">
-        <Link href={`/${locale}/products/${category}`} className="text-[--color-grey]">
+      <div className="mx-auto max-w-content px-6 pt-6 text-sm lg:px-16">
+        <Link href={`/${locale}/products/${category}`} className="text-grey">
           ← {c.back} {category}
         </Link>
       </div>
 
       <CategoryHero data={data} locale={locale} kind="subCategory" />
 
-      <section id="grid" className="bg-[--color-tint] py-14">
-        <div className="mx-auto max-w-[--container-content] px-6 lg:px-16">
+      <section id="grid" className="bg-tint py-14">
+        <div className="mx-auto max-w-content px-6 lg:px-16">
           <div className="space-y-3">
             <FilterChips
               label={c.collection}
@@ -112,7 +112,7 @@ export default async function SubCategoryPage({
             />
           </div>
 
-          <p className="mt-6 text-sm text-[--color-grey]">{c.count(result.totalCount)}</p>
+          <p className="mt-6 text-sm text-grey">{c.count(result.totalCount)}</p>
 
           <div className="mt-5">
             <ProductGrid items={result.items} locale={locale} />

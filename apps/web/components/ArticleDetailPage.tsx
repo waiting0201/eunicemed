@@ -70,9 +70,9 @@ const PROSE = [
   '[&_h3]:mt-7 [&_h3]:text-[1.15rem] [&_h3]:font-semibold',
   '[&_ul]:mt-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mt-4 [&_ol]:list-decimal [&_ol]:pl-5',
   '[&_li]:mt-1.5',
-  '[&_a]:text-[--color-brand-deep] [&_a]:underline',
-  '[&_blockquote]:mt-6 [&_blockquote]:border-l-2 [&_blockquote]:border-[--color-brand] [&_blockquote]:pl-4 [&_blockquote]:italic',
-  '[&_figure]:mt-6 [&_img]:rounded-[14px] [&_figcaption]:mt-2 [&_figcaption]:text-[0.85rem] [&_figcaption]:text-[--color-grey]',
+  '[&_a]:text-brand-deep [&_a]:underline',
+  '[&_blockquote]:mt-6 [&_blockquote]:border-l-2 [&_blockquote]:border-brand [&_blockquote]:pl-4 [&_blockquote]:italic',
+  '[&_figure]:mt-6 [&_img]:rounded-[14px] [&_figcaption]:mt-2 [&_figcaption]:text-[0.85rem] [&_figcaption]:text-grey',
 ].join(' ');
 
 export function ArticleDetailPage({
@@ -93,7 +93,7 @@ export function ArticleDetailPage({
     <>
       <ResourcesSubnav locale={locale} active={`/${kind}`} />
 
-      <nav className="mx-auto max-w-[--container-content] px-6 py-4 text-[0.85rem] font-medium text-[#66787f] lg:px-16">
+      <nav className="mx-auto max-w-content px-6 py-4 text-[0.85rem] font-medium text-[#66787f] lg:px-16">
         <Link href={`/${locale}/${kind}`}>{listLabel}</Link>
         {a.category && (
           <>
@@ -104,21 +104,21 @@ export function ArticleDetailPage({
           </>
         )}
         <span className="mx-2 text-[#b7c4c8]">/</span>
-        <span className="text-[--color-ink]">{a.title}</span>
+        <span className="text-ink">{a.title}</span>
       </nav>
 
       {/* 標題區 */}
-      <header className="mx-auto max-w-[--container-content] px-6 lg:px-16">
+      <header className="mx-auto max-w-content px-6 lg:px-16">
         <div className="mx-auto max-w-[760px] text-center">
           {a.category && (
-            <span className="inline-block rounded-full bg-[--color-tint-deep] px-3.5 py-1 text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[--color-brand-deep]">
+            <span className="inline-block rounded-full bg-tint-deep px-3.5 py-1 text-[0.72rem] font-bold uppercase tracking-[0.1em] text-brand-deep">
               {a.category.name}
             </span>
           )}
           <h1 className="mt-3.5 text-[clamp(2rem,3.6vw,2.8rem)] font-normal">{a.title}</h1>
           {a.standfirst && <p className="mt-3.5 text-[1.1rem]">{a.standfirst}</p>}
 
-          <p className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[0.88rem] text-[--color-grey]">
+          <p className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[0.88rem] text-grey">
             {a.publishedAt && <span>{formatDate(a.publishedAt, locale)}</span>}
             {a.author && <span>{c.by} {a.author}</span>}
             {a.readMinutes !== null && <span>{c.readMinutes(a.readMinutes)}</span>}
@@ -127,7 +127,7 @@ export function ArticleDetailPage({
       </header>
 
       {a.cover && (
-        <div className="mx-auto mt-9 max-w-[--container-content] px-6 lg:px-16">
+        <div className="mx-auto mt-9 max-w-content px-6 lg:px-16">
           <img
             src={a.cover.url}
             srcSet={srcSetOf(a.cover)}
@@ -142,7 +142,7 @@ export function ArticleDetailPage({
       )}
 
       {/* 內文 + 側欄 */}
-      <section className="mx-auto max-w-[--container-content] px-6 py-14 lg:px-16">
+      <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
         <div className="grid gap-12 lg:grid-cols-[1fr_280px]">
           <article className="min-w-0">
             {a.body && (
@@ -177,13 +177,13 @@ export function ArticleDetailPage({
 
             {a.disclaimer && (
               <div
-                className="mt-10 text-[0.85rem] text-[--color-grey] [&_p]:mt-2"
+                className="mt-10 text-[0.85rem] text-grey [&_p]:mt-2"
                 dangerouslySetInnerHTML={{ __html: a.disclaimer }}
               />
             )}
 
             {(a.prev || a.next) && (
-              <div className="mt-12 grid gap-4 border-t border-[--color-hairline] pt-8 sm:grid-cols-2">
+              <div className="mt-12 grid gap-4 border-t border-hairline pt-8 sm:grid-cols-2">
                 {a.prev ? <NavCard item={a.prev} label={c.prev} /> : <span />}
                 {a.next && <NavCard item={a.next} label={c.next} align="right" />}
               </div>
@@ -193,12 +193,12 @@ export function ArticleDetailPage({
           <aside className="space-y-8 lg:sticky lg:top-24 lg:self-start">
             {a.toc.length > 0 && (
               <div>
-                <p className="mb-2 text-[0.78rem] font-bold uppercase tracking-[0.14em] text-[--color-grey]">
+                <p className="mb-2 text-[0.78rem] font-bold uppercase tracking-[0.14em] text-grey">
                   {c.onThisPage}
                 </p>
-                <nav className="flex flex-col gap-1.5 border-l border-[--color-hairline] pl-3 text-[0.9rem]">
+                <nav className="flex flex-col gap-1.5 border-l border-hairline pl-3 text-[0.9rem]">
                   {a.toc.map((t) => (
-                    <a key={t.id} href={`#${t.id}`} className="hover:text-[--color-brand-deep]">
+                    <a key={t.id} href={`#${t.id}`} className="hover:text-brand-deep">
                       {t.text}
                     </a>
                   ))}
@@ -213,7 +213,7 @@ export function ArticleDetailPage({
                 {a.tags.map((tag) => (
                   <span
                     key={tag.slug}
-                    className="rounded-full border border-[--color-hairline] px-3 py-1 text-[0.8rem]"
+                    className="rounded-full border border-hairline px-3 py-1 text-[0.8rem]"
                   >
                     {tag.name}
                   </span>
@@ -225,8 +225,8 @@ export function ArticleDetailPage({
       </section>
 
       {a.related.length > 0 && (
-        <section className="bg-[--color-tint] py-14">
-          <div className="mx-auto max-w-[--container-content] px-6 lg:px-16">
+        <section className="bg-tint py-14">
+          <div className="mx-auto max-w-content px-6 lg:px-16">
             <h2 className="mb-8 text-[clamp(1.6rem,3vw,2rem)] font-normal">{c.related}</h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {a.related.map((r) => (
@@ -283,13 +283,13 @@ function EventPanel({
   if (rows.length === 0 && !event.ctaUrl) return null;
 
   return (
-    <div className="mt-10 rounded-[18px] border border-[--color-hairline] bg-[--color-tint] p-6">
+    <div className="mt-10 rounded-[18px] border border-hairline bg-tint p-6">
       <h3 className="text-[1.1rem] font-semibold">{copy.eventDetails}</h3>
       <dl className="mt-4 grid gap-x-6 gap-y-2 sm:grid-cols-[max-content_1fr]">
         {rows.map(([label, value]) => (
           <div key={label} className="contents">
-            <dt className="text-[0.88rem] text-[--color-grey]">{label}</dt>
-            <dd className="text-[0.95rem] text-[--color-ink]">
+            <dt className="text-[0.88rem] text-grey">{label}</dt>
+            <dd className="text-[0.95rem] text-ink">
               {label === copy.contact ? <a href={`mailto:${value}`}>{value}</a> : value}
             </dd>
           </div>
@@ -298,7 +298,7 @@ function EventPanel({
       {event.ctaUrl && (
         <a
           href={event.ctaUrl}
-          className="mt-5 inline-block rounded-full bg-[--color-brand] px-6 py-2.5 font-semibold text-white transition hover:bg-[--color-brand-deep] hover:text-white"
+          className="mt-5 inline-block rounded-full bg-brand px-6 py-2.5 font-semibold text-white transition hover:bg-brand-deep hover:text-white"
         >
           {event.ctaLabel ?? copy.requestMeeting}
         </a>
@@ -319,11 +319,11 @@ function NavCard({
   return (
     <Link
       href={item.url}
-      className={`rounded-[14px] border border-[--color-hairline] p-5 transition hover:border-[--color-brand-bright] ${
+      className={`rounded-[14px] border border-hairline p-5 transition hover:border-brand-bright ${
         align === 'right' ? 'sm:text-right' : ''
       }`}
     >
-      <p className="text-[0.82rem] text-[--color-grey]">{label}</p>
+      <p className="text-[0.82rem] text-grey">{label}</p>
       <h3 className="mt-1 text-[1.02rem] font-semibold">{item.title}</h3>
     </Link>
   );

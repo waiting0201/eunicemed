@@ -26,8 +26,8 @@ const ITEMS: Record<Locale, { href: string; label: string }[]> = {
 
 export function ResourcesSubnav({ locale, active }: { locale: Locale; active: string }) {
   return (
-    <div className="border-b border-[--color-hairline] bg-[--color-tint]">
-      <nav className="mx-auto flex max-w-[--container-content] gap-6 overflow-x-auto px-6 py-3 text-[0.92rem] lg:px-16">
+    <div className="border-b border-hairline bg-tint">
+      <nav className="mx-auto flex max-w-content gap-6 overflow-x-auto px-6 py-3 text-[0.92rem] lg:px-16">
         {ITEMS[locale].map((item) => (
           <Link
             key={item.href}
@@ -35,8 +35,8 @@ export function ResourcesSubnav({ locale, active }: { locale: Locale; active: st
             aria-current={item.href === active ? 'page' : undefined}
             className={`whitespace-nowrap ${
               item.href === active
-                ? 'font-semibold text-[--color-brand-deep]'
-                : 'text-[--color-body]'
+                ? 'font-semibold text-brand-deep'
+                : 'text-body'
             }`}
           >
             {item.label}

@@ -47,7 +47,7 @@ export function FilterChips({
 
   return (
     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
-      <span className="w-24 shrink-0 text-xs uppercase tracking-wide text-[--color-grey]">
+      <span className="w-24 shrink-0 text-xs uppercase tracking-wide text-grey">
         {label}
       </span>
 
@@ -80,8 +80,8 @@ function Chip({
       aria-current={active ? 'true' : undefined}
       className={
         active
-          ? 'rounded-full bg-[--color-brand-deep] px-3.5 py-1.5 text-sm text-white'
-          : 'rounded-full border border-[--color-hairline] px-3.5 py-1.5 text-sm hover:border-[--color-brand]'
+          ? 'rounded-full bg-brand-deep px-3.5 py-1.5 text-sm text-white'
+          : 'rounded-full border border-hairline px-3.5 py-1.5 text-sm hover:border-brand'
       }
     >
       {children}
