@@ -20,6 +20,17 @@ public sealed record MediaRefDto(
 
 public sealed record ImageVariantDto(string Format, int Width, string Url);
 
+/// <summary>
+/// 產品圖庫的一張。比 <see cref="MediaRefDto"/> 多一個 <c>isPrimary</c> ——
+/// docs/04 §4 的 ProductDto 範例有這個欄位，前端的圖庫要知道哪張是預設顯示的。
+/// 陣列本身已依「主圖優先 → SortOrder」排好。
+/// </summary>
+public sealed record ProductImageDto(
+    string             Url,
+    string?            Alt,
+    bool               IsPrimary,
+    ImageVariantDto[]? Variants = null);
+
 /// <summary>列表卡／精選卡。</summary>
 public sealed record ProductListItemDto(
     string       Slug,
@@ -46,7 +57,7 @@ public sealed record ProductDto(
     object?       Conditions,
     string?       Summary,
     string?       Description,
-    MediaRefDto[] Images,
+    ProductImageDto[] Images,
     object?       Features,
     MediaRefDto?  UseCaseImage,
     object?       UseCases,

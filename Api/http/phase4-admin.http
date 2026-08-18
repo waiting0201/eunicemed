@@ -1,0 +1,501 @@
+### Phase 4 剩餘驗收：後台產品 CRUD + 分類／子分類／認證／部位
+### 前提：func start 執行中，且已跑過 phase4-products.http §1 的匯入（149 筆）。
+###
+### ⚠️ 這份會建立、修改、刪除資料。跑完記得執行最後一節的清理，
+###    否則 QA 測試產品會留在庫裡。
+
+@host = http://localhost:7071/api
+
+### 0. 登入取 token
+# @name login
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "admin@eunicemed.local", "password": "REPLACE_WITH_LOCAL_SEED_PASSWORD" }
+
+@at = {{login.response.body.data.accessToken}}
+
+### 種子固定 ID（Data/Configurations/TaxonomyConfiguration.cs）
+@orthopedic  = 41111111-0000-0000-0000-000000000002
+@footcare    = 41111111-0000-0000-0000-000000000003
+@kneeSupport = 71111111-0000-0000-0000-000000000007
+@stockingSub = 71111111-0000-0000-0000-000000000001
+@kneeBodyPart = 61111111-0000-0000-0000-000000000001
+@iso13485    = 51111111-0000-0000-0000-000000000001
+@legBodyPart = 61111111-0000-0000-0000-000000000007
+
+###############################################################################
+# 1. 後台產品列表
+#
+# search 同時比對 Name 與 Sku（docs/04 §6），Name 在翻譯表且**任一語系命中即可** ——
+# 編輯者搜中文時不該因為介面語系是 en 就查不到。
+# 注意 search 不比對 slug：搜 "aergo-knee-support" 會回 0 筆，要搜 "Aergo Knee"。
+###############################################################################
+
+### 1a. 分頁（totalCount 應為 149）
+GET {{host}}/admin/products?page=1&pageSize=2
+Authorization: Bearer {{at}}
+
+### 1b. 依名稱搜尋（Aergo Knee → 應 3 筆）
+GET {{host}}/admin/products?search=Aergo Knee
+Authorization: Bearer {{at}}
+
+### 1c. 依 SKU 搜尋（CPO-6212 → 應 1 筆）
+GET {{host}}/admin/products?search=CPO-6212
+Authorization: Bearer {{at}}
+
+### 1d. 狀態篩選（draft / published / archived）
+GET {{host}}/admin/products?status=published&pageSize=1
+Authorization: Bearer {{at}}
+
+### 1e. 未知狀態 → 應 400
+GET {{host}}/admin/products?status=bogus
+Authorization: Bearer {{at}}
+
+### 1f. 分類篩選（orthopedic-support → 應 60，與 facet 數字一致）
+GET {{host}}/admin/products?category=orthopedic-support&pageSize=1
+Authorization: Bearer {{at}}
+
+###############################################################################
+# 2. 建立產品
+#
+# 一律建為草稿（status=0、publishedAt=null），發布走 /publish。
+# description 會被伺服器端淨化：<script> 連內容一起移除、on* 屬性剝掉。
+###############################################################################
+
+### 2a. 建立（應 201，回傳 status=0）
+# @name created
+POST {{host}}/admin/products
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{
+  "slug": "qa-test-knee-brace",
+  "sku": "QA-0001",
+  "categoryId": "{{orthopedic}}",
+  "subCategoryId": "{{kneeSupport}}",
+  "sortOrder": 5,
+  "images": [
+    { "mediaId": "REPLACE_WITH_A_SQUARE_MEDIA_ID", "sortOrder": 1 },
+    { "mediaId": "REPLACE_WITH_ANOTHER_MEDIA_ID", "isPrimary": true, "sortOrder": 0 }
+  ],
+  "bodyPartIds": ["{{kneeBodyPart}}"],
+  "certificationIds": ["{{iso13485}}"],
+  "translations": {
+    "en": {
+      "name": "QA Test Knee Brace",
+      "summary": "A brace created by the Phase 4 acceptance run.",
+      "description": "<p>Real copy</p><script>alert(1)</script><p onclick=\"x()\">kept</p>",
+      "specs": [{ "label": "Material", "value": "Nylon" }],
+      "conditions": ["Sports strain"]
+    },
+    "zh-TW": { "name": "QA 測試護膝" }
+  }
+}
+
+@pid = {{created.response.body.data.id}}
+
+### 2b. 單筆讀取。必須確認：
+#   status = 0、publishedAt = null
+#   images 已依 sortOrder 重新編號，且 isPrimary 只有一張
+#   description = "<p>Real copy</p><p>kept</p>"（script 整段消失、onclick 被剝掉）
+#   specs / conditions 以 JSON 而非字串回傳
+#   rowVersion 為 base64
+GET {{host}}/admin/products/{{pid}}
+Authorization: Bearer {{at}}
+
+###############################################################################
+# 3. 更新：null 與空陣列是兩件事
+###############################################################################
+
+### 3a. 只送 sku → 翻譯與所有關聯維持原狀（null = 不動它）
+PUT {{host}}/admin/products/{{pid}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "sku": "QA-0002" }
+
+### 3b. images 空陣列 → 清空（空陣列 = 清空）
+PUT {{host}}/admin/products/{{pid}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "images": [] }
+
+### 3c. 子分類不屬於指定分類 → 應 400（三段 URL 會解析不到）
+PUT {{host}}/admin/products/{{pid}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "subCategoryId": "{{stockingSub}}" }
+
+### 3d. slug 撞其他產品 → 應 409
+PUT {{host}}/admin/products/{{pid}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "slug": "aergo-knee-support" }
+
+### 3e. 不存在的 mediaId → 應 400（不要讓它撞 FK 變成 500）
+PUT {{host}}/admin/products/{{pid}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "images": [{ "mediaId": "00000000-0000-0000-0000-000000000123" }] }
+
+### 3f. 不存在的 bodyPartId → 應 400
+PUT {{host}}/admin/products/{{pid}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "bodyPartIds": ["00000000-0000-0000-0000-000000000123"] }
+
+###############################################################################
+# 4. ROWVERSION 併發（自 Phase 2 延後至此，Collection 沒有這個欄位驗不到）
+#
+# 帶 rowVersion 就比對，不帶就是「最後寫入者贏」。
+# ⚠️ publish / unpublish 也會讓 rowVersion 前進 —— 測之前先重讀一次拿最新值。
+###############################################################################
+
+### 4a. 過期的 rowVersion → 應 409
+PUT {{host}}/admin/products/{{pid}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "sortOrder": 9, "rowVersion": "AAAAAAAAAAE=" }
+
+### 4b. 先重讀取得最新 rowVersion
+# @name fresh
+GET {{host}}/admin/products/{{pid}}
+Authorization: Bearer {{at}}
+
+### 4c. 最新的 rowVersion → 應 200
+PUT {{host}}/admin/products/{{pid}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "sortOrder": 9, "rowVersion": "{{fresh.response.body.data.rowVersion}}" }
+
+### 4d. 同一個 rowVersion 再送一次 → 應 409（已被 4c 改掉）
+PUT {{host}}/admin/products/{{pid}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "sortOrder": 10, "rowVersion": "{{fresh.response.body.data.rowVersion}}" }
+
+### 4e. 不帶 rowVersion → 應 200
+PUT {{host}}/admin/products/{{pid}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "sortOrder": 11 }
+
+###############################################################################
+# 5. 發布 / 取消發布
+###############################################################################
+
+### 5a. 草稿的公開詳情 → 應 404
+GET {{host}}/products/orthopedic-support/knee-support/qa-test-knee-brace?locale=en
+
+### 5b. 發布（Editor 以上）
+POST {{host}}/admin/products/{{pid}}/publish
+Authorization: Bearer {{at}}
+
+### 5c. 公開詳情。**Phase 4 剩餘的重點**：
+#   bodyParts 應為 ["knee"]（先前一律回空陣列）
+#   images 應有內容，每張帶 isPrimary 與 variants[]（無 CDN，尺寸是實體檔）
+#   images[0].isPrimary 必須為 true，且與列表卡的那張是同一張
+GET {{host}}/products/orthopedic-support/knee-support/qa-test-knee-brace?locale=en
+
+### 5d. 取消發布 → status 回 0，但 **publishedAt 保留**
+#   （那是首次發布時間，清掉會讓重新發布時序被竄改）
+POST {{host}}/admin/products/{{pid}}/unpublish
+Authorization: Bearer {{at}}
+
+###############################################################################
+# 6. 相關產品（空陣列 = 回到自動計算）
+###############################################################################
+
+### 6a. 取兩筆現成產品的 id 備用
+GET {{host}}/admin/products?search=Aergo Knee&pageSize=2
+Authorization: Bearer {{at}}
+
+### 6b. 指定自己 → 應 400
+PUT {{host}}/admin/products/{{pid}}/related
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "relatedProductIds": ["{{pid}}"] }
+
+### 6c. 不存在的 id → 應 400
+PUT {{host}}/admin/products/{{pid}}/related
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "relatedProductIds": ["00000000-0000-0000-0000-000000000123"] }
+
+### 6d. 指定兩筆（陣列順序即畫面順序）
+PUT {{host}}/admin/products/{{pid}}/related
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "relatedProductIds": ["REPLACE_ID_B", "REPLACE_ID_A"] }
+
+### 6e. GET related → sortOrder 應為 0,1 且順序與 6d 送出的一致
+GET {{host}}/admin/products/{{pid}}/related
+Authorization: Bearer {{at}}
+
+### 6f. 公開詳情的 relatedProducts → 應為人工指定的 2 筆（非自動遞補的 4 筆）
+GET {{host}}/products/orthopedic-support/knee-support/qa-test-knee-brace?locale=en
+
+### 6g. 清空 → 回到自動計算，公開詳情應變回 4 筆
+PUT {{host}}/admin/products/{{pid}}/related
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "relatedProductIds": [] }
+
+###############################################################################
+# 7. RBAC：Author 可建草稿但不可發布，也不可動分類骨架
+#
+# 先建一個 Author 帳號跑這節，跑完在第 10 節刪掉。
+###############################################################################
+
+### 7a. 建 Author 帳號
+POST {{host}}/admin/users
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "email": "qa-author@eunicemed.local", "password": "QaAuthor#2026", "displayName": "QA Author", "roles": ["Author"] }
+
+### 7b. Author 登入
+# @name authorLogin
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "qa-author@eunicemed.local", "password": "QaAuthor#2026" }
+
+@aat = {{authorLogin.response.body.data.accessToken}}
+
+### 7c. Author 改草稿 → 應 200
+PUT {{host}}/admin/products/{{pid}}
+Authorization: Bearer {{aat}}
+Content-Type: application/json
+
+{ "sortOrder": 12 }
+
+### 7d. Author 發布 → 應 403
+POST {{host}}/admin/products/{{pid}}/publish
+Authorization: Bearer {{aat}}
+
+### 7e. Author **讀**分類 → 應 200（產品表單要靠它挑分類，連讀都擋會填不出來）
+GET {{host}}/admin/categories
+Authorization: Bearer {{aat}}
+
+### 7f. Author **寫**分類 → 應 403（改子分類 slug 會讓底下產品網址全失效）
+PUT {{host}}/admin/categories/{{orthopedic}}
+Authorization: Bearer {{aat}}
+Content-Type: application/json
+
+{ "sortOrder": 1 }
+
+### 7g. Author 跑舊站匯入 → 應 403（Admin only，會一次改動全部 149 筆）
+POST {{host}}/admin/products/import
+Authorization: Bearer {{aat}}
+
+### 7h. 匿名讀後台 → 應 401
+GET {{host}}/admin/products
+
+###############################################################################
+# 8. 刪除：軟刪除，且要清乾淨兩件事
+#   - ProductRelated **兩側**（否則其他產品的相關產品區指向一個消失的產品）
+#   - MediaUsage（否則被刪產品的圖永遠刪不掉，媒體庫的引用保護會擋下）
+###############################################################################
+
+### 8a. 先掛回一張圖，驗證引用反查看得到 Product / images/0
+PUT {{host}}/admin/products/{{pid}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "images": [{ "mediaId": "REPLACE_WITH_A_SQUARE_MEDIA_ID", "isPrimary": true }] }
+
+### 8b. 引用反查
+GET {{host}}/admin/media/REPLACE_WITH_A_SQUARE_MEDIA_ID/usages
+Authorization: Bearer {{at}}
+
+### 8c. 有引用時刪媒體 → 應 409
+DELETE {{host}}/admin/media/REPLACE_WITH_A_SQUARE_MEDIA_ID
+Authorization: Bearer {{at}}
+
+### 8d. 讓別的產品把 QA 產品列為相關（驗證刪除時清的是兩側）
+PUT {{host}}/admin/products/REPLACE_ID_A/related
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "relatedProductIds": ["{{pid}}"] }
+
+### 8e. 刪除
+DELETE {{host}}/admin/products/{{pid}}
+Authorization: Bearer {{at}}
+
+### 8f. 刪除後必須全部成立：
+#   GET /admin/products/{{pid}}            → 404
+#   公開三段詳情                            → 404
+#   後台列表 totalCount                     → 149（回到匯入後的數字）
+#   REPLACE_ID_A 的 related                → 0 筆
+#   媒體引用反查                            → Product 那筆消失
+#   以同一個 slug 再建一次                   → 201（篩選唯一索引已放開該 slug）
+GET {{host}}/admin/products/{{pid}}
+Authorization: Bearer {{at}}
+
+###############################################################################
+# 9. 分類 / 子分類 / 認證 / 部位
+#
+# 刪除一律先擋引用回 409，**不做連帶清除** —— 與媒體庫的引用保護同一套規則。
+###############################################################################
+
+### 9a. 刪有引用的分類 → 應 409（訊息帶子分類數與產品數）
+DELETE {{host}}/admin/categories/{{orthopedic}}
+Authorization: Bearer {{at}}
+
+### 9b. 刪有引用的子分類 → 應 409
+DELETE {{host}}/admin/sub-categories/{{kneeSupport}}
+Authorization: Bearer {{at}}
+
+### 9c. 子分類換分類且底下有產品 → 應 409（會讓 16 筆產品的網址全部失效）
+PUT {{host}}/admin/sub-categories/{{kneeSupport}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "categoryId": "{{footcare}}" }
+
+### 9d. 子分類 slug 是**全站唯一**而非分類內唯一 → 應 409
+POST {{host}}/admin/sub-categories
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "categoryId": "{{footcare}}", "slug": "knee-support", "translations": { "en": { "name": "Dup" } } }
+
+### 9e. 建新子分類 → 應 201
+# @name newSub
+POST {{host}}/admin/sub-categories
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{
+  "categoryId": "{{footcare}}",
+  "slug": "qa-test-sub",
+  "sortOrder": 99,
+  "translations": {
+    "en":    { "name": "QA Test Sub", "description": "temp", "stats": [{ "value": "auto", "label": "Products" }] },
+    "zh-TW": { "name": "QA 測試子分類" }
+  }
+}
+
+### 9f. 沒有產品引用的子分類可刪 → 應 200
+DELETE {{host}}/admin/sub-categories/{{newSub.response.body.data.id}}
+Authorization: Bearer {{at}}
+
+### 9g. 不支援的語系 → 應 400
+POST {{host}}/admin/sub-categories
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "categoryId": "{{footcare}}", "slug": "qa-x", "translations": { "ja": { "name": "x" } } }
+
+### 9h. name 空白 → 應 400
+POST {{host}}/admin/sub-categories
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "categoryId": "{{footcare}}", "slug": "qa-y", "translations": { "en": { "name": "  " } } }
+
+### 9i. 更新分類文案。之後查公開分類頁：
+#   description 應為新文案、stats 的 "auto" 應被代入 60、**zh-TW 不可被洗掉**
+PUT {{host}}/admin/categories/{{orthopedic}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{
+  "translations": {
+    "en": { "name": "Orthopedic Support", "description": "QA edited lead.",
+            "stats": [{ "value": "auto", "label": "Products" }] }
+  }
+}
+
+### 9j. 公開分類頁（英）
+GET {{host}}/categories/orthopedic-support?locale=en
+
+### 9k. 公開分類頁（中）—— 名稱應仍為「矯型護具」
+GET {{host}}/categories/orthopedic-support?locale=zh-TW
+
+### 9l. 還原 9i 改掉的文案
+PUT {{host}}/admin/categories/{{orthopedic}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{
+  "translations": {
+    "en": { "name": "Orthopedic Support",
+            "description": "Stability, alignment and protection for knee, ankle, elbow, wrist and back." }
+  }
+}
+
+### 9m. 建認證 → 應 201
+# @name newCert
+POST {{host}}/admin/certifications
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{
+  "slug": "qa-test-cert", "mark": "QA MARK", "sortOrder": 99,
+  "translations": { "en": { "subLabel": "QA", "description": "temp" }, "zh-TW": { "subLabel": "測試" } }
+}
+
+### 9n. 缺 mark → 應 400
+POST {{host}}/admin/certifications
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "slug": "qa-2" }
+
+### 9o. 刪無引用的認證 → 應 200（此表無 IsDeleted，是硬刪）
+DELETE {{host}}/admin/certifications/{{newCert.response.body.data.id}}
+Authorization: Bearer {{at}}
+
+### 9p. 部位 PUT（slug 刻意不可改 —— 人體圖熱區與版型都以 slug 對應）
+PUT {{host}}/admin/body-parts/{{legBodyPart}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "showOnBodyMap": true, "sortOrder": 8 }
+
+### 9q. 還原
+PUT {{host}}/admin/body-parts/{{legBodyPart}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "showOnBodyMap": false, "sortOrder": 7 }
+
+### 9r. 部位 DELETE → 應 404（刻意不提供；7 筆固定，能刪只會做出對不上的資料）
+DELETE {{host}}/admin/body-parts/{{legBodyPart}}
+Authorization: Bearer {{at}}
+
+###############################################################################
+# 10. 清理
+###############################################################################
+
+### 10a. 刪掉第 8f 用同 slug 重建的那筆（若有）
+GET {{host}}/admin/products?search=QA
+Authorization: Bearer {{at}}
+
+### 10b. 刪掉 QA Author 帳號
+GET {{host}}/admin/users
+Authorization: Bearer {{at}}
+
+### 10c. 收工前確認：後台與公開的產品總數都應為 149
+GET {{host}}/admin/products?pageSize=1
+Authorization: Bearer {{at}}
+
+###
+GET {{host}}/products?locale=en&pageSize=1

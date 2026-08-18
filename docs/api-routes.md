@@ -69,7 +69,7 @@
 | Method | Path | 權限 | 說明 |
 |---|---|---|---|
 | GET | `/products?locale=&category=&subCategory=&collection=&bodyPart=&featured=&facets=&page=&pageSize=&sort=` | 公開 | facet 同維度不收斂、跨維度收斂 |
-| GET | `/products/{category}/{sub}/{slug}` | 公開 | 三段皆驗證歸屬，不符回 404 |
+| GET | `/products/{category}/{sub}/{slug}` | 公開 | 三段皆驗證歸屬，不符回 404；`images[]`（含 `isPrimary` 與 `variants[]`）與 `bodyParts[]` 已補齊 |
 | GET | `/products/by-slug/{slug}` | 公開 | 扁平查詢（預覽、舊 URL 301 解析） |
 
 ### 分類 / 子分類 / 認證（公開）
@@ -115,6 +115,41 @@
 |---|---|---|---|
 | POST | `/admin/products/import?path=` | Admin | 匯入 149 筆舊站產品；冪等（SKU → (子分類,名稱) 備用鍵） |
 
+### 後台：產品
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| GET | `/admin/products?status=&search=&category=&subCategory=&page=&pageSize=` | 登入 | `search` 比對 Name（任一語系）與 Sku，**不比對 slug**；`status` 收 draft/published/archived |
+| POST | `/admin/products` | Author+ | 一律建為草稿；slug 重複回 409 |
+| GET | `/admin/products/{id}` | 登入 | 回全部語系 + 全部關聯 + base64 `rowVersion` |
+| PUT/PATCH | `/admin/products/{id}` | Author+ | **null = 不動它、空陣列 = 清空**；帶 `rowVersion` 才啟用 409 併發保護 |
+| DELETE | `/admin/products/{id}` | Author+ | 軟刪除，連帶清 `ProductRelated` 兩側與 `MediaUsage` |
+| POST | `/admin/products/{id}/publish` | **Editor+** | 沒有任何語系翻譯時回 400（發布了前台也看不到） |
+| POST | `/admin/products/{id}/unpublish` | Editor+ | 退回草稿，**`PublishedAt` 保留**（那是首次發布時間） |
+| GET | `/admin/products/{id}/related` | 登入 | 只回人工指定的，不含自動遞補 |
+| PUT | `/admin/products/{id}/related` | Editor+ | 陣列順序即畫面順序；空陣列 = 回到自動計算 |
+
+> 寫入時驗證子分類必須屬於指定分類（不符回 400）—— 否則資料存得下去但三段 URL 永遠 404。
+> `images` 的主圖唯一性由應用層保證：未指定時取第一張，指定多張時只認第一張。
+> 順序敏感：`import` 與 `{id}/publish|unpublish|related` 都必須排在 `["admin","products",{id}]` 之前。
+
+### 後台：分類 / 子分類 / 認證 / 部位
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| GET | `/admin/categories` | 登入 | 回全部語系 + 子分類數 + 產品數 |
+| POST · PUT/PATCH · DELETE | `/admin/categories[/{id}]` | Editor+ | 軟刪除；仍有子分類或產品引用時回 409 |
+| GET | `/admin/sub-categories?category=` | 登入 | |
+| POST · PUT/PATCH · DELETE | `/admin/sub-categories[/{id}]` | Editor+ | slug **全站唯一**；底下有產品時不可換分類、不可刪除（皆 409） |
+| GET | `/admin/certifications` | 登入 | |
+| POST · PUT/PATCH · DELETE | `/admin/certifications[/{id}]` | Editor+ | **硬刪除**（此表無 IsDeleted）；仍掛在產品上時回 409 |
+| GET | `/admin/body-parts` | 登入 | 7 筆固定 |
+| PUT/PATCH | `/admin/body-parts/{id}` | Editor+ | 只能改名稱 / ShowOnBodyMap / 排序，**slug 不可改** |
+
+> **讀取一律「登入即可」，只有寫入需 Editor+。** Author 編產品時就是要從這幾張表挑分類與部位，
+> 連讀都擋掉的話產品表單填不出來。
+> 部位刻意不提供 POST / DELETE：7 筆是固定的，人體圖熱區與版型都以 slug 對應。
+
 ### 應用方案 Applications
 
 | Method | Path | 權限 | 說明 |
@@ -154,17 +189,6 @@
 ## 待實作
 
 依 [13-api-roadmap.md](13-api-roadmap.md) 的階段順序。詳細規格見 [04-api.md](04-api.md) §4–§6。
-
-### Phase 4 剩餘 — 後台產品 CRUD
-
-| Method | Path | 權限 | 說明 |
-|---|---|---|---|
-| GET/POST/PUT/DELETE | `/admin/products[/{id}]` | Author+ | 刪除前須先清 ProductRelated 兩側（FK 為 Restrict） |
-| POST | `/admin/products/{id}/publish` | **Editor+** | Author 呼叫回 403（授權規則已就緒） |
-| POST | `/admin/products/{id}/unpublish` | Editor+ | |
-| GET/PUT | `/admin/products/{id}/related` | Editor+ | 空陣列 = 回到自動計算 |
-| GET/POST/PUT/DELETE | `/admin/{categories,sub-categories,certifications}[/{id}]` | Editor+ | |
-| GET/PUT | `/admin/body-parts[/{id}]` | Editor+ | ShowOnBodyMap、排序 |
 
 ### Phase 3 剩餘 — 媒體
 

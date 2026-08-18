@@ -199,6 +199,10 @@ EuniceMed/
 - [ ] **巢狀翻譯的純度**：產品有 `en` 翻譯但它的分類沒有時，該隱藏產品，還是回傳 `category: null`？
       建議後者 —— 因分類漏翻而整個產品消失，是不會有人發現的靜默內容錯誤
 - [ ] `ProductRelated` 空陣列在 [04](docs/04-api.md) §6 定義為「回到自動計算」，因此編輯者**無法**表達「這裡不要顯示相關產品」。若需要，`Product` 得加 `RelatedMode`（auto / manual / none）
+- [ ] **產品詳情的 `certifications` 目前回全站 5 筆，不看 `ProductCertification`**（2026-08-18 發現）。
+      後台已可逐產品掛認證，但公開端點忽略它 —— 編輯者掛了會是靜默的無效操作。
+      改成逐產品的話，在內容建好之前所有產品頁的標章列會變成空的（目前 `ProductCertification` 0 筆），
+      所以先維持現狀等拍板：標章列是「品牌共用」還是「逐產品」？
 - [ ] reCAPTCHA 用哪個版本（v2 checkbox / v2 invisible / v3 score）？v3 需決定分數門檻。另 [07](docs/07-azure-deployment.md) §6.4 只有後端 `Recaptcha__SecretKey`，缺前端 site key
 - [ ] `mockup/`、`mockup2/`、`mockup3/`（共約 120MB 的早期版型）要不要納入版控？目前以 `.gitignore` 擋著 —— 圖片進了 git 歷史就拿不掉了
 

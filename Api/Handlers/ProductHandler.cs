@@ -76,18 +76,20 @@ public sealed class ProductHandler(
             return new NotFoundObjectResult(ApiResponse.Fail(
                 "Product not found.", $"No published product '{slug}' in locale '{locale}'."));
 
-        var certs   = await taxonomy.GetCertificationsAsync(locale);
-        var related = await reader.GetRelatedAsync(r.Id, locale, take: 4);
+        var certs     = await taxonomy.GetCertificationsAsync(locale);
+        var related   = await reader.GetRelatedAsync(r.Id, locale, take: 4);
+        var images    = await reader.GetImagesAsync(r.Id);
+        var bodyParts = await reader.GetBodyPartSlugsAsync(r.Id);
 
         var dto = new ProductDto(
             r.Id, r.Slug, r.Sku, r.Name,
             Pair(r.CategorySlug, r.CategoryName),
             Pair(r.SubCategorySlug, r.SubCategoryName),
             Pair(r.CollectionSlug, r.CollectionName),
-            [],                                   // bodyParts 由詳情查詢補（見下方 TODO）
+            bodyParts.ToArray(),
             JsonField.Parse(r.ConditionsJson),
             r.Summary, r.Description,
-            [],                                   // images 同上
+            images.ToArray(),
             JsonField.Parse(r.FeaturesJson),
             r.UseCaseImageUrl is null ? null : new MediaRefDto(r.UseCaseImageUrl, null),
             JsonField.Parse(r.UseCasesJson),

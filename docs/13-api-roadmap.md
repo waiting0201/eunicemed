@@ -76,7 +76,7 @@ token 輪替（單次使用）、帳號鎖定與解鎖、改密碼撤銷所有 s
 
 **尚未完成**：`reprocess` 端點。SVG 清洗與 `MediaUsage` 自動重建已於 Phase 5 補上。
 
-### 🟡 Phase 4 — 分類 + 產品（進行中）
+### ✅ Phase 4 — 分類 + 產品
 
 `Category` / `SubCategory` / `Certification` / `BodyPart` / `Tag` 與其 translation、join 表；`Product` 全家族（8 張關聯表）。
 公開端點含 **facets**、三段所有權驗證、`stats[].value == "auto"` 代入實際產品數、相關產品自動遞補。
@@ -88,11 +88,24 @@ token 輪替（單次使用）、帳號鎖定與解鎖、改密碼撤銷所有 s
 Dapper 讀取層、`FacetFolder`、公開端點（products 列表+facets、三段路徑、by-slug、categories、sub-categories、certifications）、
 相關產品自動遞補、`POST /admin/products/import`。驗收見 [`Api/http/phase4-products.http`](../Api/http/phase4-products.http)。
 
-**尚未完成（Phase 4 剩餘工作）**：
-- 後台產品 CRUD：`GET/POST/PUT/DELETE /admin/products`、`/publish`、`/unpublish`、`/related`
-- 後台分類／子分類／認證／部位 CRUD
-- 產品詳情的 `images` 與 `bodyParts` 兩個欄位（目前回空陣列，待 Phase 3 的媒體管線接上）
-- `rowVersion` 併發 409 的實測（`Product` 已有 `ROWVERSION` 欄位，等後台 PUT 做完才驗得到）
+**Phase 4 剩餘已完成**（驗收：[`Api/http/phase4-admin.http`](../Api/http/phase4-admin.http)）：
+後台產品 CRUD（含 publish / unpublish / related）、後台分類／子分類／認證／部位、
+產品詳情的 `images` 與 `bodyParts`、`rowVersion` 併發 409 的實測。
+
+實作時定案的四件事：
+
+- **null 與空陣列是兩件事**。`images: null` 是「這次不動它」、`images: []` 是「清空」。
+  少了這個區分，只想改個名稱的請求會把所有關聯洗掉 —— 而後台表單分頁載入時很容易只送一部分欄位。
+  可為 null 的 FK（子分類／系列／使用情境圖）因為 null 已被佔用，另以 `clearSubCategory` 之類的旗標表達清空。
+- **關聯除了 `related` 以外全部內嵌在同一個 payload**。產品表單是一次存檔，
+  關聯拆成獨立端點會讓一次存檔變成多次請求，中途失敗就留下半套資料。
+  `related` 獨立是因為它在後台是另一個畫面，且空陣列在那裡有特殊語意（回到自動計算），
+  混進主 payload 會與「這次沒帶這個欄位」分不出來。
+- **寫入時就驗證子分類屬於指定分類**。不驗的話資料存得下去，但 `/products/{cat}/{sub}/{slug}`
+  會永遠 404，而編輯者只會看到「明明已發布卻打不開」。同理，子分類底下有產品時不可換分類（409）。
+- **刪除一律先擋引用回 409，不做連帶清除**，與媒體庫的引用保護同一套規則。
+  例外是產品自己的軟刪除：那時必須連帶清掉 `ProductRelated` **兩側**與 `MediaUsage`，
+  否則其他產品的相關產品區會指向一個消失的產品，且被刪產品的圖永遠刪不掉。
 
 **已驗收通過**：
 - facet 同維度不收斂：篩 `category=orthopedic-support` 後 categories 仍回全部三類（60/45/44），
@@ -142,6 +155,34 @@ richtext 的伺服器端淨化與 SVG 清洗**已完成**（見下）。
 ---
 
 ## 踩到的坑（累積記錄）
+
+### 2026-08-18 · 授權規則寫 `(_, [...])` 會連 GET 一起擋掉
+
+`GetRequiredRoles` 是由上而下比對的 list pattern，加一條
+
+```csharp
+(_, ["admin", "categories", ..]) => Editors,
+```
+
+想表達「分類要 Editor 以上才能改」，實際效果是**連讀都要 Editor**：
+它排在通用的 `("GET", ["admin", ..]) => null` 之前，method 的 `_` 把 GET 也吃了。
+後果是 Author 打開產品表單時拿不到分類清單，表單根本填不出來 —— 而這在只用 Admin
+帳號測試時完全看不出來。正確寫法是把 method 明確排除：
+
+```csharp
+(not "GET", ["admin", "categories", ..]) => Editors,
+```
+
+**每加一條角色規則，都要用該角色實際打一次 GET 與一次 PUT**，不能只測會擋的那一邊。
+同一輪也發現 `POST /admin/products/import` 的 handler 註解寫著「Admin 專屬（由 AppRouter 把關）」，
+但 `AppRouter` 從來沒有那條規則，實際是 Author+ —— 註解不是規則，已補上。
+
+### 2026-08-18 · publish / unpublish 也會推進 rowVersion
+
+測併發 409 時「拿到 rowVersion → 發布 → 用同一個 rowVersion 存檔」會得到 409，
+看起來像併發偵測壞了，其實是對的：發布也是一次 `SaveChanges`，`ROWVERSION` 已經前進。
+測 4b/4c 那組要**先重讀一次**再送。後台前端同理 —— 按下發布之後必須用回傳的
+`rowVersion` 覆蓋表單裡那份，不然編輯者接下來每次存檔都會撞 409。
 
 新發現請往下加，附日期。這一節是給未來的自己與新對話看的。
 

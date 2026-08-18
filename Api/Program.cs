@@ -99,7 +99,9 @@ var host = new HostBuilder()
         services.AddScoped<UserHandler>();
         services.AddScoped<CollectionHandler>();
         services.AddScoped<ProductHandler>();
+        services.AddScoped<AdminProductHandler>();
         services.AddScoped<TaxonomyHandler>();
+        services.AddScoped<AdminTaxonomyHandler>();
         services.AddScoped<MediaHandler>();
         services.AddScoped<PageHandler>();
         services.AddScoped<ApplicationHandler>();

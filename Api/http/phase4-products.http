@@ -110,8 +110,8 @@ GET {{host}}/certifications?locale=zh-TW
 GET {{host}}/products/orthopedic-support/knee-support/aergo-knee-support?locale=en
 
 ###############################################################################
-# 尚未實作（Phase 4 剩餘）
-#   GET/POST/PUT/DELETE /admin/products、/publish、/unpublish、/related
-#   後台 分類／子分類／認證／部位 CRUD
-#   產品詳情的 images 與 bodyParts（等 Phase 3 媒體管線）
+# Phase 4 剩餘已完成，驗收移到 phase4-admin.http：
+#   後台產品 CRUD、/publish、/unpublish、/related
+#   後台 分類／子分類／認證／部位
+#   產品詳情的 images 與 bodyParts（見 phase4-admin.http §5c）
 ###############################################################################

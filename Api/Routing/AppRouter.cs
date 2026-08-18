@@ -30,7 +30,9 @@ public sealed class AppRouter(
     UserHandler        users,
     CollectionHandler  collections,
     ProductHandler     products,
+    AdminProductHandler adminProducts,
     TaxonomyHandler    taxonomy,
+    AdminTaxonomyHandler adminTaxonomy,
     MediaHandler       media,
     PageHandler        pages,
     ApplicationHandler applications,
@@ -145,6 +147,43 @@ public sealed class AppRouter(
             // ── Admin：維護 ───────────────────────────────────────────────
             ("POST", ["admin", "products", "import"])              => await products.ImportLegacyAsync(req),
 
+            // ── Admin：Products ───────────────────────────────────────────
+            // 順序敏感：import 在上面、publish/unpublish/related 在 ["admin","products",var id]
+            // 之前，否則後三段會被兩段的 catch-all 吃掉。
+            ("POST", ["admin", "products", var id, "publish"])   => await adminProducts.PublishAsync(id),
+            ("POST", ["admin", "products", var id, "unpublish"]) => await adminProducts.UnpublishAsync(id),
+            ("GET",  ["admin", "products", var id, "related"])   => await adminProducts.GetRelatedAsync(id),
+            ("PUT",  ["admin", "products", var id, "related"])   => await adminProducts.UpdateRelatedAsync(req, id),
+
+            ("GET",    ["admin", "products"])          => await adminProducts.GetListAsync(req),
+            ("POST",   ["admin", "products"])          => await adminProducts.CreateAsync(req),
+            ("GET",    ["admin", "products", var id])  => await adminProducts.GetByIdAsync(id),
+            ("PUT" or "PATCH", ["admin", "products", var id]) => await adminProducts.UpdateAsync(req, id),
+            ("DELETE", ["admin", "products", var id])  => await adminProducts.DeleteAsync(id),
+
+            // ── Admin：分類 / 子分類 / 認證 / 部位 ─────────────────────────
+            ("GET",    ["admin", "categories"])          => await adminTaxonomy.GetCategoriesAsync(),
+            ("POST",   ["admin", "categories"])          => await adminTaxonomy.CreateCategoryAsync(req),
+            ("GET",    ["admin", "categories", var id])  => await adminTaxonomy.GetCategoryAsync(id),
+            ("PUT" or "PATCH", ["admin", "categories", var id]) => await adminTaxonomy.UpdateCategoryAsync(req, id),
+            ("DELETE", ["admin", "categories", var id])  => await adminTaxonomy.DeleteCategoryAsync(id),
+
+            ("GET",    ["admin", "sub-categories"])          => await adminTaxonomy.GetSubCategoriesAsync(req),
+            ("POST",   ["admin", "sub-categories"])          => await adminTaxonomy.CreateSubCategoryAsync(req),
+            ("GET",    ["admin", "sub-categories", var id])  => await adminTaxonomy.GetSubCategoryAsync(id),
+            ("PUT" or "PATCH", ["admin", "sub-categories", var id]) => await adminTaxonomy.UpdateSubCategoryAsync(req, id),
+            ("DELETE", ["admin", "sub-categories", var id])  => await adminTaxonomy.DeleteSubCategoryAsync(id),
+
+            ("GET",    ["admin", "certifications"])          => await adminTaxonomy.GetCertificationsAsync(),
+            ("POST",   ["admin", "certifications"])          => await adminTaxonomy.CreateCertificationAsync(req),
+            ("GET",    ["admin", "certifications", var id])  => await adminTaxonomy.GetCertificationAsync(id),
+            ("PUT" or "PATCH", ["admin", "certifications", var id]) => await adminTaxonomy.UpdateCertificationAsync(req, id),
+            ("DELETE", ["admin", "certifications", var id])  => await adminTaxonomy.DeleteCertificationAsync(id),
+
+            // 部位刻意只有 GET / PUT —— 見 AdminBodyPartDto 的註解
+            ("GET",  ["admin", "body-parts"])         => await adminTaxonomy.GetBodyPartsAsync(),
+            ("PUT" or "PATCH", ["admin", "body-parts", var id]) => await adminTaxonomy.UpdateBodyPartAsync(req, id),
+
             // ── Admin：Collections ────────────────────────────────────────
             ("GET",    ["admin", "collections"])          => await collections.AdminGetAllAsync(),
             ("POST",   ["admin", "collections"])          => await collections.AdminCreateAsync(req),
@@ -204,6 +243,18 @@ public sealed class AppRouter(
 
             // 使用者管理：Admin only
             (_, ["admin", "users", ..]) => Admins,
+
+            // 舊站匯入：Admin only（會一次改動全部 149 筆，docs/05 §4.1）
+            ("POST", ["admin", "products", "import"]) => Admins,
+
+            // 分類骨架：**寫入**需 Editor 以上。Author 不該能改動全站 URL 結構 ——
+            // 改一個子分類 slug 就會讓底下所有產品的網址失效（docs/api-routes.md）。
+            // 讀取維持「登入即可」：Author 編產品時就是要從這幾張表挑分類與部位，
+            // 連讀都擋掉的話產品表單根本填不出來。
+            (not "GET", ["admin", "categories", ..])      => Editors,
+            (not "GET", ["admin", "sub-categories", ..])  => Editors,
+            (not "GET", ["admin", "certifications", ..])  => Editors,
+            (not "GET", ["admin", "body-parts", ..])      => Editors,
 
             // 設定：Admin only
             (_, ["admin", "settings", ..]) => Admins,

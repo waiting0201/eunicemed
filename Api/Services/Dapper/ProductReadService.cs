@@ -21,6 +21,12 @@ public interface IProductReadService
     Task<ProductRow?> GetBySlugAsync(string slug, string locale);
 
     Task<IReadOnlyList<ProductListItemDto>> GetRelatedAsync(Guid productId, string locale, int take);
+
+    /// <summary>詳情頁的圖庫。已依「主圖優先 → SortOrder」排序，且帶 variants。</summary>
+    Task<IReadOnlyList<ProductImageDto>> GetImagesAsync(Guid productId);
+
+    /// <summary>詳情頁的適用部位 slug（docs/04 §4 的 <c>bodyParts</c> 是 slug 陣列）。</summary>
+    Task<IReadOnlyList<string>> GetBodyPartSlugsAsync(Guid productId);
 }
 
 /// <summary>詳情查詢的原始列（JSON 欄位維持字串，由 Handler 解析）。</summary>
@@ -248,6 +254,44 @@ public sealed class ProductReadService(IDbConnection db) : IProductReadService
         var fallback = (await db.QueryAsync<ListRow>($"{ListSelect} {PublishedFrom} {auto} {autoOrder}", p)).AsList();
         var fv = await LoadVariantsAsync(fallback.Select(r => r.ImageMediaId));
         return fallback.Select(r => ToListItem(r, locale, fv)).ToList();
+    }
+
+    /// <summary>
+    /// 詳情頁圖庫。列表卡只取一張主圖（在 <see cref="ListSelect"/> 的子查詢裡），
+    /// 詳情要全部，所以另外一支查詢 —— 兩者的排序規則必須一致，
+    /// 否則列表卡和詳情頁第一張圖會是不同的圖。
+    /// </summary>
+    public async Task<IReadOnlyList<ProductImageDto>> GetImagesAsync(Guid productId)
+    {
+        var rows = (await db.QueryAsync<(Guid MediaId, string BlobUrl, string? AltText, bool IsPrimary)>(
+            """
+            SELECT pi.MediaId, m.BlobUrl, m.AltText, pi.IsPrimary
+            FROM   ProductImages pi
+                   INNER JOIN Media m ON m.Id = pi.MediaId
+            WHERE  pi.ProductId = @pid
+            ORDER  BY pi.IsPrimary DESC, pi.SortOrder
+            """, new { pid = productId })).AsList();
+
+        if (rows.Count == 0) return [];
+
+        var variants = await LoadVariantsAsync(rows.Select(r => (Guid?)r.MediaId));
+
+        return rows.Select(r => new ProductImageDto(
+            r.BlobUrl, r.AltText, r.IsPrimary, variants.GetValueOrDefault(r.MediaId))).ToList();
+    }
+
+    public async Task<IReadOnlyList<string>> GetBodyPartSlugsAsync(Guid productId)
+    {
+        var rows = await db.QueryAsync<string>(
+            """
+            SELECT bp.Slug
+            FROM   ProductBodyParts pbp
+                   INNER JOIN BodyParts bp ON bp.Id = pbp.BodyPartId
+            WHERE  pbp.ProductId = @pid
+            ORDER  BY bp.SortOrder
+            """, new { pid = productId });
+
+        return rows.AsList();
     }
 
     // ── 內部 ───────────────────────────────────────────────────────────────

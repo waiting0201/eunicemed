@@ -6,7 +6,7 @@
 > [docs/api-routes.md](docs/api-routes.md) 是**路由契約**（與 `Api/Routing/AppRouter.cs` 逐條對應）。
 > 三份不要互相抄，各司其職。
 
-**最後更新**：2026-08-17
+**最後更新**：2026-08-18
 
 ---
 
@@ -14,7 +14,9 @@
 
 後端 API 與前端已串通，媒體管線可運作：分類與子分類兩頁能顯示真實產品圖與響應式 srcSet、雙語切換正確。
 內容模組（文章／FAQ／下載／據點／應用方案）的**公開端點已全數完成並實測**，含伺服器端 TOC 推導與排程發布。
-**後台介面與部署尚未開始**。整體約完成 **38%**。
+**Phase 4 已全數完成**：後台產品 CRUD（含發布分權、`rowVersion` 併發 409）與分類骨架 CRUD 皆已實測，
+產品詳情的 `images` / `bodyParts` 補齊 —— 產品詳情頁可以開始切版。
+**後台介面與部署尚未開始**。整體約完成 **45%**。
 
 ---
 
@@ -36,7 +38,7 @@
 |---|---|---|
 | 規格文件 | ✅ | 14 份，見 [CLAUDE.md](CLAUDE.md) §3 |
 | 資料模型 | 🟡 89% | 54 張表完成 48 張 |
-| API | 🟡 57% | 約 90 個端點完成 51 個；richtext／SVG 淨化與伺服器端 TOC 已就位 |
+| API | 🟡 | 已實作 **77** 條路由；Phase 0–4 全數完成，後台寫入層已有產品這支最複雜的參考實作。<br>剩 Phase 6 後台 CRUD（約 40 條）與 Phase 7（約 20 條）—— 原「約 90 個端點」的估計偏低，待那兩階段開工時重算 |
 | 前台 `apps/web` | 🟡 | Next.js 15 已建立，2 頁可運作；部署限制已實測 |
 | 後台 `apps/admin` | ⬜ | 尚未建立專案；介面需先跑 `frontend-design` skill |
 | 基礎設施 `infra/` | ⬜ | Bicep 尚未撰寫 |
@@ -58,7 +60,7 @@
 | 認證 | `Certification` `CertificationTranslation` | 🟡 5 筆 × 雙語，**文案為佔位，待品牌方提供** |
 | 部位 | `BodyPart` | ✅ 7 筆（4 筆顯示於人體圖） |
 | 標籤 | `Tag` `ProductTag` | — 無 seed |
-| 產品 | `Product` `ProductTranslation` `ProductImage` `ProductRelated` `ProductBodyPart` `ProductCertification` | ✅ 149 筆（皆為草稿） |
+| 產品 | `Product` `ProductTranslation` `ProductImage` `ProductRelated` `ProductBodyPart` `ProductCertification` | ✅ 149 筆（匯入後已發布） |
 | 媒體 | `Media` `MediaVariant` `MediaUsage` | ✅ 管線可運作，已上傳 12 張測試圖 |
 | 使用者 | `User` `Role` `UserRole` `RefreshToken` | ✅ 4 角色 + 預設管理者（環境變數注入） |
 | 稽核 | `AuditLog` | — |
@@ -80,7 +82,7 @@
 
 ## 三、API 端點
 
-已實作 **51** 個。完整契約見 [docs/api-routes.md](docs/api-routes.md)。
+已實作 **77** 條。完整契約見 [docs/api-routes.md](docs/api-routes.md)。
 
 ### 系統與驗證
 
@@ -100,7 +102,7 @@
 |---|---|---|
 | 系列 `collections` | ✅ | |
 | 產品列表 `products`（含 facets） | ✅ | |
-| 產品詳情（三段路徑 + by-slug） | 🟡 | 列表卡的圖已可用；詳情頁的 `images`、`bodyParts` 仍回空陣列 |
+| 產品詳情（三段路徑 + by-slug） | ✅ | `images[]`（含 `isPrimary` 與 `variants[]`）與 `bodyParts[]` 已補齊 |
 | 分類 `categories` | ✅ | |
 | 子分類 `sub-categories` | ✅ | |
 | 認證 `certifications` | ✅ | |
@@ -120,9 +122,9 @@
 |---|---|---|
 | 使用者 `admin/users` | ✅ | 含三項自我保護（不可停用／降權／刪除自己） |
 | 系列 `admin/collections` | ✅ | **後台 CRUD 的參考實作**，其餘模組照此形狀寫 |
-| 舊站匯入 `admin/products/import` | ✅ | 冪等，149 筆 |
-| 產品 `admin/products` | ⬜ | 含 publish / unpublish / related |
-| 分類／子分類／認證／部位 | ⬜ | |
+| 舊站匯入 `admin/products/import` | ✅ | 冪等，149 筆；已補上 Admin only 的授權規則 |
+| 產品 `admin/products` | ✅ | 含 publish / unpublish / related、軟刪除連帶清理、`rowVersion` 409 |
+| 分類／子分類／認證／部位 | ✅ | 讀取登入即可、寫入 Editor+；刪除先擋引用回 409 |
 | 媒體庫 `admin/media` | 🟡 | 上傳／列表／引用反查／刪除保護／SAS／SVG 清洗皆可用；缺 reprocess |
 | 頁面區段 `admin/pages` | ✅ | 含 schema 端點、JSON Pointer 驗證、跨語系同步、同步器 |
 | 其餘內容模組 | ⬜ | Phase 6 |
@@ -145,7 +147,7 @@ Next.js **15**（非 16 —— SWA hybrid 的支援是 preview，文件內容仍
 | Products | `/[locale]/products` | 🟡 產品列表就緒，頁面文案未就緒 |
 | Product Category | `/[locale]/products/{category}` | ✅ **已切版可運作** |
 | Sub-category | `/[locale]/products/{category}/{sub}` | ✅ **已切版可運作** |
-| Product Detail | `/[locale]/products/{category}/{sub}/{slug}` | 🟡 API 缺 images／bodyParts；頁面未切 |
+| Product Detail | `/[locale]/products/{category}/{sub}/{slug}` | 🟡 **API 已就緒**；頁面未切 |
 | Applications／Detail | `/[locale]/applications[/{slug}]` | ⬜ |
 | Partnership | `/[locale]/partnership` | ⬜ |
 | Resources | `/[locale]/resources` | ⬜ |
