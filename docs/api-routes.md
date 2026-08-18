@@ -184,6 +184,62 @@
 | GET | `/downloads?locale=&type=&productSlug=&facets=` | 公開 | `fileLocale` 是**檔案語言**，與 `?locale=` 無關 |
 | GET | `/sales-locations?locale=` | 公開 | 回 `{domestic,international}`；未填 region 者集中於最後一組 |
 
+### 後台：文章 / 文章分類 / 活動 / 圖庫
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| GET | `/admin/articles?type=&status=&category=&search=&page=&pageSize=` | 登入 | 未發布排最前 —— 後台清單是「還有什麼要處理」 |
+| POST | `/admin/articles` | Author+ | 一律建為草稿 |
+| GET | `/admin/articles/{id}` | 登入 | |
+| PUT/PATCH | `/admin/articles/{id}` | Author+ | `publishedAt` 可填未來時間做**排程發布**；已發布者改 `type` 回 409（網址會從 /news 變 /insights） |
+| DELETE | `/admin/articles/{id}` | Author+ | 軟刪除 |
+| POST | `/admin/articles/{id}/publish` | **Editor+** | `PublishedAt` 用 `??=` —— 已排程者不可被覆寫成立刻上線 |
+| POST | `/admin/articles/{id}/unpublish` | Editor+ | `PublishedAt` 保留 |
+| GET/PUT/DELETE | `/admin/articles/{id}/event` | Author+ | NewsEvent（共用主鍵 1:1）；PUT 兼建立與更新；掛到 insight 回 400 |
+| GET/PUT | `/admin/articles/{id}/gallery` | Author+ | 整批取代，陣列順序即畫面順序 |
+| GET | `/admin/article-categories?kind=` | 登入 | 含 articleCount |
+| POST · PUT/PATCH · DELETE | `/admin/article-categories[/{id}]` | Editor+ | slug **只在同一個 kind 內唯一**；有文章時不可換 kind、不可刪除（皆 409） |
+
+> **`ArticleCategory.Kind` 必須等於 `Article.Type`**，不符回 400。這條 FK 表達不了
+> （需要複合 FK），只能在應用層擋 —— 否則文章會出現在分類計數裡但點進分類找不到。
+
+### 後台：應用方案
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| GET | `/admin/applications?type=&status=&bodyPart=` | 登入 | 含 productCount |
+| POST | `/admin/applications` | Author+ | 一律建為草稿；`productIds` 內嵌，順序即排序 |
+| GET | `/admin/applications/{id}` | 登入 | |
+| PUT/PATCH | `/admin/applications/{id}` | Author+ | `mapPosition` 形狀為 `{hotspot:{cx,cy},chip:{cx,cy}}`，四個值皆須為數字，否則 400 |
+| DELETE | `/admin/applications/{id}` | Author+ | 軟刪除，連帶清 `ProductApplication` |
+| POST | `/admin/applications/{id}/publish` | **Editor+** | `showOnBodyMap` 為 true 卻無座標時回 400 |
+| POST | `/admin/applications/{id}/unpublish` | Editor+ | |
+
+> `type=1`（依部位）必須指定 `bodyPartId` —— 公開端點的產品數是
+> 「手動關聯 ∪ 同 BodyPart 的產品」，沒綁部位就永遠是 0。
+> Application **沒有 `PublishedAt`**，不做排程發布（與 Article 不同，不要照抄）。
+
+### 後台：FAQ / 下載 / 據點
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| GET | `/admin/faq-categories` | 登入 | 含 faqCount |
+| POST · PUT/PATCH · DELETE | `/admin/faq-categories[/{id}]` | Editor+ | 底下有題目時不可刪（409） |
+| GET | `/admin/faqs?category=&status=` | 登入 | |
+| POST · PUT/PATCH · DELETE | `/admin/faqs[/{id}]` | Editor+ | `answer` 淨化後為空回 400（會變成點得開但空白的問答） |
+| GET | `/admin/downloads?type=&status=&fileLocale=` | 登入 | 含 fileUrl 與掛載的 productIds |
+| POST · PUT/PATCH · DELETE | `/admin/downloads[/{id}]` | Editor+ | 仍掛在產品或被認證引用時回 409 |
+| GET | `/admin/sales-locations?type=&country=&status=` | 登入 | |
+| POST · PUT/PATCH · DELETE | `/admin/sales-locations[/{id}]` | Editor+ | `countryCode` 一律轉大寫 |
+
+> **這四個模組的寫入是 Editor+，不是 Author+。** 它們沒有發布端點，`status` 是 payload
+> 裡的一個欄位、存檔即生效；開放 Author 寫入的話，他只要在建立時送 `status=1` 就直接上線，
+> 等於繞過「Author 不可發布」。有草稿工作流的模組（產品、文章、應用方案）維持 Author+ ——
+> 那些的 POST 一律建為草稿，PUT 不碰 `status`，發布只能走 `/publish`。
+>
+> `Download.FileLocale` 是**檔案本身的語言**，**刻意不套站台語系白名單**
+> （可能有站台沒有的語言，如日文型錄），與翻譯的 `Locale`（介面語系）是兩件事。
+
 ---
 
 ## 待實作
@@ -195,15 +251,6 @@
 | Method | Path | 權限 | 說明 |
 |---|---|---|---|
 | POST | `/admin/media/{id}/reprocess` | Editor+ | 以目前 preset 重新輸出 master 與 variants |
-
-### Phase 6 剩餘 — 後台 CRUD
-
-| Method | Path | 權限 | 說明 |
-|---|---|---|---|
-| GET/POST/PUT/DELETE | `/admin/{applications,articles,article-categories,faqs,faq-categories,downloads,sales-locations}[/{id}]` | Editor+ | |
-| POST | `/admin/{applications,articles}/{id}/publish` | **Editor+** | |
-| GET/PUT/DELETE | `/admin/articles/{id}/event` | Editor+ | NewsEvent |
-| GET/PUT | `/admin/articles/{id}/gallery` | Editor+ | ArticleImage 排序 |
 
 ### Phase 7 — 表單、設定、導覽
 

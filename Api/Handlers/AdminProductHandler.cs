@@ -43,8 +43,7 @@ public sealed class AdminProductHandler(
 
         if (ProductHandler.Nullable(req.Query["status"]) is { } rawStatus)
         {
-            if (!TryParseStatus(rawStatus, out var status))
-                throw AppException.BadRequest($"未知的 status：{rawStatus}（draft / published / archived）。");
+            var status = AdminWrite.ParseStatus(rawStatus);
             q = q.Where(p => p.Status == status);
         }
 
@@ -106,7 +105,7 @@ public sealed class AdminProductHandler(
     /// <summary>GET /admin/products/{id}</summary>
     public async Task<IActionResult> GetByIdAsync(string id)
     {
-        var entity = await LoadFullAsync(ParseId(id));
+        var entity = await LoadFullAsync(AdminWrite.ParseId(id, "product"));
         return new OkObjectResult(ApiResponse.Ok(ToDto(entity)));
     }
 
@@ -115,7 +114,7 @@ public sealed class AdminProductHandler(
     /// <summary>POST /admin/products —— 一律建為草稿，發布走 /publish。</summary>
     public async Task<IActionResult> CreateAsync(HttpRequest req)
     {
-        var body = await ReadBodyAsync(req);
+        var body = await AdminWrite.ReadAsync<UpsertProductRequest>(req);
 
         if (string.IsNullOrWhiteSpace(body.Slug))
             throw AppException.BadRequest("slug 為必填。");
@@ -158,10 +157,10 @@ public sealed class AdminProductHandler(
     /// <summary>PUT /admin/products/{id}</summary>
     public async Task<IActionResult> UpdateAsync(HttpRequest req, string id)
     {
-        var body   = await ReadBodyAsync(req);
-        var entity = await LoadFullAsync(ParseId(id));
+        var body   = await AdminWrite.ReadAsync<UpsertProductRequest>(req);
+        var entity = await LoadFullAsync(AdminWrite.ParseId(id, "product"));
 
-        ApplyConcurrencyToken(entity, body.RowVersion);
+        AdminWrite.ApplyRowVersion(db.Entry(entity).Property(p => p.RowVer), body.RowVersion);
 
         if (!string.IsNullOrWhiteSpace(body.Slug))
         {
@@ -204,7 +203,7 @@ public sealed class AdminProductHandler(
     /// </summary>
     public async Task<IActionResult> DeleteAsync(string id)
     {
-        var guid   = ParseId(id);
+        var guid   = AdminWrite.ParseId(id, "product");
         var entity = await db.Products.FirstOrDefaultAsync(p => p.Id == guid)
             ?? throw AppException.NotFound("Product");
 
@@ -226,7 +225,7 @@ public sealed class AdminProductHandler(
     /// <summary>POST /admin/products/{id}/publish —— Editor 以上（AppRouter 把關）。</summary>
     public async Task<IActionResult> PublishAsync(string id)
     {
-        var entity = await LoadFullAsync(ParseId(id));
+        var entity = await LoadFullAsync(AdminWrite.ParseId(id, "product"));
 
         // 沒有任何翻譯就發布 = 前台每個語系都查不到它（語言純度原則會把它整筆濾掉）。
         // 讓它在後台就擋下來，而不是上線後才發現「已發布但看不到」。
@@ -244,7 +243,7 @@ public sealed class AdminProductHandler(
     /// <summary>POST /admin/products/{id}/unpublish —— 退回草稿，保留 PublishedAt。</summary>
     public async Task<IActionResult> UnpublishAsync(string id)
     {
-        var entity = await LoadFullAsync(ParseId(id));
+        var entity = await LoadFullAsync(AdminWrite.ParseId(id, "product"));
 
         // PublishedAt 刻意保留：它是「首次發布時間」，用於排序與 SEO 的 datePublished。
         // 清掉的話重新發布會讓文章跳到列表最前面，等於竄改時序。
@@ -260,7 +259,7 @@ public sealed class AdminProductHandler(
     /// <summary>GET /admin/products/{id}/related —— 只回人工指定的，不含自動遞補。</summary>
     public async Task<IActionResult> GetRelatedAsync(string id)
     {
-        var guid = ParseId(id);
+        var guid = AdminWrite.ParseId(id, "product");
         if (!await db.Products.AnyAsync(p => p.Id == guid))
             throw AppException.NotFound("Product");
 
@@ -284,7 +283,7 @@ public sealed class AdminProductHandler(
     /// </summary>
     public async Task<IActionResult> UpdateRelatedAsync(HttpRequest req, string id)
     {
-        var guid = ParseId(id);
+        var guid = AdminWrite.ParseId(id, "product");
         if (!await db.Products.AnyAsync(p => p.Id == guid))
             throw AppException.NotFound("Product");
 
@@ -313,13 +312,6 @@ public sealed class AdminProductHandler(
 
     // ── 內部 ───────────────────────────────────────────────────────────────
 
-    private async Task<UpsertProductRequest> ReadBodyAsync(HttpRequest req) =>
-        await req.ReadFromJsonAsync<UpsertProductRequest>()
-        ?? throw AppException.BadRequest("Invalid request body.");
-
-    private static Guid ParseId(string id) =>
-        Guid.TryParse(id, out var guid) ? guid : throw AppException.BadRequest("Invalid product ID format.");
-
     private async Task<Product> LoadFullAsync(Guid id) =>
         await db.Products
             .Include(p => p.Translations)
@@ -329,22 +321,6 @@ public sealed class AdminProductHandler(
             .Include(p => p.Tags)
             .FirstOrDefaultAsync(p => p.Id == id)
         ?? throw AppException.NotFound("Product");
-
-    /// <summary>
-    /// 帶了 rowVersion 就啟用併發偵測。
-    /// EF 只有在 <c>OriginalValue</c> 與 DB 不符時才拋 <c>DbUpdateConcurrencyException</c>，
-    /// 所以必須覆寫 original 而不是 current（後者是 DB 產生的，設了也沒用）。
-    /// </summary>
-    private void ApplyConcurrencyToken(Product entity, string? rowVersion)
-    {
-        if (string.IsNullOrWhiteSpace(rowVersion)) return;
-
-        byte[] token;
-        try { token = Convert.FromBase64String(rowVersion); }
-        catch (FormatException) { throw AppException.BadRequest("rowVersion 必須是 base64 字串。"); }
-
-        db.Entry(entity).Property(p => p.RowVer).OriginalValue = token;
-    }
 
     /// <summary>
     /// 三段 URL 的歸屬在寫入時就要守住：子分類必須屬於該分類。
@@ -391,9 +367,7 @@ public sealed class AdminProductHandler(
 
         foreach (var (rawLocale, value) in input)
         {
-            var locale = Locales.Normalize(rawLocale);
-            if (!Locales.Supported.Contains(locale))
-                throw AppException.BadRequest($"不支援的語系：{rawLocale}");
+            var locale = AdminWrite.ValidLocale(rawLocale);
             if (string.IsNullOrWhiteSpace(value.Name))
                 throw AppException.BadRequest($"語系 {locale} 的 name 為必填。");
 
@@ -434,7 +408,7 @@ public sealed class AdminProductHandler(
             .GroupBy(i => i.MediaId).Select(g => g.First())   // 同一張圖掛兩次是資料問題
             .OrderBy(i => i.SortOrder).ToArray();
 
-        await EnsureMediaExistsAsync(ordered.Select(i => i.MediaId));
+        await AdminWrite.EnsureMediaExistsAsync(db, ordered.Select(i => (Guid?)i.MediaId));
 
         entity.Images.Clear();
 
@@ -455,7 +429,7 @@ public sealed class AdminProductHandler(
     private async Task ApplyBodyPartsAsync(Product entity, Guid[] ids)
     {
         var distinct = ids.Distinct().ToArray();
-        await EnsureAllExistAsync(db.BodyParts.Select(b => b.Id), distinct, "bodyPartId");
+        await AdminWrite.EnsureAllExistAsync(db.BodyParts.Select(b => b.Id), distinct, "bodyPartId");
 
         entity.BodyParts.Clear();
         foreach (var id in distinct) entity.BodyParts.Add(new ProductBodyPart { BodyPartId = id });
@@ -464,7 +438,7 @@ public sealed class AdminProductHandler(
     private async Task ApplyCertificationsAsync(Product entity, Guid[] ids)
     {
         var distinct = ids.Distinct().ToArray();
-        await EnsureAllExistAsync(db.Certifications.Select(c => c.Id), distinct, "certificationId");
+        await AdminWrite.EnsureAllExistAsync(db.Certifications.Select(c => c.Id), distinct, "certificationId");
 
         entity.Certifications.Clear();
         foreach (var id in distinct) entity.Certifications.Add(new ProductCertification { CertificationId = id });
@@ -473,39 +447,19 @@ public sealed class AdminProductHandler(
     private async Task ApplyTagsAsync(Product entity, Guid[] ids)
     {
         var distinct = ids.Distinct().ToArray();
-        await EnsureAllExistAsync(db.Tags.Select(t => t.Id), distinct, "tagId");
+        await AdminWrite.EnsureAllExistAsync(db.Tags.Select(t => t.Id), distinct, "tagId");
 
         entity.Tags.Clear();
         foreach (var id in distinct) entity.Tags.Add(new ProductTag { TagId = id });
     }
 
-    private static async Task EnsureAllExistAsync(IQueryable<Guid> source, Guid[] ids, string field)
-    {
-        if (ids.Length == 0) return;
-
-        var found = await source.Where(id => ids.Contains(id)).CountAsync();
-        if (found != ids.Length)
-            throw AppException.BadRequest($"有 {ids.Length - found} 筆 {field} 不存在。");
-    }
-
     /// <summary>FK 型的媒體引用（use-case 圖、og 圖）也要驗，否則會撞 FK 變成 500。</summary>
     private async Task ValidateMediaAsync(Product entity)
     {
-        var ids = new List<Guid>();
-        if (entity.UseCaseImageMediaId is { } uc) ids.Add(uc);
-        ids.AddRange(entity.Translations.Where(t => t.OgImageMediaId is not null).Select(t => t.OgImageMediaId!.Value));
+        var ids = new List<Guid?> { entity.UseCaseImageMediaId };
+        ids.AddRange(entity.Translations.Select(t => t.OgImageMediaId));
 
-        await EnsureMediaExistsAsync(ids);
-    }
-
-    private async Task EnsureMediaExistsAsync(IEnumerable<Guid> mediaIds)
-    {
-        var ids = mediaIds.Distinct().ToArray();
-        if (ids.Length == 0) return;
-
-        var found = await db.Media.Where(m => ids.Contains(m.Id)).CountAsync();
-        if (found != ids.Length)
-            throw AppException.BadRequest($"有 {ids.Length - found} 筆 mediaId 不存在。");
+        await AdminWrite.EnsureMediaExistsAsync(db, ids);
     }
 
     /// <summary>
@@ -527,18 +481,6 @@ public sealed class AdminProductHandler(
         return mediaUsage.RebuildAsync(nameof(Product), entity.Id, refs);
     }
 
-    private static bool TryParseStatus(string raw, out byte status)
-    {
-        status = raw.ToLowerInvariant() switch
-        {
-            "draft"     or "0" => ContentStatus.Draft,
-            "published" or "1" => ContentStatus.Published,
-            "archived"  or "2" => ContentStatus.Archived,
-            _                  => byte.MaxValue,
-        };
-        return status != byte.MaxValue;
-    }
-
     private static AdminProductDto ToDto(Product p) => new(
         p.Id, p.Slug, p.Sku,
         p.CategoryId, p.SubCategoryId, p.CollectionId,
@@ -554,6 +496,6 @@ public sealed class AdminProductHandler(
             JsonField.Parse(t.FeaturesJson), JsonField.Parse(t.UseCasesJson),
             JsonField.Parse(t.SpecsJson), JsonField.Parse(t.SizeChartJson), JsonField.Parse(t.ConditionsJson),
             t.SeoTitle, t.SeoDescription, t.OgImageMediaId)),
-        p.RowVer is null ? null : Convert.ToBase64String(p.RowVer),
+        AdminWrite.Base64(p.RowVer),
         p.CreatedAt, p.UpdatedAt);
 }

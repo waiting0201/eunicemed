@@ -105,8 +105,11 @@ var host = new HostBuilder()
         services.AddScoped<MediaHandler>();
         services.AddScoped<PageHandler>();
         services.AddScoped<ApplicationHandler>();
+        services.AddScoped<AdminApplicationHandler>();
         services.AddScoped<ArticleHandler>();
+        services.AddScoped<AdminArticleHandler>();
         services.AddScoped<ContentHandler>();
+        services.AddScoped<AdminContentHandler>();
         services.AddScoped<MediaUsageWriter>();
 
         // ── Router ────────────────────────────────────────────────────────

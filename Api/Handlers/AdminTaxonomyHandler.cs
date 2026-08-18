@@ -38,13 +38,13 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
     public async Task<IActionResult> GetCategoryAsync(string id)
     {
-        var entity = await LoadCategoryAsync(ParseId(id, "category"));
+        var entity = await LoadCategoryAsync(AdminWrite.ParseId(id, "category"));
         return new OkObjectResult(ApiResponse.Ok(await WithCountsAsync(entity)));
     }
 
     public async Task<IActionResult> CreateCategoryAsync(HttpRequest req)
     {
-        var body = await ReadAsync<UpsertCategoryRequest>(req);
+        var body = await AdminWrite.ReadAsync<UpsertCategoryRequest>(req);
 
         if (string.IsNullOrWhiteSpace(body.Slug))
             throw AppException.BadRequest("slug 為必填。");
@@ -66,7 +66,7 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
         ApplyCategoryFields(entity, body);
         ApplyCategoryTranslations(entity, body.Translations);
-        await EnsureMediaExistsAsync([entity.ImageMediaId, entity.HeroImageMediaId]);
+        await AdminWrite.EnsureMediaExistsAsync(db, [entity.ImageMediaId, entity.HeroImageMediaId]);
 
         db.Categories.Add(entity);
         await db.SaveChangesAsync();
@@ -77,10 +77,10 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
     public async Task<IActionResult> UpdateCategoryAsync(HttpRequest req, string id)
     {
-        var body   = await ReadAsync<UpsertCategoryRequest>(req);
-        var entity = await LoadCategoryAsync(ParseId(id, "category"));
+        var body   = await AdminWrite.ReadAsync<UpsertCategoryRequest>(req);
+        var entity = await LoadCategoryAsync(AdminWrite.ParseId(id, "category"));
 
-        ApplyRowVersion(db.Entry(entity).Property(c => c.RowVer), body.RowVersion);
+        AdminWrite.ApplyRowVersion(db.Entry(entity).Property(c => c.RowVer), body.RowVersion);
 
         if (!string.IsNullOrWhiteSpace(body.Slug))
         {
@@ -94,7 +94,7 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
         ApplyCategoryFields(entity, body);
         ApplyCategoryTranslations(entity, body.Translations);
-        await EnsureMediaExistsAsync([entity.ImageMediaId, entity.HeroImageMediaId]);
+        await AdminWrite.EnsureMediaExistsAsync(db, [entity.ImageMediaId, entity.HeroImageMediaId]);
 
         entity.UpdatedAt = Clock.Now;
         await db.SaveChangesAsync();
@@ -105,7 +105,7 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
     public async Task<IActionResult> DeleteCategoryAsync(string id)
     {
-        var guid   = ParseId(id, "category");
+        var guid   = AdminWrite.ParseId(id, "category");
         var entity = await db.Categories.FirstOrDefaultAsync(c => c.Id == guid)
             ?? throw AppException.NotFound("Category");
 
@@ -141,13 +141,13 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
     public async Task<IActionResult> GetSubCategoryAsync(string id)
     {
-        var entity = await LoadSubCategoryAsync(ParseId(id, "sub-category"));
+        var entity = await LoadSubCategoryAsync(AdminWrite.ParseId(id, "sub-category"));
         return new OkObjectResult(ApiResponse.Ok(await WithCountsAsync(entity)));
     }
 
     public async Task<IActionResult> CreateSubCategoryAsync(HttpRequest req)
     {
-        var body = await ReadAsync<UpsertSubCategoryRequest>(req);
+        var body = await AdminWrite.ReadAsync<UpsertSubCategoryRequest>(req);
 
         if (string.IsNullOrWhiteSpace(body.Slug))
             throw AppException.BadRequest("slug 為必填。");
@@ -177,7 +177,7 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
         ApplySubCategoryFields(entity, body);
         ApplySubCategoryTranslations(entity, body.Translations);
-        await EnsureMediaExistsAsync([entity.ImageMediaId, entity.HeroImageMediaId]);
+        await AdminWrite.EnsureMediaExistsAsync(db, [entity.ImageMediaId, entity.HeroImageMediaId]);
 
         db.SubCategories.Add(entity);
         await db.SaveChangesAsync();
@@ -188,10 +188,10 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
     public async Task<IActionResult> UpdateSubCategoryAsync(HttpRequest req, string id)
     {
-        var body   = await ReadAsync<UpsertSubCategoryRequest>(req);
-        var entity = await LoadSubCategoryAsync(ParseId(id, "sub-category"));
+        var body   = await AdminWrite.ReadAsync<UpsertSubCategoryRequest>(req);
+        var entity = await LoadSubCategoryAsync(AdminWrite.ParseId(id, "sub-category"));
 
-        ApplyRowVersion(db.Entry(entity).Property(s => s.RowVer), body.RowVersion);
+        AdminWrite.ApplyRowVersion(db.Entry(entity).Property(s => s.RowVer), body.RowVersion);
 
         if (!string.IsNullOrWhiteSpace(body.Slug))
         {
@@ -220,7 +220,7 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
         ApplySubCategoryFields(entity, body);
         ApplySubCategoryTranslations(entity, body.Translations);
-        await EnsureMediaExistsAsync([entity.ImageMediaId, entity.HeroImageMediaId]);
+        await AdminWrite.EnsureMediaExistsAsync(db, [entity.ImageMediaId, entity.HeroImageMediaId]);
 
         entity.UpdatedAt = Clock.Now;
         await db.SaveChangesAsync();
@@ -231,7 +231,7 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
     public async Task<IActionResult> DeleteSubCategoryAsync(string id)
     {
-        var guid   = ParseId(id, "sub-category");
+        var guid   = AdminWrite.ParseId(id, "sub-category");
         var entity = await db.SubCategories.FirstOrDefaultAsync(s => s.Id == guid)
             ?? throw AppException.NotFound("SubCategory");
 
@@ -260,13 +260,13 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
     public async Task<IActionResult> GetCertificationAsync(string id)
     {
-        var entity = await LoadCertificationAsync(ParseId(id, "certification"));
+        var entity = await LoadCertificationAsync(AdminWrite.ParseId(id, "certification"));
         return new OkObjectResult(ApiResponse.Ok(await WithCountsAsync(entity)));
     }
 
     public async Task<IActionResult> CreateCertificationAsync(HttpRequest req)
     {
-        var body = await ReadAsync<UpsertCertificationRequest>(req);
+        var body = await AdminWrite.ReadAsync<UpsertCertificationRequest>(req);
 
         if (string.IsNullOrWhiteSpace(body.Slug))
             throw AppException.BadRequest("slug 為必填。");
@@ -290,7 +290,7 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
         ApplyCertificationFields(entity, body);
         ApplyCertificationTranslations(entity, body.Translations);
-        await EnsureMediaExistsAsync([entity.LogoMediaId]);
+        await AdminWrite.EnsureMediaExistsAsync(db, [entity.LogoMediaId]);
 
         db.Certifications.Add(entity);
         await db.SaveChangesAsync();
@@ -301,8 +301,8 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
     public async Task<IActionResult> UpdateCertificationAsync(HttpRequest req, string id)
     {
-        var body   = await ReadAsync<UpsertCertificationRequest>(req);
-        var entity = await LoadCertificationAsync(ParseId(id, "certification"));
+        var body   = await AdminWrite.ReadAsync<UpsertCertificationRequest>(req);
+        var entity = await LoadCertificationAsync(AdminWrite.ParseId(id, "certification"));
 
         if (!string.IsNullOrWhiteSpace(body.Slug))
         {
@@ -318,7 +318,7 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
         ApplyCertificationFields(entity, body);
         ApplyCertificationTranslations(entity, body.Translations);
-        await EnsureMediaExistsAsync([entity.LogoMediaId]);
+        await AdminWrite.EnsureMediaExistsAsync(db, [entity.LogoMediaId]);
 
         entity.UpdatedAt = Clock.Now;
         await db.SaveChangesAsync();
@@ -330,7 +330,7 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
     /// <summary>DELETE /admin/certifications/{id} —— **硬刪除**（此表無 IsDeleted）。</summary>
     public async Task<IActionResult> DeleteCertificationAsync(string id)
     {
-        var guid   = ParseId(id, "certification");
+        var guid   = AdminWrite.ParseId(id, "certification");
         var entity = await db.Certifications.FirstOrDefaultAsync(c => c.Id == guid)
             ?? throw AppException.NotFound("Certification");
 
@@ -358,8 +358,8 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
     public async Task<IActionResult> UpdateBodyPartAsync(HttpRequest req, string id)
     {
-        var guid = ParseId(id, "body-part");
-        var body = await ReadAsync<UpdateBodyPartRequest>(req);
+        var guid = AdminWrite.ParseId(id, "body-part");
+        var body = await AdminWrite.ReadAsync<UpdateBodyPartRequest>(req);
 
         var entity = await db.BodyParts.FirstOrDefaultAsync(b => b.Id == guid)
             ?? throw AppException.NotFound("BodyPart");
@@ -471,7 +471,7 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
         foreach (var (rawLocale, value) in input)
         {
-            var locale = ValidLocale(rawLocale);
+            var locale = AdminWrite.ValidLocale(rawLocale);
 
             var tr = entity.Translations.FirstOrDefault(t => t.Locale == locale);
             if (tr is null)
@@ -492,7 +492,7 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
     {
         foreach (var (rawLocale, value) in input)
         {
-            var locale = ValidLocale(rawLocale);
+            var locale = AdminWrite.ValidLocale(rawLocale);
 
             if (string.IsNullOrWhiteSpace(name(value)))
                 throw AppException.BadRequest($"語系 {locale} 的 name 為必填。");
@@ -501,59 +501,22 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
         }
     }
 
-    private static string ValidLocale(string raw)
-    {
-        var locale = Locales.Normalize(raw);
-        return Locales.Supported.Contains(locale)
-            ? locale
-            : throw AppException.BadRequest($"不支援的語系：{raw}");
-    }
-
     // ── 內部：共用 ─────────────────────────────────────────────────────────
-
-    private static Guid ParseId(string id, string what) =>
-        Guid.TryParse(id, out var guid) ? guid : throw AppException.BadRequest($"Invalid {what} ID format.");
-
-    private async Task<T> ReadAsync<T>(HttpRequest req) =>
-        await req.ReadFromJsonAsync<T>() ?? throw AppException.BadRequest("Invalid request body.");
-
-    private static void ApplyRowVersion(
-        Microsoft.EntityFrameworkCore.ChangeTracking.PropertyEntry property, string? rowVersion)
-    {
-        if (string.IsNullOrWhiteSpace(rowVersion)) return;
-
-        try { property.OriginalValue = Convert.FromBase64String(rowVersion); }
-        catch (FormatException) { throw AppException.BadRequest("rowVersion 必須是 base64 字串。"); }
-    }
 
     private static async Task<Dictionary<Guid, int>> CountByAsync<T>(IQueryable<IGrouping<Guid, T>> grouped) =>
         await grouped.Select(g => new { g.Key, Count = g.Count() })
                      .ToDictionaryAsync(x => x.Key, x => x.Count);
 
-    private async Task EnsureMediaExistsAsync(Guid?[] mediaIds)
-    {
-        var ids = mediaIds.Where(i => i.HasValue).Select(i => i!.Value).Distinct().ToArray();
-        if (ids.Length == 0) return;
-
-        var found = await db.Media.Where(m => ids.Contains(m.Id)).CountAsync();
-        if (found != ids.Length)
-            throw AppException.BadRequest($"有 {ids.Length - found} 筆 mediaId 不存在。");
-    }
-
     private Task RebuildCategoryUsageAsync(Category c) =>
-        mediaUsage.RebuildAsync(nameof(Category), c.Id, MediaRefs(
+        mediaUsage.RebuildAsync(nameof(Category), c.Id, AdminWrite.MediaRefs(
             ("image", c.ImageMediaId), ("heroImage", c.HeroImageMediaId)));
 
     private Task RebuildSubCategoryUsageAsync(SubCategory s) =>
-        mediaUsage.RebuildAsync(nameof(SubCategory), s.Id, MediaRefs(
+        mediaUsage.RebuildAsync(nameof(SubCategory), s.Id, AdminWrite.MediaRefs(
             ("image", s.ImageMediaId), ("heroImage", s.HeroImageMediaId)));
 
     private Task RebuildCertificationUsageAsync(Certification c) =>
-        mediaUsage.RebuildAsync(nameof(Certification), c.Id, MediaRefs(("logo", c.LogoMediaId)));
-
-    private static IEnumerable<(string FieldPath, Guid MediaId)> MediaRefs(
-        params (string FieldPath, Guid? MediaId)[] refs) =>
-        refs.Where(r => r.MediaId.HasValue).Select(r => (r.FieldPath, r.MediaId!.Value));
+        mediaUsage.RebuildAsync(nameof(Certification), c.Id, AdminWrite.MediaRefs(("logo", c.LogoMediaId)));
 
     // ── 內部：對映 ─────────────────────────────────────────────────────────
 
@@ -575,7 +538,7 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
             t.Name, t.Description,
             JsonField.Parse(t.StatsJson), JsonField.Parse(t.SupportLevelsJson),
             t.SeoTitle, t.SeoDescription)),
-        c.RowVer is null ? null : Convert.ToBase64String(c.RowVer),
+        AdminWrite.Base64(c.RowVer),
         c.CreatedAt, c.UpdatedAt);
 
     private static AdminSubCategoryDto ToDto(SubCategory s, int productCount) => new(
@@ -583,7 +546,7 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
         s.ImageMediaId, s.HeroImageMediaId, s.Status, productCount,
         s.Translations.OrderBy(t => t.Locale).ToDictionary(t => t.Locale, t => new SubCategoryTranslationInput(
             t.Name, t.Description, JsonField.Parse(t.StatsJson), t.SeoTitle, t.SeoDescription)),
-        s.RowVer is null ? null : Convert.ToBase64String(s.RowVer),
+        AdminWrite.Base64(s.RowVer),
         s.CreatedAt, s.UpdatedAt);
 
     private static AdminCertificationDto ToDto(Certification c, int productCount) => new(

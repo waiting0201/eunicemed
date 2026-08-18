@@ -129,7 +129,7 @@ Dapper 讀取層、`FacetFolder`、公開端點（products 列表+facets、三�
 共 18 頁 60 個區段）。這是內容形狀的工作，機制已就緒，照 `about` 的 6 個複製即可。
 richtext 的伺服器端淨化與 SVG 清洗**已完成**（見下）。
 
-### 🟡 Phase 6 — 文章 / FAQ / 下載 / 據點 / 應用方案
+### ✅ Phase 6 — 文章 / FAQ / 下載 / 據點 / 應用方案
 
 **公開端點已完成並實測**（驗收：`Api/http/phase6-content.http`）：20 張表、13 個端點。
 `Article` 全家族（含共用 PK 的 `NewsEvent`）、`ArticleCategory`、`Faq`、`Download`、`SalesLocation`、`Application` 皆已建表並 seed。
@@ -140,7 +140,30 @@ richtext 的伺服器端淨化與 SVG 清洗**已完成**（見下）。
 - **排程發布**：`PublishedAt` 為未來時間者，列表與詳情都查不到（詳情回 404）。依 docs/03 §3「排程發布」。
 - **應用方案的 `productCount`** ＝「`ProductApplications` 手動關聯 ∪ 同 `BodyPart` 的產品」。只認前者的話，149 筆匯入產品在編輯者逐一掛完之前每個部位頁都顯示 0，而那正是上線初期的狀態。
 
-**剩餘**：全部模組的後台 CRUD（見 `docs/api-routes.md`「Phase 6 剩餘」）。
+**後台 CRUD 已完成**（驗收：[`Api/http/phase6-admin.http`](../Api/http/phase6-admin.http)）：
+文章／文章分類／活動面板／圖庫／應用方案／FAQ／FAQ 分類／下載／據點，共 43 條路由。
+
+實作時定案的四件事：
+
+- **排程發布補上了寫入端**。讀取端在上一輪就會濾掉未來時間的文章，但後台當時沒有欄位
+  可以設那個時間，等於功能只有一半。`UpsertArticleRequest` 加了 `publishedAt`，
+  而 `/publish` 用 `??=` 而非直接指派 —— 直接指派會把編輯者排好的時間覆寫成「立刻」，
+  是那種按下去看起來成功、但排程默默消失的錯誤。
+- **`ArticleCategory.Kind` 必須等於 `Article.Type`**，由應用層驗證（複合 FK 才表達得了）。
+  不擋的話 insight 可以掛到 news 分類下，公開列表兩邊都照 `Type` 撈 ——
+  那篇文章會出現在側欄的分類計數裡，點進該分類卻找不到。
+- **人體圖座標在寫入時驗形狀**（`{hotspot:{cx,cy},chip:{cx,cy}}`，四個值皆為數字），
+  且 `showOnBodyMap` 為 true 卻沒有座標時擋住發布。少一個值前端會拿到 NaN
+  而整張人體圖靜默不顯示，編輯者只會看到「發布了但沒出現」。
+- **沒有草稿工作流的模組，寫入要 Editor+ 而非 Author+**（FAQ、FAQ 分類、下載、據點、文章分類）。
+  它們沒有發布端點，`status` 是 payload 裡的一個欄位、存檔即生效 ——
+  開放 Author 寫入的話他只要建立時送 `status=1` 就直接上線，等於繞過「Author 不可發布」。
+  有草稿工作流的模組維持 Author+：POST 一律建為草稿、PUT 不碰 `status`、發布只能走 `/publish`。
+
+順帶把三支後台 handler 共用的零件抽成 `Handlers/AdminWrite.cs`
+（語系白名單、rowVersion 比對、FK 存在性檢查、status 解析）。抽出的判準是
+「每支都會原封不動複製一次，且複製錯了會靜默壞掉」；**沒抽**各自的欄位套用與翻譯 upsert ——
+那些看起來像，其實每個實體欄位都不同，硬泛型化只會換成一堆反射與 lambda。
 
 ### ⬜ Phase 7 — 表單 / 設定 / 選單 / 轉址 / sitemap · 3–4 天
 
@@ -155,6 +178,19 @@ richtext 的伺服器端淨化與 SVG 清洗**已完成**（見下）。
 ---
 
 ## 踩到的坑（累積記錄）
+
+### 2026-08-18 · 讀取端做完的功能，寫入端可能根本沒有入口
+
+排程發布在 Phase 6 的讀取端就實作好了（`PublishedAt` 為未來時間者公開端點查不到），
+`.http` 也驗過。但後台的 `UpsertArticleRequest` 從頭到尾沒有 `publishedAt` 欄位 ——
+也就是說**沒有任何方式可以設定那個時間**，功能只有一半，而讀取端的測試完全驗不出來
+（它是直接改 DB 造出未來時間的資料）。
+
+驗收一個橫跨讀寫的功能時，要從**編輯者的動線**走一遍，而不是分別測兩端：
+「我要怎麼讓一篇文章在下週二上線？」——問得出這句話就會發現缺口。
+
+同一輪還發現 `/publish` 若寫成 `entity.PublishedAt = Clock.Now` 會把已排程的時間
+覆寫成立刻上線。必須是 `??=`。
 
 ### 2026-08-18 · 授權規則寫 `(_, [...])` 會連 GET 一起擋掉
 

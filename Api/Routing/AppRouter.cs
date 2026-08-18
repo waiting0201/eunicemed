@@ -36,8 +36,11 @@ public sealed class AppRouter(
     MediaHandler       media,
     PageHandler        pages,
     ApplicationHandler applications,
+    AdminApplicationHandler adminApplications,
     ArticleHandler     articles,
-    ContentHandler     content)
+    AdminArticleHandler adminArticles,
+    ContentHandler     content,
+    AdminContentHandler adminContent)
 {
     public async Task<IActionResult> RouteAsync(HttpRequest req, string route)
     {
@@ -184,6 +187,64 @@ public sealed class AppRouter(
             ("GET",  ["admin", "body-parts"])         => await adminTaxonomy.GetBodyPartsAsync(),
             ("PUT" or "PATCH", ["admin", "body-parts", var id]) => await adminTaxonomy.UpdateBodyPartAsync(req, id),
 
+            // ── Admin：應用方案 ───────────────────────────────────────────
+            // 順序敏感：publish / unpublish 必須排在 ["admin","applications",var id] 之前
+            ("POST", ["admin", "applications", var id, "publish"])   => await adminApplications.PublishAsync(id),
+            ("POST", ["admin", "applications", var id, "unpublish"]) => await adminApplications.UnpublishAsync(id),
+
+            ("GET",    ["admin", "applications"])          => await adminApplications.GetListAsync(req),
+            ("POST",   ["admin", "applications"])          => await adminApplications.CreateAsync(req),
+            ("GET",    ["admin", "applications", var id])  => await adminApplications.GetByIdAsync(id),
+            ("PUT" or "PATCH", ["admin", "applications", var id]) => await adminApplications.UpdateAsync(req, id),
+            ("DELETE", ["admin", "applications", var id])  => await adminApplications.DeleteAsync(id),
+
+            // ── Admin：文章（News / Insights）─────────────────────────────
+            // 順序敏感：四段路徑（publish / event / gallery）全部排在三段之前
+            ("POST",   ["admin", "articles", var id, "publish"])   => await adminArticles.PublishAsync(id),
+            ("POST",   ["admin", "articles", var id, "unpublish"]) => await adminArticles.UnpublishAsync(id),
+            ("GET",    ["admin", "articles", var id, "event"])     => await adminArticles.GetEventAsync(id),
+            ("PUT",    ["admin", "articles", var id, "event"])     => await adminArticles.UpsertEventAsync(req, id),
+            ("DELETE", ["admin", "articles", var id, "event"])     => await adminArticles.DeleteEventAsync(id),
+            ("GET",    ["admin", "articles", var id, "gallery"])   => await adminArticles.GetGalleryAsync(id),
+            ("PUT",    ["admin", "articles", var id, "gallery"])   => await adminArticles.UpdateGalleryAsync(req, id),
+
+            ("GET",    ["admin", "articles"])          => await adminArticles.GetListAsync(req),
+            ("POST",   ["admin", "articles"])          => await adminArticles.CreateAsync(req),
+            ("GET",    ["admin", "articles", var id])  => await adminArticles.GetByIdAsync(id),
+            ("PUT" or "PATCH", ["admin", "articles", var id]) => await adminArticles.UpdateAsync(req, id),
+            ("DELETE", ["admin", "articles", var id])  => await adminArticles.DeleteAsync(id),
+
+            ("GET",    ["admin", "article-categories"])          => await adminArticles.GetCategoriesAsync(req),
+            ("POST",   ["admin", "article-categories"])          => await adminArticles.CreateCategoryAsync(req),
+            ("GET",    ["admin", "article-categories", var id])  => await adminArticles.GetCategoryAsync(id),
+            ("PUT" or "PATCH", ["admin", "article-categories", var id]) => await adminArticles.UpdateCategoryAsync(req, id),
+            ("DELETE", ["admin", "article-categories", var id])  => await adminArticles.DeleteCategoryAsync(id),
+
+            // ── Admin：FAQ / 下載 / 據點 ──────────────────────────────────
+            ("GET",    ["admin", "faq-categories"])          => await adminContent.GetFaqCategoriesAsync(),
+            ("POST",   ["admin", "faq-categories"])          => await adminContent.CreateFaqCategoryAsync(req),
+            ("GET",    ["admin", "faq-categories", var id])  => await adminContent.GetFaqCategoryAsync(id),
+            ("PUT" or "PATCH", ["admin", "faq-categories", var id]) => await adminContent.UpdateFaqCategoryAsync(req, id),
+            ("DELETE", ["admin", "faq-categories", var id])  => await adminContent.DeleteFaqCategoryAsync(id),
+
+            ("GET",    ["admin", "faqs"])          => await adminContent.GetFaqsAsync(req),
+            ("POST",   ["admin", "faqs"])          => await adminContent.CreateFaqAsync(req),
+            ("GET",    ["admin", "faqs", var id])  => await adminContent.GetFaqAsync(id),
+            ("PUT" or "PATCH", ["admin", "faqs", var id]) => await adminContent.UpdateFaqAsync(req, id),
+            ("DELETE", ["admin", "faqs", var id])  => await adminContent.DeleteFaqAsync(id),
+
+            ("GET",    ["admin", "downloads"])          => await adminContent.GetDownloadsAsync(req),
+            ("POST",   ["admin", "downloads"])          => await adminContent.CreateDownloadAsync(req),
+            ("GET",    ["admin", "downloads", var id])  => await adminContent.GetDownloadAsync(id),
+            ("PUT" or "PATCH", ["admin", "downloads", var id]) => await adminContent.UpdateDownloadAsync(req, id),
+            ("DELETE", ["admin", "downloads", var id])  => await adminContent.DeleteDownloadAsync(id),
+
+            ("GET",    ["admin", "sales-locations"])          => await adminContent.GetSalesLocationsAsync(req),
+            ("POST",   ["admin", "sales-locations"])          => await adminContent.CreateSalesLocationAsync(req),
+            ("GET",    ["admin", "sales-locations", var id])  => await adminContent.GetSalesLocationAsync(id),
+            ("PUT" or "PATCH", ["admin", "sales-locations", var id]) => await adminContent.UpdateSalesLocationAsync(req, id),
+            ("DELETE", ["admin", "sales-locations", var id])  => await adminContent.DeleteSalesLocationAsync(id),
+
             // ── Admin：Collections ────────────────────────────────────────
             ("GET",    ["admin", "collections"])          => await collections.AdminGetAllAsync(),
             ("POST",   ["admin", "collections"])          => await collections.AdminCreateAsync(req),
@@ -255,6 +316,19 @@ public sealed class AppRouter(
             (not "GET", ["admin", "sub-categories", ..])  => Editors,
             (not "GET", ["admin", "certifications", ..])  => Editors,
             (not "GET", ["admin", "body-parts", ..])      => Editors,
+
+            // 沒有草稿工作流的模組：**寫入需 Editor 以上**。
+            //
+            // 這幾張表沒有發布端點，`status` 是 payload 裡的一個欄位、存檔即生效。
+            // 若開放 Author 寫入，他只要在建立時送 status=1 就直接上線，
+            // 等於繞過「Author 不可發布」那條規則。有草稿工作流的模組
+            // （產品、文章、應用方案）則維持 Author+ —— 那些的 POST 一律建為草稿，
+            // 且 PUT 不碰 status，發布只能走 /publish。
+            (not "GET", ["admin", "article-categories", ..]) => Editors,
+            (not "GET", ["admin", "faq-categories", ..])     => Editors,
+            (not "GET", ["admin", "faqs", ..])               => Editors,
+            (not "GET", ["admin", "downloads", ..])          => Editors,
+            (not "GET", ["admin", "sales-locations", ..])    => Editors,
 
             // 設定：Admin only
             (_, ["admin", "settings", ..]) => Admins,

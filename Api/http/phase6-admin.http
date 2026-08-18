@@ -1,0 +1,536 @@
+### Phase 6 剩餘驗收：後台文章／應用方案／FAQ／下載／據點
+### 前提：func start 執行中，seed 已跑（7 應用方案、6 文章、6 文章分類、3 FAQ、3 下載、5 據點）。
+###
+### ⚠️ 這份會建立、修改、刪除資料。跑完務必執行最後一節的清理與核對，
+###    七個數字要回到上面那組，否則測試資料留在庫裡。
+
+@host = http://localhost:7071/api
+
+### 0. 登入取 token
+# @name login
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "admin@eunicemed.local", "password": "REPLACE_WITH_LOCAL_SEED_PASSWORD" }
+
+@at = {{login.response.body.data.accessToken}}
+
+### 種子固定 ID
+@knee = 61111111-0000-0000-0000-000000000001
+
+###############################################################################
+# 1. 文章分類
+#
+# slug **只在同一個 Kind 內唯一**（`UX_ArticleCategory (Kind, Slug)`）——
+# seed 的 `sponsorship` 在 news 與 insight 各有一筆，那是刻意的。
+###############################################################################
+
+### 1a. 全部（含 articleCount）
+GET {{host}}/admin/article-categories
+Authorization: Bearer {{at}}
+
+### 1b. 只看 insight
+GET {{host}}/admin/article-categories?kind=insight
+Authorization: Bearer {{at}}
+
+### 1c. news 已有 exhibitions，在 insight 下建同 slug → 應 **201**（不同 kind 不算撞號）
+# @name dupSlug
+POST {{host}}/admin/article-categories
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "kind": 2, "slug": "exhibitions", "translations": { "en": { "name": "Exhibitions (insight)" } } }
+
+### 1d. 同 kind 同 slug → 應 409
+POST {{host}}/admin/article-categories
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "kind": 2, "slug": "exhibitions", "translations": { "en": { "name": "Dup" } } }
+
+### 1e. 刪掉 1c 建的（沒有文章引用）→ 應 200
+DELETE {{host}}/admin/article-categories/{{dupSlug.response.body.data.id}}
+Authorization: Bearer {{at}}
+
+### 1f. 刪有文章的分類 → 應 409（訊息帶文章數）
+DELETE {{host}}/admin/article-categories/REPLACE_WITH_A_CATEGORY_THAT_HAS_ARTICLES
+Authorization: Bearer {{at}}
+
+### 1g. 有文章時換 kind → 應 409
+#   Kind 必須等於文章的 Type，換掉會讓底下文章與分類不符
+PUT {{host}}/admin/article-categories/REPLACE_WITH_A_CATEGORY_THAT_HAS_ARTICLES
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "kind": 2 }
+
+###############################################################################
+# 2. 文章：分類 kind 必須等於文章 type
+#
+# 這條 FK 表達不了（需要複合 FK），所以由應用層驗證。不擋的話 insight 可以掛到
+# news 分類下，公開列表兩邊都照 Type 撈，那篇會在側欄計數裡出現、點進分類卻找不到。
+###############################################################################
+
+### 2a. kind / type 不符 → 應 400
+POST {{host}}/admin/articles
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "slug": "qa-a", "type": 1, "categoryId": "REPLACE_WITH_AN_INSIGHT_CATEGORY_ID",
+  "translations": { "en": { "title": "x" } } }
+
+### 2b. 建立 news 文章 → 應 201，status = 0（草稿）
+# @name created
+POST {{host}}/admin/articles
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{
+  "slug": "qa-test-news",
+  "type": 1,
+  "categoryId": "REPLACE_WITH_A_NEWS_CATEGORY_ID",
+  "readMinutes": 4,
+  "translations": {
+    "en": {
+      "title": "QA Test News",
+      "standfirst": "lead",
+      "body": "<h2>First</h2><p>a</p><script>alert(1)</script><h2>Second</h2><p>b</p>"
+    },
+    "zh-TW": { "title": "QA 測試新聞" }
+  }
+}
+
+@aid = {{created.response.body.data.id}}
+
+### 2c. 草稿的公開詳情 → 應 404
+GET {{host}}/news/qa-test-news?locale=en
+
+### 2d. 發布
+POST {{host}}/admin/articles/{{aid}}/publish
+Authorization: Bearer {{at}}
+
+### 2e. 公開詳情。必須確認：
+#   toc  = [{id:"first",text:"First"},{id:"second",text:"Second"}]
+#   body = <h2 id="first">First</h2><p>a</p><h2 id="second">Second</h2><p>b</p>
+#          —— script 整段消失，且 **anchor id 已回填進 body**
+#          （只回 toc 不改 HTML 的話前端會跳到不存在的錨點）
+GET {{host}}/news/qa-test-news?locale=en
+
+### 2f. 已發布的文章改 type → 應 409
+#   網址會從 /news/{slug} 變成 /insights/{slug}，舊網址立刻失效。
+#   注意要一併 clearCategory，否則會先被「分類 kind 不符」的 400 攔下來。
+PUT {{host}}/admin/articles/{{aid}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "type": 2, "clearCategory": true }
+
+###############################################################################
+# 3. 排程發布
+#
+# `PublishedAt` 為未來時間者，狀態是 Published 但公開端點一律查不到
+# （docs/13 Phase 6）。因此 /publish 用 ??= 而非直接指派 ——
+# 覆寫成 now 等於把編輯者排好的時間默默取消掉。
+###############################################################################
+
+### 3a. 設一個未來時間
+PUT {{host}}/admin/articles/{{aid}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "publishedAt": "2027-01-01T00:00:00Z" }
+
+### 3b. 發布 → 訊息應說明「已排程於 … 發布，在那之前前台查不到」
+POST {{host}}/admin/articles/{{aid}}/publish
+Authorization: Bearer {{at}}
+
+### 3c. 後台看得到（status = 1、publishedAt = 2027）
+GET {{host}}/admin/articles/{{aid}}
+Authorization: Bearer {{at}}
+
+### 3d. 公開詳情 → 應 404（排程時間未到）
+GET {{host}}/news/qa-test-news?locale=en
+
+### 3e. 公開列表 → 不應含 qa-test-news
+GET {{host}}/news?locale=en&pageSize=50
+
+### 3f. 改回過去時間 → 公開詳情應 200
+PUT {{host}}/admin/articles/{{aid}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "publishedAt": "2026-08-01T00:00:00Z" }
+
+###
+GET {{host}}/news/qa-test-news?locale=en
+
+### 3g. 取消發布後再發布 → publishedAt 應維持不變（首次發布時間不可竄改）
+POST {{host}}/admin/articles/{{aid}}/unpublish
+Authorization: Bearer {{at}}
+
+###
+POST {{host}}/admin/articles/{{aid}}/publish
+Authorization: Bearer {{at}}
+
+###############################################################################
+# 4. 活動面板（NewsEvent，與 Article 共用主鍵的 1:1）
+###############################################################################
+
+### 4a. 建立 / 更新（PUT 同時負責兩者）
+PUT {{host}}/admin/articles/{{aid}}/event
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{
+  "startDate": "2026-09-01", "endDate": "2026-09-04",
+  "contactEmail": "a@b.c", "ctaUrl": "https://x.test",
+  "translations": {
+    "en":    { "datesLabel": "1–4 Sep 2026", "venue": "Taipei Nangang", "booth": "K1234", "ctaLabel": "Book a meeting" },
+    "zh-TW": { "venue": "台北南港" }
+  }
+}
+
+### 4b. endDate 早於 startDate → 應 400
+PUT {{host}}/admin/articles/{{aid}}/event
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "startDate": "2026-09-04", "endDate": "2026-09-01" }
+
+### 4c. 掛到 insight 上 → 應 400（活動面板是 News 專屬版位，掛上去前台永遠不渲染）
+PUT {{host}}/admin/articles/REPLACE_WITH_AN_INSIGHT_ARTICLE_ID/event
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "startDate": "2026-09-01" }
+
+### 4d. GET event
+GET {{host}}/admin/articles/{{aid}}/event
+Authorization: Bearer {{at}}
+
+### 4e. 公開詳情應帶 event 面板
+GET {{host}}/news/qa-test-news?locale=en
+
+###############################################################################
+# 5. 圖庫（ArticleImage）—— 整批取代，陣列順序即畫面順序
+###############################################################################
+
+### 5a. 送兩張，sortOrder 故意給 5 與 1
+PUT {{host}}/admin/articles/{{aid}}/gallery
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "images": [ { "mediaId": "REPLACE_MEDIA_B", "sortOrder": 5 },
+              { "mediaId": "REPLACE_MEDIA_A", "sortOrder": 1 } ] }
+
+### 5b. GET gallery → sortOrder 應重編為 0、1，且順序是 A 在前（照送出的 sortOrder 排）
+GET {{host}}/admin/articles/{{aid}}/gallery
+Authorization: Bearer {{at}}
+
+### 5c. 引用反查應出現 Article / gallery/0
+GET {{host}}/admin/media/REPLACE_MEDIA_A/usages
+Authorization: Bearer {{at}}
+
+###############################################################################
+# 6. 應用方案
+#
+# 這個模組獨有的是**人體圖座標**：`{hotspot:{cx,cy},chip:{cx,cy}}`。
+# 少一個值，前端畫熱區時拿到 NaN，整張人體圖靜默不顯示 —— 所以在寫入時就驗形狀。
+###############################################################################
+
+### 6a. type=1（依部位）卻沒 bodyPartId → 應 400
+#   公開端點的產品數是「手動關聯 ∪ 同 BodyPart 的產品」，沒綁部位就永遠是 0
+POST {{host}}/admin/applications
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "slug": "qa-app", "type": 1, "translations": { "en": { "name": "x" } } }
+
+### 6b. mapPosition 少了 cy → 應 400
+POST {{host}}/admin/applications
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "slug": "qa-app", "type": 1, "bodyPartId": "{{knee}}",
+  "mapPosition": { "hotspot": { "cx": 10 }, "chip": { "cx": 1, "cy": 2 } },
+  "translations": { "en": { "name": "x" } } }
+
+### 6c. 建立（showOnBodyMap = true 但先不給座標）→ 應 201，status = 0
+# @name app
+POST {{host}}/admin/applications
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{
+  "slug": "qa-test-app", "type": 1, "bodyPartId": "{{knee}}", "showOnBodyMap": true,
+  "productIds": ["REPLACE_WITH_A_PRODUCT_ID"],
+  "translations": {
+    "en":    { "name": "QA Test Application", "lead": "lead",
+               "body": "<p>ok</p><script>x()</script>",
+               "stats": [{ "value": "auto", "label": "Products" }] },
+    "zh-TW": { "name": "QA 測試方案" }
+  }
+}
+
+@appid = {{app.response.body.data.id}}
+
+### 6d. 發布 → 應 400（要上人體圖卻沒座標，發布了也不會出現）
+POST {{host}}/admin/applications/{{appid}}/publish
+Authorization: Bearer {{at}}
+
+### 6e. 補正確座標
+PUT {{host}}/admin/applications/{{appid}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "mapPosition": { "hotspot": { "cx": 120, "cy": 240 }, "chip": { "cx": 180, "cy": 230 } } }
+
+### 6f. 再發布 → 應 200
+POST {{host}}/admin/applications/{{appid}}/publish
+Authorization: Bearer {{at}}
+
+### 6g. 公開詳情。必須確認：
+#   body 的 script 已淨化
+#   stats 的 "auto" 已代入實際產品數（膝 = 16）
+#   recommendedProducts 含 6c 手動掛的那筆
+GET {{host}}/applications/qa-test-app?locale=en
+
+### 6h. 人體圖應含 qa-test-app
+GET {{host}}/applications/body-map?locale=en
+
+###############################################################################
+# 7. FAQ
+###############################################################################
+
+### 7a. answer 淨化後為空 → 應 400
+#   讓它落地會變成前台一個點得開但空白的問答
+POST {{host}}/admin/faqs
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "faqCategoryId": "REPLACE_WITH_FAQ_CATEGORY_ID",
+  "translations": { "en": { "question": "Q", "answer": "<script>alert(1)</script>" } } }
+
+### 7b. 建立 → 應 201
+# @name faq
+POST {{host}}/admin/faqs
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{
+  "faqCategoryId": "REPLACE_WITH_FAQ_CATEGORY_ID", "sortOrder": 99,
+  "translations": {
+    "en":    { "question": "QA test question?",
+               "answer": "<p>Answer</p><script>x()</script><a href=\"javascript:x()\">bad</a>" },
+    "zh-TW": { "question": "QA 測試題", "answer": "<p>答案</p>" }
+  }
+}
+
+### 7c. 淨化結果應為 `<p>Answer</p><a>bad</a>`（script 整段消失、javascript: 的 href 被剝掉）
+GET {{host}}/admin/faqs/{{faq.response.body.data.id}}
+Authorization: Bearer {{at}}
+
+### 7d. 公開 FAQ 應含它
+GET {{host}}/faqs?locale=en
+
+### 7e. 刪有題目的 FAQ 分類 → 應 409
+DELETE {{host}}/admin/faq-categories/REPLACE_WITH_FAQ_CATEGORY_ID
+Authorization: Bearer {{at}}
+
+### 7f. FAQ 分類 slug 撞號 → 應 409
+POST {{host}}/admin/faq-categories
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "slug": "use", "translations": { "en": { "name": "Dup" } } }
+
+### 7g. 刪 FAQ
+DELETE {{host}}/admin/faqs/{{faq.response.body.data.id}}
+Authorization: Bearer {{at}}
+
+###############################################################################
+# 8. 下載
+#
+# `fileLocale` 是**檔案本身的語言**，與翻譯的 locale（介面語系）是兩件事，
+# 所以**刻意不套站台語系白名單** —— 可能有站台沒有的語言（如日文型錄）。
+###############################################################################
+
+### 8a. 建立（fileLocale 給 JA，掛一筆產品）→ 應 201
+# @name dl
+POST {{host}}/admin/downloads
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{
+  "mediaId": "REPLACE_MEDIA_A", "type": 1, "fileLocale": "JA", "sortOrder": 99,
+  "productIds": ["REPLACE_WITH_A_PRODUCT_ID"],
+  "translations": { "en": { "title": "QA Catalogue", "description": "temp" },
+                    "zh-TW": { "title": "QA 型錄" } }
+}
+
+### 8b. 讀回：fileLocale 應原樣是 "JA"，productIds 一筆，fileUrl 已解析
+GET {{host}}/admin/downloads/{{dl.response.body.data.id}}
+Authorization: Bearer {{at}}
+
+### 8c. 仍掛在產品上時刪除 → 應 409
+DELETE {{host}}/admin/downloads/{{dl.response.body.data.id}}
+Authorization: Bearer {{at}}
+
+### 8d. 取消掛載
+PUT {{host}}/admin/downloads/{{dl.response.body.data.id}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "productIds": [] }
+
+### 8e. 再刪 → 應 200
+DELETE {{host}}/admin/downloads/{{dl.response.body.data.id}}
+Authorization: Bearer {{at}}
+
+### 8f. 未知 type → 應 400
+GET {{host}}/admin/downloads?type=bogus
+Authorization: Bearer {{at}}
+
+###############################################################################
+# 9. 銷售據點
+###############################################################################
+
+### 9a. 建立（countryCode 給小寫 jp）→ 應 201
+# @name loc
+POST {{host}}/admin/sales-locations
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{
+  "locationType": 2, "countryCode": "jp", "websiteUrl": "https://x.test", "sortOrder": 99,
+  "translations": { "en": { "name": "QA Distributor", "regionLabel": "Asia Pacific", "address": "Tokyo" },
+                    "zh-TW": { "name": "QA 經銷商" } }
+}
+
+### 9b. 讀回：countryCode 應為大寫 "JP"
+GET {{host}}/admin/sales-locations/{{loc.response.body.data.id}}
+Authorization: Bearer {{at}}
+
+### 9c. clearWebsiteUrl → websiteUrl 應變 null
+#   （null 已被用來表示「這次不動它」，所以清空要靠明確旗標）
+PUT {{host}}/admin/sales-locations/{{loc.response.body.data.id}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "clearWebsiteUrl": true }
+
+### 9d. 公開據點（伺服器端分組 domestic / international）
+GET {{host}}/sales-locations?locale=en
+
+### 9e. 刪除
+DELETE {{host}}/admin/sales-locations/{{loc.response.body.data.id}}
+Authorization: Bearer {{at}}
+
+###############################################################################
+# 10. RBAC：有草稿工作流的模組 Author+，沒有的 Editor+
+#
+# FAQ / 下載 / 據點 / 文章分類沒有發布端點，`status` 是 payload 裡的欄位、存檔即生效。
+# 開放 Author 寫入的話，他只要在建立時送 status=1 就直接上線，
+# 等於繞過「Author 不可發布」。所以那四個模組的寫入是 Editor+。
+###############################################################################
+
+### 10a. 建 Author 帳號
+POST {{host}}/admin/users
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "email": "qa-author2@eunicemed.local", "password": "QaAuthor#2026", "displayName": "QA Author", "roles": ["Author"] }
+
+### 10b. Author 登入
+# @name authorLogin
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "qa-author2@eunicemed.local", "password": "QaAuthor#2026" }
+
+@aat = {{authorLogin.response.body.data.accessToken}}
+
+### 10c. Author 改文章草稿 → 應 200
+PUT {{host}}/admin/articles/{{aid}}
+Authorization: Bearer {{aat}}
+Content-Type: application/json
+
+{ "readMinutes": 6 }
+
+### 10d. Author 發布文章 → 應 403
+POST {{host}}/admin/articles/{{aid}}/publish
+Authorization: Bearer {{aat}}
+
+### 10e. Author 建應用方案 → 應 201（一律建為草稿）
+POST {{host}}/admin/applications
+Authorization: Bearer {{aat}}
+Content-Type: application/json
+
+{ "slug": "qa-author-app", "type": 2, "translations": { "en": { "name": "x" } } }
+
+### 10f. Author 發布應用方案 → 應 403
+POST {{host}}/admin/applications/{{appid}}/unpublish
+Authorization: Bearer {{aat}}
+
+### 10g. Author **寫** FAQ → 應 403
+POST {{host}}/admin/faqs
+Authorization: Bearer {{aat}}
+Content-Type: application/json
+
+{ "faqCategoryId": "00000000-0000-0000-0000-000000000000" }
+
+### 10h. Author **讀** FAQ → 應 200
+GET {{host}}/admin/faqs
+Authorization: Bearer {{aat}}
+
+###############################################################################
+# 11. 清理與核對
+#
+# 跑完這節，下面七個數字必須是：
+#   applications 7、articles 6、article-categories 6、faqs 3、
+#   faq-categories 3、downloads 3、sales-locations 5
+###############################################################################
+
+### 11a. 刪測試文章
+DELETE {{host}}/admin/articles/{{aid}}
+Authorization: Bearer {{at}}
+
+### 11b. 刪測試應用方案
+DELETE {{host}}/admin/applications/{{appid}}
+Authorization: Bearer {{at}}
+
+### 11c. 刪 10e 建的那筆
+GET {{host}}/admin/applications
+Authorization: Bearer {{at}}
+
+### 11d. 刪 Author 帳號
+GET {{host}}/admin/users
+Authorization: Bearer {{at}}
+
+### 11e. 核對
+GET {{host}}/admin/applications
+Authorization: Bearer {{at}}
+
+###
+GET {{host}}/admin/articles
+Authorization: Bearer {{at}}
+
+###
+GET {{host}}/admin/article-categories
+Authorization: Bearer {{at}}
+
+###
+GET {{host}}/admin/faqs
+Authorization: Bearer {{at}}
+
+###
+GET {{host}}/admin/faq-categories
+Authorization: Bearer {{at}}
+
+###
+GET {{host}}/admin/downloads
+Authorization: Bearer {{at}}
+
+###
+GET {{host}}/admin/sales-locations
+Authorization: Bearer {{at}}
