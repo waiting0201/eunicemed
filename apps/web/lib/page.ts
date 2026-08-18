@@ -21,8 +21,8 @@ export type PageContent = {
   refs: {
     certifications: Record<string, CertificationRef>;
     products: Record<string, unknown>;
-    articles: Record<string, unknown>;
-    downloads: Record<string, unknown>;
+    articles: Record<string, ArticleRefEntry>;
+    downloads: Record<string, DownloadRefEntry>;
   };
 };
 
@@ -31,6 +31,28 @@ export type CertificationRef = {
   subLabel: string | null;
   description: string | null;
   logo: MediaRef | null;
+};
+
+/** `ref:Article` 解析後的內容。未翻譯的文章**不會出現在 refs 裡**（語言純度）。 */
+export type ArticleRefEntry = {
+  title: string;
+  excerpt: string | null;
+  /** 'news' | 'insight' */
+  kind: string;
+  publishedAt: string | null;
+  cover: string | null;
+  url: string;
+};
+
+/** `ref:Download` 解析後的內容。識別字串是 Id —— Download 沒有 slug。 */
+export type DownloadRefEntry = {
+  title: string;
+  description: string | null;
+  type: string;
+  fileLocale: string;
+  fileExt: string;
+  sizeBytes: number;
+  url: string | null;
 };
 
 export type SectionCta = { label?: string; url?: string; external?: boolean };

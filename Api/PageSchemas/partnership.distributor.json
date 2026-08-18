@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Partnership · 02 Distributor services",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "title"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "maxLength": 160,
+      "x-fieldType": "text"
+    },
+    "body": {
+      "type": "string",
+      "maxLength": 6000,
+      "x-fieldType": "richtext"
+    },
+    "image": {
+      "type": "string",
+      "format": "uuid",
+      "x-fieldType": "media",
+      "x-mediaPreset": "section-bg",
+      "x-localeInvariant": true
+    }
+  }
+}

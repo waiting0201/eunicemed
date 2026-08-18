@@ -137,7 +137,11 @@ JSON Schema 表達不了這條（要查 `Media.PresetKey`），所以在 `PageHa
 docs/09 §4.1 的表列 4 列，但 `categoryCards` 與 `catalogue` 是**純動態**、沒有可編輯欄位，
 因此不需要 schema —— 「區段數」與「schema 數」不是同一個數字。
 
-**尚未完成**：其餘 **45 個 schema**（`product-category` 2、`partnership` 4、`resources` 5…）。這是內容形狀的工作，機制已就緒，照 `about` 的 6 個複製即可。
+**2026-08-18**：`partnership` 4、`resources` 5、`privacy` 2，共 **11 個 schema 完成**並隨三頁一起驗過。
+同一輪補上 `ref:Article` 與 `ref:Download` 的解析 —— 在此之前 `ResolveRefsAsync` **只認 `Certification`**，
+`refs` 裡的 `articles` / `downloads` 兩個桶永遠是空的。
+
+**尚未完成**：其餘 **34 個 schema**（`product-category` 3、`contact` 3、各模板共用文案…）。這是內容形狀的工作，機制已就緒，照 `about` 的 6 個複製即可。
 richtext 的伺服器端淨化與 SVG 清洗**已完成**（見下）。
 
 ### ✅ Phase 6 — 文章 / FAQ / 下載 / 據點 / 應用方案
@@ -189,6 +193,16 @@ richtext 的伺服器端淨化與 SVG 清洗**已完成**（見下）。
 ---
 
 ## 踩到的坑（累積記錄）
+
+### 2026-08-18 · 語言純度也包含標點
+
+法務頁寫 `{c.lastUpdated}：{date}`，冒號直接寫死成全形「：」。
+中文頁看起來正常，**英文頁就變成 `Last updated：2026 · 08 · 01`** —— 一個中文標點。
+應用方案頁的 `Best for：` 也一樣。
+
+docs/08 §5.2 的語言純度講的是「英文版不得出現中文」，實務上很容易只想到**字**，
+忘記**排印**：冒號、引號、括號、間距在中英文是不同的字元。
+分隔符要跟著文案一起放進語系表，不要寫在 JSX 的兩個插值中間。
 
 ### 2026-08-18 · 「同一組 keyframes + 負 delay」錯開輪播是行不通的
 

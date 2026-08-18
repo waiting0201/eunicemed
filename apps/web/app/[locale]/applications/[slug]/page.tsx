@@ -41,7 +41,7 @@ const COPY: Record<
     seeSolutions: 'See solutions',
     ask: 'Ask a specialist',
     moreFaq: 'More sizing & care questions →',
-    bestFor: 'Best for',
+    bestFor: 'Best for: ',
     view: (name) => `View ${name} products →`,
   },
   'zh-TW': {
@@ -57,7 +57,7 @@ const COPY: Record<
     seeSolutions: '查看解決方案',
     ask: '諮詢專業建議',
     moreFaq: '更多尺寸與保養問題 →',
-    bestFor: '適合',
+    bestFor: '適合：',
     view: (name) => `查看 ${name} 系列產品 →`,
   },
 };
@@ -219,7 +219,8 @@ export default async function ApplicationDetailPage({
                 {lv.body && <p className="mt-2">{lv.body}</p>}
                 {lv.bestFor && (
                   <p className="mt-3 text-[0.9rem] text-[--color-grey]">
-                    {c.bestFor}：{lv.bestFor}
+                    {c.bestFor}
+                    {lv.bestFor}
                   </p>
                 )}
                 {lv.linkUrl && lv.collection && (

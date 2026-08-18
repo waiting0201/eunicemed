@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Privacy & Legal · 內文",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "body"
+  ],
+  "properties": {
+    "lastUpdated": {
+      "type": "string",
+      "format": "date",
+      "x-fieldType": "date",
+      "x-localeInvariant": true
+    },
+    "body": {
+      "type": "string",
+      "maxLength": 40000,
+      "x-fieldType": "richtext"
+    }
+  },
+  "description": "richtext 走 Legal profile（允許 h2/h3），淨化規則見 Services/HtmlSanitizers.cs。"
+}

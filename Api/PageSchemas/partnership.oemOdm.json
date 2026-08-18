@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Partnership · 01 OEM / ODM services",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "title"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "maxLength": 160,
+      "x-fieldType": "text"
+    },
+    "body": {
+      "type": "string",
+      "maxLength": 6000,
+      "x-fieldType": "richtext"
+    },
+    "chips": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 6,
+      "x-fieldType": "repeatable",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "label"
+        ],
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 60,
+            "x-fieldType": "text"
+          }
+        }
+      }
+    },
+    "image": {
+      "type": "string",
+      "format": "uuid",
+      "x-fieldType": "media",
+      "x-mediaPreset": "wide-16x9",
+      "x-localeInvariant": true
+    }
+  }
+}

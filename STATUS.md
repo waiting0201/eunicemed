@@ -154,15 +154,15 @@ facet 篩選、standalone 產物 66MB／250MB。
 | Sub-category | `/[locale]/products/{category}/{sub}` | ✅ **已切版可運作** |
 | Product Detail | `/[locale]/products/{category}/{sub}/{slug}` | ✅ **已切版可運作**（缺 §08 詢價表單，待 Phase 7 的 `POST /contact`）|
 | Applications／Detail | `/[locale]/applications[/{slug}]` | ✅ **已切版可運作**（含人體圖 SVG 互動）|
-| Partnership | `/[locale]/partnership` | ⬜ |
-| Resources | `/[locale]/resources` | ⬜ |
+| Partnership | `/[locale]/partnership` | ✅ **已切版可運作**（表單本體待 Phase 7）|
+| Resources | `/[locale]/resources` | ✅ **已切版可運作**（含 `ref:Article` / `ref:Download` 解析）|
 | FAQ | `/[locale]/faq` | ✅ **已切版可運作**（分類篩選 + 原生 details 手風琴）|
 | Insights／Article Detail | `/[locale]/insights[/{slug}]` | ✅ **已切版可運作**（含伺服器端 TOC）|
 | News／News Detail | `/[locale]/news[/{slug}]` | ✅ **已切版可運作**（含活動面板、圖庫、prev/next）|
 | Downloads | `/[locale]/downloads` | ✅ **已切版可運作**（類型篩選）|
 | Where to Buy | `/[locale]/where-to-buy` | ✅ **已切版可運作**（伺服器端分組）|
-| Contact | `/[locale]/contact` | ⬜ |
-| Privacy | `/[locale]/privacy` | ⬜ |
+| Contact | `/[locale]/contact` | 🔴 擋於 Phase 7 的 `POST /contact`（SMTP 帳密未提供）|
+| Privacy | `/[locale]/privacy` | ✅ **已切版可運作**（Legal 淨化 profile）|
 
 前台共通項目：i18n 語系前綴 ✅、`output: 'standalone'` 與 250MB gate ✅（目前 66MB）、
 圖片走 Blob 直連（`unoptimized: true` + 自訂 srcSet）✅、`.swa` 路徑排除 ✅、安全標頭 ✅、

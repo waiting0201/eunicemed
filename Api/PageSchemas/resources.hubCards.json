@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Resources · 四大入口卡",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "items"
+  ],
+  "properties": {
+    "items": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "x-fieldType": "repeatable",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "title",
+          "link"
+        ],
+        "properties": {
+          "icon": {
+            "type": "string",
+            "enum": [
+              "faq",
+              "insights",
+              "downloads",
+              "news"
+            ],
+            "x-fieldType": "enum",
+            "x-localeInvariant": true
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 80,
+            "x-fieldType": "text"
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 300,
+            "x-fieldType": "text"
+          },
+          "ctaLabel": {
+            "type": "string",
+            "maxLength": 60,
+            "x-fieldType": "text"
+          },
+          "link": {
+            "type": "object",
+            "additionalProperties": false,
+            "x-fieldType": "link",
+            "properties": {
+              "label": {
+                "type": "string",
+                "maxLength": 60,
+                "x-fieldType": "text"
+              },
+              "url": {
+                "type": "string",
+                "maxLength": 400,
+                "x-fieldType": "text",
+                "x-localeInvariant": true
+              },
+              "external": {
+                "type": "boolean",
+                "x-fieldType": "bool",
+                "x-localeInvariant": true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "description": "icon 是固定字彙：新增值必須同時在前端補圖形。"
+}

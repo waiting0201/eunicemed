@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Partnership · 03 How to become a partner",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "title",
+    "steps"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "maxLength": 160,
+      "x-fieldType": "text"
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 6,
+      "x-fieldType": "repeatable",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "title",
+          "body"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 80,
+            "x-fieldType": "text"
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 300,
+            "x-fieldType": "text"
+          }
+        }
+      }
+    },
+    "formTitle": {
+      "type": "string",
+      "maxLength": 120,
+      "x-fieldType": "text"
+    },
+    "formIntro": {
+      "type": "string",
+      "maxLength": 300,
+      "x-fieldType": "text"
+    },
+    "partnershipTypes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 6,
+      "x-fieldType": "repeatable",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "key",
+          "label"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "oem",
+              "odm",
+              "distributor"
+            ],
+            "x-fieldType": "enum",
+            "x-localeInvariant": true
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 60,
+            "x-fieldType": "text"
+          }
+        }
+      }
+    },
+    "submitLabel": {
+      "type": "string",
+      "maxLength": 60,
+      "x-fieldType": "text"
+    }
+  },
+  "description": "表單送出走 POST /contact type=partnership（Phase 7）；此區段只維護文案與選項。"
+}

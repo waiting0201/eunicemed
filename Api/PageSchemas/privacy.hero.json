@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Privacy & Legal · 頁首",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "title"
+  ],
+  "properties": {
+    "band": {
+      "type": "string",
+      "format": "uuid",
+      "x-fieldType": "media",
+      "x-mediaPreset": "page-band",
+      "x-localeInvariant": true
+    },
+    "eyebrow": {
+      "type": "string",
+      "maxLength": 120,
+      "x-fieldType": "text"
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 200,
+      "x-fieldType": "text"
+    }
+  }
+}

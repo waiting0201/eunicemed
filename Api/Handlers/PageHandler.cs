@@ -432,6 +432,80 @@ public sealed class PageHandler(
                 };
         }
 
+        // ── 文章 ───────────────────────────────────────────────────────────
+        //
+        // 以 slug 識別。**未翻譯的文章不會出現在 refs 裡** —— 語言純度，
+        // 呼叫端（模板）拿不到就略過那一格，而不是顯示他語標題。
+        var articleSlugs = refs.Where(r => r.EntityType == "Article")
+                               .Select(r => r.Identifier).Distinct().ToArray();
+
+        if (articleSlugs.Length > 0)
+        {
+            var articles = await db.Set<Article>()
+                .Where(a => articleSlugs.Contains(a.Slug) && a.Status == ContentStatus.Published)
+                // 排程發布：時間未到的一律不解析（與公開列表同一條件）
+                .Where(a => a.PublishedAt == null || a.PublishedAt <= Clock.Now)
+                .Select(a => new
+                {
+                    a.Slug, a.Type, a.PublishedAt,
+                    Tr = a.Translations.FirstOrDefault(t => t.Locale == locale),
+                    CoverUrl = db.Media.Where(m => m.Id == a.CoverMediaId).Select(m => m.BlobUrl).FirstOrDefault(),
+                })
+                .ToListAsync();
+
+            var bucket = (JsonObject)result["articles"]!;
+            foreach (var a in articles.Where(a => a.Tr is not null))
+                bucket[a.Slug] = new JsonObject
+                {
+                    ["title"]       = a.Tr!.Title,
+                    ["excerpt"]     = a.Tr.Excerpt,
+                    ["kind"]        = a.Type == ArticleType.News ? "news" : "insight",
+                    ["publishedAt"] = a.PublishedAt?.ToString("o"),
+                    ["cover"]       = a.CoverUrl,
+                    ["url"]         = $"/{locale}/{(a.Type == ArticleType.News ? "news" : "insights")}/{a.Slug}",
+                };
+        }
+
+        // ── 下載 ───────────────────────────────────────────────────────────
+        //
+        // Download **沒有 slug**（它不是一個頁面），所以識別字串是 Id。
+        var downloadIds = refs.Where(r => r.EntityType == "Download")
+                              .Select(r => r.Identifier).Distinct()
+                              .Select(id => Guid.TryParse(id, out var g) ? g : Guid.Empty)
+                              .Where(g => g != Guid.Empty).ToArray();
+
+        if (downloadIds.Length > 0)
+        {
+            var downloads = await db.Set<Download>()
+                .Where(d => downloadIds.Contains(d.Id) && d.Status == ContentStatus.Published)
+                .Select(d => new
+                {
+                    d.Id, d.Type, d.FileLocale,
+                    Tr = d.Translations.FirstOrDefault(t => t.Locale == locale),
+                    File = db.Media.Where(m => m.Id == d.MediaId)
+                                   .Select(m => new { m.BlobUrl, m.FileName, m.SizeBytes }).FirstOrDefault(),
+                })
+                .ToListAsync();
+
+            var bucket = (JsonObject)result["downloads"]!;
+            foreach (var d in downloads.Where(d => d.Tr is not null))
+                bucket[d.Id.ToString()] = new JsonObject
+                {
+                    ["title"]       = d.Tr!.Title,
+                    ["description"] = d.Tr.Description,
+                    ["type"]        = d.Type switch
+                    {
+                        DownloadType.Manual      => "manual",
+                        DownloadType.Certificate => "certificate",
+                        _                        => "catalog",
+                    },
+                    ["fileLocale"] = d.FileLocale.ToUpperInvariant(),
+                    ["fileExt"]    = Path.GetExtension(d.File?.FileName ?? "").TrimStart('.').ToUpperInvariant(),
+                    ["sizeBytes"]  = d.File?.SizeBytes ?? 0,
+                    ["url"]        = d.File?.BlobUrl,
+                };
+        }
+
         return result;
     }
 
