@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Products · 頁尾 CTA 帶",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title"],
+  "properties": {
+    "background": {
+      "type": "string", "format": "uuid",
+      "x-fieldType": "media", "x-mediaPreset": "section-bg", "x-localeInvariant": true
+    },
+    "title": { "type": "string", "maxLength": 160, "x-fieldType": "text" },
+    "body":  { "type": "string", "maxLength": 400, "x-fieldType": "text" },
+    "primaryCta": {
+      "type": "object", "additionalProperties": false, "x-fieldType": "link",
+      "properties": {
+        "label":    { "type": "string", "maxLength": 60, "x-fieldType": "text" },
+        "url":      { "type": "string", "maxLength": 400, "x-fieldType": "text", "x-localeInvariant": true },
+        "external": { "type": "boolean", "x-fieldType": "bool", "x-localeInvariant": true }
+      }
+    },
+    "secondaryCta": {
+      "type": "object", "additionalProperties": false, "x-fieldType": "link",
+      "properties": {
+        "label":    { "type": "string", "maxLength": 60, "x-fieldType": "text" },
+        "url":      { "type": "string", "maxLength": 400, "x-fieldType": "text", "x-localeInvariant": true },
+        "external": { "type": "boolean", "x-fieldType": "bool", "x-localeInvariant": true }
+      }
+    }
+  }
+}

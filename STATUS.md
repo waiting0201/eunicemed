@@ -149,7 +149,7 @@ facet 篩選、standalone 產物 66MB／250MB。
 |---|---|---|
 | Home | `/[locale]` | ✅ **已切版可運作**（7 個 schema 已建立；輪播為純 CSS 無 client JS）<br>🔴 **zh-TW 區段文案全缺 → 中文首頁是空白的**，上線前必補 |
 | About | `/[locale]/about` | ✅ **已切版可運作**（6 個區段全部接上 `GET /pages/about`）|
-| Products | `/[locale]/products` | 🟡 產品列表就緒，頁面文案未就緒 |
+| Products | `/[locale]/products` | ✅ **已切版可運作**（hero／cta 兩個 schema + 動態分類卡與產品格）|
 | Product Category | `/[locale]/products/{category}` | ✅ **已切版可運作** |
 | Sub-category | `/[locale]/products/{category}/{sub}` | ✅ **已切版可運作** |
 | Product Detail | `/[locale]/products/{category}/{sub}/{slug}` | ✅ **已切版可運作**（缺 §08 詢價表單，待 Phase 7 的 `POST /contact`）|
@@ -217,6 +217,7 @@ facet 篩選、standalone 產物 66MB／250MB。
 | 3 | 認證文案（5 筆的 SubLabel 與說明目前是佔位） | About 頁與產品頁上線 |
 | 4 | 17 個子分類落地頁的敘述文案 | 子分類頁發布（缺文案者不應發布，會是薄內容頁） |
 | 5 | **首頁 7 個區段的 zh-TW 文案** | 中文首頁目前完全空白 —— 語言純度會濾掉未翻譯區段，而首頁沒有可退回的內容 |
+| 6 | **149 筆產品的 zh-TW 翻譯**（匯入的是英文舊站資料） | 整個中文站的產品面：產品列表 0 筆、分類頁空格線、首頁精選與應用方案的推薦產品皆為空。<br>這是**目前最大的內容缺口**，不是程式問題 —— 語言純度按規格運作中 |
 
 > **已解除**：媒體變體階梯（2026-08-17 定案採階梯，見 [docs/11](docs/11-media-specs.md) §2a）—— Phase 3 可開工。
 

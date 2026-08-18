@@ -133,7 +133,11 @@ JSON Schema 表達不了這條（要查 `Media.PresetKey`），所以在 `PageHa
 
 **2026-08-18**：`home` 的 **7 個 schema 已完成**並隨首頁切版一起驗過。
 
-**尚未完成**：其餘 **47 個 schema**（`products` 4、`partnership` 4、`resources` 5…，共 18 頁 60 個區段）。這是內容形狀的工作，機制已就緒，照 `about` 的 6 個複製即可。
+**2026-08-18**：`products` 的 **2 個 schema**（`hero` / `cta`）已完成並隨產品總覽頁驗過。
+docs/09 §4.1 的表列 4 列，但 `categoryCards` 與 `catalogue` 是**純動態**、沒有可編輯欄位，
+因此不需要 schema —— 「區段數」與「schema 數」不是同一個數字。
+
+**尚未完成**：其餘 **45 個 schema**（`product-category` 2、`partnership` 4、`resources` 5…）。這是內容形狀的工作，機制已就緒，照 `about` 的 6 個複製即可。
 richtext 的伺服器端淨化與 SVG 清洗**已完成**（見下）。
 
 ### ✅ Phase 6 — 文章 / FAQ / 下載 / 據點 / 應用方案
