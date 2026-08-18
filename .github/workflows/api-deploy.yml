@@ -36,8 +36,15 @@ jobs:
       - name: Build
         run: dotnet build Api/Api.csproj -c Release --warnaserror
 
+      # ⚠️ **一定要指定 RID**。不指定的話 NuGet 會把每個平台的原生資產都放進來 ——
+      # 光是 SkiaSharp 三個 Windows 版的 .pdb 就 257MB，產物 477MB、部署包 162MB，
+      # 冷啟動要先下載解壓那包，直接吃掉 Flex Consumption 的 30 秒 app init 上限。
+      # 指定 linux-x64 之後是 44MB。
       - name: Publish
-        run: dotnet publish Api/Api.csproj -c Release -o ./output
+        run: dotnet publish Api/Api.csproj -c Release -r linux-x64 --self-contained false -o ./output
+
+      - name: Report package size
+        run: du -sh ./output
 
       # Flex Consumption 不支援 publish profile；用 OIDC 聯合身分登入（免長期密鑰）
       - name: Azure Login (OIDC)
@@ -57,8 +64,10 @@ jobs:
       # 而 functions-action 不會發現 —— 所以這裡自己確認一次。
       - name: Smoke test
         run: |
+          # -m 是必要的：app 起不來時連線會掛著不回應，沒有逾時的話這一步會跑上一小時，
+          # 而不是在五分鐘內給出明確的失敗
           for i in $(seq 1 30); do
-            code=$(curl -s -o /tmp/health.json -w '%{http_code}' \
+            code=$(curl -s -m 15 -o /tmp/health.json -w '%{http_code}' \
               https://func-eunicemed-prod.azurewebsites.net/api/health || true)
             if [ "$code" = "200" ]; then
               echo "healthy after ${i} attempts"; cat /tmp/health.json; exit 0

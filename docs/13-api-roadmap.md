@@ -398,6 +398,28 @@ explicitly expose it by marking it with "use server".
 但 **zsh 預設不對未加引號的參數展開做 word splitting**，
 三個 id 連成一個字串塞進 `mediaId`，才撞出這個 500。
 
+### 2026-08-18 · `dotnet publish` 不指定 RID，會把三個 Windows 版的 SkiaSharp 符號檔一起送上雲
+
+Function App 部署成功但 host 完全不回應（連 `/admin/host/status` 都 500），
+查下去發現部署包 **162MB**、publish 產物 **477MB**，其中 446MB 是 `runtimes/`：
+
+| 檔案 | 大小 |
+|---|---|
+| `runtimes/win-x86/native/libSkiaSharp.pdb` | 88MB |
+| `runtimes/win-x64/native/libSkiaSharp.pdb` | 86MB |
+| `runtimes/win-arm64/native/libSkiaSharp.pdb` | 83MB |
+
+Flex Consumption 每次冷啟動都要下載並解壓那個包，而 app init 是 **30 秒硬上限** ——
+包太大就永遠起不完，症狀是「TLS 連得上、HTTP 永遠不回應」。
+
+`dotnet publish -c Release -r linux-x64 --self-contained false` 之後是 **44MB**，
+`libSkiaSharp.so` 仍在（那才是正式環境要用的那顆）。
+
+**任何有原生相依的 .NET 專案，publish 一律指定 RID。**
+
+同一輪也修了 smoke test：`curl` 沒有 `-m`，app 掛住時那一步跑了 15 分鐘還沒結束，
+而不是在五分鐘內失敗。**輪詢式的健康檢查，每一發都要有逾時。**
+
 ### 2026-08-18 · Flex Consumption 的 runtime 版本字串是 `10`，寫 `10.0` 不會被擋
 
 Bicep 裡寫 `functionAppConfig.runtime.version: '10.0'`，ARM 照收、部署成功、
