@@ -128,6 +128,31 @@ export const api = {
   },
 
   categories: () => request<AdminCategory[]>('/admin/categories'),
+
+  subCategories: () => request<AdminSubCategory[]>('/admin/sub-categories'),
+
+  collections: () => request<AdminCollection[]>('/admin/collections'),
+
+  bodyParts: () => request<AdminBodyPart[]>('/admin/body-parts'),
+
+  certifications: () => request<AdminCertification[]>('/admin/certifications'),
+
+  product: (id: string) => request<AdminProduct>(`/admin/products/${id}`),
+
+  saveProduct: (id: string, body: unknown) =>
+    request<AdminProduct>(`/admin/products/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+
+  createProduct: (body: unknown) =>
+    request<AdminProduct>('/admin/products', { method: 'POST', body: JSON.stringify(body) }),
+
+  publishProduct: (id: string) =>
+    request<AdminProduct>(`/admin/products/${id}/publish`, { method: 'POST' }),
+
+  unpublishProduct: (id: string) =>
+    request<AdminProduct>(`/admin/products/${id}/unpublish`, { method: 'POST' }),
 };
 
 // ── 型別 ──────────────────────────────────────────────────────────────────
@@ -165,4 +190,72 @@ export type AdminCategory = {
   productCount: number;
   subCategoryCount: number;
   translations: Record<string, { name: string }>;
+};
+
+export type AdminSubCategory = {
+  id: string;
+  categoryId: string;
+  categorySlug: string;
+  slug: string;
+  translations: Record<string, { name: string }>;
+};
+
+export type AdminCollection = {
+  id: string;
+  slug: string;
+  translations: Record<string, { name: string }>;
+};
+
+export type AdminBodyPart = { id: string; slug: string; nameEn: string; nameZhTw: string };
+
+export type AdminCertification = { id: string; slug: string; mark: string };
+
+export type ProductImageInput = { mediaId: string; isPrimary: boolean; sortOrder: number };
+
+/**
+ * 產品的一個語系。JSON 欄位（features / useCases / specs / sizeChart / conditions）
+ * 在 DB 是自由形狀，後台送什麼就存什麼 —— 型別是**樂觀的**，讀取時要能吃到 null。
+ */
+export type ProductTranslation = {
+  name: string;
+  summary?: string | null;
+  description?: string | null;
+  featuredBlurb?: string | null;
+  features?: { icon?: string; title?: string; body?: string }[] | null;
+  useCases?: { title?: string; body?: string }[] | null;
+  specs?: { label?: string; value?: string }[] | null;
+  sizeChart?: {
+    measureLabel?: string;
+    sizes?: string[];
+    rows?: { label?: string | null; values?: string[] }[];
+    footnote?: string | null;
+  } | null;
+  conditions?: string[] | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  ogImageMediaId?: string | null;
+};
+
+export type AdminProduct = {
+  id: string;
+  slug: string;
+  sku: string | null;
+  categoryId: string;
+  subCategoryId: string | null;
+  collectionId: string | null;
+  status: number;
+  isFeatured: boolean;
+  featuredSortOrder: number;
+  useCaseImageMediaId: string | null;
+  sortOrder: number;
+  publishedAt: string | null;
+  images: ProductImageInput[];
+  bodyPartIds: string[];
+  certificationIds: string[];
+  tagIds: string[];
+  translations: Record<string, ProductTranslation>;
+  /** base64 的 ROWVERSION。存檔時原樣送回即可取得 409 併發保護 */
+  rowVersion: string | null;
+  createdAt: string;
+  updatedAt: string;
 };

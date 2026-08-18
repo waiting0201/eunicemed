@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router';
 import { Shell } from './components/Shell';
 import { Login } from './routes/Login';
 import { Products } from './routes/Products';
+import { ProductEdit } from './routes/ProductEdit';
 import { auth } from './lib/api';
 
 /**
@@ -21,6 +22,7 @@ export function App() {
         <Route element={<RequireAuth />}>
           <Route element={<Shell />}>
             <Route path="/products" element={<Products />} />
+            <Route path="/products/:id" element={<ProductEdit />} />
             <Route path="/pages" element={<Placeholder title="頁面內容" />} />
             <Route path="/applications" element={<Placeholder title="應用方案" />} />
             <Route path="/articles" element={<Placeholder title="文章" />} />

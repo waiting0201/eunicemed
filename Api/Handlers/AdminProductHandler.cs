@@ -349,6 +349,11 @@ public sealed class AdminProductHandler(
 
         ApplyTranslations(entity, body.Translations);
 
+        // 刪到一個語系都不剩的話，這筆產品在前台每個語系都查不到，
+        // 而後台列表只顯示名稱 —— 它會變成一列空白，難以辨認也難以救回。
+        if (entity.Translations.Count == 0)
+            throw AppException.BadRequest("至少要保留一個語系的翻譯。");
+
         if (body.Images is { } images)          await ApplyImagesAsync(entity, images);
         if (body.BodyPartIds is { } bodyParts)  await ApplyBodyPartsAsync(entity, bodyParts);
         if (body.CertificationIds is { } certs) await ApplyCertificationsAsync(entity, certs);
@@ -361,13 +366,27 @@ public sealed class AdminProductHandler(
     /// 翻譯列 upsert：只處理 request 帶到的語系，未帶到的維持原狀
     /// （避免前端只送 en 就把 zh-TW 洗掉）。與 CollectionHandler 同一套規則。
     /// </summary>
-    private void ApplyTranslations(Product entity, Dictionary<string, ProductTranslationInput>? input)
+    private void ApplyTranslations(Product entity, Dictionary<string, ProductTranslationInput?>? input)
     {
         if (input is null) return;
 
         foreach (var (rawLocale, value) in input)
         {
             var locale = AdminWrite.ValidLocale(rawLocale);
+
+            // 值為 null = 刪除該語系。
+            //
+            // 「未帶到 = 不動它」讓前端只送 en 時不會洗掉 zh-TW，這是對的；
+            // 但少了刪除的途徑，編輯者就無法表達「這個產品不提供中文版」——
+            // 加錯一個語系之後只能改資料庫。null 是明確的刪除意圖，
+            // 與「沒提到」分得開。
+            if (value is null)
+            {
+                if (entity.Translations.FirstOrDefault(t => t.Locale == locale) is { } drop)
+                    entity.Translations.Remove(drop);
+                continue;
+            }
+
             if (string.IsNullOrWhiteSpace(value.Name))
                 throw AppException.BadRequest($"語系 {locale} 的 name 為必填。");
 

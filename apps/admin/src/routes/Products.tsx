@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router';
 import { api, type AdminProductListItem } from '@/lib/api';
 import { LocaleGauges } from '@/components/Gauge';
 import { StatusTag } from '@/components/StatusTag';
@@ -185,9 +186,9 @@ function Row({ product }: { product: AdminProductListItem }) {
       </td>
 
       <td className="max-w-0">
-        <span className="block truncate font-medium">
+        <Link to={`/products/${product.id}`} className="block truncate font-medium">
           {product.nameEn ?? product.nameZhTw ?? '（未命名）'}
-        </span>
+        </Link>
         {/* slug 用等寬：它是要逐字比對的字串，不是給人讀的句子 */}
         <span className="mono block truncate" style={{ color: 'var(--text-muted)' }}>
           {product.slug}

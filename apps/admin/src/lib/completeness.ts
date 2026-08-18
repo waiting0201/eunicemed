@@ -45,3 +45,29 @@ export function summarise(levels: LocaleLevels[]): GaugeLevel {
   if (missing > 0) return 1;
   return all.every((l) => l === 3) ? 3 : 2;
 }
+
+
+/**
+ * 產品在某語系的完整度。三段的定義：
+ *
+ * 1. **required** —— 有名稱。這就是前台看不看得到的分界
+ *    （後端 `PublishedFrom` 是 INNER JOIN 翻譯表，缺翻譯整筆消失）
+ * 2. **recommended** —— 有摘要，讀者點進來看得懂這是什麼
+ * 3. **complete** —— SEO 兩欄齊備
+ *
+ * ⚠️ 第 1 段的判準必須與後端一致。兩邊各寫一套的話，
+ * 後台顯示「有內容」而前台是 404。
+ */
+export function productLevel(tr: {
+  name?: string | null;
+  summary?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+} | undefined): GaugeLevel {
+  if (!tr) return 0;
+  return levelOf([
+    Boolean(tr.name?.trim()),
+    Boolean(tr.summary?.trim()),
+    Boolean(tr.seoTitle?.trim() && tr.seoDescription?.trim()),
+  ]);
+}

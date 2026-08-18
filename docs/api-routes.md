@@ -122,7 +122,7 @@
 | GET | `/admin/products?status=&search=&category=&subCategory=&page=&pageSize=` | 登入 | `search` 比對 Name（任一語系）與 Sku，**不比對 slug**；`status` 收 draft/published/archived |
 | POST | `/admin/products` | Author+ | 一律建為草稿；slug 重複回 409 |
 | GET | `/admin/products/{id}` | 登入 | 回全部語系 + 全部關聯 + base64 `rowVersion` |
-| PUT/PATCH | `/admin/products/{id}` | Author+ | **null = 不動它、空陣列 = 清空**；帶 `rowVersion` 才啟用 409 併發保護 |
+| PUT/PATCH | `/admin/products/{id}` | Author+ | **null = 不動它、空陣列 = 清空**；`translations` 的值為 null = **刪除該語系**（刪到剩 0 個回 400）；帶 `rowVersion` 才啟用 409 併發保護 |
 | DELETE | `/admin/products/{id}` | Author+ | 軟刪除，連帶清 `ProductRelated` 兩側與 `MediaUsage` |
 | POST | `/admin/products/{id}/publish` | **Editor+** | 沒有任何語系翻譯時回 400（發布了前台也看不到） |
 | POST | `/admin/products/{id}/unpublish` | Editor+ | 退回草稿，**`PublishedAt` 保留**（那是首次發布時間） |

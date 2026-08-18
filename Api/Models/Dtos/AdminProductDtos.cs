@@ -94,7 +94,9 @@ public sealed record UpsertProductRequest(
     Guid[]?                                      BodyPartIds         = null,
     Guid[]?                                      CertificationIds    = null,
     Guid[]?                                      TagIds              = null,
-    Dictionary<string, ProductTranslationInput>? Translations        = null,
+    // 值為 null = **刪除該語系的翻譯**（見 AdminProductHandler.ApplyTranslations）。
+    // 未帶到的語系維持原狀 —— 兩者是不同的意思。
+    Dictionary<string, ProductTranslationInput?>? Translations       = null,
     string?                                      RowVersion          = null)
 {
     /// <summary>
