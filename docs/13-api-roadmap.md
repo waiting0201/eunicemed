@@ -398,6 +398,23 @@ explicitly expose it by marking it with "use server".
 但 **zsh 預設不對未加引號的參數展開做 word splitting**，
 三個 id 連成一個字串塞進 `mediaId`，才撞出這個 500。
 
+### 2026-08-18 · GitHub OIDC 的 subject 不是文件上那個格式
+
+`azure/login@v2` 第一次就失敗：
+`AADSTS700213: No matching federated identity record found for presented assertion subject
+'repo:waiting0201@5709750/eunicemed@1338215425:ref:refs/heads/main'`。
+
+Microsoft 與 GitHub 的文件都寫 `repo:{owner}/{repo}:ref:refs/heads/main`，
+但實際送出的 subject 把**帳號 ID 與 repo ID** 也放進去了
+（`owner@ownerId/repo@repoId`）。查 `GET /repos/{o}/{r}/actions/oidc/customization/sub`
+會看到 `use_default: true` 但 `sub_claim_prefix` 已經是帶 ID 的形式 —— 沒得關掉。
+
+所以 federated credential 的 subject 要照**實際 log 裡那一行**建，不要照文件抄。
+本案建了三條：`:ref:refs/heads/main`、`:environment:prod`、`:pull_request`。
+
+順帶一提，`environment: prod` 的 job 送出的是 `:environment:prod` 而**不是** ref 那條 ——
+少建這一條的話，部署 job 會過不了登入，而 what-if job 卻正常，看起來像是權限問題。
+
 ### 2026-08-18 · SWA 的打包器不跟隨符號連結，而 pnpm 的 node_modules 幾乎全是連結
 
 部署在「Zipping Api Artifacts」階段失敗：
