@@ -1,12 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DEFAULT_LOCALE, LOCALES, negotiateLocale } from '@/lib/locale';
+import { getRedirects, normalize } from '@/lib/redirects';
 
 /**
- * 語系前綴：所有路由一律帶 `/[locale]`（docs/06-sitemap.md）。
- * 沒帶前綴的請求依 Accept-Language 導向對應語系。
+ * 語系前綴 + 舊網址轉址。
+ *
+ * <p>
+ * 順序是**先轉址再補語系前綴**：轉址規則存的是完整路徑（含語系前綴），
+ * 因為舊站的網址結構不一定與新站的語系規則相同（docs/10-legacy-content.md）。
+ * 反過來做的話，`/find-your-product` 會先被補成 `/en/find-your-product`
+ * 再去比對，而規則裡存的可能是不帶前綴的那一份。
+ * </p>
  */
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  const rule = (await getRedirects()).get(normalize(pathname));
+  if (rule) {
+    const target = req.nextUrl.clone();
+    target.pathname = rule.to;
+    return NextResponse.redirect(target, rule.status);
+  }
 
   const hasLocale = LOCALES.some(
     (l) => pathname === `/${l}` || pathname.startsWith(`/${l}/`),

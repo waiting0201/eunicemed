@@ -199,6 +199,26 @@ export type ProductDetail = {
 
 export type Stat = { value: string; label: string };
 
+// ── 導覽 / 設定 / Sitemap ─────────────────────────────────────────────────
+
+export type MenuNode = { url: string; label: string; children: MenuNode[] };
+
+/** `GET /menus` 回 `{header, footer}`；缺該語系標籤的項目不會出現。 */
+export type Menus = Record<string, MenuNode[]>;
+
+/** 設定值是自由 JSON（字串、數字、物件都可能），呼叫端自行收斂型別。 */
+export type Settings = Record<string, unknown>;
+
+export type SitemapEntry = {
+  /** **不含語系前綴**，前端逐語系組出 loc 與 hreflang */
+  path: string;
+  lastModified: string;
+  changeFreq: string;
+  priority: number;
+  /** 只列該語系確實有內容的 —— 不可以自己補滿兩個語系 */
+  locales: string[];
+};
+
 // ── 文章（News / Insights 共用同一個實體，以 type 分流）─────────────────────
 
 export type ArticleListItem = {
@@ -406,6 +426,12 @@ export const api = {
 
   page: (locale: string, key: string) =>
     getOrNull<import('./page').PageContent>(`/pages/${enc(key)}?locale=${enc(locale)}`),
+
+  menus: (locale: string) => get<Menus>(`/menus?locale=${enc(locale)}`),
+
+  settings: (locale: string) => get<Settings>(`/settings?locale=${enc(locale)}`),
+
+  sitemap: () => get<SitemapEntry[]>('/sitemap'),
 
   categories: (locale: string) =>
     get<CategoryDetail[]>(`/categories?locale=${enc(locale)}&include=subCategories`),

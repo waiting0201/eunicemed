@@ -38,8 +38,8 @@
 | 層 | 狀態 | 說明 |
 |---|---|---|
 | 規格文件 | ✅ | 14 份，見 [CLAUDE.md](CLAUDE.md) §3 |
-| 資料模型 | 🟡 89% | 54 張表完成 48 張 |
-| API | 🟡 86% | 已實作 **121** 條路由。Phase 0–6 全數完成，只剩 Phase 7（表單／設定／選單／轉址／sitemap，約 20 條） |
+| 資料模型 | 🟡 98% | 54 張表完成 53 張（只剩 `ContactSubmission`）|
+| API | 🟡 96% | 已實作 **133** 條路由。Phase 0–7 除**表單**外全數完成 —— `POST /contact` 與收件匣擋於 SMTP 帳密 |
 | 前台 `apps/web` | 🟡 | Next.js 15 已建立，2 頁可運作；部署限制已實測 |
 | 後台 `apps/admin` | ⬜ | 尚未建立專案；介面需先跑 `frontend-design` skill |
 | 基礎設施 `infra/` | ⬜ | Bicep 尚未撰寫 |
@@ -49,7 +49,7 @@
 
 ## 二、資料模型（54 張表）
 
-已建立 **28** 張，6 支 migration。遷移於 Function App 啟動時自動套用。
+已建立 **53** 張，7 支 migration。遷移於 Function App 啟動時自動套用。
 
 ### ✅ 已完成
 
@@ -71,19 +71,21 @@
 | FAQ | `Faq` `FaqTranslation` `FaqCategory` `FaqCategoryTranslation` | ✅ 分類 3 筆 × 雙語；題目待填 |
 | 下載 | `Download` `DownloadTranslation` `ProductDownload` | ✅ 表已建；`FileLocale` 與介面語系刻意分離 |
 | 據點 | `SalesLocation` `SalesLocationTranslation` | ✅ 表已建；資料來源待客戶提供 |
+| 導覽 | `MenuItem` `MenuItemTranslation` | ✅ 自參照樹（最多兩層）；header/footer 各一組 |
+| 轉址 | `Redirect` | ✅ `FromPath` 唯一；前端 middleware 執行 |
+| 設定 | `Setting` `SettingTranslation` | ✅ 主鍵是 `Key`；翻譯值覆寫不翻譯值 |
 
-### ⬜ 未建立（6 張）
+### ⬜ 未建立（1 張）
 
 | 模組 | 資料表 | 排定 |
 |---|---|---|
-| 導覽與轉址 | `MenuItem` `MenuItemTranslation` `Redirect` | Phase 7 |
-| 表單與設定 | `ContactSubmission` `Setting` `SettingTranslation` | Phase 7 |
+| 表單 | `ContactSubmission` | Phase 7（擋於 SMTP）|
 
 ---
 
 ## 三、API 端點
 
-已實作 **121** 條。完整契約見 [docs/api-routes.md](docs/api-routes.md)。
+已實作 **133** 條。完整契約見 [docs/api-routes.md](docs/api-routes.md)。
 
 ### 系統與驗證
 
@@ -114,8 +116,8 @@
 | `downloads` | ✅ | `fileLocale` 與站台語系分離；type facet 不自我收斂 |
 | `sales-locations` | ✅ | 伺服器端分組；未填 region 者集中於最後一組 |
 | 頁面區段 `pages/{key}` | ✅ | `sections{}` + `refs`、media 已解析、未翻譯區段自動省略 |
-| `menus` / `settings` / `sitemap` | ⬜ | Phase 7 |
-| `POST /contact` | ⬜ | Phase 7 |
+| `menus` / `settings` / `sitemap` / `redirects` | ✅ | sitemap 的語系判定共用 `IsRenderable`，不會宣告空白頁 |
+| `POST /contact` | 🔴 | 擋於 SMTP 帳密 |
 
 ### 後台
 
@@ -132,7 +134,8 @@
 | 文章分類 `admin/article-categories` | ✅ | slug 只在同 kind 內唯一 |
 | 應用方案 `admin/applications` | ✅ | 人體圖座標形狀驗證、產品關聯內嵌 |
 | FAQ／下載／據點 | ✅ | 寫入為 Editor+（無草稿工作流，存檔即生效） |
-| 表單收件匣／選單／轉址／設定 | ⬜ | Phase 7 |
+| 選單／轉址／設定 | ✅ | 選單整棵樹取代、轉址路徑正規化、設定 Admin only |
+| 表單收件匣 | 🔴 | 擋於 SMTP 帳密 |
 
 ---
 
@@ -166,7 +169,7 @@ facet 篩選、standalone 產物 66MB／250MB。
 
 前台共通項目：i18n 語系前綴 ✅、`output: 'standalone'` 與 250MB gate ✅（目前 66MB）、
 圖片走 Blob 直連（`unoptimized: true` + 自訂 srcSet）✅、`.swa` 路徑排除 ✅、安全標頭 ✅、
-純 SSR 全路由為 `ƒ Dynamic` ✅、sitemap ⬜、robots ⬜。
+純 SSR 全路由為 `ƒ Dynamic` ✅、sitemap.xml ✅（含 hreflang）、robots.txt ✅（非正式環境整站 Disallow）、舊網址轉址 ✅（middleware，5 分鐘快取）。
 
 ---
 

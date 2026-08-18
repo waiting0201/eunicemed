@@ -240,6 +240,29 @@
 > `Download.FileLocale` 是**檔案本身的語言**，**刻意不套站台語系白名單**
 > （可能有站台沒有的語言，如日文型錄），與翻譯的 `Locale`（介面語系）是兩件事。
 
+### 導覽 / 設定 / 轉址 / Sitemap（公開）
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| GET | `/menus?locale=&menu=` | 公開 | 回 `{header,footer}`；不帶 `menu` 時兩組都回。缺該語系標籤的項目不出現 |
+| GET | `/settings?locale=` | 公開 | 翻譯值覆寫不翻譯值；不需翻譯的設定用 LEFT JOIN 保留 |
+| GET | `/sitemap` | 公開 | **無 locale 參數**。每列的 `locales` 只列該語系確實有內容的 |
+| GET | `/redirects` | 公開 | 供前端 middleware 載入（5 分鐘快取） |
+
+> `sitemap` 的靜態頁語系判定共用 `PageHandler.IsRenderable`（看 schema 的 `required`），
+> **不是**「翻譯列存在」—— 跨語系同步會補建只含圖片的列，那種頁面點進去是空白的。
+
+### 後台：選單 / 轉址 / 設定
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| GET | `/admin/menus` | 登入 | 全部語系的扁平清單 |
+| PUT | `/admin/menus` | Editor+ | **整棵樹一次取代**（`{menu, items[]}`）；最多兩層，超過回 400 |
+| GET | `/admin/redirects?search=` | 登入 | |
+| POST · PUT/PATCH · DELETE | `/admin/redirects[/{id}]` | Editor+ | 路徑正規化；自我轉址 400、重複來源 409；狀態碼限 301/302/307/308 |
+| GET | `/admin/settings` | Admin | 同時回不翻譯值與各語系值 |
+| PUT | `/admin/settings` | Admin | 整批 upsert，未帶到的鍵維持原狀 |
+
 ---
 
 ## 待實作
@@ -252,17 +275,11 @@
 |---|---|---|---|
 | POST | `/admin/media/{id}/reprocess` | Editor+ | 以目前 preset 重新輸出 master 與 variants |
 
-### Phase 7 — 表單、設定、導覽
+### Phase 7 剩餘 — 表單（擋於 SMTP）
 
 | Method | Path | 權限 | 說明 |
 |---|---|---|---|
 | POST | `/contact` | 公開 | reCAPTCHA + honeypot + 速率限制；**先入庫再寄信**，SMTP 失敗仍回 201 |
-| GET | `/menus?locale=` | 公開 | |
-| GET | `/settings?locale=` | 公開 | |
-| GET | `/sitemap` | 公開 | 全部可索引 URL + lastmod（無 locale 參數） |
 | GET | `/admin/contact-submissions?type=&status=&page=` | 登入 | 含 Viewer |
 | PATCH | `/admin/contact-submissions/{id}` | Editor+ | 標記已處理 |
 | GET | `/admin/contact-submissions/export` | Editor+ | CSV |
-| GET/PUT | `/admin/menus` | Editor+ | 整棵樹 diff |
-| GET/POST/PUT/DELETE | `/admin/redirects[/{id}]` | Editor+ | |
-| GET/PUT | `/admin/settings` | Admin | |

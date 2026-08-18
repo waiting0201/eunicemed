@@ -305,7 +305,20 @@ public sealed class PageHandler(
     /// 而本站無 CDN、純 SSR，每次請求都真的會執行到這裡。
     /// </para>
     /// </summary>
-    private static bool IsRenderable(SectionSchema schema, JsonObject data)
+    /// <summary>
+    /// 這個區段在該語系是否真的渲染得出來。
+    ///
+    /// <para>
+    /// 列存在不等於有內容 —— 跨語系同步會為尚未翻譯的語系補建只含圖片／連結的列。
+    /// 判準是 schema 的 <c>required</c>：不需要額外狀態，也不會與 schema 脫節。
+    /// </para>
+    ///
+    /// <para>
+    /// **sitemap 也用這個**（<see cref="SiteHandler"/>）—— 兩邊各寫一套判準的話，
+    /// sitemap 會宣告一堆點進去是空白的網址。
+    /// </para>
+    /// </summary>
+    internal static bool IsRenderable(SectionSchema schema, JsonObject data)
     {
         if (schema.Raw["required"] is not JsonArray required) return data.Count > 0;
 

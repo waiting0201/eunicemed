@@ -40,7 +40,8 @@ public sealed class AppRouter(
     ArticleHandler     articles,
     AdminArticleHandler adminArticles,
     ContentHandler     content,
-    AdminContentHandler adminContent)
+    AdminContentHandler adminContent,
+    SiteHandler        site)
 {
     public async Task<IActionResult> RouteAsync(HttpRequest req, string route)
     {
@@ -120,6 +121,12 @@ public sealed class AppRouter(
             ("GET", ["faq-categories"])  => await content.GetFaqCategoriesAsync(req),
             ("GET", ["downloads"])       => await content.GetDownloadsAsync(req),
             ("GET", ["sales-locations"]) => await content.GetSalesLocationsAsync(req),
+
+            // ── 導覽 / 設定 / 轉址 / sitemap（公開）───────────────────────
+            ("GET", ["menus"])     => await site.GetMenusAsync(req),
+            ("GET", ["settings"])  => await site.GetSettingsAsync(req),
+            ("GET", ["sitemap"])   => await site.GetSitemapAsync(),
+            ("GET", ["redirects"]) => await site.GetRedirectsAsync(),
 
             // ── 頁面區段（公開）───────────────────────────────────────────
             ("GET", ["pages", var pageKey]) => await pages.GetPublicAsync(req, pageKey),
@@ -245,6 +252,18 @@ public sealed class AppRouter(
             ("PUT" or "PATCH", ["admin", "sales-locations", var id]) => await adminContent.UpdateSalesLocationAsync(req, id),
             ("DELETE", ["admin", "sales-locations", var id])  => await adminContent.DeleteSalesLocationAsync(id),
 
+            // ── Admin：選單 / 轉址 / 設定 ─────────────────────────────────
+            ("GET", ["admin", "menus"])          => await site.AdminGetMenusAsync(),
+            ("PUT", ["admin", "menus"])          => await site.AdminReplaceMenusAsync(req),
+
+            ("GET",    ["admin", "redirects"])          => await site.AdminGetRedirectsAsync(req),
+            ("POST",   ["admin", "redirects"])          => await site.AdminCreateRedirectAsync(req),
+            ("PUT" or "PATCH", ["admin", "redirects", var id]) => await site.AdminUpdateRedirectAsync(req, id),
+            ("DELETE", ["admin", "redirects", var id])  => await site.AdminDeleteRedirectAsync(id),
+
+            ("GET", ["admin", "settings"]) => await site.AdminGetSettingsAsync(),
+            ("PUT", ["admin", "settings"]) => await site.AdminUpdateSettingsAsync(req),
+
             // ── Admin：Collections ────────────────────────────────────────
             ("GET",    ["admin", "collections"])          => await collections.AdminGetAllAsync(),
             ("POST",   ["admin", "collections"])          => await collections.AdminCreateAsync(req),
@@ -329,6 +348,10 @@ public sealed class AppRouter(
             (not "GET", ["admin", "faqs", ..])               => Editors,
             (not "GET", ["admin", "downloads", ..])          => Editors,
             (not "GET", ["admin", "sales-locations", ..])    => Editors,
+
+            // 選單與轉址改動會影響全站導覽與既有網址，寫入需 Editor 以上
+            (not "GET", ["admin", "menus", ..])     => Editors,
+            (not "GET", ["admin", "redirects", ..]) => Editors,
 
             // 設定：Admin only
             (_, ["admin", "settings", ..]) => Admins,

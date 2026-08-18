@@ -61,6 +61,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<PageSection>            PageSections             { get; set; }
     public DbSet<PageSectionTranslation> PageSectionTranslations  { get; set; }
 
+    // ── 導覽 / 轉址 / 設定 ───────────────────────────────────────────────
+    public DbSet<MenuItem>            MenuItems            { get; set; }
+    public DbSet<MenuItemTranslation> MenuItemTranslations { get; set; }
+    public DbSet<Redirect>            Redirects            { get; set; }
+    public DbSet<Setting>             Settings             { get; set; }
+    public DbSet<SettingTranslation>  SettingTranslations  { get; set; }
+
     // ── 使用者與稽核 ────────────────────────────────────────────────────
     public DbSet<User>         Users         { get; set; }
     public DbSet<Role>         Roles         { get; set; }

@@ -1,8 +1,15 @@
+import Link from 'next/link';
+import type { MenuNode, Settings } from '@/lib/api';
 import type { Locale } from '@/lib/locale';
 
 /**
- * 站台頁尾。公司資訊暫時寫死 —— 正式版應由 `GET /settings` 取得（Phase 7），
- * docs/03-cms.md §3 明訂 Contact 頁與頁尾共用同一份設定，不重複維護。
+ * 站台頁尾。公司資訊由 `GET /settings` 提供 —— docs/03-cms.md §3 明訂
+ * Contact 頁與頁尾共用同一份設定，不重複維護。
+ *
+ * <p>
+ * 與頁首同樣的原則：**取不到就退回內建值**。頁尾的地址與聯絡方式是
+ * 法規與信任要素，空著比稍舊更糟。
+ * </p>
  */
 const COPY: Record<Locale, { hours: string; address: string; rights: string }> = {
   en: {
@@ -18,8 +25,23 @@ const COPY: Record<Locale, { hours: string; address: string; rights: string }> =
   },
 };
 
-export function SiteFooter({ locale }: { locale: Locale }) {
+export function SiteFooter({
+  locale,
+  menu,
+  settings,
+}: {
+  locale: Locale;
+  menu?: MenuNode[];
+  settings?: Settings;
+}) {
   const c = COPY[locale];
+  const s = (key: string, fallback: string) =>
+    typeof settings?.[key] === 'string' ? (settings[key] as string) : fallback;
+
+  const address = s('company.address', c.address);
+  const hours   = s('company.hours', c.hours);
+  const phone   = s('company.phone', '+886 2 8511 3758');
+  const email   = s('company.email', 'service@comfortplus-medical.com');
 
   return (
     <footer className="mt-20 border-t border-[--color-hairline] bg-[--color-tint]">
@@ -27,15 +49,24 @@ export function SiteFooter({ locale }: { locale: Locale }) {
         <p className="text-base font-semibold text-[--color-ink]">
           Comfort Plus Corporation
         </p>
-        <p className="mt-2">{c.address}</p>
+        <p className="mt-2">{address}</p>
         <p className="mt-1">
-          <a href="tel:+886285113758">+886 2 8511 3758</a>
+          {/* tel: 要去掉空白，否則部分手機撥號會失敗 */}
+          <a href={`tel:${phone.replace(/\s+/g, '')}`}>{phone}</a>
           {' · '}
-          <a href="mailto:service@comfortplus-medical.com">
-            service@comfortplus-medical.com
-          </a>
+          <a href={`mailto:${email}`}>{email}</a>
         </p>
-        <p className="mt-1 text-[--color-grey]">{c.hours}</p>
+        <p className="mt-1 text-[--color-grey]">{hours}</p>
+
+        {menu && menu.length > 0 && (
+          <nav className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
+            {menu.map((item) => (
+              <Link key={item.url} href={`/${locale}${item.url}`}>
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        )}
 
         <p className="mt-8 text-[--color-grey]">
           © {new Date().getFullYear()} Comfort Plus Corporation. {c.rights}

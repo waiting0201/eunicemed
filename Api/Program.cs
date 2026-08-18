@@ -92,6 +92,7 @@ var host = new HostBuilder()
         services.AddScoped<IApplicationReadService, ApplicationReadService>();
         services.AddScoped<IArticleReadService, ArticleReadService>();
         services.AddScoped<IContentReadService, ContentReadService>();
+        services.AddScoped<ISiteReadService, SiteReadService>();
 
         // ── Handlers ──────────────────────────────────────────────────────
         services.AddScoped<HealthHandler>();
@@ -110,6 +111,7 @@ var host = new HostBuilder()
         services.AddScoped<AdminArticleHandler>();
         services.AddScoped<ContentHandler>();
         services.AddScoped<AdminContentHandler>();
+        services.AddScoped<SiteHandler>();
         services.AddScoped<MediaUsageWriter>();
 
         // ── Router ────────────────────────────────────────────────────────

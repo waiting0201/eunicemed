@@ -1,0 +1,190 @@
+### Phase 7（不擋於 SMTP 的那一半）：選單 / 轉址 / 設定 / sitemap
+### `POST /contact` 與表單收件匣仍待 SMTP 帳密（CLAUDE.md §7）。
+
+@host = http://localhost:7071/api
+
+### 0. 登入
+# @name login
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "admin@eunicemed.local", "password": "REPLACE_WITH_LOCAL_SEED_PASSWORD" }
+
+@at = {{login.response.body.data.accessToken}}
+
+###############################################################################
+# 1. 選單
+#
+# **整棵樹一次送**（PUT /admin/menus）。逐項 CRUD 在樹狀結構上很難用：
+# 搬移一個節點是「改 parent + 改兩邊排序」，拆成多次請求會在中途留下順序錯亂的狀態。
+###############################################################################
+
+### 1a. 設定 header（含一層子選單）
+PUT {{host}}/admin/menus
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{
+  "menu": "header",
+  "items": [
+    { "url": "/products", "labels": { "en": "Products", "zh-TW": "產品" } },
+    { "url": "/applications", "labels": { "en": "Applications", "zh-TW": "應用方案" } },
+    { "url": "/about", "labels": { "en": "About", "zh-TW": "關於我們" } },
+    { "url": "/partnership", "labels": { "en": "Partnership", "zh-TW": "合作夥伴" } },
+    { "url": "/resources", "labels": { "en": "Resources", "zh-TW": "資源中心" },
+      "children": [
+        { "url": "/faq", "labels": { "en": "FAQ", "zh-TW": "常見問題" } },
+        { "url": "/downloads", "labels": { "en": "Downloads", "zh-TW": "資料下載" } }
+      ] },
+    { "url": "/where-to-buy", "labels": { "en": "Where to Buy", "zh-TW": "銷售據點" } }
+  ]
+}
+
+### 1b. 三層 → 應 400（導覽最多兩層，更深的樹版型渲染不出來）
+PUT {{host}}/admin/menus
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{
+  "menu": "header",
+  "items": [{ "url": "/a", "labels": { "en": "A" },
+    "children": [{ "url": "/b", "labels": { "en": "B" },
+      "children": [{ "url": "/c", "labels": { "en": "C" } }] }] }]
+}
+
+### 1c. 缺標籤 → 應 400
+PUT {{host}}/admin/menus
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "menu": "header", "items": [{ "url": "/a" }] }
+
+### 1d. 未知 menu → 應 400
+PUT {{host}}/admin/menus
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "menu": "sidebar", "items": [] }
+
+### 1e. 公開端點（中文）—— 應回 header + footer 兩組，資源中心底下有 2 個子項
+GET {{host}}/menus?locale=zh-TW
+
+### 1f. 只要 header
+GET {{host}}/menus?locale=en&menu=header
+
+###############################################################################
+# 2. 轉址
+#
+# 路徑一律正規化：開頭補 `/`、去掉尾斜線、比對不分大小寫。
+# 不正規化的話 `/old` 與 `/old/` 會被當成兩條規則，而 middleware 只會命中一條。
+###############################################################################
+
+### 2a. 建立（來源刻意帶尾斜線，讀回時應已去掉）
+POST {{host}}/admin/redirects
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "fromPath": "/en/behind-the-motion/", "toPath": "/en/about", "statusCode": 301 }
+
+### 2b. 自我轉址 → 應 400（會造成無限迴圈）
+POST {{host}}/admin/redirects
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "fromPath": "/en/products", "toPath": "/en/products" }
+
+### 2c. 重複來源 → 應 409（同一個舊網址不能有兩條規則）
+POST {{host}}/admin/redirects
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "fromPath": "/en/behind-the-motion", "toPath": "/en/faq" }
+
+### 2d. 不合法的狀態碼 → 應 400（只收 301/302/307/308）
+POST {{host}}/admin/redirects
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "fromPath": "/en/x", "toPath": "/en/y", "statusCode": 404 }
+
+### 2e. 公開端點（前端 middleware 由此載入，5 分鐘快取）
+GET {{host}}/redirects
+
+### 2f. 後台清單（可搜尋）
+GET {{host}}/admin/redirects?search=about
+Authorization: Bearer {{at}}
+
+###############################################################################
+# 3. 設定
+#
+# 不需翻譯的值（email／電話／URL）放 `value`；
+# 需翻譯的（地址、營業時間文字）放 `translations`。讀取時翻譯值優先。
+###############################################################################
+
+### 3a. 整批 upsert
+PUT {{host}}/admin/settings
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{
+  "items": {
+    "company.email": { "value": "service@comfortplus-medical.com" },
+    "company.phone": { "value": "+886 2 8511 3758" },
+    "social.linkedin": { "value": "https://www.linkedin.com/company/eunicemed" },
+    "company.address": { "translations": {
+      "en": "11F, No. 123-9, Xingde Rd., Sanchong Dist., New Taipei City 24158, Taiwan",
+      "zh-TW": "24158 新北市三重區興德路 123-9 號 11 樓" } },
+    "company.hours": { "translations": {
+      "en": "Mon–Fri 09:00–18:00 (UTC+8)", "zh-TW": "週一至週五 09:00–18:00" } }
+  }
+}
+
+### 3b. 公開端點（中文）—— 地址與時間應為中文，email/電話/LinkedIn 仍在
+#   ⚠️ 用 LEFT JOIN 而非 INNER：不需翻譯的設定沒有翻譯列，
+#      用 INNER 會讓 email 與電話整個消失。
+GET {{host}}/settings?locale=zh-TW
+
+### 3c. 英文
+GET {{host}}/settings?locale=en
+
+### 3d. 後台（同時看到不翻譯值與各語系值）
+GET {{host}}/admin/settings
+Authorization: Bearer {{at}}
+
+### 3e. 設定為 Admin only —— 以 Editor 身分呼叫應回 403
+#   （授權規則 `(_, ["admin","settings", ..]) => Admins` 自 Phase 2 就在）
+
+###############################################################################
+# 4. Sitemap
+#
+# **無 locale 參數**：一次回全部語系。每一列的 `locales` 只列該語系
+# **確實有內容**的 —— 語言純度會讓缺翻譯的頁面回 404，
+# 若對每個路徑都列兩個語系，等於向搜尋引擎宣告一堆 404。
+###############################################################################
+
+### 4a. 全部可索引 URL
+GET {{host}}/sitemap
+
+### 4b. 必須檢查的幾件事：
+#   - `/products/...` 這類產品路徑目前多為 `["en"]` —— 149 筆匯入產品沒有中文翻譯
+#   - 首頁 `""` 目前也是 `["en"]` —— 首頁的 7 個區段只有英文，中文首頁是空白的
+#   - `/faq`、`/downloads` 等純動態頁為雙語（它們沒有頁面區段，不靠 CMS 就有內容）
+#   - 排程在未來的文章不應出現
+#
+#   ⚠️ 靜態頁的語系判定共用 `PageHandler.IsRenderable`（看 schema 的 required），
+#      **不是**「翻譯列存在」—— 跨語系同步會補建只含圖片的列，那種頁面點進去是空白的。
+
+###############################################################################
+# 5. 前端對應（apps/web）
+###############################################################################
+
+### 5a. sitemap.xml —— 應含 xhtml:link alternates，且只列有內容的語系
+#   curl http://localhost:3000/sitemap.xml
+#
+### 5b. robots.txt —— 非正式網域時整站 Disallow
+#   curl http://localhost:3000/robots.txt
+#   NEXT_PUBLIC_SITE_URL=https://www.eunicemed.com 時才會 Allow 並指向 sitemap
+#
+### 5c. 轉址（middleware，5 分鐘快取、失敗放行）
+#   curl -I http://localhost:3000/en/find-your-product   → 301 到 /en/products
+#   curl -I http://localhost:3000/EN/Find-Your-Product   → 301（比對不分大小寫）
