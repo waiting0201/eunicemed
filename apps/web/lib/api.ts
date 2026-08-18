@@ -199,6 +199,66 @@ export type ProductDetail = {
 
 export type Stat = { value: string; label: string };
 
+// ── 文章（News / Insights 共用同一個實體，以 type 分流）─────────────────────
+
+export type ArticleListItem = {
+  slug: string;
+  /** 'news' | 'insight' */
+  type: string;
+  title: string;
+  excerpt: string | null;
+  category: SlugName | null;
+  publishedAt: string | null;
+  readMinutes: number | null;
+  author: string | null;
+  cover: MediaRef | null;
+  url: string;
+};
+
+export type ArticleRef = {
+  slug: string;
+  title: string;
+  cover: MediaRef | null;
+  url: string;
+};
+
+/** News 專屬的活動資訊面板。 */
+export type NewsEvent = {
+  datesLabel: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  venue: string | null;
+  booth: string | null;
+  contactEmail: string | null;
+  ctaLabel: string | null;
+  ctaUrl: string | null;
+};
+
+export type ArticleDetail = {
+  slug: string;
+  type: string;
+  category: SlugName | null;
+  title: string;
+  standfirst: string | null;
+  excerpt: string | null;
+  publishedAt: string | null;
+  author: string | null;
+  readMinutes: number | null;
+  cover: MediaRef | null;
+  /** 已淨化的 HTML，且 H2 的 anchor id 已由伺服器回填（docs/13 Phase 6）*/
+  body: string | null;
+  /** 由 body 的 H2 伺服器端推導，與 body 內的 id 一一對應 */
+  toc: { id: string; text: string }[];
+  tags: SlugName[];
+  disclaimer: string | null;
+  gallery: MediaRef[];
+  event: NewsEvent | null;
+  prev: ArticleRef | null;
+  next: ArticleRef | null;
+  related: ArticleRef[];
+  seo: { title: string | null; description: string | null; ogImage: string | null };
+};
+
 // ── FAQ / 下載 / 據點 ──────────────────────────────────────────────────────
 
 export type Faq = {
@@ -334,6 +394,15 @@ export const api = {
 
   salesLocations: (locale: string) =>
     get<SalesLocations>(`/sales-locations?locale=${enc(locale)}`),
+
+  articles: (locale: string, kind: 'news' | 'insights', category?: string) => {
+    const q = new URLSearchParams({ locale, facets: 'true' });
+    if (category) q.set('category', category);
+    return get<FacetedResult<ArticleListItem>>(`/${kind}?${q}`);
+  },
+
+  article: (locale: string, kind: 'news' | 'insights', slug: string) =>
+    getOrNull<ArticleDetail>(`/${kind}/${enc(slug)}?locale=${enc(locale)}`),
 
   categories: (locale: string) =>
     get<CategoryDetail[]>(`/categories?locale=${enc(locale)}&include=subCategories`),
