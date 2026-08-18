@@ -398,6 +398,19 @@ explicitly expose it by marking it with "use server".
 但 **zsh 預設不對未加引號的參數展開做 word splitting**，
 三個 id 連成一個字串塞進 `mediaId`，才撞出這個 500。
 
+### 2026-08-18 · Flex Consumption 的 runtime 版本字串是 `10`，寫 `10.0` 不會被擋
+
+Bicep 裡寫 `functionAppConfig.runtime.version: '10.0'`，ARM 照收、部署成功、
+app 顯示 Running —— 但**每一條路由都回 404**（Kestrel 回的，代表 host 在、
+只是一個 function 都沒索引到）。
+
+正確值要以 `az functionapp list-flexconsumption-runtimes -l westus2 --runtime dotnet-isolated`
+為準，它回的是 `10`。
+
+這一類「設定值不合法但沒人擋」的錯誤，症狀都長得像別的問題：
+當下第一個懷疑的是啟動時的 migration 失敗，實際上 migration 早就跑完了
+（`dotnet ef database update` 從本機連上去確認過是 up to date）。
+
 ### 2026-08-18 · GitHub OIDC 的 subject 不是文件上那個格式
 
 `azure/login@v2` 第一次就失敗：
