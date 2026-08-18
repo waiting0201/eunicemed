@@ -32,8 +32,13 @@ jobs:
           node-version: '22'
           cache: pnpm
 
+      # SWA 的打包器不跟隨符號連結，而 pnpm 預設的 node_modules 幾乎全是連結。
+      # hoisted 安裝出來的是實體目錄（npm 那種形狀），standalone 產物才打包得動。
+      # 只在 CI 這樣做 —— 本機保留 pnpm 的嚴格佈局，才擋得住 phantom dependency。
       - name: Install
         run: pnpm install --frozen-lockfile
+        env:
+          NPM_CONFIG_NODE_LINKER: hoisted
 
       - name: Lint
         run: pnpm --filter web lint

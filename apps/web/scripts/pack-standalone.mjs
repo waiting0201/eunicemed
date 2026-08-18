@@ -1,5 +1,4 @@
-import { execFileSync } from 'node:child_process';
-import { cpSync, existsSync, renameSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -19,6 +18,12 @@ import { fileURLToPath } from 'node:url';
  * </list>
  *
  * <p>
+ * ⚠️ **CI 必須以 `NPM_CONFIG_NODE_LINKER=hoisted` 安裝**（見 .github/workflows/web.yml）。
+ * pnpm 預設的符號連結式 node_modules，SWA 的打包器不跟隨，會以
+ * `Could not find file .../node_modules/react` 失敗；而把連結展開成實體檔案又會
+ * 破壞 pnpm 的解析（`Cannot find module 'styled-jsx/package.json'`）——
+ * 因為 pnpm 的相依是靠 realpath 的兄弟目錄找到的。改用 hoisted 安裝才是對的形狀。
+ *
  * ⚠️ 不要改用 `outputFileTracingRoot` 來避免巢狀 —— 那會讓 pnpm 的相依落在
  * tracing 範圍外，Next 只留下指向外部的符號連結，SWA 打包時直接失敗
  * （`Could not find file .../node_modules/react`）。見 next.config.ts 的說明。
@@ -49,18 +54,6 @@ if (appDir !== standalone) {
 // SWA 打包器**不跟隨符號連結**（`An error occurred while zipping the api artifacts:
 // Could not find file .../node_modules/react`），而 pnpm 的 node_modules 幾乎全是連結。
 // 這裡就地把它們換成實體檔案 —— 體積會變大，但那是唯一能被打包的形狀。
-//
-// 用 `cp -RL` 而不是 Node 的 `cpSync(..., { dereference: true })` ——
-// 後者對「指向目錄的符號連結」照樣複製成連結，測過無效。
-const modules = join(standalone, 'node_modules');
-if (existsSync(modules)) {
-  const real = `${modules}.real`;
-  rmSync(real, { recursive: true, force: true });
-  execFileSync('cp', ['-RL', modules, real]);
-  rmSync(modules, { recursive: true, force: true });
-  renameSync(real, modules);
-}
-
 if (!existsSync(join(standalone, 'server.js'))) {
   console.error('[pack-standalone] 壓平後仍找不到 server.js —— SWA 會以 warm up timeout 失敗。');
   process.exit(1);

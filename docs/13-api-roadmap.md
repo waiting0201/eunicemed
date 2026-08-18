@@ -398,6 +398,26 @@ explicitly expose it by marking it with "use server".
 但 **zsh 預設不對未加引號的參數展開做 word splitting**，
 三個 id 連成一個字串塞進 `mediaId`，才撞出這個 500。
 
+### 2026-08-18 · SWA 的打包器不跟隨符號連結，而 pnpm 的 node_modules 幾乎全是連結
+
+部署在「Zipping Api Artifacts」階段失敗：
+`An error occurred while zipping the api artifacts: Could not find file
+.../node_modules/react. This error may be due to a broken symbolic link.`
+
+那個連結其實沒有壞（指向 standalone 樹內的 `.pnpm/react@19.2.8/...`），
+只是 SWA 不跟隨它。
+
+**第一個修法是錯的**：把連結展開成實體檔案（`cp -RL`）之後打包過了，但站台起不來 ——
+`Cannot find module 'styled-jsx/package.json'`。pnpm 的相依是靠 **realpath 的兄弟目錄**
+找到的：`node_modules/next` 原本連到 `.pnpm/next@…/node_modules/next`，
+它的相依就在同一層；一旦變成實體目錄，Node 往上找就只剩 standalone 根的 node_modules，
+那裡沒有 `styled-jsx`。體積也從 62MB 漲到 136MB。
+
+**正確做法：CI 以 `NPM_CONFIG_NODE_LINKER=hoisted` 安裝。**
+產出的是 npm 那種扁平實體目錄，standalone 產物 0 個符號連結、68MB、server 起得來
+（本機實測 `/.swa/health.html` 回 200）。只在 CI 這樣做 ——
+本機保留 pnpm 的嚴格佈局，才擋得住 phantom dependency。
+
 ### 2026-08-18 · `skip_app_build` 會讓 SWA 不再幫你放健康檢查頁
 
 SWA 用 `GET /.swa/health.html` 驗證站台起得來，**而那一頁是它在自己執行 build 時
