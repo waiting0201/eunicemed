@@ -11,6 +11,10 @@ import { Locations } from './routes/Locations';
 import { Pages } from './routes/Pages';
 import { PageEdit } from './routes/PageEdit';
 import { Media } from './routes/Media';
+import { Users } from './routes/Users';
+import { Redirects } from './routes/Redirects';
+import { Settings } from './routes/Settings';
+import { Menus } from './routes/Menus';
 import { auth } from './lib/api';
 
 /**
@@ -42,10 +46,10 @@ export function App() {
             <Route path="/collections" element={<Placeholder title="系列" />} />
             <Route path="/certifications" element={<Placeholder title="認證" />} />
             <Route path="/media" element={<Media />} />
-            <Route path="/menus" element={<Placeholder title="導覽選單" />} />
-            <Route path="/redirects" element={<Placeholder title="轉址" />} />
-            <Route path="/settings" element={<Placeholder title="設定" />} />
-            <Route path="/users" element={<Placeholder title="使用者" />} />
+            <Route path="/menus" element={<Menus />} />
+            <Route path="/redirects" element={<Redirects />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/users" element={<Users />} />
           </Route>
         </Route>
 

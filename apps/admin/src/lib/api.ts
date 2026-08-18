@@ -161,6 +161,37 @@ export const api = {
 
   summary: () => request<Record<string, SummaryEntry>>('/admin/summary'),
 
+  users: () => request<AdminUserRow[]>('/admin/users'),
+
+  createUser: (body: unknown) =>
+    request<AdminUserRow>('/admin/users', { method: 'POST', body: JSON.stringify(body) }),
+
+  updateUser: (id: string, body: unknown) =>
+    request<AdminUserRow>(`/admin/users/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+
+  deleteUser: (id: string) => request<null>(`/admin/users/${id}`, { method: 'DELETE' }),
+
+  redirects: (search?: string) =>
+    request<AdminRedirect[]>(`/admin/redirects${search ? `?search=${encodeURIComponent(search)}` : ''}`),
+
+  createRedirect: (body: unknown) =>
+    request<AdminRedirect>('/admin/redirects', { method: 'POST', body: JSON.stringify(body) }),
+
+  updateRedirect: (id: string, body: unknown) =>
+    request<AdminRedirect>(`/admin/redirects/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+
+  deleteRedirect: (id: string) => request<null>(`/admin/redirects/${id}`, { method: 'DELETE' }),
+
+  adminSettings: () => request<AdminSetting[]>('/admin/settings'),
+
+  saveSettings: (items: Record<string, unknown>) =>
+    request<null>('/admin/settings', { method: 'PUT', body: JSON.stringify({ items }) }),
+
+  adminMenus: () => request<AdminMenuItem[]>('/admin/menus'),
+
+  saveMenu: (menu: string, items: unknown[]) =>
+    request<null>('/admin/menus', { method: 'PUT', body: JSON.stringify({ menu, items }) }),
+
   pages: () => request<AdminPageListItem[]>('/admin/pages'),
 
   page: (key: string) => request<AdminPage>(`/admin/pages/${key}`),
@@ -307,6 +338,45 @@ export type ProductImageInput = { mediaId: string; isPrimary: boolean; sortOrder
  * 尺寸調整只改 `Api/Media/media-presets.json`，全後台同步生效。
  */
 /** 側欄儀表的資料來源。`locales` 是「有該語系翻譯的筆數」。 */
+export type AdminUserRow = {
+  id: string;
+  email: string;
+  displayName: string;
+  roles: string[];
+  isActive: boolean;
+  mustChangePassword: boolean;
+  isLocked: boolean;
+  lastLoginAt: string | null;
+  createdAt: string;
+};
+
+export type AdminRedirect = {
+  id: string;
+  fromPath: string;
+  toPath: string;
+  statusCode: number;
+  createdAt: string;
+};
+
+export type AdminSetting = {
+  key: string;
+  /** 不需翻譯的值（email、電話、URL）*/
+  value: unknown;
+  /** 需翻譯的值（地址、營業時間）*/
+  translations: Record<string, unknown>;
+  updatedAt: string;
+};
+
+/** 後端回的是扁平清單，樹狀由前端組（最多兩層）*/
+export type AdminMenuItem = {
+  id: string;
+  menu: string;
+  parentId: string | null;
+  url: string;
+  sortOrder: number;
+  labels: Record<string, string>;
+};
+
 export type AdminPageListItem = {
   key: string;
   /** singleton | template */
