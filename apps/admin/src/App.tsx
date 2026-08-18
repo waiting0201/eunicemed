@@ -8,6 +8,8 @@ import { Applications } from './routes/Applications';
 import { Faqs } from './routes/Faqs';
 import { Downloads } from './routes/Downloads';
 import { Locations } from './routes/Locations';
+import { Pages } from './routes/Pages';
+import { PageEdit } from './routes/PageEdit';
 import { auth } from './lib/api';
 
 /**
@@ -28,7 +30,8 @@ export function App() {
           <Route element={<Shell />}>
             <Route path="/products" element={<Products />} />
             <Route path="/products/:id" element={<ProductEdit />} />
-            <Route path="/pages" element={<Placeholder title="頁面內容" />} />
+            <Route path="/pages" element={<Pages />} />
+            <Route path="/pages/:key" element={<PageEdit />} />
             <Route path="/applications" element={<Applications />} />
             <Route path="/articles" element={<Articles />} />
             <Route path="/faqs" element={<Faqs />} />

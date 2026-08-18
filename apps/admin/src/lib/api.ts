@@ -139,6 +139,30 @@ export const api = {
 
   summary: () => request<Record<string, SummaryEntry>>('/admin/summary'),
 
+  pages: () => request<AdminPageListItem[]>('/admin/pages'),
+
+  page: (key: string) => request<AdminPage>(`/admin/pages/${key}`),
+
+  pageSchema: (key: string) =>
+    request<import('./schema').PageSchema>(`/admin/page-schema/${key}`),
+
+  saveSection: (key: string, sectionKey: string, body: unknown) =>
+    request<null>(`/admin/pages/${key}/sections/${sectionKey}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+
+  deleteSectionLocale: (key: string, sectionKey: string, locale: string) =>
+    request<null>(`/admin/pages/${key}/sections/${sectionKey}?locale=${locale}`, {
+      method: 'DELETE',
+    }),
+
+  toggleSection: (key: string, sectionKey: string, isEnabled: boolean) =>
+    request<null>(`/admin/pages/${key}/sections/${sectionKey}/enabled`, {
+      method: 'PATCH',
+      body: JSON.stringify({ isEnabled }),
+    }),
+
   articles: (params: Record<string, string | undefined>) => {
     const q = new URLSearchParams();
     for (const [k, v] of Object.entries(params)) if (v) q.set(k, v);
@@ -243,6 +267,25 @@ export type ProductImageInput = { mediaId: string; isPrimary: boolean; sortOrder
  * 尺寸調整只改 `Api/Media/media-presets.json`，全後台同步生效。
  */
 /** 側欄儀表的資料來源。`locales` 是「有該語系翻譯的筆數」。 */
+export type AdminPageListItem = {
+  key: string;
+  /** singleton | template */
+  kind: string;
+  sectionCount: number;
+  updatedAt: string;
+};
+
+export type AdminPageSection = {
+  sectionKey: string;
+  isEnabled: boolean;
+  rowVersion: string | null;
+  updatedAt: string;
+  /** 每個語系一份 data。缺該語系就沒有那個 key */
+  translations: Record<string, Record<string, unknown>>;
+};
+
+export type AdminPage = { key: string; sections: AdminPageSection[] };
+
 export type SummaryEntry = {
   total: number;
   locales: { en: number; zhTw: number };

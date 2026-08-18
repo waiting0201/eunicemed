@@ -267,6 +267,47 @@ public sealed class PageHandler(
         return [.. errors];
     }
 
+    /// <summary>
+    /// DELETE /admin/pages/{key}/sections/{sectionKey}?locale= —— 刪掉一個語系的內容。
+    ///
+    /// <para>
+    /// 沒有這一支的話，某個語系的區段內容**只能新增不能移除** ——
+    /// schema 驗證要求必填欄位，所以連「存成空的」都做不到。
+    /// 編輯者填錯語系、或想表達「這一段不出中文版」時只剩改資料庫一途。
+    /// （與 `AdminProductHandler` 的翻譯刪除是同一個問題，見 docs/13 的踩坑。）
+    /// </para>
+    ///
+    /// <para>
+    /// 刪光所有語系是允許的 —— 區段本身仍在（由 schema 目錄決定），
+    /// 只是前台不再渲染它。這與產品不同：產品刪光語系會變成一列無法辨認的空白，
+    /// 區段則永遠可以從區段清單找回來。
+    /// </para>
+    /// </summary>
+    public async Task<IActionResult> AdminDeleteSectionLocaleAsync(HttpRequest req, string key, string sectionKey)
+    {
+        var locale = Locales.Normalize(req.Query["locale"]);
+        if (!Locales.Supported.Contains(locale))
+            throw AppException.BadRequest($"不支援的語系：{req.Query["locale"]}");
+
+        var section = await db.Set<PageSection>()
+            .Include(s => s.Translations)
+            .Include(s => s.Page)
+            .FirstOrDefaultAsync(s => s.Page!.Key == key && s.SectionKey == sectionKey)
+            ?? throw AppException.NotFound($"Section '{key}.{sectionKey}'");
+
+        if (section.Translations.FirstOrDefault(t => t.Locale == locale) is not { } tr)
+            return new OkObjectResult(ApiResponse.Ok($"區段 '{sectionKey}' 本來就沒有 {locale} 的內容。"));
+
+        section.Translations.Remove(tr);
+        section.UpdatedAt = Clock.Now;
+        await db.SaveChangesAsync();
+
+        // 引用可能整段消失，MediaUsage 要跟著重建 —— 否則那些圖會永遠刪不掉
+        await mediaUsage.RebuildForSectionAsync(section, registry);
+
+        return new OkObjectResult(ApiResponse.Ok($"已移除區段 '{sectionKey}' 的 {locale} 內容。"));
+    }
+
     /// <summary>PATCH /admin/pages/{key}/sections/{sectionKey}/enabled</summary>
     public async Task<IActionResult> AdminToggleAsync(HttpRequest req, string key, string sectionKey)
     {

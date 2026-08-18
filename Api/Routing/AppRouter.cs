@@ -141,6 +141,8 @@ public sealed class AppRouter(
                 => await pages.AdminUpsertSectionAsync(req, pageKey, sk),
             ("PATCH", ["admin", "pages", var pageKey, "sections", var sk, "enabled"])
                 => await pages.AdminToggleAsync(req, pageKey, sk),
+            ("DELETE", ["admin", "pages", var pageKey, "sections", var sk])
+                => await pages.AdminDeleteSectionLocaleAsync(req, pageKey, sk),
             // 刻意不提供 POST / DELETE sections —— 區段集合由 schema registry 決定
 
             ("POST",  ["admin", "maintenance", "sync-page-sections"])

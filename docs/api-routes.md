@@ -92,6 +92,11 @@
 | GET | `/admin/pages/{key}` | 登入 | 全區段 × 全語系（media 回原始 mediaId） |
 | PUT | `/admin/pages/{key}/sections/{sectionKey}` | Author+ | 驗證失敗回 400，errors 帶 JSON Pointer |
 | PATCH | `/admin/pages/{key}/sections/{sectionKey}/enabled` | Author+ | |
+| DELETE | `/admin/pages/{key}/sections/{sectionKey}?locale=` | Author+ | 移除**一個語系**的內容。冪等；刪光所有語系是允許的（區段本身由 schema 目錄決定，永遠找得回來）|
+
+> 沒有 DELETE 的話，區段內容**只進不出** —— schema 驗證要求必填欄位，
+> 連「存成空的」都做不到，編輯者填錯語系只剩改資料庫一途。
+> 與產品的翻譯刪除是同一個問題（見 docs/13 踩坑）。
 | POST | `/admin/maintenance/sync-page-sections` | Admin + `X-Maintenance-Key` | 手動重跑；啟動時本來就會自動跑 |
 
 > **不提供** `POST` / `DELETE` sections —— 區段集合由 schema registry 與同步器決定（版面鎖定）。
