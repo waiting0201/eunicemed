@@ -160,7 +160,7 @@ Flex Consumption **不支援 deployment slot**。API 部署即為就地更新（
 
 | 設定 | 值／來源 | 備註 |
 |------|----------|------|
-| `Sql__ConnectionString` | 客戶提供 | **優先改用 Managed Identity**（`Authentication=Active Directory Default`），則此設定不含密碼 |
+| `ConnectionStrings__DefaultConnection` | 客戶提供 | **優先改用 Managed Identity**（`Authentication=Active Directory Default`），則此設定不含密碼 |
 | `Jwt__SigningKey` | 隨機 32+ bytes | 後台 JWT 簽章；輪替時需讓既有 token 失效 |
 | `Storage__AccountName` | `steunicemedprod` | 搭配 MI，不存金鑰 |
 | `Storage__MediaContainer` | `media` | |

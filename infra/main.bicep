@@ -41,7 +41,7 @@ param siteUrl string = 'https://www.eunicemed.com'
 param jwtSigningKey string
 
 @description('''
-客戶提供的 Azure SQL 連線字串。
+客戶提供的 Azure SQL 連線字串（寫入 App Setting `ConnectionStrings__DefaultConnection`）。
 若客戶願意在 SQL Server 設定 Entra 管理員，改用
 `Authentication=Active Directory Default` 的形式，字串裡就不會有密碼
 （docs/07 §6.2）。
@@ -203,7 +203,11 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
           value: jwtSigningKey
         }
         {
-          name: 'Sql__ConnectionString'
+          // ⚠️ 鍵名是 `ConnectionStrings__DefaultConnection`，不是 `Sql__ConnectionString`。
+          // Program.cs 讀的是 `ConnectionStrings:DefaultConnection`（與 local.settings.json 一致），
+          // 而 docs/07 §6.1 原本寫成 Sql__ConnectionString —— 兩邊不一致的後果是
+          // 「部署成功、app Running、但每個請求都不回應」，因為建構 host 時就丟例外了。
+          name: 'ConnectionStrings__DefaultConnection'
           value: sqlConnectionString
         }
         {

@@ -398,6 +398,27 @@ explicitly expose it by marking it with "use server".
 但 **zsh 預設不對未加引號的參數展開做 word splitting**，
 三個 id 連成一個字串塞進 `mediaId`，才撞出這個 500。
 
+### 2026-08-18 · 連線字串的 App Setting 鍵名，文件與程式碼不一致
+
+`docs/07 §6.1` 從頭到尾寫 `Sql__ConnectionString`，Bicep 也照著設；
+但 `Program.cs` 讀的是 **`ConnectionStrings:DefaultConnection`**（與 local.settings.json 一致）。
+
+結果：部署成功、app 顯示 Running、TLS 連得上，**但每一個 HTTP 請求都不回應** ——
+因為 host 在 `HostBuilder.Build()` 就丟了
+`InvalidOperationException: ConnectionStrings:DefaultConnection is required.`，
+連 `/admin/host/status` 都 500。
+
+找到它的方法不是看雲端 log（本案沒有 App Insights，Flex Consumption 也沒有其他
+可讀的啟動記錄），而是**把正式環境的 App Settings 灌進本機跑一次**：
+
+```bash
+CS=$(az functionapp config appsettings list -g EuniceMedUS -n func-eunicemed-prod \
+      --query "[?name=='ConnectionStrings__DefaultConnection'].value" -o tsv)
+Sql__ConnectionString="$CS" dotnet bin/Release/net10.0/EuniceMed.Api.dll
+```
+
+0.1 秒就印出真正的錯誤。**沒有雲端 log 的環境，這是最快的路。**
+
 ### 2026-08-18 · `dotnet publish` 不指定 RID，會把三個 Windows 版的 SkiaSharp 符號檔一起送上雲
 
 Function App 部署成功但 host 完全不回應（連 `/admin/host/status` 都 500），
