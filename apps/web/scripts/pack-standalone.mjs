@@ -1,4 +1,5 @@
-import { cpSync, existsSync, rmSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { cpSync, existsSync, renameSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -43,6 +44,21 @@ if (appDir !== standalone) {
   // 這裡只把 app 自己的檔案往上搬，不要動它
   cpSync(appDir, standalone, { recursive: true });
   rmSync(join(standalone, 'apps'), { recursive: true, force: true });
+}
+
+// SWA 打包器**不跟隨符號連結**（`An error occurred while zipping the api artifacts:
+// Could not find file .../node_modules/react`），而 pnpm 的 node_modules 幾乎全是連結。
+// 這裡就地把它們換成實體檔案 —— 體積會變大，但那是唯一能被打包的形狀。
+//
+// 用 `cp -RL` 而不是 Node 的 `cpSync(..., { dereference: true })` ——
+// 後者對「指向目錄的符號連結」照樣複製成連結，測過無效。
+const modules = join(standalone, 'node_modules');
+if (existsSync(modules)) {
+  const real = `${modules}.real`;
+  rmSync(real, { recursive: true, force: true });
+  execFileSync('cp', ['-RL', modules, real]);
+  rmSync(modules, { recursive: true, force: true });
+  renameSync(real, modules);
 }
 
 if (!existsSync(join(standalone, 'server.js'))) {
