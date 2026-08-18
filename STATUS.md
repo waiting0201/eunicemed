@@ -128,7 +128,7 @@
 | 舊站匯入 `admin/products/import` | ✅ | 冪等，149 筆；已補上 Admin only 的授權規則 |
 | 產品 `admin/products` | ✅ | 含 publish / unpublish / related、軟刪除連帶清理、`rowVersion` 409 |
 | 分類／子分類／認證／部位 | ✅ | 讀取登入即可、寫入 Editor+；刪除先擋引用回 409 |
-| 媒體庫 `admin/media` | 🟡 | 上傳／列表／引用反查／刪除保護／SAS／SVG 清洗皆可用；缺 reprocess |
+| 媒體庫 `admin/media` | 🟡 | 上傳／列表／引用反查／刪除保護／SAS／SVG 清洗／**alt 文字更新**皆可用；缺 reprocess |
 | 頁面區段 `admin/pages` | ✅ | 含 schema 端點、JSON Pointer 驗證、跨語系同步、同步器、**媒體 preset 比對** |
 | 文章 `admin/articles` | ✅ | 含排程發布、活動面板（1:1）、圖庫排序、kind/type 一致性驗證 |
 | 文章分類 `admin/article-categories` | ✅ | slug 只在同 kind 內唯一 |
@@ -199,7 +199,7 @@ facet 篩選、standalone 產物 66MB／250MB。
 | 下載列表 | ✅ 可運作（類型篩選，`fileLocale` 與介面語系分開顯示）|
 | 據點列表 | ✅ 可運作（台灣／國際分頁，未分組的國際據點標紅）|
 | 各模組的編輯畫面 | ⬜ 沿用產品編輯頁的骨架 |
-| 媒體庫 | ⬜ |
+| 媒體庫 | ✅ 可運作（上傳含尺寸提示與非阻擋警告、alt 編輯、引用反查、刪除保護）<br>缺：reprocess（API 也還沒做）|
 | 導覽 / 表單收件匣 / 使用者 / 設定 | ⬜ |
 
 ---

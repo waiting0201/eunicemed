@@ -114,6 +114,28 @@ async function request<T>(path: string, init: RequestInit = {}, retry = true): P
   return body.data as T;
 }
 
+/**
+ * multipart 上傳。**不能走 `request()`** —— 那支在有 body 時會設
+ * `Content-Type: application/json`，而 multipart 的 boundary 必須由瀏覽器產生。
+ */
+async function upload<T>(path: string, form: FormData): Promise<T> {
+  const token = auth.access;
+
+  const res = await fetch(`${BASE}${path}`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    body: form,
+  });
+
+  const body = (await res.json().catch(() => null)) as ApiEnvelope<T> | null;
+
+  if (!res.ok || !body?.success) {
+    throw new ApiError(res.status, body?.message ?? `上傳失敗（${res.status}）`, body?.errors ?? []);
+  }
+
+  return body.data as T;
+}
+
 export const api = {
   login: (email: string, password: string) =>
     request<{ accessToken: string; refreshToken: string; user: AdminUser }>('/auth/login', {
@@ -180,6 +202,24 @@ export const api = {
   salesLocations: () => request<AdminSalesLocation[]>('/admin/sales-locations'),
 
   mediaPresets: () => request<{ presets: MediaPreset[] }>('/admin/media-presets'),
+
+  uploadMedia: (presetKey: string, file: File, altText: string) => {
+    const form = new FormData();
+    form.set('presetKey', presetKey);
+    form.set('altText', altText);
+    form.set('file', file);
+    return upload<UploadResult>('/admin/media', form);
+  },
+
+  updateMedia: (id: string, altText: string) =>
+    request<null>(`/admin/media/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ altText }),
+    }),
+
+  deleteMedia: (id: string) => request<null>(`/admin/media/${id}`, { method: 'DELETE' }),
+
+  mediaUsages: (id: string) => request<MediaUsage[]>(`/admin/media/${id}/usages`),
 
   media: (params: Record<string, string | undefined>) => {
     const q = new URLSearchParams();
@@ -378,6 +418,21 @@ export type MediaPreset = {
   maxBytes: number;
   formats: string[];
   hint: Record<string, string>;
+};
+
+/**
+ * 上傳結果。`warnings` 是**非阻擋**的提醒（比例不符、檔案過大、解析度不足）——
+ * 圖仍然存進去了，但那些問題會在前台看得出來（docs/11 §4）。
+ */
+export type UploadResult = MediaItem & {
+  warnings?: { code: string; expected: string; actual: string; message: string }[];
+};
+
+export type MediaUsage = {
+  entity: string;
+  entityId: string;
+  locale: string | null;
+  fieldPath: string;
 };
 
 export type MediaItem = {

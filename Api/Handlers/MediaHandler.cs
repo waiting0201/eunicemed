@@ -236,6 +236,35 @@ public sealed class MediaHandler(
         return new OkObjectResult(ApiResponse.Ok(usages));
     }
 
+    /// <summary>
+    /// PATCH /admin/media/{id} —— 目前只有 <c>altText</c> 可改。
+    ///
+    /// <para>
+    /// alt 文字是無障礙的必要欄位，而先前它**只能在上傳當下設定** ——
+    /// 上傳時漏填、或後來發現寫錯，就再也改不了。
+    /// 圖片本身與縮圖變體不在這裡動：換圖等於換一筆媒體，
+    /// 否則所有引用它的地方會在無預警下換掉內容。
+    /// </para>
+    /// </summary>
+    public async Task<IActionResult> UpdateAsync(HttpRequest req, string id)
+    {
+        if (!Guid.TryParse(id, out var guid))
+            throw AppException.BadRequest("Invalid media ID format.");
+
+        var body = await req.ReadFromJsonAsync<UpdateMediaRequest>()
+            ?? throw AppException.BadRequest("Invalid request body.");
+
+        var media = await db.Media.FirstOrDefaultAsync(m => m.Id == guid)
+            ?? throw AppException.NotFound("Media");
+
+        if (body.AltText is not null)
+            media.AltText = string.IsNullOrWhiteSpace(body.AltText) ? null : body.AltText.Trim();
+
+        await db.SaveChangesAsync();
+
+        return new OkObjectResult(ApiResponse.Ok("媒體已更新。"));
+    }
+
     /// <summary>DELETE /admin/media/{id} —— 有引用時回 409。</summary>
     public async Task<IActionResult> DeleteAsync(string id)
     {
@@ -293,3 +322,5 @@ public sealed class MediaHandler(
         _      => "image/jpeg",
     };
 }
+
+public sealed record UpdateMediaRequest(string? AltText = null);

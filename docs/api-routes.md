@@ -109,6 +109,7 @@
 | POST | `/admin/media` | Author+ | multipart 代傳，必帶 `presetKey`；415/413/400 硬拒絕、`warnings[]` 軟提醒 |
 | GET | `/admin/media?search=&presetKey=` | 登入 | 媒體庫 |
 | GET | `/admin/media/{id}/usages` | 登入 | 引用反查（含埋在 `DataJson` 內的，schema 驅動） |
+| PUT/PATCH | `/admin/media/{id}` | Author+ | 目前只有 `altText`；空白會正規化成 null。**不換圖** —— 換圖等於換一筆媒體 |
 | DELETE | `/admin/media/{id}` | Editor+ | 有引用時回 409 |
 | POST | `/admin/uploads/sas` | Author+ | PDF 直傳用的 Blob SAS |
 

@@ -155,6 +155,7 @@ public sealed class AppRouter(
             ("GET",    ["admin", "media"])                    => await media.GetAllAsync(req),
             ("POST",   ["admin", "media"])                    => await media.UploadAsync(req),
             ("GET",    ["admin", "media", var id, "usages"])  => await media.GetUsagesAsync(id),
+            ("PUT" or "PATCH", ["admin", "media", var id])    => await media.UpdateAsync(req, id),
             ("DELETE", ["admin", "media", var id])            => await media.DeleteAsync(id),
 
             // ── Admin：維護 ───────────────────────────────────────────────

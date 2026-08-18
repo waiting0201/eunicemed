@@ -10,6 +10,7 @@ import { Downloads } from './routes/Downloads';
 import { Locations } from './routes/Locations';
 import { Pages } from './routes/Pages';
 import { PageEdit } from './routes/PageEdit';
+import { Media } from './routes/Media';
 import { auth } from './lib/api';
 
 /**
@@ -40,7 +41,7 @@ export function App() {
             <Route path="/categories" element={<Placeholder title="分類與子分類" />} />
             <Route path="/collections" element={<Placeholder title="系列" />} />
             <Route path="/certifications" element={<Placeholder title="認證" />} />
-            <Route path="/media" element={<Placeholder title="媒體庫" />} />
+            <Route path="/media" element={<Media />} />
             <Route path="/menus" element={<Placeholder title="導覽選單" />} />
             <Route path="/redirects" element={<Placeholder title="轉址" />} />
             <Route path="/settings" element={<Placeholder title="設定" />} />
