@@ -662,17 +662,24 @@ SWA 文件給的 standalone 後處理指令是
 `.next/standalone/apps/web/server.js`，上述指令會把檔案複製到沒人讀的地方，
 結果是**部署後 CSS 與字型 404、但 build 完全成功**。
 
-**2026-08-18 更新：不要順著巢狀路徑改 postbuild，要把巢狀本身消掉。**
-在 `next.config.ts` 設 `outputFileTracingRoot: __dirname`，產物就回到
-`.next/standalone/server.js`，SWA 文件的指令原封不動就對。
+**2026-08-18 更新：巢狀確實要消掉，但不能用 `outputFileTracingRoot` 消。**
 
-真正的理由不只是路徑好看：**SWA 找的就是 `.next/standalone/server.js`**，
-巢狀的話它找不到入口，部署會走到最後才以
-`Deployment Failure Reason: Web app warm up timed out` 失敗 ——
+先講為什麼要消：**SWA 找的就是 `.next/standalone/server.js`**。巢狀的話它找不到入口，
+部署會走到最後才以 `Deployment Failure Reason: Web app warm up timed out` 失敗 ——
 那句訊息不會提到路徑。
 
-順帶的好處：tracing 根目錄從 repo 根縮到 app 根之後，
-產物從 **68MB 掉到 3.7MB**（原本把整個 workspace 的 node_modules 都拖了進去）。
+第一次嘗試是在 `next.config.ts` 設 `outputFileTracingRoot: __dirname`。產物確實變平坦，
+而且從 68MB 掉到 **3.7MB** —— 看起來像天大的優化，其實是**空的**：
+pnpm 的相依都在 workspace 根的 `.pnpm` store，tracing 根一縮，那些檔案就在範圍外，
+Next 只留下指向 standalone 之外的符號連結。SWA 打包時直接失敗：
+`Could not find file .../node_modules/react. This error may be due to a broken symbolic link.`
+
+**產物突然變小，要先當成壞掉而不是變快。**
+
+正確做法：tracing 根維持 repo 根（相依會真的被複製進來，樹內的符號連結 SWA 打包得動），
+再由 `apps/web/scripts/pack-standalone.mjs` 在 postbuild 把那兩層壓平，
+並在壓平後檢查 `server.js` 真的在根目錄 —— 這個檢查就是為了不要再讓同一個症狀
+拖到部署最後一分鐘才出現。
 
 ### 2026-08-17 · seed 了主表卻沒 seed 翻譯表 = 該實體完全消失
 

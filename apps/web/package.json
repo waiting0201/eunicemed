@@ -7,7 +7,7 @@
     "build": "next build && pnpm run postbuild",
     "start": "next start",
     "lint": "eslint",
-    "postbuild": "cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && node scripts/check-size.mjs",
+    "postbuild": "node scripts/pack-standalone.mjs && node scripts/check-size.mjs",
     "start:standalone": "node .next/standalone/server.js"
   },
   "dependencies": {

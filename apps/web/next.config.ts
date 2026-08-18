@@ -9,12 +9,17 @@ const nextConfig: NextConfig = {
   output: 'standalone',
 
   /**
-   * pnpm workspace 下，Next 預設會把 tracing 根目錄設在 repo 根，
-   * 產物就變成 `.next/standalone/apps/web/server.js`（多兩層）。
-   * SWA 找的是 `.next/standalone/server.js` —— 對不上就會在部署最後
-   * 以「warm up timed out」失敗。把根目錄釘在這個 app 上，產物才是平坦的。
+   * ⚠️ **不要**把 `outputFileTracingRoot` 釘在這個 app 上。
+   *
+   * 那樣產物確實會變平坦（`.next/standalone/server.js`），但 pnpm 的相依都躺在
+   * workspace 根的 `.pnpm` store 裡 —— tracing 根縮小之後那些檔案在範圍外，
+   * Next 只會留下**指向 standalone 之外的符號連結**。產物從 68MB 掉到 3.7MB
+   * 看起來像優化，其實是空的，SWA 打包時會以
+   * `Could not find file .../node_modules/react` 失敗。
+   *
+   * 正確做法是保留 repo 根當 tracing 根（相依會真的被複製進來），
+   * 再由 `postbuild` 把巢狀的那兩層壓平。見 package.json 與 docs/13。
    */
-  outputFileTracingRoot: __dirname,
 
   images: {
     /**
