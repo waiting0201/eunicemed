@@ -230,6 +230,47 @@ facet 篩選、standalone 產物 66MB／250MB。
 
 ---
 
+## 六之二、正式環境目前狀態（2026-08-18）
+
+| 元件 | 狀態 |
+|---|---|
+| 資源群組 `EuniceMedUS` / West US 2 | ✅ Storage、Function App（Flex FC1）、SWA Free 皆已建立 |
+| 前台 SWA | ✅ 已部署：<https://zealous-sand-0bdf5e01e.7.azurestaticapps.net><br>`/` 轉 `/en`、`/.swa/health.html` 回 200；頁面因 API 未起而 500 |
+| Azure SQL `eunicemed/EuniceMedDb` | ✅ 客戶已建立（Basic 5 DTU）。**collation `SQL_Latin1_General_CP1_CI_AS`（不分大小寫）**，與本機一致；防火牆已允許 Azure 服務 |
+| 資料庫 schema | ✅ 全部 migration 已套用（從本機 `dotnet ef database update` 確認 up to date）|
+| API Function App | 🔴 **部署成功但 host 起不來** —— TLS 連得上、HTTP 不回應，`/admin/host/status` 回 500 |
+
+### API 起不來：已排除與待查
+
+已修掉並確認**不是**原因的：
+
+1. `Api/bin\Debug` 的 45 個 build 產物進了版控 → Linux 上 MSB3552，CI 根本 build 不了
+2. csproj 的反斜線 glob（同上，可攜性問題）
+3. Flex Consumption 的 runtime 版本要寫 `10` 不是 `10.0`（ARM 不擋，但 worker 起不來）
+4. `dotnet publish` 未指定 RID → 部署包 162MB（含三個 Windows 版 SkiaSharp 的 .pdb 共 257MB）→ 冷啟動吃掉 30 秒 app init。指定 `linux-x64` 後 17MB
+5. 連線字串的 App Setting 鍵名：程式讀 `ConnectionStrings:DefaultConnection`，而 bicep／docs 寫的是 `Sql__ConnectionString` → host 在 `HostBuilder.Build()` 就丟例外
+
+以上五項全部修完後**仍然起不來**。剩下兩個假設：
+
+| 假設 | 如何驗證 |
+|---|---|
+| 啟動時的 migration／seed／區段同步超過 Flex Consumption 的 **30 秒 app init 硬上限** | 本機（台灣→West US 2）實測那段是 **30.7 秒**，但跨太平洋 RTT 佔大部分；同區域應該快得多。要確認只能看雲端啟動日誌 |
+| DI 或平台層的其他例外 | 同上 |
+
+**下一步**：Flex Consumption 的啟動日誌只能經 Application Insights 取得
+（診斷設定封存到 storage 實測無效，SCM 的 logstream 端點在 Flex 上是 404）。
+方案明文排除 App Insights，因此這一步需要先取得同意 —— 建議「暫時開啟、查完刪除、不收進 bicep」。
+
+> 本機重現正式環境問題最快的方法（無雲端日誌時的通用手法）：
+> ```bash
+> CS=$(az functionapp config appsettings list -g EuniceMedUS -n func-eunicemed-prod \
+>       --query "[?name=='ConnectionStrings__DefaultConnection'].value" -o tsv)
+> cd Api && ConnectionStrings__DefaultConnection="$CS" dotnet bin/Release/net10.0/EuniceMed.Api.dll
+> ```
+> 第 5 項就是這樣在 0.1 秒內找到的。
+
+---
+
 ## 七、擋住的事項
 
 完整清單見 [CLAUDE.md](CLAUDE.md) §7。當下真正擋住開發的：
@@ -237,7 +278,7 @@ facet 篩選、standalone 產物 66MB／250MB。
 | # | 事項 | 擋住 |
 |---|---|---|
 | 1 | SMTP 主機／帳密／每日寄送上限 | Phase 7 上線 |
-| 2 | 客戶 Azure SQL 的 collation、連線數上限、能否設 Entra 管理員 | 部署 |
+| 2 | ~~collation~~（已確認 `_CI_`，無問題）；**連線數上限**與**能否設 Entra 管理員**仍待確認 | 部署調校與改用 Managed Identity |
 | 3 | 認證文案（5 筆的 SubLabel 與說明目前是佔位） | About 頁與產品頁上線 |
 | 4 | 17 個子分類落地頁的敘述文案 | 子分類頁發布（缺文案者不應發布，會是薄內容頁） |
 | 5 | **首頁 7 個區段的 zh-TW 文案** | 中文首頁目前完全空白 —— 語言純度會濾掉未翻譯區段，而首頁沒有可退回的內容 |
