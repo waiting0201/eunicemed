@@ -31,6 +31,10 @@
 - **Protect**：高強度活動的強力支撐（專色 Pantone 5415c）
 - **Advance**：復健導向的針對性保護（專色 Pantone 5125c）
 
+> ⚠️ **`reference/` 與 `mockup4/` 不在版控裡**（本 repo 為公開，那些是客戶與代理商的素材，
+> 且含授權待確認的商業字型）。clone 之後需另外索取，見 [docs/14-assets.md](docs/14-assets.md)。
+> 底下所有對這兩個目錄的引用，都是指**本機工作目錄**裡的檔案。
+
 ### 主要頁面（依 Weypro/subkarma 網站架構提案 260626 V01，見 `reference/sbk/`）
 `Home` · `About 關於我們`（品牌故事/里程碑/製造品質/認證）· `Products 產品` · `Applications 應用方案`（依部位/特殊照護）· `Partnership 合作夥伴`（OEM/ODM/經銷）· `Resources 資源中心`（FAQ/Insights/Downloads/News）· `Where to Buy 銷售據點` · `Contact`（浮動按鈕＋footer）· `Privacy & Legal`
 
@@ -81,6 +85,7 @@
 | [docs/11-media-specs.md](docs/11-media-specs.md) | **圖片尺寸 preset 總表（唯一真相來源）**、上傳提示規則、伺服器縮圖規格、欄位↔preset 對照 | 新增任何上傳欄位、處理圖片／縮圖、交付素材時 |
 | [docs/12-local-dev.md](docs/12-local-dev.md) | **本機環境設定與每日啟動指令**、migration 操作、常見問題、多語系參數型別檢查 | **第一次進專案時先讀這份**、環境跑不起來時 |
 | [docs/13-api-roadmap.md](docs/13-api-roadmap.md) | API 各階段的**內容與驗收方式**、架構前提、**累積的踩坑紀錄** | 接續開發時、遇到怪問題時先翻踩坑那節 |
+| [docs/14-assets.md](docs/14-assets.md) | **不進版控的素材**（`reference/`、`mockup4/`）：內容、用途、取得方式 | 新機器 clone 之後發現找不到設計稿或字型時 |
 
 ---
 
