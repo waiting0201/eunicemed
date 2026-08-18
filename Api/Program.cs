@@ -109,6 +109,7 @@ var host = new HostBuilder()
         services.AddScoped<AdminApplicationHandler>();
         services.AddScoped<ArticleHandler>();
         services.AddScoped<AdminArticleHandler>();
+        services.AddScoped<TagHandler>();
         services.AddScoped<ContentHandler>();
         services.AddScoped<AdminContentHandler>();
         services.AddScoped<SiteHandler>();

@@ -140,6 +140,19 @@
 > `images` 的主圖唯一性由應用層保證：未指定時取第一張，指定多張時只認第一張。
 > 順序敏感：`import` 與 `{id}/publish|unpublish|related` 都必須排在 `["admin","products",{id}]` 之前。
 
+### 後台：標籤
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| GET | `/admin/tags` | 登入 | 產品與文章共用同一張表，各自帶掛載數 |
+| POST | `/admin/tags` | Editor+ | 未給 slug 時由 `nameEn` 產生；撞號回 409 |
+| PUT/PATCH | `/admin/tags/{id}` | Editor+ | `nameZhTw` 送空字串＝清空（回到「中文站顯示英文名」）|
+| DELETE | `/admin/tags/{id}` | Editor+ | 仍掛在**未刪除**的產品或文章上時回 409；只剩軟刪除內容的關聯列會一併清掉 |
+
+> 名稱用 `NameEn` / `NameZhTw` 雙語欄位，不建 translation 表（同部位，docs/05 §3.2）。
+> 沒有中文名稱的標籤在中文站顯示英文名 —— 這是語言純度規則的唯一例外：
+> 標籤是篩選器的一顆按鈕，隱藏它會讓那一組內容在中文站永遠篩不出來。
+
 ### 後台：分類 / 子分類 / 認證 / 部位
 
 | Method | Path | 權限 | 說明 |

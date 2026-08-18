@@ -198,12 +198,15 @@ export function ImageList({
   images,
   urls,
   onChange,
+  /** 文章圖庫沒有主圖的概念 —— 那一排按鈕在那裡只會讓人以為漏設了什麼 */
+  showPrimary = true,
 }: {
   presetKey: string;
   images: { mediaId: string; isPrimary: boolean; sortOrder: number }[];
   /** mediaId → url。列表端點不回圖片網址，選過之後才知道 */
   urls: Record<string, string>;
   onChange: (next: { mediaId: string; isPrimary: boolean; sortOrder: number }[]) => void;
+  showPrimary?: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -230,6 +233,7 @@ export function ImageList({
             </span>
 
             <div className="flex items-center justify-between gap-1 p-1.5">
+              {showPrimary && (
               <button
                 type="button"
                 className="btn btn-sm btn-ghost"
@@ -242,6 +246,7 @@ export function ImageList({
               >
                 {img.isPrimary ? '主圖' : '設為主圖'}
               </button>
+              )}
 
               <span className="flex">
                 <button

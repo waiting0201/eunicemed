@@ -60,7 +60,7 @@
 | 子分類 | `SubCategory` `SubCategoryTranslation` | ✅ 17 筆 × 雙語 |
 | 認證 | `Certification` `CertificationTranslation` | 🟡 5 筆 × 雙語，**文案為佔位，待品牌方提供** |
 | 部位 | `BodyPart` | ✅ 7 筆（4 筆顯示於人體圖） |
-| 標籤 | `Tag` `ProductTag` | — 無 seed |
+| 標籤 | `Tag` `ProductTag` `ArticleTag` | 🟡 seed 2 筆（掛在文章上），產品端未掛 |
 | 產品 | `Product` `ProductTranslation` `ProductImage` `ProductRelated` `ProductBodyPart` `ProductCertification` | ✅ 149 筆（匯入後已發布） |
 | 媒體 | `Media` `MediaVariant` `MediaUsage` | ✅ 管線可運作，已上傳 12 張測試圖 |
 | 使用者 | `User` `Role` `UserRole` `RefreshToken` | ✅ 4 角色 + 預設管理者（環境變數注入） |
@@ -132,6 +132,7 @@
 | 頁面區段 `admin/pages` | ✅ | 含 schema 端點、JSON Pointer 驗證、跨語系同步、同步器、**媒體 preset 比對** |
 | 文章 `admin/articles` | ✅ | 含排程發布、活動面板（1:1）、圖庫排序、kind/type 一致性驗證 |
 | 文章分類 `admin/article-categories` | ✅ | slug 只在同 kind 內唯一 |
+| 標籤 `admin/tags` | ✅ | 產品與文章共用；刪除擋未刪除內容的引用，軟刪除留下的關聯列一併清掉 |
 | 應用方案 `admin/applications` | ✅ | 人體圖座標形狀驗證、產品關聯內嵌 |
 | FAQ／下載／據點 | ✅ | 寫入為 Editor+（無草稿工作流，存檔即生效） |
 | 選單／轉址／設定 | ✅ | 選單整棵樹取代、轉址路徑正規化、設定 Admin only |
@@ -195,7 +196,8 @@ facet 篩選、standalone 產物 66MB／250MB。
 | 系列 | ✅ 可運作（三筆固定，雙語名稱與說明、排序、移除語系）|
 | 認證 | ✅ 可運作（標章文字不翻譯、標章圖、狀態、雙語小字與說明、掛載產品數）|
 | 應用方案編輯（含人體圖座標選取器） | ⬜ |
-| 文章列表 | ✅ 可運作（型態／狀態篩選、搜尋、分頁）|
+| 文章列表 | ✅ 可運作（型態／狀態篩選、搜尋、分頁、可進編輯頁）|
+| 文章編輯 | 🟡 可運作（News/Insights 共用、雙語、封面、標籤、排程發布、活動面板、圖庫、移除語系、刪除）<br>缺：RTE（內文暫用純文字區）|
 | 應用方案列表 | ✅ 可運作（含人體圖旗標與產品數）|
 | FAQ 列表／編輯 | ✅ 可運作（分類篩選、新增／編輯／刪除、雙語問答、狀態）|
 | 下載列表／編輯 | ✅ 可運作（類型篩選、新增／編輯／刪除、PDF 直傳＋登記、`fileLocale` 與介面語系分開）|

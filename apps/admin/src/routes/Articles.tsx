@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router';
 import { api } from '@/lib/api';
 import { DataTable, FilterGroup, ListPage, MissingCount, Pager } from '@/components/ListPage';
 import { LocaleGauges } from '@/components/Gauge';
@@ -52,6 +53,11 @@ export function Articles() {
           </span>
         )
       }
+      actions={
+        <Link to="/articles/new" className="btn btn-primary btn-sm">
+          新增文章
+        </Link>
+      }
       filters={
         <>
           <input
@@ -103,9 +109,9 @@ export function Articles() {
         {data?.items.map((a) => (
           <tr key={a.id}>
             <td className="max-w-0">
-              <span className="block truncate font-medium">
+              <Link to={`/articles/${a.id}`} className="block truncate font-medium">
                 {a.titleEn ?? a.titleZhTw ?? '（未命名）'}
-              </span>
+              </Link>
               <span className="mono block truncate" style={{ color: 'var(--text-muted)' }}>
                 {a.slug}
               </span>

@@ -118,3 +118,19 @@ public sealed record UpsertNewsEventRequest(
 public sealed record ArticleImageInput(Guid MediaId, int SortOrder = 0);
 
 public sealed record UpdateGalleryRequest(ArticleImageInput[] Images);
+
+// ── 標籤（產品與文章共用）─────────────────────────────────────────────────
+// 名稱用雙語欄位而非 translation 表（docs/05 §3.2）。
+
+public sealed record AdminTagDto(
+    Guid    Id,
+    string  Slug,
+    string  NameEn,
+    string? NameZhTw,
+    int     ProductCount,
+    int     ArticleCount);
+
+public sealed record UpsertTagRequest(
+    string? Slug     = null,
+    string? NameEn   = null,
+    string? NameZhTw = null);

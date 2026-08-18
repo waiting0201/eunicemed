@@ -398,6 +398,24 @@ explicitly expose it by marking it with "use server".
 但 **zsh 預設不對未加引號的參數展開做 word splitting**，
 三個 id 連成一個字串塞進 `mediaId`，才撞出這個 500。
 
+### 2026-08-18 · 有關聯表、有篩選參數，卻沒有任何方式建立那筆資料
+
+`Article.TagIds` / `Product.TagIds` 寫得進去、`GET /news?tag=` 也篩得動，
+但 **`Tag` 沒有任何後台端點** —— 不能列、不能建、不能改。
+編輯者能做的只有勾選 seed 裡那兩個標籤，其餘永遠不存在。
+
+這與「讀取端做完、寫入端沒入口」是同一個病的第三種變形：
+這次連 CRUD 都沒有，而每一支既有端點都測得過。
+**判斷準則：每一張使用者看得到的實體表，都要答得出「誰在哪個畫面建立它」。**
+
+補 `TagHandler` 時又踩到軟刪除的老問題：`ArticleTag` 帶
+`HasQueryFilter(x => !x.Article.IsDeleted)`，所以「這個標籤還被幾篇文章用」數出來是 0，
+但那些關聯列實際還在資料庫裡 —— 刪除因此在 `SaveChanges` 撞 FK，回 500 而不是說得清楚的 409。
+
+**有軟刪除時，引用檢查要從主表數，不要從關聯表數**：
+`db.Articles.Count(a => a.Tags.Any(...))` 才是「還看得到的引用」。
+數完之後剩下的關聯列都屬於已刪內容，刪之前一併 `IgnoreQueryFilters().ExecuteDeleteAsync()` 清掉。
+
 ### 2026-08-18 · SAS 直傳只做了一半：檔案上得去，但沒有人幫它建那一列
 
 `POST /admin/uploads/sas` 產生寫入 SAS 讓 PDF 直傳 Blob（避免大檔佔用 Function），

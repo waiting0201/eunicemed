@@ -39,6 +39,7 @@ public sealed class AppRouter(
     AdminApplicationHandler adminApplications,
     ArticleHandler     articles,
     AdminArticleHandler adminArticles,
+    TagHandler         tags,
     ContentHandler     content,
     AdminContentHandler adminContent,
     SiteHandler        site,
@@ -226,6 +227,11 @@ public sealed class AppRouter(
             ("PUT" or "PATCH", ["admin", "articles", var id]) => await adminArticles.UpdateAsync(req, id),
             ("DELETE", ["admin", "articles", var id])  => await adminArticles.DeleteAsync(id),
 
+            ("GET",    ["admin", "tags"])          => await tags.GetAllAsync(),
+            ("POST",   ["admin", "tags"])          => await tags.CreateAsync(req),
+            ("PUT" or "PATCH", ["admin", "tags", var id]) => await tags.UpdateAsync(req, id),
+            ("DELETE", ["admin", "tags", var id])  => await tags.DeleteAsync(id),
+
             ("GET",    ["admin", "article-categories"])          => await adminArticles.GetCategoriesAsync(req),
             ("POST",   ["admin", "article-categories"])          => await adminArticles.CreateCategoryAsync(req),
             ("GET",    ["admin", "article-categories", var id])  => await adminArticles.GetCategoryAsync(id),
@@ -352,6 +358,7 @@ public sealed class AppRouter(
             // （產品、文章、應用方案）則維持 Author+ —— 那些的 POST 一律建為草稿，
             // 且 PUT 不碰 status，發布只能走 /publish。
             (not "GET", ["admin", "article-categories", ..]) => Editors,
+            (not "GET", ["admin", "tags", ..])               => Editors,
             (not "GET", ["admin", "faq-categories", ..])     => Editors,
             (not "GET", ["admin", "faqs", ..])               => Editors,
             (not "GET", ["admin", "downloads", ..])          => Editors,
