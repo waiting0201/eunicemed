@@ -153,7 +153,7 @@ facet 篩選、standalone 產物 66MB／250MB。
 | Product Category | `/[locale]/products/{category}` | ✅ **已切版可運作** |
 | Sub-category | `/[locale]/products/{category}/{sub}` | ✅ **已切版可運作** |
 | Product Detail | `/[locale]/products/{category}/{sub}/{slug}` | ✅ **已切版可運作**（缺 §08 詢價表單，待 Phase 7 的 `POST /contact`）|
-| Applications／Detail | `/[locale]/applications[/{slug}]` | ⬜ |
+| Applications／Detail | `/[locale]/applications[/{slug}]` | ✅ **已切版可運作**（含人體圖 SVG 互動）|
 | Partnership | `/[locale]/partnership` | ⬜ |
 | Resources | `/[locale]/resources` | ⬜ |
 | FAQ | `/[locale]/faq` | ⬜ |

@@ -199,6 +199,50 @@ export type ProductDetail = {
 
 export type Stat = { value: string; label: string };
 
+// ── 應用方案 ──────────────────────────────────────────────────────────────
+
+export type ApplicationListItem = {
+  slug: string;
+  /** 'body-part' | 'special-care' */
+  type: string;
+  name: string;
+  lead: string | null;
+  image: MediaRef | null;
+  productCount: number;
+  url: string;
+};
+
+/** 人體圖的一個熱區。座標在 API 的 viewBox 座標系內（見 BodyMap 元件）。 */
+export type BodyMapSpot = {
+  slug: string;
+  name: string;
+  productCount: number;
+  copy: string | null;
+  ctaLabel: string | null;
+  map: { hotspot: { cx: number; cy: number }; chip: { cx: number; cy: number } } | null;
+  url: string;
+};
+
+export type ApplicationDetail = {
+  slug: string;
+  type: string;
+  name: string;
+  lead: string | null;
+  body: string | null;
+  heroImage: MediaRef | null;
+  stats: Stat[] | null;
+  concerns: { title?: string; body?: string }[] | null;
+  supportLevels:
+    | { collection?: SlugName; body?: string; bestFor?: string; linkUrl?: string }[]
+    | null;
+  recommendedProducts: ProductListItem[];
+  howTo: { title?: string; body?: string }[] | null;
+  fittingImage: MediaRef | null;
+  disclaimer: string | null;
+  related: { slug: string; name: string; productCount: number; url: string }[];
+  seo: { title: string | null; description: string | null; ogImage: string | null };
+};
+
 export type CategoryDetail = {
   slug: string;
   name: string;
@@ -229,6 +273,14 @@ export const api = {
     getOrNull<ProductDetail>(
       `/products/${enc(category)}/${enc(sub)}/${enc(slug)}?locale=${enc(locale)}`,
     ),
+
+  applications: (locale: string) =>
+    get<ApplicationListItem[]>(`/applications?locale=${enc(locale)}`),
+
+  bodyMap: (locale: string) => get<BodyMapSpot[]>(`/applications/body-map?locale=${enc(locale)}`),
+
+  application: (locale: string, slug: string) =>
+    getOrNull<ApplicationDetail>(`/applications/${enc(slug)}?locale=${enc(locale)}`),
 
   categories: (locale: string) =>
     get<CategoryDetail[]>(`/categories?locale=${enc(locale)}&include=subCategories`),
