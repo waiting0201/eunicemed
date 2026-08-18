@@ -398,6 +398,15 @@ explicitly expose it by marking it with "use server".
 但 **zsh 預設不對未加引號的參數展開做 word splitting**，
 三個 id 連成一個字串塞進 `mediaId`，才撞出這個 500。
 
+### 2026-08-18 · prettier 沒有設定檔就不是「照原樣格式化」
+
+在 `apps/admin` 跑了一次 `npx prettier --write`，它把兩支檔案的單引號全換成雙引號 ——
+專案沒有 `.prettierrc`，而 prettier 的預設 `singleQuote: false` 與這個 codebase 相反。
+diff 乾淨（只有引號），所以 review 時很容易放過，之後每個人的編輯器又會各自改回去。
+
+已補上根目錄的 `.prettierrc`（單引號、100 字寬、trailing comma all）。
+**規則：沒有設定檔的格式化工具不要對既有檔案跑。**
+
 ### 2026-08-18 · 有關聯表、有篩選參數，卻沒有任何方式建立那筆資料
 
 `Article.TagIds` / `Product.TagIds` 寫得進去、`GET /news?tag=` 也篩得動，

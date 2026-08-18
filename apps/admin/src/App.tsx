@@ -6,6 +6,7 @@ import { ProductEdit } from './routes/ProductEdit';
 import { Articles } from './routes/Articles';
 import { ArticleEdit } from './routes/ArticleEdit';
 import { Applications } from './routes/Applications';
+import { ApplicationEdit } from './routes/ApplicationEdit';
 import { Faqs } from './routes/Faqs';
 import { Downloads } from './routes/Downloads';
 import { Locations } from './routes/Locations';
@@ -42,6 +43,7 @@ export function App() {
             <Route path="/pages" element={<Pages />} />
             <Route path="/pages/:key" element={<PageEdit />} />
             <Route path="/applications" element={<Applications />} />
+            <Route path="/applications/:id" element={<ApplicationEdit />} />
             <Route path="/articles" element={<Articles />} />
             <Route path="/articles/:id" element={<ArticleEdit />} />
             <Route path="/faqs" element={<Faqs />} />

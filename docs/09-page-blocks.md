@@ -211,6 +211,10 @@ number · date · bool · enum[...] · ref:Entity · repeatable{...}(min–max)
 | `disclaimerDefault` | `body` richtext（全站預設醫療免責文字） |
 | `cta` | `title`、`body`、`primaryCta` link、`secondaryCta` link |
 
+> **人形路徑有兩份**：前台 `apps/web/components/BodyMap.tsx` 的 `Figure`，
+> 與後台座標選取器 `apps/admin/src/components/BodyMapPicker.tsx` 的 `Figure`。
+> 兩份必須一致 —— 後台放的位置是相對人形的，人形不同就會對不上。改一邊記得改另一邊。
+
 ### 5.3 人體圖互動規格（`BodyPartMap`，client component）
 
 > 視覺準則見 [08-design.md](08-design.md) §5.1a。實作範例：`mockup4/Applications.dc.html`。

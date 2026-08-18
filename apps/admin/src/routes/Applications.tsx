@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router';
 import { api } from '@/lib/api';
 import { DataTable, ListPage, MissingCount } from '@/components/ListPage';
 import { LocaleGauges } from '@/components/Gauge';
@@ -21,6 +22,11 @@ export function Applications() {
     <ListPage
       eyebrow="內容"
       title="應用方案"
+      actions={
+        <Link to="/applications/new" className="btn btn-primary btn-sm">
+          新增方案
+        </Link>
+      }
       summary={
         data && (
           <span className="text-[0.85rem]" style={{ color: 'var(--text-secondary)' }}>
@@ -49,9 +55,9 @@ export function Applications() {
         {data?.map((a) => (
           <tr key={a.id}>
             <td className="max-w-0">
-              <span className="block truncate font-medium">
+              <Link to={`/applications/${a.id}`} className="block truncate font-medium">
                 {a.nameEn ?? a.nameZhTw ?? '（未命名）'}
-              </span>
+              </Link>
               <span className="mono block truncate" style={{ color: 'var(--text-muted)' }}>
                 {a.slug}
               </span>
