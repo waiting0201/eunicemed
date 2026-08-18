@@ -8,6 +8,14 @@ const nextConfig: NextConfig = {
   // SWA Free 單一環境上限 250MB。standalone 是必須，不是最佳化選項。
   output: 'standalone',
 
+  /**
+   * pnpm workspace 下，Next 預設會把 tracing 根目錄設在 repo 根，
+   * 產物就變成 `.next/standalone/apps/web/server.js`（多兩層）。
+   * SWA 找的是 `.next/standalone/server.js` —— 對不上就會在部署最後
+   * 以「warm up timed out」失敗。把根目錄釘在這個 app 上，產物才是平坦的。
+   */
+  outputFileTracingRoot: __dirname,
+
   images: {
     /**
      * **關閉 Next.js 的圖片優化。**

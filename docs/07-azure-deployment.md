@@ -224,6 +224,11 @@ Flex Consumption **不支援 deployment slot**。API 部署即為就地更新（
 ### 7.2 hybrid Next.js 的已知限制與踩雷點
 
 - **不可使用 SWA linked API**（hybrid 不支援）；API 為獨立 Function App，以 HTTP 呼叫。
+- **`public/.swa/health.html` 必須自備**：SWA 只在它自己執行 build 時注入該頁，
+  而本案用 `skip_app_build`。缺這一頁的症狀是部署最後回
+  `Web app warm up timed out`，且不會提到健康檢查。
+- **`outputFileTracingRoot` 必須釘在 `apps/web`**：否則 pnpm workspace 會把 standalone
+  產物放到 `.next/standalone/apps/web/`，SWA 找不到 `server.js`，同樣以 warm up timeout 收場。
 - **不使用 ISR**（image caching 不支援）。
 - `staticwebapp.config.json` 的 **navigation fallback 不支援**；所有 rewrite/redirect 一律寫在 `next.config.js`。
 - **健康檢查路徑 `/.swa/health.html` 必須放行**。本站有 locale 前綴 middleware（`/` → `/en`），**務必**在 middleware matcher 與 redirects/rewrites 排除 `.swa` 開頭路徑，否則部署驗證會失敗：

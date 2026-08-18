@@ -398,6 +398,20 @@ explicitly expose it by marking it with "use server".
 但 **zsh 預設不對未加引號的參數展開做 word splitting**，
 三個 id 連成一個字串塞進 `mediaId`，才撞出這個 500。
 
+### 2026-08-18 · `skip_app_build` 會讓 SWA 不再幫你放健康檢查頁
+
+SWA 用 `GET /.swa/health.html` 驗證站台起得來，**而那一頁是它在自己執行 build 時
+才注入的**（官方文件寫在「Configure routing and middleware for deployment」那節）。
+
+我們自己 build（`skip_app_build: true`，因為 pnpm workspace 的 Oryx 建置不可靠），
+於是那一頁從來不存在 → 探測 404 → 部署以
+`Web app warm up timed out. Please try again later.` 失敗。
+訊息完全不指向健康檢查，而且前面每一步都顯示成功。
+
+修法是自己在 `apps/web/public/.swa/health.html` 放一頁。
+**兩件事都要**：middleware 的 matcher 要排除 `.swa`（早就做了），
+以及那一頁真的要存在（這次才發現）。
+
 ### 2026-08-18 · csproj 裡的反斜線讓專案在 Linux 上根本 build 不起來
 
 `<EmbeddedResource Include="PageSchemas\**\*.json" />` 在 macOS 與 Windows 都正常，
@@ -647,7 +661,18 @@ SWA 文件給的 standalone 後處理指令是
 那假設非 monorepo。在 pnpm workspace 下，`server.js` 實際在
 `.next/standalone/apps/web/server.js`，上述指令會把檔案複製到沒人讀的地方，
 結果是**部署後 CSS 與字型 404、但 build 完全成功**。
-正確路徑寫在 `apps/web/package.json` 的 `postbuild`，該 script 同時跑 250MB gate。
+
+**2026-08-18 更新：不要順著巢狀路徑改 postbuild，要把巢狀本身消掉。**
+在 `next.config.ts` 設 `outputFileTracingRoot: __dirname`，產物就回到
+`.next/standalone/server.js`，SWA 文件的指令原封不動就對。
+
+真正的理由不只是路徑好看：**SWA 找的就是 `.next/standalone/server.js`**，
+巢狀的話它找不到入口，部署會走到最後才以
+`Deployment Failure Reason: Web app warm up timed out` 失敗 ——
+那句訊息不會提到路徑。
+
+順帶的好處：tracing 根目錄從 repo 根縮到 app 根之後，
+產物從 **68MB 掉到 3.7MB**（原本把整個 workspace 的 node_modules 都拖了進去）。
 
 ### 2026-08-17 · seed 了主表卻沒 seed 翻譯表 = 該實體完全消失
 

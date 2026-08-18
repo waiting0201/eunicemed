@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>OK</title>
+  </head>
+  <body>
+    <!--
+      Azure Static Web Apps 以 GET /.swa/health.html 驗證站台起得來。
+      平台**只有在自己執行 build 時**才會注入這一頁；我們用 skip_app_build（自己 build），
+      所以必須自備，否則探測拿到 404 → 部署以「Web app warm up timed out」失敗，
+      而錯誤訊息完全不會指向這裡。見 docs/07 §7.2。
+
+      middleware.ts 的 matcher 也必須排除 .swa —— 兩件事都要，缺一不可。
+    -->
+    OK
+  </body>
+</html>
