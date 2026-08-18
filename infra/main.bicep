@@ -34,6 +34,9 @@ param siteUrl string = 'https://www.eunicemed.com'
 輪替此值會讓所有既有的 access / refresh token 立即失效。
 以 --parameters 於部署時帶入，不要寫進 bicepparam 進版控。
 ''')
+// 空字串會把正式站既有的金鑰洗掉（ARM 的 appSettings 是整批覆蓋）。
+// 擋在這裡，讓「CI 忘了設 secret」變成部署失敗而不是全站登出。
+@minLength(32)
 @secure()
 param jwtSigningKey string
 
@@ -42,7 +45,11 @@ param jwtSigningKey string
 若客戶願意在 SQL Server 設定 Entra 管理員，改用
 `Authentication=Active Directory Default` 的形式，字串裡就不會有密碼
 （docs/07 §6.2）。
+
+客戶尚未提供時，以 `PENDING-CUSTOMER-SQL` 之類的佔位字串帶入 ——
+**不要留空**：空字串同樣會覆蓋掉正式站已經填好的連線字串。
 ''')
+@minLength(10)
 @secure()
 param sqlConnectionString string
 

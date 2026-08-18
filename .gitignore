@@ -35,8 +35,17 @@ output/
 # Cloudflare Pages CLI 狀態（cache/pages.json 內含 account_id — 不進版控）
 .wrangler/
 
-# 已被 mockup4 取代的早期版型迭代（各約 38MB）。
-# 需要納入版控時再逐一移除本規則 —— 圖片進了 git 歷史就拿不掉了。
+# 版型迭代（各約 38MB）。mockup4 是客戶定案的那一版，仍在本機使用。
 mockup/
 mockup2/
 mockup3/
+mockup4/
+
+# 品牌方與代理商提供的素材：logo 規範、.ai 原始檔、網站規劃書、
+# 以及 Myriad Variable Concept 字型檔（Adobe 商業字型，授權待法務確認，
+# 見 docs/08-design.md §4）。
+#
+# **這些是客戶的機密素材，不進版控** —— 本 repo 是公開的，
+# 而圖片與字型一旦進了 git 歷史就拿不掉（fork 與快取會留存）。
+# 檔案仍留在本機工作目錄，取得方式見 docs/14-assets.md。
+reference/
