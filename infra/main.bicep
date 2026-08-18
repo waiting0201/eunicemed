@@ -142,6 +142,7 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
         }
       }
       runtime: {
+        name: 'dotnet-isolated'
         // ⚠️ 是 '10' 不是 '10.0'。Flex Consumption 收得下 '10.0'（ARM 不驗），
         // 但 worker 起不來 —— 症狀是 host 活著、每一條路由都回 404。
         // 可用值以 `az functionapp list-flexconsumption-runtimes -l <region>` 為準。
