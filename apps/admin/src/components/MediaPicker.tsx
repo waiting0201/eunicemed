@@ -310,3 +310,126 @@ export function ImageList({
     </>
   );
 }
+
+/**
+ * 檔案欄位（PDF 型錄、說明書、認證文件）。
+ *
+ * <p>
+ * 與 <see cref="ImageField"/> 分開，因為 PDF **沒有縮圖可看** ——
+ * 用圖片格會排出一整片破圖。這裡列的是檔名與大小，
+ * 那正是編輯者挑 PDF 時真正在核對的兩件事。
+ * </p>
+ */
+export function FileField({
+  mediaId,
+  fileName,
+  onChange,
+}: {
+  mediaId: string | null;
+  fileName?: string | null;
+  onChange: (media: MediaItem | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <div className="flex items-center gap-3">
+        <span className="mono flex-1 truncate text-[0.82rem]">
+          {fileName ?? (mediaId ? mediaId : <span style={{ color: 'var(--red)' }}>尚未選擇檔案</span>)}
+        </span>
+        <button type="button" className="btn btn-sm btn-secondary" onClick={() => setOpen(true)}>
+          {mediaId ? '換檔案' : '選擇檔案'}
+        </button>
+        {mediaId && (
+          <button type="button" className="btn btn-sm btn-ghost" onClick={() => onChange(null)}>
+            移除
+          </button>
+        )}
+      </div>
+
+      <FilePicker open={open} onClose={() => setOpen(false)} onPick={onChange} />
+    </>
+  );
+}
+
+function FilePicker({
+  open,
+  onClose,
+  onPick,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onPick: (media: MediaItem) => void;
+}) {
+  const ref = useRef<HTMLDialogElement>(null);
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (open && !el.open) el.showModal();
+    if (!open && el.open) el.close();
+  }, [open]);
+
+  const { data, isPending } = useQuery({
+    queryKey: ['media', 'document', search],
+    queryFn: () => api.media({ presetKey: 'document', search: search || undefined }),
+    enabled: open,
+  });
+
+  return (
+    <dialog
+      ref={ref}
+      onClose={onClose}
+      className="w-[min(40rem,92vw)] rounded-md p-0 backdrop:bg-black/40"
+      style={{ border: '1px solid var(--border)' }}
+    >
+      <div className="panel-header">
+        <h2 className="text-[0.95rem] font-semibold">選擇檔案</h2>
+        <button type="button" className="btn btn-sm btn-ghost" onClick={onClose}>
+          關閉
+        </button>
+      </div>
+
+      <div className="panel-body">
+        <input
+          type="search"
+          className="form-control mb-4"
+          placeholder="搜尋檔名"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        {isPending && <p style={{ color: 'var(--text-muted)' }}>載入中…</p>}
+
+        {!isPending && (data ?? []).length === 0 && (
+          <p className="py-10 text-center" style={{ color: 'var(--text-muted)' }}>
+            媒體庫還沒有文件。請先到媒體庫上傳 PDF。
+          </p>
+        )}
+
+        <ul className="max-h-[50vh] overflow-y-auto">
+          {(data ?? []).map((media) => (
+            <li key={media.id}>
+              <button
+                type="button"
+                onClick={() => {
+                  onPick(media);
+                  onClose();
+                }}
+                className="flex w-full items-center gap-3 border-b px-1 py-2 text-left"
+                style={{ borderColor: 'var(--border)' }}
+              >
+                <Icon name="download" />
+                <span className="mono flex-1 truncate text-[0.82rem]">{media.fileName}</span>
+                <span className="mono text-[0.75rem]" style={{ color: 'var(--text-muted)' }}>
+                  {(media.sizeBytes / 1024 / 1024).toFixed(1)} MB
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </dialog>
+  );
+}

@@ -287,6 +287,14 @@
 
   .panel-body { padding: 1.25rem; }
 
+  .panel-footer {
+    padding: 0.875rem 1.25rem;
+    border-top: 1px solid var(--border);
+    background: var(--bg-elevated);
+    position: sticky;
+    bottom: 0;
+  }
+
   /* ─── 按鈕（命名同 Jabez）───────────────────────── */
   .btn {
     display: inline-flex;

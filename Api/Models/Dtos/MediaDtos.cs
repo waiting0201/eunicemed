@@ -47,3 +47,9 @@ public sealed record MediaUsageDto(string Entity, Guid EntityId, string? Locale,
 public sealed record SasRequest(string FileName, string ContentType);
 
 public sealed record SasResponse(string UploadUrl, string BlobUrl, DateTimeOffset ExpiresAt);
+
+/// <summary>
+/// 直傳完成後把檔案登記成一筆 Media。
+/// <c>blobUrl</c> 必須是同一輪 SAS 回傳的那個網址。
+/// </summary>
+public sealed record RegisterUploadRequest(string BlobUrl, string? DisplayName = null);

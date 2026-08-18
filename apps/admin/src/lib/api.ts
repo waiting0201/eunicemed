@@ -247,6 +247,43 @@ export const api = {
 
   faqs: () => request<AdminFaq[]>('/admin/faqs'),
 
+  createFaq: (body: unknown) =>
+    request<AdminFaq>('/admin/faqs', { method: 'POST', body: JSON.stringify(body) }),
+
+  saveFaq: (id: string, body: unknown) =>
+    request<AdminFaq>(`/admin/faqs/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+
+  deleteFaq: (id: string) => request<null>(`/admin/faqs/${id}`, { method: 'DELETE' }),
+
+  saveFaqCategory: (id: string, body: unknown) =>
+    request<AdminFaqCategory>(`/admin/faq-categories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+
+  createDownload: (body: unknown) =>
+    request<AdminDownload>('/admin/downloads', { method: 'POST', body: JSON.stringify(body) }),
+
+  saveDownload: (id: string, body: unknown) =>
+    request<AdminDownload>(`/admin/downloads/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+
+  deleteDownload: (id: string) => request<null>(`/admin/downloads/${id}`, { method: 'DELETE' }),
+
+  createSalesLocation: (body: unknown) =>
+    request<AdminSalesLocation>('/admin/sales-locations', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  saveSalesLocation: (id: string, body: unknown) =>
+    request<AdminSalesLocation>(`/admin/sales-locations/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+
+  deleteSalesLocation: (id: string) =>
+    request<null>(`/admin/sales-locations/${id}`, { method: 'DELETE' }),
+
   faqCategories: () => request<AdminFaqCategory[]>('/admin/faq-categories'),
 
   downloads: () => request<AdminDownload[]>('/admin/downloads'),
@@ -261,6 +298,32 @@ export const api = {
     form.set('altText', altText);
     form.set('file', file);
     return upload<UploadResult>('/admin/media', form);
+  },
+
+  /**
+   * PDF 走三步：要 SAS → 直傳 Blob → 登記成 Media。
+   *
+   * 中間那一步**不經過 API**（避免大檔佔用 Function），
+   * 所以第三步是必要的 —— 少了它，檔案在 Blob 裡但資料庫沒有那一列，
+   * 下載模組永遠選不到它。
+   */
+  uploadDocument: async (file: File, displayName: string) => {
+    const sas = await request<{ uploadUrl: string; blobUrl: string }>('/admin/uploads/sas', {
+      method: 'POST',
+      body: JSON.stringify({ fileName: file.name, contentType: 'application/pdf' }),
+    });
+
+    const put = await fetch(sas.uploadUrl, {
+      method: 'PUT',
+      headers: { 'x-ms-blob-type': 'BlockBlob', 'Content-Type': 'application/pdf' },
+      body: file,
+    });
+    if (!put.ok) throw new ApiError(put.status, `檔案上傳失敗（${put.status}）。`);
+
+    return request<MediaItem>('/admin/uploads/register', {
+      method: 'POST',
+      body: JSON.stringify({ blobUrl: sas.blobUrl, displayName: displayName || file.name }),
+    });
   },
 
   updateMedia: (id: string, altText: string) =>

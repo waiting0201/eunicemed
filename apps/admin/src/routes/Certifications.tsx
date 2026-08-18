@@ -1,15 +1,16 @@
-import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api, ApiError, type AdminCertification } from '@/lib/api';
-import { DataTable, ListPage } from '@/components/ListPage';
-import { Field, FieldRow } from '@/components/form/Field';
-import { ImageField } from '@/components/MediaPicker';
-import { TranslationTabs } from '@/components/TranslationTabs';
-import { LocaleGauges } from '@/components/Gauge';
-import { StatusTag } from '@/components/StatusTag';
-import { StatusSelect } from '@/components/StatusSelect';
-import { describeLevel, levelOf } from '@/lib/completeness';
-import type { Locale } from '@/components/LocaleTabs';
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { api, ApiError, type AdminCertification } from "@/lib/api";
+import { DataTable, ListPage } from "@/components/ListPage";
+import { Dialog, DialogActions } from "@/components/Dialog";
+import { Field, FieldRow } from "@/components/form/Field";
+import { ImageField } from "@/components/MediaPicker";
+import { TranslationTabs } from "@/components/TranslationTabs";
+import { LocaleGauges } from "@/components/Gauge";
+import { StatusTag } from "@/components/StatusTag";
+import { StatusSelect } from "@/components/StatusSelect";
+import { describeLevel, levelOf } from "@/lib/completeness";
+import type { Locale } from "@/components/LocaleTabs";
 
 /**
  * 認證。**About 的認證帶與產品頁的標章列共用同一份**（docs/05 §3.3）——
@@ -20,7 +21,7 @@ export function Certifications() {
   const [editing, setEditing] = useState<AdminCertification | null>(null);
 
   const { data, isPending, error } = useQuery({
-    queryKey: ['certifications'],
+    queryKey: ["certifications"],
     queryFn: () => api.certifications(),
   });
 
@@ -30,7 +31,10 @@ export function Certifications() {
       title="認證"
       summary={
         data && (
-          <span className="text-[0.85rem]" style={{ color: 'var(--text-secondary)' }}>
+          <span
+            className="text-[0.85rem]"
+            style={{ color: "var(--text-secondary)" }}
+          >
             共 <span className="mono">{data.length}</span> 項
           </span>
         )
@@ -61,13 +65,18 @@ export function Certifications() {
           <tr key={c.id}>
             <td>
               <span className="font-medium">{c.mark}</span>
-              <span className="mono block text-[0.75rem]" style={{ color: 'var(--text-muted)' }}>
+              <span
+                className="mono block text-[0.75rem]"
+                style={{ color: "var(--text-muted)" }}
+              >
                 {c.slug}
               </span>
             </td>
             <td className="max-w-0">
               <span className="block truncate text-[0.88rem]">
-                {c.translations['zh-TW']?.subLabel ?? c.translations.en?.subLabel ?? '—'}
+                {c.translations["zh-TW"]?.subLabel ??
+                  c.translations.en?.subLabel ??
+                  "—"}
               </span>
             </td>
             <td>
@@ -101,8 +110,8 @@ export function Certifications() {
           certification={editing}
           onClose={() => setEditing(null)}
           onSaved={() => {
-            queryClient.invalidateQueries({ queryKey: ['certifications'] });
-            queryClient.invalidateQueries({ queryKey: ['summary'] });
+            queryClient.invalidateQueries({ queryKey: ["certifications"] });
+            queryClient.invalidateQueries({ queryKey: ["summary"] });
             setEditing(null);
           }}
         />
@@ -125,13 +134,16 @@ function CertificationDialog({
   const [logoMediaId, setLogoMediaId] = useState(certification.logoMediaId);
   const [status, setStatus] = useState(certification.status);
   const [translations, setTranslations] = useState<
-    Record<string, { subLabel?: string | null; description?: string | null } | null>
+    Record<
+      string,
+      { subLabel?: string | null; description?: string | null } | null
+    >
   >({ ...certification.translations });
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
 
   const mediaUrls = useQuery({
-    queryKey: ['media-all'],
+    queryKey: ["media-all"],
     queryFn: () => api.media({}),
     staleTime: 60_000,
     select: (items) => Object.fromEntries(items.map((m) => [m.id, m.url])),
@@ -150,105 +162,110 @@ function CertificationDialog({
         translations,
       }),
     onSuccess: onSaved,
-    onError: (e) => setError(e instanceof ApiError ? e.message : '儲存失敗。'),
+    onError: (e) => setError(e instanceof ApiError ? e.message : "儲存失敗。"),
   });
 
-  const patch = (locale: Locale, p: Partial<{ subLabel: string; description: string }>) =>
-    setTranslations((t) => ({ ...t, [locale]: { ...(t[locale] ?? {}), ...p } }));
+  const patch = (
+    locale: Locale,
+    p: Partial<{ subLabel: string; description: string }>,
+  ) =>
+    setTranslations((t) => ({
+      ...t,
+      [locale]: { ...(t[locale] ?? {}), ...p },
+    }));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
-      <div className="panel w-[min(38rem,92vw)] max-h-[88vh] overflow-y-auto">
-        <div className="panel-header">
-          <h2 className="text-[0.95rem] font-semibold">編輯認證</h2>
-          <button type="button" className="btn btn-sm btn-ghost" onClick={onClose}>
-            關閉
-          </button>
-        </div>
+    <Dialog
+      title="編輯認證"
+      onClose={onClose}
+      footer={
+        <DialogActions
+          error={error}
+          saving={save.isPending}
+          disabled={!mark.trim()}
+          onSave={() => save.mutate()}
+        />
+      }
+    >
+      <FieldRow>
+        <Field
+          label="標章文字"
+          required
+          hint="品牌符號，兩種語系都顯示同一個（如 ISO 13485）。"
+        >
+          <input
+            className="form-control"
+            value={mark}
+            onChange={(e) => setMark(e.target.value)}
+          />
+        </Field>
+        <Field label="排序">
+          <input
+            type="number"
+            className="form-control mono"
+            value={sortOrder}
+            onChange={(e) => setSortOrder(Number(e.target.value))}
+          />
+        </Field>
+      </FieldRow>
 
-        <div className="panel-body">
-          <FieldRow>
-            <Field label="標章文字" required hint="品牌符號，兩種語系都顯示同一個（如 ISO 13485）。">
-              <input
-                className="form-control"
-                value={mark}
-                onChange={(e) => setMark(e.target.value)}
-              />
-            </Field>
-            <Field label="排序">
-              <input
-                type="number"
-                className="form-control mono"
-                value={sortOrder}
-                onChange={(e) => setSortOrder(Number(e.target.value))}
-              />
-            </Field>
-          </FieldRow>
+      <Field
+        label="狀態"
+        hint="草稿或封存會同時從 About 認證帶與產品標章列消失。"
+      >
+        <StatusSelect value={status} onChange={setStatus} />
+      </Field>
 
-          <Field label="狀態" hint="草稿或封存會同時從 About 認證帶與產品標章列消失。">
-            <StatusSelect value={status} onChange={setStatus} />
-          </Field>
+      <Field label="標章圖" hint="留空時前台以標章文字呈現。">
+        <ImageField
+          presetKey="logo-mark"
+          mediaId={logoMediaId}
+          url={logoMediaId ? all[logoMediaId] : null}
+          onChange={(m) => {
+            if (m) setUrls((u) => ({ ...u, [m.id]: m.url }));
+            setLogoMediaId(m?.id ?? null);
+          }}
+        />
+      </Field>
 
-          <Field label="標章圖" hint="留空時前台以標章文字呈現。">
-            <ImageField
-              presetKey="logo-mark"
-              mediaId={logoMediaId}
-              url={logoMediaId ? all[logoMediaId] : null}
-              onChange={(m) => {
-                if (m) setUrls((u) => ({ ...u, [m.id]: m.url }));
-                setLogoMediaId(m?.id ?? null);
-              }}
-            />
-          </Field>
-
-          <TranslationTabs
-            translations={translations}
-            hasContent={(v) => Boolean(v?.subLabel?.trim() || v?.description?.trim())}
-            onRemove={(locale) => setTranslations((t) => ({ ...t, [locale]: null }))}
-          >
-            {(locale) => {
-              const tr = translations[locale] ?? {};
-              return (
-                <>
-                  <Field label="下方小字" hint="標章底下那一行，如「品質管理系統」。">
-                    <input
-                      className="form-control"
-                      value={tr.subLabel ?? ''}
-                      onChange={(e) => patch(locale, { subLabel: e.target.value })}
-                    />
-                  </Field>
-                  <Field label="說明">
-                    <textarea
-                      className="form-control"
-                      rows={3}
-                      value={tr.description ?? ''}
-                      onChange={(e) => patch(locale, { description: e.target.value })}
-                    />
-                  </Field>
-                </>
-              );
-            }}
-          </TranslationTabs>
-
-          {error && (
-            <p role="alert" className="alert mt-4">
-              {error}
-            </p>
-          )}
-
-          <div className="mt-4 flex justify-end">
-            <button
-              type="button"
-              className="btn btn-primary"
-              disabled={save.isPending || !mark.trim()}
-              onClick={() => save.mutate()}
-            >
-              {save.isPending ? '儲存中…' : '儲存'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+      <TranslationTabs
+        translations={translations}
+        hasContent={(v) =>
+          Boolean(v?.subLabel?.trim() || v?.description?.trim())
+        }
+        onRemove={(locale) =>
+          setTranslations((t) => ({ ...t, [locale]: null }))
+        }
+      >
+        {(locale) => {
+          const tr = translations[locale] ?? {};
+          return (
+            <>
+              <Field
+                label="下方小字"
+                hint="標章底下那一行，如「品質管理系統」。"
+              >
+                <input
+                  className="form-control"
+                  value={tr.subLabel ?? ""}
+                  onChange={(e) => patch(locale, { subLabel: e.target.value })}
+                />
+              </Field>
+              <Field label="說明">
+                <textarea
+                  className="form-control"
+                  rows={3}
+                  value={tr.description ?? ""}
+                  onChange={(e) =>
+                    patch(locale, { description: e.target.value })
+                  }
+                />
+              </Field>
+            </>
+          );
+        }}
+      </TranslationTabs>
+    </Dialog>
   );
 }
 
@@ -259,5 +276,5 @@ function certLevels(c: AdminCertification) {
       Boolean(c.translations[locale]?.description),
       Boolean(c.translations[locale]?.description),
     ]);
-  return { en: of('en'), 'zh-TW': of('zh-TW') };
+  return { en: of("en"), "zh-TW": of("zh-TW") };
 }

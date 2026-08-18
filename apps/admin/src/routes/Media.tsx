@@ -159,8 +159,17 @@ function UploadPanel({
 
   const preset = presets.find((p) => p.key === presetKey);
 
+  const isDocument = presetKey === 'document';
+
   const upload = useMutation({
-    mutationFn: (file: File) => api.uploadMedia(presetKey, file, altText),
+    mutationFn: async (file: File) => {
+      // PDF 直傳 Blob 再登記，不經 Function（docs/07 §10）
+      if (isDocument) {
+        await api.uploadDocument(file, altText);
+        return null;
+      }
+      return api.uploadMedia(presetKey, file, altText);
+    },
     onSuccess: (uploaded) => {
       setResult(uploaded);
       setError(null);
@@ -199,10 +208,14 @@ function UploadPanel({
           </label>
 
           <label className="block">
-            <span className="form-label">alt 文字</span>
+            <span className="form-label">{isDocument ? '檔案說明' : 'alt 文字'}</span>
             <input
               className="form-control"
-              placeholder="描述圖片內容，供螢幕閱讀器與搜尋引擎使用"
+              placeholder={
+                isDocument
+                  ? '這份文件是什麼，供之後在媒體庫辨認'
+                  : '描述圖片內容，供螢幕閱讀器與搜尋引擎使用'
+              }
               value={altText}
               onChange={(e) => setAltText(e.target.value)}
             />
@@ -212,7 +225,7 @@ function UploadPanel({
             <input
               ref={fileRef}
               type="file"
-              accept="image/*"
+              accept={isDocument ? 'application/pdf' : 'image/*'}
               className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0];

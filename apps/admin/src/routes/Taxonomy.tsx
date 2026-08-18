@@ -1,21 +1,22 @@
-import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   api,
   ApiError,
   type AdminCategory,
   type AdminSubCategory,
   type TaxonomyTranslation,
-} from '@/lib/api';
-import { DataTable, ListPage } from '@/components/ListPage';
-import { Field, FieldRow } from '@/components/form/Field';
-import { ImageField } from '@/components/MediaPicker';
-import { TranslationTabs } from '@/components/TranslationTabs';
-import { LocaleGauges } from '@/components/Gauge';
-import { StatusTag } from '@/components/StatusTag';
-import { StatusSelect } from '@/components/StatusSelect';
-import { describeLevel, levelOf } from '@/lib/completeness';
-import type { Locale } from '@/components/LocaleTabs';
+} from "@/lib/api";
+import { DataTable, ListPage } from "@/components/ListPage";
+import { Dialog, DialogActions } from "@/components/Dialog";
+import { Field, FieldRow } from "@/components/form/Field";
+import { ImageField } from "@/components/MediaPicker";
+import { TranslationTabs } from "@/components/TranslationTabs";
+import { LocaleGauges } from "@/components/Gauge";
+import { StatusTag } from "@/components/StatusTag";
+import { StatusSelect } from "@/components/StatusSelect";
+import { describeLevel, levelOf } from "@/lib/completeness";
+import type { Locale } from "@/components/LocaleTabs";
 
 /**
  * 分類與子分類。**同一個畫面** —— 子分類的意義完全依附於它的分類
@@ -41,16 +42,24 @@ type Draft = {
 export function Taxonomy() {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState<
-    { kind: 'category'; row: AdminCategory } | { kind: 'sub'; row: AdminSubCategory } | null
+    | { kind: "category"; row: AdminCategory }
+    | { kind: "sub"; row: AdminSubCategory }
+    | null
   >(null);
 
-  const categories = useQuery({ queryKey: ['categories'], queryFn: () => api.categories() });
-  const subs = useQuery({ queryKey: ['sub-categories'], queryFn: () => api.subCategories() });
+  const categories = useQuery({
+    queryKey: ["categories"],
+    queryFn: () => api.categories(),
+  });
+  const subs = useQuery({
+    queryKey: ["sub-categories"],
+    queryFn: () => api.subCategories(),
+  });
 
   const done = () => {
-    queryClient.invalidateQueries({ queryKey: ['categories'] });
-    queryClient.invalidateQueries({ queryKey: ['sub-categories'] });
-    queryClient.invalidateQueries({ queryKey: ['summary'] });
+    queryClient.invalidateQueries({ queryKey: ["categories"] });
+    queryClient.invalidateQueries({ queryKey: ["sub-categories"] });
+    queryClient.invalidateQueries({ queryKey: ["summary"] });
     setEditing(null);
   };
 
@@ -60,15 +69,19 @@ export function Taxonomy() {
       title="分類與子分類"
       summary={
         categories.data && (
-          <span className="text-[0.85rem]" style={{ color: 'var(--text-secondary)' }}>
-            <span className="mono">{categories.data.length}</span> 個分類 ·{' '}
+          <span
+            className="text-[0.85rem]"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            <span className="mono">{categories.data.length}</span> 個分類 ·{" "}
             <span className="mono">{subs.data?.length ?? 0}</span> 個子分類
           </span>
         )
       }
     >
       <p className="form-hint mb-3">
-        分類與子分類決定產品網址（<span className="mono">/products/分類/子分類/產品</span>）。
+        分類與子分類決定產品網址（
+        <span className="mono">/products/分類/子分類/產品</span>）。
         改動網址代稱會讓舊網址失效 —— 記得到「轉址」補一條規則。
       </p>
 
@@ -92,7 +105,9 @@ export function Taxonomy() {
           <tr key={category.id}>
             <td className="max-w-0">
               <span className="block truncate font-medium">
-                {category.translations['zh-TW']?.name ?? category.translations.en?.name ?? category.slug}
+                {category.translations["zh-TW"]?.name ??
+                  category.translations.en?.name ??
+                  category.slug}
               </span>
             </td>
             <td className="max-w-0">
@@ -112,7 +127,7 @@ export function Taxonomy() {
               <button
                 type="button"
                 className="btn btn-sm btn-ghost"
-                onClick={() => setEditing({ kind: 'category', row: category })}
+                onClick={() => setEditing({ kind: "category", row: category })}
               >
                 編輯
               </button>
@@ -125,13 +140,19 @@ export function Taxonomy() {
                 <td className="max-w-0 pl-8">
                   <span
                     className="block truncate"
-                    style={{ color: 'var(--text-secondary)' }}
+                    style={{ color: "var(--text-secondary)" }}
                   >
-                    ↳ {sub.translations['zh-TW']?.name ?? sub.translations.en?.name ?? sub.slug}
+                    ↳{" "}
+                    {sub.translations["zh-TW"]?.name ??
+                      sub.translations.en?.name ??
+                      sub.slug}
                   </span>
                 </td>
                 <td className="max-w-0">
-                  <span className="mono block truncate" style={{ color: 'var(--text-muted)' }}>
+                  <span
+                    className="mono block truncate"
+                    style={{ color: "var(--text-muted)" }}
+                  >
                     {sub.slug}
                   </span>
                 </td>
@@ -151,7 +172,7 @@ export function Taxonomy() {
                     <button
                       type="button"
                       className="btn btn-sm btn-ghost"
-                      onClick={() => setEditing({ kind: 'sub', row: sub })}
+                      onClick={() => setEditing({ kind: "sub", row: sub })}
                     >
                       編輯
                     </button>
@@ -180,7 +201,7 @@ function TaxonomyDialog({
   onClose,
   onSaved,
 }: {
-  kind: 'category' | 'sub';
+  kind: "category" | "sub";
   row: AdminCategory | AdminSubCategory;
   onClose: () => void;
   onSaved: () => void;
@@ -191,14 +212,14 @@ function TaxonomyDialog({
     imageMediaId: row.imageMediaId,
     heroImageMediaId: row.heroImageMediaId,
     translations: { ...row.translations },
-    status: 'status' in row ? row.status : null,
+    status: "status" in row ? row.status : null,
     rowVersion: row.rowVersion,
   });
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
 
   const mediaUrls = useQuery({
-    queryKey: ['media-all'],
+    queryKey: ["media-all"],
     queryFn: () => api.media({}),
     staleTime: 60_000,
     select: (items) => Object.fromEntries(items.map((m) => [m.id, m.url])),
@@ -220,12 +241,12 @@ function TaxonomyDialog({
         ...(draft.status !== null && { status: draft.status }),
         rowVersion: draft.rowVersion,
       };
-      return kind === 'category'
+      return kind === "category"
         ? api.saveCategory(row.id, body)
         : api.saveSubCategory(row.id, body);
     },
     onSuccess: onSaved,
-    onError: (e) => setError(e instanceof ApiError ? e.message : '儲存失敗。'),
+    onError: (e) => setError(e instanceof ApiError ? e.message : "儲存失敗。"),
   });
 
   const patchTr = (locale: Locale, patch: Partial<TaxonomyTranslation>) =>
@@ -237,152 +258,150 @@ function TaxonomyDialog({
       },
     }));
 
-  const isSub = kind === 'sub';
+  const isSub = kind === "sub";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
-      <div className="panel w-[min(44rem,92vw)] max-h-[88vh] overflow-y-auto">
-        <div className="panel-header">
-          <h2 className="text-[0.95rem] font-semibold">
-            編輯{isSub ? '子分類' : '分類'}
-          </h2>
-          <button type="button" className="btn btn-sm btn-ghost" onClick={onClose}>
-            關閉
-          </button>
-        </div>
-
-        <div className="panel-body">
-          <FieldRow>
-            <Field
-              label="網址代稱"
-              required
-              hint={
-                isSub
-                  ? '全站唯一（不只分類內唯一）。改了會讓底下所有產品的網址失效。'
-                  : '改了會讓這個分類底下所有產品的網址失效。'
-              }
-            >
-              <input
-                className="form-control mono"
-                value={draft.slug}
-                onChange={(e) => setDraft({ ...draft, slug: e.target.value })}
-              />
-            </Field>
-            <Field label="排序">
-              <input
-                type="number"
-                className="form-control mono"
-                value={draft.sortOrder}
-                onChange={(e) => setDraft({ ...draft, sortOrder: Number(e.target.value) })}
-              />
-            </Field>
-          </FieldRow>
-
-          {isSub && draft.status !== null && (
-            <Field label="狀態" hint="草稿或封存的子分類，連同它的落地頁一起從前台與 sitemap 消失。">
-              <StatusSelect value={draft.status} onChange={(s) => setDraft({ ...draft, status: s })} />
-            </Field>
-          )}
-
-          <FieldRow>
-            <Field label="卡片圖">
-              <ImageField
-                presetKey="square"
-                mediaId={draft.imageMediaId}
-                url={draft.imageMediaId ? all[draft.imageMediaId] : null}
-                onChange={(m) => {
-                  if (m) setUrls((u) => ({ ...u, [m.id]: m.url }));
-                  setDraft({ ...draft, imageMediaId: m?.id ?? null });
-                }}
-              />
-            </Field>
-            <Field label="頁首大圖">
-              <ImageField
-                presetKey="wide-16x10"
-                mediaId={draft.heroImageMediaId}
-                url={draft.heroImageMediaId ? all[draft.heroImageMediaId] : null}
-                onChange={(m) => {
-                  if (m) setUrls((u) => ({ ...u, [m.id]: m.url }));
-                  setDraft({ ...draft, heroImageMediaId: m?.id ?? null });
-                }}
-              />
-            </Field>
-          </FieldRow>
-
-          <TranslationTabs
-            translations={draft.translations}
-            hasContent={(v) => Boolean(v?.name?.trim())}
-            onRemove={(locale) =>
-              // null = 刪除該語系（後端慣例）
-              setDraft((d) => ({ ...d, translations: { ...d.translations, [locale]: null } }))
+    <Dialog
+      title={`編輯${isSub ? "子分類" : "分類"}`}
+      width="44rem"
+      onClose={onClose}
+      footer={
+        <DialogActions
+          error={error}
+          saving={save.isPending}
+          onSave={() => save.mutate()}
+        />
+      }
+    >
+      <FieldRow>
+        <Field
+          label="網址代稱"
+          required
+          hint={
+            isSub
+              ? "全站唯一（不只分類內唯一）。改了會讓底下所有產品的網址失效。"
+              : "改了會讓這個分類底下所有產品的網址失效。"
+          }
+        >
+          <input
+            className="form-control mono"
+            value={draft.slug}
+            onChange={(e) => setDraft({ ...draft, slug: e.target.value })}
+          />
+        </Field>
+        <Field label="排序">
+          <input
+            type="number"
+            className="form-control mono"
+            value={draft.sortOrder}
+            onChange={(e) =>
+              setDraft({ ...draft, sortOrder: Number(e.target.value) })
             }
-          >
-            {(locale) => {
-              const tr = draft.translations[locale] ?? {};
-              return (
-                <>
-                  <Field label="名稱" required>
-                    <input
-                      className="form-control"
-                      value={tr.name ?? ''}
-                      onChange={(e) => patchTr(locale, { name: e.target.value })}
-                    />
-                  </Field>
-                  <Field
-                    label="敘述"
-                    hint={
-                      isSub
-                        ? '子分類有獨立網址，這段是它的 SEO 內容 —— 缺了會是一頁薄內容。'
-                        : undefined
-                    }
-                  >
-                    <textarea
-                      className="form-control"
-                      rows={3}
-                      value={tr.description ?? ''}
-                      onChange={(e) => patchTr(locale, { description: e.target.value })}
-                    />
-                  </Field>
-                  <FieldRow>
-                    <Field label="SEO 標題">
-                      <input
-                        className="form-control"
-                        value={tr.seoTitle ?? ''}
-                        onChange={(e) => patchTr(locale, { seoTitle: e.target.value })}
-                      />
-                    </Field>
-                    <Field label="SEO 敘述">
-                      <input
-                        className="form-control"
-                        value={tr.seoDescription ?? ''}
-                        onChange={(e) => patchTr(locale, { seoDescription: e.target.value })}
-                      />
-                    </Field>
-                  </FieldRow>
-                </>
-              );
+          />
+        </Field>
+      </FieldRow>
+
+      {isSub && draft.status !== null && (
+        <Field
+          label="狀態"
+          hint="草稿或封存的子分類，連同它的落地頁一起從前台與 sitemap 消失。"
+        >
+          <StatusSelect
+            value={draft.status}
+            onChange={(s) => setDraft({ ...draft, status: s })}
+          />
+        </Field>
+      )}
+
+      <FieldRow>
+        <Field label="卡片圖">
+          <ImageField
+            presetKey="square"
+            mediaId={draft.imageMediaId}
+            url={draft.imageMediaId ? all[draft.imageMediaId] : null}
+            onChange={(m) => {
+              if (m) setUrls((u) => ({ ...u, [m.id]: m.url }));
+              setDraft({ ...draft, imageMediaId: m?.id ?? null });
             }}
-          </TranslationTabs>
+          />
+        </Field>
+        <Field label="頁首大圖">
+          <ImageField
+            presetKey="wide-16x10"
+            mediaId={draft.heroImageMediaId}
+            url={draft.heroImageMediaId ? all[draft.heroImageMediaId] : null}
+            onChange={(m) => {
+              if (m) setUrls((u) => ({ ...u, [m.id]: m.url }));
+              setDraft({ ...draft, heroImageMediaId: m?.id ?? null });
+            }}
+          />
+        </Field>
+      </FieldRow>
 
-          {error && (
-            <p role="alert" className="alert mt-4">
-              {error}
-            </p>
-          )}
-
-          <div className="mt-4 flex justify-end">
-            <button
-              type="button"
-              className="btn btn-primary"
-              disabled={save.isPending}
-              onClick={() => save.mutate()}
-            >
-              {save.isPending ? '儲存中…' : '儲存'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+      <TranslationTabs
+        translations={draft.translations}
+        hasContent={(v) => Boolean(v?.name?.trim())}
+        onRemove={(locale) =>
+          // null = 刪除該語系（後端慣例）
+          setDraft((d) => ({
+            ...d,
+            translations: { ...d.translations, [locale]: null },
+          }))
+        }
+      >
+        {(locale) => {
+          const tr = draft.translations[locale] ?? {};
+          return (
+            <>
+              <Field label="名稱" required>
+                <input
+                  className="form-control"
+                  value={tr.name ?? ""}
+                  onChange={(e) => patchTr(locale, { name: e.target.value })}
+                />
+              </Field>
+              <Field
+                label="敘述"
+                hint={
+                  isSub
+                    ? "子分類有獨立網址，這段是它的 SEO 內容 —— 缺了會是一頁薄內容。"
+                    : undefined
+                }
+              >
+                <textarea
+                  className="form-control"
+                  rows={3}
+                  value={tr.description ?? ""}
+                  onChange={(e) =>
+                    patchTr(locale, { description: e.target.value })
+                  }
+                />
+              </Field>
+              <FieldRow>
+                <Field label="SEO 標題">
+                  <input
+                    className="form-control"
+                    value={tr.seoTitle ?? ""}
+                    onChange={(e) =>
+                      patchTr(locale, { seoTitle: e.target.value })
+                    }
+                  />
+                </Field>
+                <Field label="SEO 敘述">
+                  <input
+                    className="form-control"
+                    value={tr.seoDescription ?? ""}
+                    onChange={(e) =>
+                      patchTr(locale, { seoDescription: e.target.value })
+                    }
+                  />
+                </Field>
+              </FieldRow>
+            </>
+          );
+        }}
+      </TranslationTabs>
+    </Dialog>
   );
 }
 
@@ -393,10 +412,13 @@ function taxonomyLevels(translations: Record<string, TaxonomyTranslation>) {
       Boolean(translations.en?.description),
       Boolean(translations.en?.seoTitle && translations.en?.seoDescription),
     ]),
-    'zh-TW': levelOf([
-      Boolean(translations['zh-TW']?.name),
-      Boolean(translations['zh-TW']?.description),
-      Boolean(translations['zh-TW']?.seoTitle && translations['zh-TW']?.seoDescription),
+    "zh-TW": levelOf([
+      Boolean(translations["zh-TW"]?.name),
+      Boolean(translations["zh-TW"]?.description),
+      Boolean(
+        translations["zh-TW"]?.seoTitle &&
+        translations["zh-TW"]?.seoDescription,
+      ),
     ]),
   };
 }

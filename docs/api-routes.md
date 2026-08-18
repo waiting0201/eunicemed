@@ -112,6 +112,7 @@
 | PUT/PATCH | `/admin/media/{id}` | Author+ | 目前只有 `altText`；空白會正規化成 null。**不換圖** —— 換圖等於換一筆媒體 |
 | DELETE | `/admin/media/{id}` | Editor+ | 有引用時回 409 |
 | POST | `/admin/uploads/sas` | Author+ | PDF 直傳用的 Blob SAS |
+| POST | `/admin/uploads/register` | Author+ | 直傳完成後把 PDF 登記成一筆 Media（**沒有這步，PDF 進不了下載模組**）。大小取自 blob 本身，不採信前端數字；同一個檔名重覆登記回既有那筆 |
 
 > 順序敏感：`media-presets` 與 `uploads` 必須排在 `["admin","media",{id}]` 之前。
 

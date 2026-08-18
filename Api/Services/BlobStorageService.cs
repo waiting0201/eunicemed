@@ -20,6 +20,13 @@ public interface IBlobStorageService
     Task<(string UploadUrl, string BlobUrl)> CreateUploadSasAsync(string fileName, TimeSpan validFor);
 
     Task EnsureContainersAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// 直傳完成後用來確認 blob 真的在，並取回它**實際**的大小與型別。
+    /// 大小不採信前端回報的數字 —— 那是還沒上傳完就可以送出的值。
+    /// </summary>
+    Task<(bool Exists, long SizeBytes, string ContentType)> GetMediaBlobInfoAsync(
+        string fileName, CancellationToken ct = default);
 }
 
 public sealed class BlobStorageService : IBlobStorageService
@@ -90,6 +97,17 @@ public sealed class BlobStorageService : IBlobStorageService
         var name = Path.GetFileName(new Uri(blobUrl).AbsolutePath);
         await _client.Value.GetBlobContainerClient(_mediaContainer)
             .GetBlobClient(name).DeleteIfExistsAsync(cancellationToken: ct);
+    }
+
+    public async Task<(bool Exists, long SizeBytes, string ContentType)> GetMediaBlobInfoAsync(
+        string fileName, CancellationToken ct = default)
+    {
+        var blob = _client.Value.GetBlobContainerClient(_mediaContainer).GetBlobClient(fileName);
+
+        if (!await blob.ExistsAsync(ct)) return (false, 0, string.Empty);
+
+        var props = await blob.GetPropertiesAsync(cancellationToken: ct);
+        return (true, props.Value.ContentLength, props.Value.ContentType ?? string.Empty);
     }
 
     public Task<(string, string)> CreateUploadSasAsync(string fileName, TimeSpan validFor)

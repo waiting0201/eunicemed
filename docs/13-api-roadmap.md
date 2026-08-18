@@ -398,6 +398,23 @@ explicitly expose it by marking it with "use server".
 但 **zsh 預設不對未加引號的參數展開做 word splitting**，
 三個 id 連成一個字串塞進 `mediaId`，才撞出這個 500。
 
+### 2026-08-18 · SAS 直傳只做了一半：檔案上得去，但沒有人幫它建那一列
+
+`POST /admin/uploads/sas` 產生寫入 SAS 讓 PDF 直傳 Blob（避免大檔佔用 Function），
+Phase 3 就驗收過了。但 `Download.MediaId` 指向的是 **Media 資料表的一列**，
+而 PDF 的路徑完全繞過 `MediaHandler.UploadAsync` —— 那一列從來不會被建立。
+
+結果是：`GET /admin/media?presetKey=document` 永遠回空陣列，
+下載模組的「選擇檔案」永遠沒東西可選，整個模組在後台是死的。
+而三支端點各自測都會過。
+
+補上 `POST /admin/uploads/register`：驗證 blob 真的存在（前端可能在上傳完成前就呼叫）、
+**大小取自 blob 本身**而不是前端回報的數字、同檔名重覆登記回既有那筆
+（兩列指向同一個檔案時，刪其中一列會把另一列的檔案一起刪掉）。
+
+通則：**一條跨越系統邊界的流程，要從頭到尾走一次才算驗收。**
+這次是 API → Blob → API，斷點正好落在兩段之間，任何單點測試都看不到。
+
 ### 2026-08-18 · 有 `Status` 欄位不等於後台能改它
 
 子分類與認證都有 `Status`，但它們**沒有** `/publish` 端點 —— 狀態只是 upsert 請求裡的

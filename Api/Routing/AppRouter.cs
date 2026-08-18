@@ -152,6 +152,7 @@ public sealed class AppRouter(
             // 順序敏感：media-presets 與 uploads 必須排在 ["admin","media",var id] 之前
             ("GET",    ["admin", "media-presets"])            => media.GetPresets(),
             ("POST",   ["admin", "uploads", "sas"])           => await media.CreateSasAsync(req),
+            ("POST",   ["admin", "uploads", "register"])      => await media.RegisterUploadAsync(req),
             ("GET",    ["admin", "media"])                    => await media.GetAllAsync(req),
             ("POST",   ["admin", "media"])                    => await media.UploadAsync(req),
             ("GET",    ["admin", "media", var id, "usages"])  => await media.GetUsagesAsync(id),

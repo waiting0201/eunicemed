@@ -314,6 +314,59 @@ public sealed class MediaHandler(
             new SasResponse(uploadUrl, blobUrl, DateTimeOffset.UtcNow.Add(validFor))));
     }
 
+    /// <summary>
+    /// POST /admin/uploads/register —— 把直傳完成的 PDF 登記成一筆 Media。
+    ///
+    /// <para>
+    /// 沒有這一步，SAS 只是把檔案丟進 Blob 而已：Download 指向的是 <c>MediaId</c>，
+    /// 而 PDF 走的路徑不經過 <see cref="UploadAsync"/>，就永遠不會有那一列。
+    /// </para>
+    /// </summary>
+    public async Task<IActionResult> RegisterUploadAsync(HttpRequest req)
+    {
+        var body = await req.ReadFromJsonAsync<RegisterUploadRequest>();
+        if (body is null || string.IsNullOrWhiteSpace(body.BlobUrl))
+            throw AppException.BadRequest("blobUrl 為必填。");
+
+        if (!Uri.TryCreate(body.BlobUrl, UriKind.Absolute, out var uri))
+            throw AppException.BadRequest("blobUrl 不是合法的網址。");
+
+        var fileName = Path.GetFileName(uri.AbsolutePath);
+        if (!fileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+            throw AppException.BadRequest("此端點只登記 PDF。");
+
+        // 重覆登記同一個 blob 會做出兩列指向同一個檔案，刪其中一列就把另一列的檔案刪掉了
+        if (await db.Media.FirstOrDefaultAsync(m => m.FileName == fileName) is { } existing)
+            return new OkObjectResult(ApiResponse.Ok(ListItem(existing), "這個檔案已經登記過了。"));
+
+        // 前端可能在上傳真的完成前就呼叫；blob 不在就是還沒傳完
+        var info = await blobs.GetMediaBlobInfoAsync(fileName, req.HttpContext.RequestAborted);
+        if (!info.Exists)
+            throw AppException.BadRequest("找不到這個檔案。請確認上傳已完成再登記。");
+
+        var media = new Media
+        {
+            BlobUrl   = body.BlobUrl,
+            FileName  = fileName,
+            MimeType  = string.IsNullOrWhiteSpace(info.ContentType) ? "application/pdf" : info.ContentType,
+            SizeBytes = info.SizeBytes,
+            // PDF 沒有像素尺寸；AltText 借用來放給人看的檔名（下載列表顯示的是標題，不是這個）
+            AltText   = string.IsNullOrWhiteSpace(body.DisplayName) ? null : body.DisplayName.Trim(),
+            PresetKey = "document",
+            CreatedAt = Clock.Now,
+        };
+
+        db.Media.Add(media);
+        await db.SaveChangesAsync();
+
+        return new ObjectResult(ApiResponse.Ok(ListItem(media), "檔案已登記。")) { StatusCode = 201 };
+    }
+
+    /// <summary>PDF 沒有變體也沒有像素尺寸，用與列表同一個形狀回，後台可以直接塞進清單。</summary>
+    private static MediaListItemDto ListItem(Media m) => new(
+        m.Id, m.PresetKey, m.BlobUrl, m.FileName, m.AltText, m.Width, m.Height, m.SizeBytes,
+        VariantCount: 0, UsageCount: 0, BelowPresetWidth: false, m.CreatedAt);
+
     private static string ContentTypeFor(string format) => format switch
     {
         "webp" => "image/webp",
