@@ -10,7 +10,7 @@ using System.IdentityModel.Tokens.Jwt;
 namespace EuniceMed.Api.Handlers;
 
 /// <summary>後台使用者管理。**Admin 專屬**（權限由 AppRouter 把關，此處不重複檢查）。</summary>
-public sealed class UserHandler(AppDbContext db)
+public sealed class UserHandler(AppDbContext db, Microsoft.Extensions.Configuration.IConfiguration config)
 {
     /// <summary>GET /admin/users</summary>
     public async Task<IActionResult> GetAllAsync()
@@ -47,8 +47,7 @@ public sealed class UserHandler(AppDbContext db)
         if (string.IsNullOrWhiteSpace(body.Email) || string.IsNullOrWhiteSpace(body.DisplayName))
             return new BadRequestObjectResult(ApiResponse.Fail("email 與 displayName 為必填。"));
 
-        if (string.IsNullOrWhiteSpace(body.Password) || body.Password.Length < 12)
-            return new BadRequestObjectResult(ApiResponse.Fail("password 至少需 12 個字元。"));
+        PasswordPolicy.Require(body.Password, config);
 
         var email = body.Email.Trim();
         if (await db.Users.AnyAsync(u => u.Email == email))
@@ -102,6 +101,17 @@ public sealed class UserHandler(AppDbContext db)
             user.IsActive = body.IsActive.Value;
         }
 
+        if (!string.IsNullOrWhiteSpace(body.Email))
+        {
+            var email = body.Email.Trim();
+
+            // Email 是登入識別，全站唯一。撞號要擋下來，否則兩個帳號登入時會不確定是哪一個。
+            if (email != user.Email && await db.Users.AnyAsync(u => u.Email == email))
+                throw AppException.Conflict($"Email '{email}' 已被使用。");
+
+            user.Email = email;
+        }
+
         if (body.Unlock == true)
         {
             user.LockedUntil      = null;
@@ -110,8 +120,7 @@ public sealed class UserHandler(AppDbContext db)
 
         if (!string.IsNullOrWhiteSpace(body.Password))
         {
-            if (body.Password.Length < 12)
-                return new BadRequestObjectResult(ApiResponse.Fail("password 至少需 12 個字元。"));
+            PasswordPolicy.Require(body.Password, config);
 
             user.PasswordHash       = BCrypt.Net.BCrypt.HashPassword(body.Password);
             user.MustChangePassword = true;

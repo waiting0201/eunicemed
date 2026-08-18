@@ -6,6 +6,23 @@
 
 ---
 
+
+## 後台登入
+
+| | |
+|---|---|
+| 網址 | http://localhost:5173/admin/（`cd apps/admin && pnpm dev`）|
+| 帳號 | 見 `Api/local.settings.json` 的 `Seed__AdminEmail` |
+| 密碼 | 見同檔的 `Seed__AdminPassword` |
+
+種子帳號由 `AdminUserSeeder` 在 Function App 啟動時建立，**只在 `User` 表為空時才動作** ——
+所以改了 `local.settings.json` 的帳密**不會**影響既有帳號，那要走 `PUT /admin/users/{id}`。
+
+密碼長度下限由 `Auth__MinPasswordLength` 控制，**預設 12**。
+本機設成 8 以便用短一點的開發帳密；**正式環境不要設這一項**，讓它保持預設。
+四個檢查點（種子、建立使用者、更新使用者、改密碼）讀同一個值，
+見 `Api/Common/PasswordPolicy.cs`。
+
 ## 1. 需要什麼
 
 | 工具 | 版本 | 用途 |

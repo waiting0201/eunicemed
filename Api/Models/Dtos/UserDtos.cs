@@ -18,6 +18,9 @@ public sealed record CreateUserRequest(
     string[] Roles);
 
 public sealed record UpdateUserRequest(
+    // Email 可改：換工作信箱是正常需求，而先前這裡沒有這個欄位 ——
+    // 送了會被靜默忽略（其餘欄位照改），比擋下來更難察覺
+    string?   Email       = null,
     string?   DisplayName = null,
     string[]? Roles       = null,
     bool?     IsActive    = null,

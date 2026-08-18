@@ -161,8 +161,7 @@ public sealed class AuthHandler(
         if (body is null || string.IsNullOrWhiteSpace(body.NewPassword))
             return new BadRequestObjectResult(ApiResponse.Fail("currentPassword 與 newPassword 為必填。"));
 
-        if (body.NewPassword.Length < 12)
-            return new BadRequestObjectResult(ApiResponse.Fail("新密碼至少需 12 個字元。"));
+        PasswordPolicy.Require(body.NewPassword, config);
 
         var user = await db.Users.FindAsync(userId)
             ?? throw AppException.NotFound("User");

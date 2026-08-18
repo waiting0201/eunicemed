@@ -34,9 +34,11 @@ public static class AdminUserSeeder
             return;
         }
 
-        if (password.Length < 12)
+        var minLength = PasswordPolicy.MinLength(cfg);
+        if (password.Length < minLength)
         {
-            Console.Error.WriteLine("[AdminUserSeeder] Seed__AdminPassword 少於 12 字元，拒絕建立帳號。");
+            Console.Error.WriteLine(
+                $"[AdminUserSeeder] Seed__AdminPassword 少於 {minLength} 字元，拒絕建立帳號。");
             return;
         }
 
