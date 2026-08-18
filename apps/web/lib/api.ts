@@ -47,11 +47,6 @@ export class ApiError extends Error {
   }
 }
 
-type FetchOptions = {
-  /** 給瀏覽器與中間代理的快取秒數。本站無 CDN，這是唯一的邊緣快取手段。 */
-  revalidate?: number;
-};
-
 /**
  * 呼叫後端並拆掉信封。
  *
@@ -60,7 +55,7 @@ type FetchOptions = {
  * 發布後下一次請求就是最新內容，不需要 revalidation webhook。
  * </p>
  */
-async function get<T>(path: string, opts: FetchOptions = {}): Promise<T> {
+async function get<T>(path: string): Promise<T> {
   const url = `${API_BASE}${path}`;
 
   const res = await fetch(url, {
@@ -93,9 +88,9 @@ async function get<T>(path: string, opts: FetchOptions = {}): Promise<T> {
  * **不可以退回去抓別的語系** —— 那正是規格禁止的行為。
  * </p>
  */
-async function getOrNull<T>(path: string, opts?: FetchOptions): Promise<T | null> {
+async function getOrNull<T>(path: string): Promise<T | null> {
   try {
-    return await get<T>(path, opts);
+    return await get<T>(path);
   } catch (e) {
     if (e instanceof ApiNotFound) return null;
     throw e;

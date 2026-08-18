@@ -42,8 +42,8 @@
 | API | 🟡 97% | 已實作 **141** 條路由（新增標籤 CRUD 4 條、PDF 登記 1 條、頁面區段語系刪除）。Phase 0–7 除**表單**外全數完成 —— `POST /contact` 與收件匣擋於 SMTP 帳密 |
 | 前台 `apps/web` | 🟡 | 18 頁全數切版可運作；只剩 Contact 表單擋於 SMTP |
 | 後台 `apps/admin` | 🟡 | 全部畫面可運作（列表＋編輯＋富文字）；只剩相關產品拖曳與表單收件匣 |
-| 基礎設施 `infra/` | ⬜ | Bicep 尚未撰寫 |
-| CI/CD `.github/` | ⬜ | workflow 尚未撰寫 |
+| 基礎設施 `infra/` | 🟡 | `main.bicep` + `prod.bicepparam` 已寫並可編譯；尚未對真實訂用帳戶執行過 |
+| CI/CD `.github/` | 🟡 | 三支 workflow 已寫；build 步驟已在本機逐一驗過，部署步驟需等 Azure 資源存在才驗得了 |
 
 ---
 
@@ -216,10 +216,11 @@ facet 篩選、standalone 產物 66MB／250MB。
 
 | 項目 | 狀態 |
 |---|---|
-| Azure 資源建立（SWA / Function App / Storage） | ⬜ |
-| `infra/main.bicep` | ⬜ |
-| `.github/workflows/api-deploy.yml` | ⬜ 照抄 Jabez（OIDC + functions-action） |
-| `.github/workflows/web.yml` | ⬜ |
+| Azure 資源建立（SWA / Function App / Storage） | ⬜ 需訂用帳戶與資源群組 |
+| `infra/main.bicep` | 🟡 編譯通過（13 個資源）；未實際部署 |
+| `.github/workflows/api-deploy.yml` | 🟡 已寫（OIDC + functions-action + 健康檢查）|
+| `.github/workflows/web.yml` | 🟡 已寫（含預覽環境關閉）|
+| `.github/workflows/infra.yml` | 🟡 已寫（PR 跑 what-if）|
 | 自訂網域 + HTTPS | ⬜ |
 | 平台層 CORS | ⬜ |
 | Azure Monitor 告警 | ⬜ |

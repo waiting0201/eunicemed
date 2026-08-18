@@ -81,7 +81,8 @@ Flex Consumption **必須**有一個 Storage Account 存放部署包與 host met
 
 ## 4. 基礎設施即程式碼（IaC）
 
-- **Bicep**（`infra/`）：`main.bicep` + `prod.bicepparam`，只建立 SWA、Function App（含 Flex Consumption plan）、Storage Account。
+- **Bicep**（`infra/`）：`main.bicep` + `prod.bicepparam`，只建立 SWA、Function App（含 Flex Consumption plan）、Storage Account、以及 MI 的角色指派。
+- 機密（`jwtSigningKey`、`sqlConnectionString`）是 `@secure()` 參數，由環境變數帶入，**不進 bicepparam**。
 - **Azure SQL 由客戶提供**，Bicep 內以 `existing` 參照或純粹以參數帶入連線資訊，**不建立、不刪除**。
 - 部署：`az deployment group create -g rg-eunicemed-prod -f infra/main.bicep -p infra/prod.bicepparam`。
 - 命名：`stapp-eunicemed-prod`、`func-eunicemed-prod`、`st eunicemedprod`（Storage 不可有連字號）。
@@ -94,9 +95,9 @@ Flex Consumption **必須**有一個 Storage Account 存放部署包與 host met
 
 | Workflow | 觸發 | 步驟 |
 |----------|------|------|
-| `web.yml` | `apps/web`、`apps/admin` 變更 | pnpm install → lint → build admin SPA → 複製產物進 web → `next build`（standalone）→ **檢查產物 ≤ 250MB** → `Azure/static-web-apps-deploy` |
-| `api-deploy.yml` | `Api/` 變更 | `dotnet publish` → `azure/login@v2`（OIDC）→ `Azure/functions-action@v1` |
-| `infra.yml` | `infra/` 變更 | `az deployment group what-if` → 人工核准 → deploy |
+| `web.yml` | `apps/**` 變更 | pnpm install → lint → build admin SPA（產物直接落在 `apps/web/public/admin`）→ `next build`（standalone，`postbuild` 內含 250MB gate）→ `Azure/static-web-apps-deploy`（`skip_app_build: true`）<br>PR 關閉時一併關掉預覽環境 —— 不關會佔著 Free 的 3 個名額與 500MB 合計上限 |
+| `api-deploy.yml` | `Api/` 變更 | `dotnet build --warnaserror` → `dotnet publish` → `azure/login@v2`（OIDC）→ `Azure/functions-action@v1` → **健康檢查輪詢 5 分鐘**<br>最後那一步是必要的：migration 在啟動時套用，失敗的話 app 起不來，而 functions-action 本身不會發現 |
+| `infra.yml` | `infra/` 變更 | PR：`az deployment group what-if`（唯一能在動到正式資源前看到差異的機會）<br>main：what-if → 人工核准（`environment: prod`）→ `az deployment group create` |
 
 `api-deploy.yml` 整支照抄 Jabez 的版本，只是本案沒有 staging 分支所以不需要 branch → app-name 三元式：
 
@@ -106,7 +107,13 @@ permissions:
   contents: read
 # Flex Consumption 不支援 publish profile，必須用 OIDC 聯合身分（免長期密鑰）
 ```
-需要的 secrets：`AZURE_CLIENT_ID`、`AZURE_TENANT_ID`、`AZURE_SUBSCRIPTION_ID`。
+需要的 GitHub secrets：`AZURE_CLIENT_ID`、`AZURE_TENANT_ID`、`AZURE_SUBSCRIPTION_ID`、
+`AZURE_STATIC_WEB_APPS_API_TOKEN`、`JWT_SIGNING_KEY`、`SQL_CONNECTION_STRING`。
+需要的 GitHub variables（build-time，非機密）：`API_BASE`、`NEXT_PUBLIC_API_BASE`、
+`NEXT_PUBLIC_MEDIA_BASE`、`NEXT_PUBLIC_SITE_URL`。
+
+`api-deploy.yml` 與 `infra.yml` 都掛在 `environment: prod` 上，需在 GitHub repo 設定裡
+建立該環境並加上必要的審核者 —— **人工核准是這個方案唯一的部署閘門**（沒有 staging、沒有 slot）。
 
 ### 5.1 DB 遷移：**在 Function App 啟動時自動套用**
 
@@ -152,7 +159,15 @@ Flex Consumption **不支援 deployment slot**。API 部署即為就地更新（
 
 ### 6.2 Managed Identity 設定（取代 Key Vault 的關鍵）
 
-- Storage：授予 Function App MI **Storage Blob Data Contributor**（限 `media` 容器）。
+- Storage：授予 Function App MI 四個角色，**範圍是整個帳戶**（`infra/main.bicep` 已寫好）：
+  | 角色 | 為什麼需要 |
+  |---|---|
+  | Storage Blob Data Owner | 媒體讀寫，以及 Flex Consumption 自己的部署包容器 |
+  | Storage Blob **Delegator** | 簽 user delegation SAS（PDF 直傳）。**Data Owner 不含這個動作** —— 少了它，圖片一切正常但 PDF 上傳只在正式站失敗 |
+  | Storage Queue / Table Data Contributor | Functions host 的內部狀態 |
+
+  > 原本規劃「限 `media` 容器」，但同一個帳戶還放著部署包與 host metadata
+  > （§1.1，方案只允許 4 個資源所以不能分兩個帳戶），容器層級的授權會讓 Function App 起不來。
 - SQL：在客戶的 SQL Server 設定 Entra 管理員後執行
   `CREATE USER [func-eunicemed-prod] FROM EXTERNAL PROVIDER;` 並授 `db_datareader` / `db_datawriter` / `EXECUTE`。
   **若客戶只願提供 SQL 帳密**，則退回連線字串放 App Settings，並使用非 `sa` 的最小權限帳號。

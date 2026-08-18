@@ -1,0 +1,85 @@
+name: Deploy Web (Static Web Apps)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/**'
+      - '.github/workflows/web.yml'
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: web-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_and_deploy:
+    if: github.event_name != 'pull_request' || github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    name: Build and Deploy Web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm --filter web lint
+
+      # 後台先 build，產物落在 apps/web/public/admin —— 它是公開站的一部分，
+      # 順序反過來的話部署出去的 /admin 會是上一次的版本
+      - name: Build admin SPA
+        run: pnpm --filter admin build
+
+      # build-time 的環境變數。request-time 的那一份設在 SWA 資源上（infra/main.bicep）——
+      # 兩邊都要，少一邊就會有一半的頁面拿不到 API 位址（docs/07 §6.4）
+      - name: Build web
+        run: pnpm --filter web build
+        env:
+          API_BASE: ${{ vars.API_BASE }}
+          NEXT_PUBLIC_API_BASE: ${{ vars.NEXT_PUBLIC_API_BASE }}
+          NEXT_PUBLIC_MEDIA_BASE: ${{ vars.NEXT_PUBLIC_MEDIA_BASE }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+
+      # web 的 postbuild 已經跑過 250MB gate（apps/web/scripts/check-size.mjs），
+      # 這裡只把數字印出來留在 log 裡，方便日後回頭看是哪一次開始變大的
+      - name: Report bundle size
+        run: du -sh apps/web/.next/standalone
+
+      - name: Deploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: upload
+          app_location: apps/web
+          api_location: ''
+          output_location: ''
+          # 已經自己 build 過了。讓 action 再 build 一次會在 pnpm workspace 下
+          # 產生巢狀的 standalone 路徑，結果是 CSS 與字型 404 而 build 顯示成功
+          # （docs/13 踩坑）
+          skip_app_build: true
+          skip_api_build: true
+
+  close_pull_request:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close preview environment
+    steps:
+      # 預覽環境不關掉會一直佔著 Free 方案的 3 個名額與 500MB 合計上限，
+      # 而超標的症狀是「下一個 PR 的預覽部署失敗」，看起來與 PR 本身無關
+      - uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: close

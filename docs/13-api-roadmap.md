@@ -398,6 +398,28 @@ explicitly expose it by marking it with "use server".
 但 **zsh 預設不對未加引號的參數展開做 word splitting**，
 三個 id 連成一個字串塞進 `mediaId`，才撞出這個 500。
 
+### 2026-08-18 · 「改用 Managed Identity」寫在文件裡，程式碼只吃連線字串
+
+`docs/07 §6.2` 從一開始就寫著 Blob 與 SQL 走 MI，但 `BlobStorageService`
+只讀 `cfg["BlobStorageConnection"]`，而且**讀不到就退回 `UseDevelopmentStorage=true`**。
+照文件寫的 App Settings（`Storage__AccountName` + MI）部署上去，正式站會啟動成功、
+上傳成功，然後圖片網址指向 `127.0.0.1:10000`。沒有任何錯誤。
+
+改成：有連線字串就用（本機 Azurite），否則以 `ManagedIdentityCredential` 連
+`Storage__AccountName`；**兩者都沒有就在建構子丟例外**，不再默默退回 Azurite。
+
+連帶挖出兩件只會在正式站出現的事：
+
+1. `blob.GenerateSasUri` 需要帳戶金鑰。MI 沒有金鑰，要改用 **user delegation SAS**
+   （`GetUserDelegationKeyAsync`）。原本的程式碼在這條路上直接丟
+   「需改用 user delegation key」的例外 —— 也就是說 PDF 直傳在正式環境從來不會成功。
+2. 簽 user delegation key 需要 **Storage Blob Delegator** 角色，
+   而 **Blob Data Owner 不包含它**。少了這一個角色指派，圖片一切正常、只有 PDF 失敗，
+   而本機因為用連線字串所以永遠測不出來。
+
+通則：**本機與正式的憑證方式不同時，那條路徑就等於沒有測試。**
+這種差異要嘛寫進 IaC 一起管（現在的做法），要嘛就別在文件裡承諾。
+
 ### 2026-08-18 · 編輯器的工具列就是一份沒人維護的第二白名單
 
 TipTap 上線後，`section` profile 的工具列必須剛好等於伺服器允許的

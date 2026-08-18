@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <!-- Azure Functions Isolated + ASP.NET Core Integration -->
+    <PackageReference Include="Azure.Identity" Version="1.21.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.52.0" />

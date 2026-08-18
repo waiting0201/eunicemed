@@ -1,3 +1,4 @@
+using Azure.Identity;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
@@ -32,10 +33,11 @@ public interface IBlobStorageService
 public sealed class BlobStorageService : IBlobStorageService
 {
     private readonly Lazy<BlobServiceClient> _client;
-    private readonly string _mediaContainer;
-    private readonly string _originalsContainer;
+    private readonly string  _mediaContainer;
+    private readonly string  _originalsContainer;
     private readonly string? _publicBaseUrl;
-    private readonly string  _connectionString;
+    private readonly string? _connectionString;
+    private readonly string? _accountName;
 
     /// <summary>
     /// 媒體檔名帶內容雜湊，內容變了檔名就變 —— 因此可以放心設 immutable。
@@ -45,10 +47,17 @@ public sealed class BlobStorageService : IBlobStorageService
 
     public BlobStorageService(IConfiguration cfg)
     {
-        _connectionString   = cfg["BlobStorageConnection"] ?? "UseDevelopmentStorage=true";
+        _connectionString   = cfg["BlobStorageConnection"];
+        _accountName        = cfg["Storage:AccountName"];
         _mediaContainer     = cfg["Storage:MediaContainer"] ?? "media";
         _originalsContainer = cfg["Storage:OriginalsContainer"] ?? "media-originals";
         _publicBaseUrl      = cfg["Storage:PublicBaseUrl"];
+
+        // 兩個都沒設就是設定漏了。**不要默默退回 Azurite** ——
+        // 那會讓正式站啟動成功、上傳成功、然後圖片指向一個不存在的 127.0.0.1。
+        if (string.IsNullOrWhiteSpace(_connectionString) && string.IsNullOrWhiteSpace(_accountName))
+            throw new InvalidOperationException(
+                "缺少儲存體設定：需要 BlobStorageConnection（連線字串）或 Storage__AccountName（Managed Identity）。");
 
         // Lazy：不要在 Program.cs 建立客戶端。Flex Consumption 的 app init 有 30 秒
         // 硬上限，啟動路徑上不做任何可以延後的事（docs/07 §5.1）。
@@ -56,8 +65,19 @@ public sealed class BlobStorageService : IBlobStorageService
         // 正式環境應改用 ManagedIdentityCredential 明確指定，**不要用
         // DefaultAzureCredential** —— 它會依序探測多種來源，每次失敗探測都有 timeout，
         // 冷啟動時會平白多好幾秒。
-        _client = new Lazy<BlobServiceClient>(() => new BlobServiceClient(_connectionString));
+        _client = new Lazy<BlobServiceClient>(CreateClient);
     }
+
+    /// <summary>
+    /// 有連線字串就用連線字串（本機 Azurite、或客戶只給金鑰時），
+    /// 否則以 Managed Identity 連 <c>Storage__AccountName</c> 指向的帳戶。
+    /// </summary>
+    private BlobServiceClient CreateClient() =>
+        string.IsNullOrWhiteSpace(_connectionString)
+            ? new BlobServiceClient(
+                new Uri($"https://{_accountName}.blob.core.windows.net"),
+                new ManagedIdentityCredential(ManagedIdentityId.SystemAssigned))
+            : new BlobServiceClient(_connectionString);
 
     public async Task EnsureContainersAsync(CancellationToken ct = default)
     {
@@ -110,25 +130,40 @@ public sealed class BlobStorageService : IBlobStorageService
         return (true, props.Value.ContentLength, props.Value.ContentType ?? string.Empty);
     }
 
-    public Task<(string, string)> CreateUploadSasAsync(string fileName, TimeSpan validFor)
+    public async Task<(string, string)> CreateUploadSasAsync(string fileName, TimeSpan validFor)
     {
         var blob = _client.Value.GetBlobContainerClient(_mediaContainer).GetBlobClient(fileName);
 
-        if (!blob.CanGenerateSasUri)
-            throw new InvalidOperationException(
-                "無法產生 SAS —— 使用 Managed Identity 時需改用 user delegation key。");
-
+        var expiresOn = DateTimeOffset.UtcNow.Add(validFor);
         var sas = new BlobSasBuilder
         {
             BlobContainerName = _mediaContainer,
             BlobName          = fileName,
             Resource          = "b",
-            ExpiresOn         = DateTimeOffset.UtcNow.Add(validFor),
+            ExpiresOn         = expiresOn,
         };
         sas.SetPermissions(BlobSasPermissions.Create | BlobSasPermissions.Write);
 
-        var uploadUrl = blob.GenerateSasUri(sas).ToString();
-        return Task.FromResult((uploadUrl, PublicUrl(_mediaContainer, fileName, blob.Uri.ToString())));
+        // 用連線字串時客戶端手上有帳戶金鑰，可以直接簽。
+        var uploadUrl = blob.CanGenerateSasUri
+            ? blob.GenerateSasUri(sas).ToString()
+            // Managed Identity 沒有金鑰可簽，改跟服務要 user delegation key。
+            // 這需要 **Storage Blob Delegator** 角色 —— Blob Data Owner 不含這個動作，
+            // 少了它 PDF 直傳會在正式站失敗而本機正常（infra/main.bicep 已一併指派）。
+            : await CreateUserDelegationSasAsync(blob, sas, expiresOn);
+
+        return (uploadUrl, PublicUrl(_mediaContainer, fileName, blob.Uri.ToString()));
+    }
+
+    private async Task<string> CreateUserDelegationSasAsync(
+        BlobClient blob, BlobSasBuilder sas, DateTimeOffset expiresOn)
+    {
+        // 起始時間往前挪一點，避免與 Azure 之間的時鐘差讓 SAS 尚未生效
+        var key = await _client.Value.GetUserDelegationKeyAsync(
+            DateTimeOffset.UtcNow.AddMinutes(-5), expiresOn);
+
+        var query = sas.ToSasQueryParameters(key.Value, _accountName).ToString();
+        return $"{blob.Uri}?{query}";
     }
 
     /// <summary>
