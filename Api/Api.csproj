@@ -63,8 +63,12 @@
 
   <ItemGroup>
     <!-- 頁面區段 Schema 與媒體 preset：以 EmbeddedResource 內嵌，SchemaRegistry 只讀 manifest 名稱、
-         用到才 parse（Flex Consumption app init 有 30 秒硬上限，不可在啟動時全部載入） -->
-    <EmbeddedResource Include="PageSchemas\**\*.json" />
-    <EmbeddedResource Include="Media\media-presets.json" />
+         用到才 parse（Flex Consumption app init 有 30 秒硬上限，不可在啟動時全部載入）
+
+         ⚠️ 路徑用 **正斜線**。反斜線在 Linux 不是分隔符，glob 會比對不到任何檔案，
+         build 直接以 MSB3552 失敗 —— 而 macOS/Windows 上完全正常。
+         正式環境與 CI 都是 Linux。 -->
+    <EmbeddedResource Include="PageSchemas/**/*.json" />
+    <EmbeddedResource Include="Media/media-presets.json" />
   </ItemGroup>
 </Project>

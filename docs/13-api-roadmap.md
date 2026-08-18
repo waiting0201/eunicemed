@@ -398,6 +398,18 @@ explicitly expose it by marking it with "use server".
 但 **zsh 預設不對未加引號的參數展開做 word splitting**，
 三個 id 連成一個字串塞進 `mediaId`，才撞出這個 500。
 
+### 2026-08-18 · csproj 裡的反斜線讓專案在 Linux 上根本 build 不起來
+
+`<EmbeddedResource Include="PageSchemas\**\*.json" />` 在 macOS 與 Windows 都正常，
+第一次跑 CI 就以 `error MSB3552: Resource file "**/*.resx" cannot be found` 失敗。
+
+反斜線在 Linux 不是路徑分隔符，glob 比對不到任何檔案。而**正式環境（Flex Consumption）
+與 CI 都是 Linux** —— 也就是說在推上 GitHub 之前，這個專案從來沒有在它真正要跑的
+作業系統上編譯過。改成正斜線即可（三個平台都通）。
+
+順帶一提：本機 SDK 是 10.0.103、runner 是 10.0.400，`global.json` 的
+`rollForward: latestFeature` 讓兩邊都跑得起來 —— 但也代表**本機通過不等於 CI 通過**。
+
 ### 2026-08-18 · 「改用 Managed Identity」寫在文件裡，程式碼只吃連線字串
 
 `docs/07 §6.2` 從一開始就寫著 Blob 與 SQL 走 MI，但 `BlobStorageService`
