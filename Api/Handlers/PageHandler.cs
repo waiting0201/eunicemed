@@ -191,6 +191,16 @@ public sealed class PageHandler(
                 ApiResponse.Fail("區段內容未通過 schema 驗證。", errors));
         }
 
+        // ── 媒體 preset 比對 ───────────────────────────────────────────────
+        //
+        // schema 的 `x-mediaPreset` 一直有宣告版位要哪個尺寸，但沒有人比對過 ——
+        // 結果 square 的圖存得進 16:9 的欄位，前台裁切後編輯者只覺得「圖怪怪的」。
+        // JSON Schema 表達不了這條（要查 DB），所以在這裡擋。
+        var presetErrors = await ValidateMediaPresetsAsync(schema.Raw, data);
+        if (presetErrors.Length > 0)
+            return new BadRequestObjectResult(
+                ApiResponse.Fail("圖片尺寸規格與版位不符。", presetErrors));
+
         var section = await db.Set<PageSection>()
             .Include(s => s.Translations)
             .Include(s => s.Page)
@@ -218,6 +228,33 @@ public sealed class PageHandler(
         await mediaUsage.RebuildForSectionAsync(section, registry);
 
         return new OkObjectResult(ApiResponse.Ok("區段已更新。"));
+    }
+
+    /// <summary>
+    /// 逐個媒體欄位比對實際 <c>Media.PresetKey</c> 與 schema 的 <c>x-mediaPreset</c>。
+    /// 錯誤訊息照 schema 驗證的慣例以 JSON Pointer 開頭，後台才對得上欄位。
+    /// </summary>
+    private async Task<string[]> ValidateMediaPresetsAsync(JsonNode schemaRaw, JsonObject data)
+    {
+        var refs = SectionWalker.FindMediaPresets(schemaRaw, data);
+        if (refs.Count == 0) return [];
+
+        var ids = refs.Select(r => r.MediaId).Distinct().ToArray();
+        var actual = await db.Set<Media>()
+            .Where(m => ids.Contains(m.Id))
+            .ToDictionaryAsync(m => m.Id, m => m.PresetKey);
+
+        var errors = new List<string>();
+        foreach (var r in refs)
+        {
+            // 圖不存在交給既有的 FK/媒體檢查處理，這裡只管尺寸規格
+            if (!actual.TryGetValue(r.MediaId, out var preset)) continue;
+
+            if (!string.Equals(preset, r.ExpectedPreset, StringComparison.Ordinal))
+                errors.Add($"/{r.FieldPath.Replace('.', '/')}: 此版位需要 '{r.ExpectedPreset}' 尺寸的圖，目前選的是 '{preset}'。");
+        }
+
+        return [.. errors];
     }
 
     /// <summary>PATCH /admin/pages/{key}/sections/{sectionKey}/enabled</summary>

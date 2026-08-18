@@ -245,3 +245,58 @@ Content-Type: application/json
 
 ### 10b. SVG 丟到不接受 SVG 的 preset → 415
 #   -F "presetKey=square"
+
+
+###############################################################################
+# 媒體 preset 比對（2026-08-18 補）
+#
+# schema 的 `x-mediaPreset` 宣告該版位要哪個尺寸。JSON Schema 表達不了這條
+# （要查 DB 的 `Media.PresetKey`），所以在 Handler 內比對。
+#
+# ⚠️ 這是**後加的規則**：在它之前寫入的資料不會被回溯檢查，
+#    只有下次存檔時才會被擋。清資料時要注意。
+###############################################################################
+
+### A. square 的圖塞進 wide-16x9 版位 → 應 400
+#   errors 應為：/imageWide: 此版位需要 'wide-16x9' 尺寸的圖，目前選的是 'square'。
+PUT {{host}}/admin/pages/about/sections/manufacturing
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{
+  "locale": "en",
+  "data": {
+    "title": "M",
+    "imageWide": "REPLACE_WITH_A_SQUARE_MEDIA_ID",
+    "points": [{ "title": "a", "body": "b" }, { "title": "c", "body": "d" }, { "title": "e", "body": "f" }]
+  },
+  "syncInvariantFields": true
+}
+
+### B. 同一個欄位放 square preset 的 imageSquare → 應 200
+PUT {{host}}/admin/pages/about/sections/manufacturing
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{
+  "locale": "en",
+  "data": {
+    "title": "Manufacturing & quality excellence",
+    "imageSquare": "REPLACE_WITH_A_SQUARE_MEDIA_ID",
+    "points": [
+      { "title": "Precision fit", "body": "Premium Lycra for lasting compression efficacy." },
+      { "title": "Safe materials", "body": "Oeko-Tex Standard 100 yarns." },
+      { "title": "Comfort-first", "body": "Soft-touch textures for extended wear." }
+    ]
+  },
+  "syncInvariantFields": true
+}
+
+### C. 各 About 區段的版位需求（供對照）
+#   about.hero.band            → page-band
+#   about.story.portrait       → portrait-4x5
+#   about.milestones.background→ section-bg
+#   about.manufacturing.imageWide   → wide-16x9
+#   about.manufacturing.imageSquare → square
+GET {{host}}/admin/page-schema/about
+Authorization: Bearer {{at}}

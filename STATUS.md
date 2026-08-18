@@ -127,7 +127,7 @@
 | 產品 `admin/products` | ✅ | 含 publish / unpublish / related、軟刪除連帶清理、`rowVersion` 409 |
 | 分類／子分類／認證／部位 | ✅ | 讀取登入即可、寫入 Editor+；刪除先擋引用回 409 |
 | 媒體庫 `admin/media` | 🟡 | 上傳／列表／引用反查／刪除保護／SAS／SVG 清洗皆可用；缺 reprocess |
-| 頁面區段 `admin/pages` | ✅ | 含 schema 端點、JSON Pointer 驗證、跨語系同步、同步器 |
+| 頁面區段 `admin/pages` | ✅ | 含 schema 端點、JSON Pointer 驗證、跨語系同步、同步器、**媒體 preset 比對** |
 | 文章 `admin/articles` | ✅ | 含排程發布、活動面板（1:1）、圖庫排序、kind/type 一致性驗證 |
 | 文章分類 `admin/article-categories` | ✅ | slug 只在同 kind 內唯一 |
 | 應用方案 `admin/applications` | ✅ | 人體圖座標形狀驗證、產品關聯內嵌 |
@@ -148,7 +148,7 @@ facet 篩選、standalone 產物 66MB／250MB。
 | 頁面 | 路由 | API 是否就緒 |
 |---|---|---|
 | Home | `/[locale]` | 🟡 暫代頁可運作；正式版型需 `home` 的 7 個 schema |
-| About | `/[locale]/about` | 🟡 **API 已就緒**（6 個區段可編輯）；頁面未切 |
+| About | `/[locale]/about` | ✅ **已切版可運作**（6 個區段全部接上 `GET /pages/about`）|
 | Products | `/[locale]/products` | 🟡 產品列表就緒，頁面文案未就緒 |
 | Product Category | `/[locale]/products/{category}` | ✅ **已切版可運作** |
 | Sub-category | `/[locale]/products/{category}/{sub}` | ✅ **已切版可運作** |

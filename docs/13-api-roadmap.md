@@ -125,6 +125,12 @@ Dapper 讀取層、`FacetFolder`、公開端點（products 列表+facets、三�
 
 **驗收**：[`Api/http/phase5-pages.http`](../Api/http/phase5-pages.http) 全數通過。
 
+**2026-08-18 補**：媒體 **preset 比對**。schema 一直有 `x-mediaPreset` 宣告版位要哪個尺寸，
+但沒有人比對過 —— square 的圖存得進 16:9 的欄位，前台裁切後編輯者只會覺得「圖怪怪的」。
+JSON Schema 表達不了這條（要查 `Media.PresetKey`），所以在 `PageHandler` 內比對，
+錯誤照既有慣例以 JSON Pointer 開頭。**這是後加的規則，既有資料不會被回溯檢查**，
+只在下次存檔時才擋。
+
 **尚未完成**：其餘 **54 個 schema**（`home` 7、`products` 4、`partnership` 4、`resources` 5…，
 共 18 頁 60 個區段）。這是內容形狀的工作，機制已就緒，照 `about` 的 6 個複製即可。
 richtext 的伺服器端淨化與 SVG 清洗**已完成**（見下）。
@@ -178,6 +184,22 @@ richtext 的伺服器端淨化與 SVG 清洗**已完成**（見下）。
 ---
 
 ## 踩到的坑（累積記錄）
+
+### 2026-08-18 · schema 宣告了規則，不代表有人在檢查
+
+About 頁是全站第一個吃 `GET /pages/{key}` 的頁面。切版時把六個區段的內容灌進去驗形狀，
+順手把一張 `square` 的圖填進 `about.manufacturing.imageWide`（schema 標明要 `wide-16x9`）——
+**API 收下了**。
+
+`x-mediaPreset` 從 Phase 5 就寫在 schema 裡，但 JSON Schema 本身表達不了「這個 UUID 指向的
+媒體必須是某個 preset」（要查 DB），而沒有人補那一段。結果是版位規格形同註解。
+
+教訓不是「漏了一個檢查」，而是：**schema 裡的 `x-` 自訂關鍵字全都要有對應的執行者**，
+否則它只是文件。量產剩下 54 個 schema 之前，值得先把 `x-fieldType` 的每一種值
+（media / richtext / repeatable / ref…）都確認有人在讀。
+
+順帶一提，這條規則加上去之後，**既有資料不會被回溯檢查** —— 舊資料只在下次存檔時才被擋。
+先前塞錯的兩張圖是手動清掉的。
 
 ### 2026-08-18 · 不帶 Z 的 datetime2 丟給 `new Date()` 會差一天
 

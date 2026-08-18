@@ -5,6 +5,9 @@ namespace EuniceMed.Api.Services;
 /// <summary>在區段內容中找到的一個媒體引用。</summary>
 public sealed record MediaRef(string FieldPath, Guid MediaId);
 
+/// <summary>媒體欄位 + schema 宣告的預期 preset。</summary>
+public sealed record MediaPresetRef(string FieldPath, Guid MediaId, string ExpectedPreset);
+
 /// <summary>在區段內容中找到的一個實體引用（<c>ref:Entity</c>）。</summary>
 public sealed record EntityRef(string FieldPath, string EntityType, string Identifier);
 
@@ -105,6 +108,28 @@ public static class SectionWalker
                     break;
             }
         }
+    }
+
+    /// <summary>
+    /// 找出媒體欄位以及 schema 宣告的預期 preset（<c>x-mediaPreset</c>）。
+    ///
+    /// <para>
+    /// 用來擋「把 square 的圖放進 16:9 的版位」——
+    /// schema 一直有宣告該欄位要哪個 preset，但沒有人比對過，
+    /// 存得下去、然後在前台被裁切或拉伸，而編輯者只會覺得「圖怎麼怪怪的」。
+    /// </para>
+    /// </summary>
+    public static List<MediaPresetRef> FindMediaPresets(JsonNode schema, JsonNode? data)
+    {
+        var found = new List<MediaPresetRef>();
+        WalkCore(schema, data, "", (path, value, schemaNode, _) =>
+        {
+            if (schemaNode?["x-fieldType"]?.GetValue<string>() != "media") return;
+            if (schemaNode["x-mediaPreset"]?.GetValue<string>() is not { Length: > 0 } preset) return;
+            if (value?.GetValue<string>() is { Length: > 0 } raw && Guid.TryParse(raw, out var id))
+                found.Add(new MediaPresetRef(path, id, preset));
+        });
+        return found;
     }
 
     /// <summary>找出所有標了 <c>x-localeInvariant</c> 的欄位路徑（跨語系同步用）。</summary>

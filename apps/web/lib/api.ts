@@ -404,6 +404,9 @@ export const api = {
   article: (locale: string, kind: 'news' | 'insights', slug: string) =>
     getOrNull<ArticleDetail>(`/${kind}/${enc(slug)}?locale=${enc(locale)}`),
 
+  page: (locale: string, key: string) =>
+    getOrNull<import('./page').PageContent>(`/pages/${enc(key)}?locale=${enc(locale)}`),
+
   categories: (locale: string) =>
     get<CategoryDetail[]>(`/categories?locale=${enc(locale)}&include=subCategories`),
 
