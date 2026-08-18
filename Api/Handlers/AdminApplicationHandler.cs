@@ -154,6 +154,7 @@ public sealed class AdminApplicationHandler(
         if (body.SortOrder is { } sortOrder) entity.SortOrder = sortOrder;
 
         ApplyTranslations(entity, body.Translations);
+        AdminWrite.EnsureAnyTranslation(entity.Translations);
         await EnsureMediaAsync(entity);
 
         entity.UpdatedAt = Clock.Now;
@@ -274,15 +275,13 @@ public sealed class AdminApplicationHandler(
         return obj.ToJsonString();
     }
 
-    private void ApplyTranslations(Application entity, Dictionary<string, ApplicationTranslationInput>? input)
+    private void ApplyTranslations(Application entity, Dictionary<string, ApplicationTranslationInput?>? input)
     {
         if (input is null) return;
 
-        foreach (var (rawLocale, value) in input)
+        foreach (var (locale, value) in AdminWrite.NormalizeTranslations(input, v => v.Name, "name"))
         {
-            var locale = AdminWrite.ValidLocale(rawLocale);
-            if (string.IsNullOrWhiteSpace(value.Name))
-                throw AppException.BadRequest($"語系 {locale} 的 name 為必填。");
+            if (AdminWrite.DropTranslation(entity.Translations, t => t.Locale, locale, value)) continue;
 
             var tr = entity.Translations.FirstOrDefault(t => t.Locale == locale);
             if (tr is null)

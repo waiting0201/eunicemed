@@ -26,7 +26,7 @@ public sealed record UpsertArticleCategoryRequest(
     string?                                              Slug         = null,
     int?                                                 SortOrder    = null,
     byte?                                                Status       = null,
-    Dictionary<string, ArticleCategoryTranslationInput>? Translations = null);
+    Dictionary<string, ArticleCategoryTranslationInput?>? Translations = null);
 
 // ── 後台文章（News / Insights 共用）───────────────────────────────────────
 
@@ -81,7 +81,7 @@ public sealed record UpsertArticleRequest(
     // 排程發布：填未來時間，配合 /publish 使用。公開端點對未來時間的文章一律查不到
     // （docs/13 Phase 6），所以這是「先排好、時間到自動上線」，不需要排程器。
     DateTime?                                   PublishedAt  = null,
-    Dictionary<string, ArticleTranslationInput>? Translations = null,
+    Dictionary<string, ArticleTranslationInput?>? Translations = null,
     string?                                     RowVersion   = null)
 {
     public bool ClearCategory { get; init; }

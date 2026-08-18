@@ -66,6 +66,7 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
         ApplyCategoryFields(entity, body);
         ApplyCategoryTranslations(entity, body.Translations);
+        AdminWrite.EnsureAnyTranslation(entity.Translations);
         await AdminWrite.EnsureMediaExistsAsync(db, [entity.ImageMediaId, entity.HeroImageMediaId]);
 
         db.Categories.Add(entity);
@@ -94,6 +95,7 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
         ApplyCategoryFields(entity, body);
         ApplyCategoryTranslations(entity, body.Translations);
+        AdminWrite.EnsureAnyTranslation(entity.Translations);
         await AdminWrite.EnsureMediaExistsAsync(db, [entity.ImageMediaId, entity.HeroImageMediaId]);
 
         entity.UpdatedAt = Clock.Now;
@@ -220,6 +222,7 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
         ApplySubCategoryFields(entity, body);
         ApplySubCategoryTranslations(entity, body.Translations);
+        AdminWrite.EnsureAnyTranslation(entity.Translations);
         await AdminWrite.EnsureMediaExistsAsync(db, [entity.ImageMediaId, entity.HeroImageMediaId]);
 
         entity.UpdatedAt = Clock.Now;
@@ -318,6 +321,7 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
         ApplyCertificationFields(entity, body);
         ApplyCertificationTranslations(entity, body.Translations);
+        AdminWrite.EnsureAnyTranslation(entity.Translations);
         await AdminWrite.EnsureMediaExistsAsync(db, [entity.LogoMediaId]);
 
         entity.UpdatedAt = Clock.Now;
@@ -519,24 +523,8 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
     /// </para>
     /// </summary>
     private static IEnumerable<(string Locale, T? Value)> Normalize<T>(
-        Dictionary<string, T?> input, Func<T, string> name) where T : class
-    {
-        foreach (var (rawLocale, value) in input)
-        {
-            var locale = AdminWrite.ValidLocale(rawLocale);
-
-            if (value is null)
-            {
-                yield return (locale, null);
-                continue;
-            }
-
-            if (string.IsNullOrWhiteSpace(name(value)))
-                throw AppException.BadRequest($"語系 {locale} 的 name 為必填。");
-
-            yield return (locale, value);
-        }
-    }
+        Dictionary<string, T?> input, Func<T, string> name) where T : class =>
+        AdminWrite.NormalizeTranslations(input, v => name(v), "name");
 
     // ── 內部：共用 ─────────────────────────────────────────────────────────
 

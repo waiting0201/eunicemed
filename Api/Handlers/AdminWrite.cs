@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using EuniceMed.Api.Common;
 using EuniceMed.Api.Data;
 using Microsoft.AspNetCore.Http;
@@ -81,6 +82,62 @@ internal static class AdminWrite
         var found = await db.Media.Where(m => ids.Contains(m.Id)).CountAsync();
         if (found != ids.Length)
             throw AppException.BadRequest($"有 {ids.Length - found} 筆 mediaId 不存在。");
+    }
+
+    /// <summary>
+    /// 翻譯字典的共用正規化：驗語系、把 <c>null</c> 原樣讓過（＝刪除該語系），
+    /// 其餘檢查必填欄位。
+    /// </summary>
+    /// <remarks>
+    /// <c>null</c> 與「未帶到」在本專案是兩件事：整個 <c>translations</c> 未帶到＝不動翻譯，
+    /// 某個 key 的值是 <c>null</c>＝刪掉那個語系。見 docs/13 的踩坑。
+    /// </remarks>
+    public static IEnumerable<(string Locale, T? Value)> NormalizeTranslations<T>(
+        Dictionary<string, T?> input, Func<T, string?> required, string fieldName)
+        where T : class
+    {
+        foreach (var (rawLocale, value) in input)
+        {
+            var locale = ValidLocale(rawLocale);
+
+            if (value is null)
+            {
+                yield return (locale, null);
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(required(value)))
+                throw AppException.BadRequest($"語系 {locale} 的 {fieldName} 為必填。");
+
+            yield return (locale, value);
+        }
+    }
+
+    /// <summary>
+    /// <c>null</c> = 刪除該語系。回傳 true 表示這一輪已處理完，呼叫端該 continue。
+    /// </summary>
+    public static bool DropTranslation<T, TValue>(
+        ICollection<T> translations,
+        Func<T, string> localeOf,
+        string locale,
+        [NotNullWhen(false)] TValue? value) where TValue : class
+    {
+        if (value is not null) return false;
+
+        if (translations.FirstOrDefault(t => localeOf(t) == locale) is { } row)
+            translations.Remove(row);
+
+        return true;
+    }
+
+    /// <summary>
+    /// 刪到一個語系都不剩的話，這筆內容在前台每個語系都查不到，
+    /// 而後台列表只顯示名稱 —— 它會變成一列空白，難以辨認也難以救回。
+    /// </summary>
+    public static void EnsureAnyTranslation<T>(ICollection<T> translations)
+    {
+        if (translations.Count == 0)
+            throw AppException.BadRequest("至少要保留一個語系的翻譯。");
     }
 
     /// <summary>把「欄位路徑 → 可為 null 的 mediaId」壓成 MediaUsageWriter 收的形狀。</summary>

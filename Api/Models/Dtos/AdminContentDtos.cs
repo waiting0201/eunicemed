@@ -18,7 +18,7 @@ public sealed record UpsertFaqCategoryRequest(
     string?                                          Slug         = null,
     int?                                             SortOrder    = null,
     byte?                                            Status       = null,
-    Dictionary<string, FaqCategoryTranslationInput>? Translations = null);
+    Dictionary<string, FaqCategoryTranslationInput?>? Translations = null);
 
 // ── FAQ ───────────────────────────────────────────────────────────────────
 // 沒有 slug —— 它是折疊面板的一列，不是一個頁面（docs/05 §3.7）。
@@ -39,7 +39,7 @@ public sealed record UpsertFaqRequest(
     Guid?                                    FaqCategoryId = null,
     byte?                                    Status        = null,
     int?                                     SortOrder     = null,
-    Dictionary<string, FaqTranslationInput>? Translations  = null);
+    Dictionary<string, FaqTranslationInput?>? Translations = null);
 
 // ── 下載 ──────────────────────────────────────────────────────────────────
 
@@ -67,7 +67,7 @@ public sealed record UpsertDownloadRequest(
     byte?                                         Status       = null,
     int?                                          SortOrder    = null,
     Guid[]?                                       ProductIds   = null,
-    Dictionary<string, DownloadTranslationInput>? Translations = null);
+    Dictionary<string, DownloadTranslationInput?>? Translations = null);
 
 // ── 銷售據點 ──────────────────────────────────────────────────────────────
 
@@ -96,7 +96,7 @@ public sealed record UpsertSalesLocationRequest(
     string?                                            Phone        = null,
     byte?                                              Status       = null,
     int?                                               SortOrder    = null,
-    Dictionary<string, SalesLocationTranslationInput>? Translations = null)
+    Dictionary<string, SalesLocationTranslationInput?>? Translations = null)
 {
     public bool ClearWebsiteUrl { get; init; }
     public bool ClearPhone      { get; init; }
@@ -160,7 +160,7 @@ public sealed record UpsertApplicationRequest(
     JsonNode?                                       MapPosition         = null,
     int?                                            SortOrder           = null,
     Guid[]?                                         ProductIds          = null,
-    Dictionary<string, ApplicationTranslationInput>? Translations       = null,
+    Dictionary<string, ApplicationTranslationInput?>? Translations      = null,
     string?                                         RowVersion          = null)
 {
     public bool ClearBodyPart     { get; init; }

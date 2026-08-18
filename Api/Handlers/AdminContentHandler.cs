@@ -86,6 +86,7 @@ public sealed class AdminContentHandler(
         if (body.Status    is { } status)    entity.Status    = status;
 
         ApplyFaqCategoryTranslations(entity, body.Translations);
+        AdminWrite.EnsureAnyTranslation(entity.Translations);
         await db.SaveChangesAsync();
 
         return new OkObjectResult(ApiResponse.Ok(
@@ -179,6 +180,7 @@ public sealed class AdminContentHandler(
         if (body.SortOrder is { } sortOrder) entity.SortOrder = sortOrder;
 
         ApplyFaqTranslations(entity, body.Translations);
+        AdminWrite.EnsureAnyTranslation(entity.Translations);
         entity.UpdatedAt = Clock.Now;
         await db.SaveChangesAsync();
 
@@ -276,6 +278,7 @@ public sealed class AdminContentHandler(
         if (body.SortOrder  is { } sortOrder)  entity.SortOrder  = sortOrder;
 
         ApplyDownloadTranslations(entity, body.Translations);
+        AdminWrite.EnsureAnyTranslation(entity.Translations);
         await db.SaveChangesAsync();
 
         if (body.ProductIds is { } products) await ApplyDownloadProductsAsync(entity.Id, products);
@@ -386,6 +389,7 @@ public sealed class AdminContentHandler(
         else if (body.Phone is not null)            entity.Phone      = ProductHandler.Nullable(body.Phone);
 
         ApplySalesLocationTranslations(entity, body.Translations);
+        AdminWrite.EnsureAnyTranslation(entity.Translations);
         entity.UpdatedAt = Clock.Now;
         await db.SaveChangesAsync();
 
@@ -424,16 +428,15 @@ public sealed class AdminContentHandler(
 
     // ── 內部：翻譯 ─────────────────────────────────────────────────────────
 
+
     private static void ApplyFaqCategoryTranslations(
-        FaqCategory entity, Dictionary<string, FaqCategoryTranslationInput>? input)
+        FaqCategory entity, Dictionary<string, FaqCategoryTranslationInput?>? input)
     {
         if (input is null) return;
 
-        foreach (var (rawLocale, value) in input)
+        foreach (var (locale, value) in AdminWrite.NormalizeTranslations(input, v => v.Name, "name"))
         {
-            var locale = AdminWrite.ValidLocale(rawLocale);
-            if (string.IsNullOrWhiteSpace(value.Name))
-                throw AppException.BadRequest($"語系 {locale} 的 name 為必填。");
+            if (AdminWrite.DropTranslation(entity.Translations, t => t.Locale, locale, value)) continue;
 
             var tr = entity.Translations.FirstOrDefault(t => t.Locale == locale);
             if (tr is null)
@@ -445,15 +448,14 @@ public sealed class AdminContentHandler(
         }
     }
 
-    private void ApplyFaqTranslations(Faq entity, Dictionary<string, FaqTranslationInput>? input)
+    private void ApplyFaqTranslations(Faq entity, Dictionary<string, FaqTranslationInput?>? input)
     {
         if (input is null) return;
 
-        foreach (var (rawLocale, value) in input)
+        foreach (var (locale, value) in AdminWrite.NormalizeTranslations(input, v => v.Question, "question"))
         {
-            var locale = AdminWrite.ValidLocale(rawLocale);
-            if (string.IsNullOrWhiteSpace(value.Question))
-                throw AppException.BadRequest($"語系 {locale} 的 question 為必填。");
+            if (AdminWrite.DropTranslation(entity.Translations, t => t.Locale, locale, value)) continue;
+
             if (string.IsNullOrWhiteSpace(value.Answer))
                 throw AppException.BadRequest($"語系 {locale} 的 answer 為必填。");
 
@@ -476,15 +478,13 @@ public sealed class AdminContentHandler(
     }
 
     private static void ApplyDownloadTranslations(
-        Download entity, Dictionary<string, DownloadTranslationInput>? input)
+        Download entity, Dictionary<string, DownloadTranslationInput?>? input)
     {
         if (input is null) return;
 
-        foreach (var (rawLocale, value) in input)
+        foreach (var (locale, value) in AdminWrite.NormalizeTranslations(input, v => v.Title, "title"))
         {
-            var locale = AdminWrite.ValidLocale(rawLocale);
-            if (string.IsNullOrWhiteSpace(value.Title))
-                throw AppException.BadRequest($"語系 {locale} 的 title 為必填。");
+            if (AdminWrite.DropTranslation(entity.Translations, t => t.Locale, locale, value)) continue;
 
             var tr = entity.Translations.FirstOrDefault(t => t.Locale == locale);
             if (tr is null)
@@ -499,15 +499,13 @@ public sealed class AdminContentHandler(
     }
 
     private static void ApplySalesLocationTranslations(
-        SalesLocation entity, Dictionary<string, SalesLocationTranslationInput>? input)
+        SalesLocation entity, Dictionary<string, SalesLocationTranslationInput?>? input)
     {
         if (input is null) return;
 
-        foreach (var (rawLocale, value) in input)
+        foreach (var (locale, value) in AdminWrite.NormalizeTranslations(input, v => v.Name, "name"))
         {
-            var locale = AdminWrite.ValidLocale(rawLocale);
-            if (string.IsNullOrWhiteSpace(value.Name))
-                throw AppException.BadRequest($"語系 {locale} 的 name 為必填。");
+            if (AdminWrite.DropTranslation(entity.Translations, t => t.Locale, locale, value)) continue;
 
             var tr = entity.Translations.FirstOrDefault(t => t.Locale == locale);
             if (tr is null)

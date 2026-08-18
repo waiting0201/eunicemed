@@ -128,6 +128,7 @@ public sealed class CollectionHandler(AppDbContext db, ICollectionReadService re
         entity.UpdatedAt = Clock.Now;
 
         ApplyTranslations(entity, body.Translations);
+        AdminWrite.EnsureAnyTranslation(entity.Translations);
         await db.SaveChangesAsync();
 
         return new OkObjectResult(ApiResponse.Ok(ToAdminDto(entity), "系列已更新。"));

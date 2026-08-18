@@ -113,6 +113,7 @@ public sealed class AdminArticleHandler(
         if (body.Status    is { } status)    entity.Status    = status;
 
         ApplyCategoryTranslations(entity, body.Translations);
+        AdminWrite.EnsureAnyTranslation(entity.Translations);
         entity.UpdatedAt = Clock.Now;
         await db.SaveChangesAsync();
 
@@ -270,6 +271,7 @@ public sealed class AdminArticleHandler(
         if (body.PublishedAt is not null)     entity.PublishedAt = NormalizePublishedAt(body.PublishedAt);
 
         ApplyTranslations(entity, body.Translations);
+        AdminWrite.EnsureAnyTranslation(entity.Translations);
         if (body.TagIds is { } tags) await ApplyTagsAsync(entity, tags);
         await AdminWrite.EnsureMediaExistsAsync(db, entity.CoverMediaId);
 
@@ -500,15 +502,13 @@ public sealed class AdminArticleHandler(
     }
 
     private static void ApplyCategoryTranslations(
-        ArticleCategory entity, Dictionary<string, ArticleCategoryTranslationInput>? input)
+        ArticleCategory entity, Dictionary<string, ArticleCategoryTranslationInput?>? input)
     {
         if (input is null) return;
 
-        foreach (var (rawLocale, value) in input)
+        foreach (var (locale, value) in AdminWrite.NormalizeTranslations(input, v => v.Name, "name"))
         {
-            var locale = AdminWrite.ValidLocale(rawLocale);
-            if (string.IsNullOrWhiteSpace(value.Name))
-                throw AppException.BadRequest($"語系 {locale} 的 name 為必填。");
+            if (AdminWrite.DropTranslation(entity.Translations, t => t.Locale, locale, value)) continue;
 
             var tr = entity.Translations.FirstOrDefault(t => t.Locale == locale);
             if (tr is null)
@@ -522,15 +522,13 @@ public sealed class AdminArticleHandler(
         }
     }
 
-    private void ApplyTranslations(Article entity, Dictionary<string, ArticleTranslationInput>? input)
+    private void ApplyTranslations(Article entity, Dictionary<string, ArticleTranslationInput?>? input)
     {
         if (input is null) return;
 
-        foreach (var (rawLocale, value) in input)
+        foreach (var (locale, value) in AdminWrite.NormalizeTranslations(input, v => v.Title, "title"))
         {
-            var locale = AdminWrite.ValidLocale(rawLocale);
-            if (string.IsNullOrWhiteSpace(value.Title))
-                throw AppException.BadRequest($"語系 {locale} 的 title 為必填。");
+            if (AdminWrite.DropTranslation(entity.Translations, t => t.Locale, locale, value)) continue;
 
             var tr = entity.Translations.FirstOrDefault(t => t.Locale == locale);
             if (tr is null)
