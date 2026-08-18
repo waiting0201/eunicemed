@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Home · 03 A team your business can truly count on",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title", "items"],
+  "properties": {
+    "title": { "type": "string", "maxLength": 160, "x-fieldType": "text" },
+    "items": {
+      "type": "array", "minItems": 4, "maxItems": 4, "x-fieldType": "repeatable",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["title", "body"],
+        "properties": {
+          "title": { "type": "string", "maxLength": 80,  "x-fieldType": "text" },
+          "body":  { "type": "string", "maxLength": 300, "x-fieldType": "text" }
+        }
+      }
+    },
+    "cta": {
+      "type": "object", "additionalProperties": false, "x-fieldType": "link",
+      "properties": {
+        "label":    { "type": "string", "maxLength": 60, "x-fieldType": "text" },
+        "url":      { "type": "string", "maxLength": 400, "x-fieldType": "text", "x-localeInvariant": true },
+        "external": { "type": "boolean", "x-fieldType": "bool", "x-localeInvariant": true }
+      }
+    }
+  }
+}

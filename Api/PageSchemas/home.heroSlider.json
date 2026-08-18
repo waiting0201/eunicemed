@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Home · Hero 輪播",
+  "description": "CSS 自動輪播 + 圓點指示；prefers-reduced-motion 時停在第一張。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slides"],
+  "properties": {
+    "slides": {
+      "type": "array", "minItems": 1, "maxItems": 5, "x-fieldType": "repeatable",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["image"],
+        "properties": {
+          "image": {
+            "type": "string", "format": "uuid",
+            "x-fieldType": "media", "x-mediaPreset": "hero-slide", "x-localeInvariant": true
+          },
+          "alt": { "type": "string", "maxLength": 160, "x-fieldType": "text" },
+          "link": {
+            "type": "object", "additionalProperties": false, "x-fieldType": "link",
+            "properties": {
+              "label":    { "type": "string", "maxLength": 60, "x-fieldType": "text" },
+              "url":      { "type": "string", "maxLength": 400, "x-fieldType": "text", "x-localeInvariant": true },
+              "external": { "type": "boolean", "x-fieldType": "bool", "x-localeInvariant": true }
+            }
+          }
+        }
+      }
+    },
+    "intervalSeconds": {
+      "type": "integer", "minimum": 3, "maximum": 15, "default": 6,
+      "x-fieldType": "number", "x-localeInvariant": true
+    }
+  }
+}

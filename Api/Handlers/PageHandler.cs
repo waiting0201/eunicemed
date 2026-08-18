@@ -231,6 +231,16 @@ public sealed class PageHandler(
     }
 
     /// <summary>
+    /// <c>SectionWalker</c> 的內部路徑格式是 <c>slides[0].image</c>，
+    /// 但 schema 驗證的錯誤走 JSON Pointer（<c>/slides/0/image</c>）。
+    /// 同一個 <c>errors</c> 陣列裡混兩種格式，後台就得寫兩套解析器 ——
+    /// 所以在**輸出邊界**轉換，而不去動內部格式（那個格式也是 MediaUsage.FieldPath
+    /// 的儲存值，改了要動既有資料）。
+    /// </summary>
+    private static string ToJsonPointer(string fieldPath) =>
+        "/" + fieldPath.Replace("[", ".").Replace("]", "").Replace('.', '/');
+
+    /// <summary>
     /// 逐個媒體欄位比對實際 <c>Media.PresetKey</c> 與 schema 的 <c>x-mediaPreset</c>。
     /// 錯誤訊息照 schema 驗證的慣例以 JSON Pointer 開頭，後台才對得上欄位。
     /// </summary>
@@ -251,7 +261,7 @@ public sealed class PageHandler(
             if (!actual.TryGetValue(r.MediaId, out var preset)) continue;
 
             if (!string.Equals(preset, r.ExpectedPreset, StringComparison.Ordinal))
-                errors.Add($"/{r.FieldPath.Replace('.', '/')}: 此版位需要 '{r.ExpectedPreset}' 尺寸的圖，目前選的是 '{preset}'。");
+                errors.Add($"{ToJsonPointer(r.FieldPath)}: 此版位需要 '{r.ExpectedPreset}' 尺寸的圖，目前選的是 '{preset}'。");
         }
 
         return [.. errors];

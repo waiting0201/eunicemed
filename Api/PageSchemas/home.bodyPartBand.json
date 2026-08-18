@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Home · 02 Find support by body part",
+  "description": "icon 是固定字彙：新增一個值必須同時在前端補對應的 SVG，否則格子會沒有圖示。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title", "tiles"],
+  "properties": {
+    "background": {
+      "type": "string", "format": "uuid",
+      "x-fieldType": "media", "x-mediaPreset": "section-bg", "x-localeInvariant": true
+    },
+    "title": { "type": "string", "maxLength": 120, "x-fieldType": "text" },
+    "lead":  { "type": "string", "maxLength": 400, "x-fieldType": "text" },
+    "cta": {
+      "type": "object", "additionalProperties": false, "x-fieldType": "link",
+      "properties": {
+        "label":    { "type": "string", "maxLength": 60, "x-fieldType": "text" },
+        "url":      { "type": "string", "maxLength": 400, "x-fieldType": "text", "x-localeInvariant": true },
+        "external": { "type": "boolean", "x-fieldType": "bool", "x-localeInvariant": true }
+      }
+    },
+    "tiles": {
+      "type": "array", "minItems": 4, "maxItems": 4, "x-fieldType": "repeatable",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["icon", "title"],
+        "properties": {
+          "icon": {
+            "type": "string",
+            "enum": ["knee", "ankle-foot", "back", "special-care"],
+            "x-fieldType": "enum", "x-localeInvariant": true
+          },
+          "title":    { "type": "string", "maxLength": 60, "x-fieldType": "text" },
+          "subtitle": { "type": "string", "maxLength": 120, "x-fieldType": "text" },
+          "link": {
+            "type": "object", "additionalProperties": false, "x-fieldType": "link",
+            "properties": {
+              "label":    { "type": "string", "maxLength": 60, "x-fieldType": "text" },
+              "url":      { "type": "string", "maxLength": 400, "x-fieldType": "text", "x-localeInvariant": true },
+              "external": { "type": "boolean", "x-fieldType": "bool", "x-localeInvariant": true }
+            }
+          }
+        }
+      }
+    }
+  }
+}

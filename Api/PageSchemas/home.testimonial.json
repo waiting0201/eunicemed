@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Home · 04 Trusted worldwide",
+  "description": "video.source 目前為自由字串（自架 mp4 網址或 YouTube/Vimeo 連結），型別待客戶拍板後收斂（CLAUDE.md §7）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title", "quote"],
+  "properties": {
+    "title": { "type": "string", "maxLength": 120, "x-fieldType": "text" },
+    "quote": { "type": "string", "maxLength": 600, "x-fieldType": "text" },
+    "attribution": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "name":   { "type": "string", "maxLength": 120, "x-fieldType": "text" },
+        "region": { "type": "string", "maxLength": 120, "x-fieldType": "text" }
+      }
+    },
+    "miniQuotes": {
+      "type": "array", "minItems": 0, "maxItems": 3, "x-fieldType": "repeatable",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["quote"],
+        "properties": {
+          "quote":  { "type": "string", "maxLength": 300, "x-fieldType": "text" },
+          "source": { "type": "string", "maxLength": 120, "x-fieldType": "text" }
+        }
+      }
+    },
+    "video": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "poster": {
+          "type": "string", "format": "uuid",
+          "x-fieldType": "media", "x-mediaPreset": "card-16x10", "x-localeInvariant": true
+        },
+        "source": { "type": "string", "maxLength": 400, "x-fieldType": "text", "x-localeInvariant": true }
+      }
+    },
+    "floatingChip": { "type": "string", "maxLength": 80, "x-fieldType": "text" }
+  }
+}
