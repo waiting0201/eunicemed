@@ -4,6 +4,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, ApiError, type AdminProduct, type ProductTranslation } from '@/lib/api';
 import { Field, FieldRow } from '@/components/form/Field';
 import { Repeater } from '@/components/form/Repeater';
+import { MultiSelect } from '@/components/form/MultiSelect';
+import { SizeChartEditor } from '@/components/form/SizeChartEditor';
+import { ImageField, ImageList } from '@/components/MediaPicker';
 import { LocaleTabs, LOCALES, type Locale } from '@/components/LocaleTabs';
 import { StatusTag } from '@/components/StatusTag';
 import { Icon } from '@/components/Icon';
@@ -40,11 +43,28 @@ export function ProductEdit() {
    * 要明確送 `{ "zh-TW": null }` 才是刪除。
    */
   const [removed, setRemoved] = useState<string[]>([]);
+  /**
+   * mediaId → url。產品詳情端點只回 mediaId，不回網址
+   * （後台的圖庫是另一支端點）。使用者在選擇器裡挑過的圖先記在這裡，
+   * 至少當次編輯看得到縮圖；重新整理後由下面的 mediaUrls 查詢補齊。
+   */
+  const [pickedUrls, setPickedUrls] = useState<Record<string, string>>({});
 
   const { data, isPending } = useQuery({
     queryKey: ['product', id],
     queryFn: () => api.product(id!),
     enabled: Boolean(id),
+  });
+
+  /**
+   * 已存在的圖片網址。產品詳情只回 mediaId ——
+   * 不查這一支的話，重新整理後圖庫會變成一排灰底空格。
+   */
+  const mediaUrls = useQuery({
+    queryKey: ['media-all'],
+    queryFn: () => api.media({}),
+    staleTime: 60_000,
+    select: (items) => Object.fromEntries(items.map((m) => [m.id, m.url])),
   });
 
   const taxonomy = useQuery({
@@ -120,6 +140,11 @@ export function ProductEdit() {
   const subCategories = (taxonomy.data?.subCategories ?? []).filter(
     (s) => s.categoryId === draft.categoryId,
   );
+
+  const urls = { ...(mediaUrls.data ?? {}), ...pickedUrls };
+
+  const remember = (media: { id: string; url: string } | null) =>
+    media && setPickedUrls((u) => ({ ...u, [media.id]: media.url }));
 
   return (
     <>
@@ -265,6 +290,57 @@ export function ProductEdit() {
             </div>
           </div>
 
+          <div className="panel mb-5">
+            <div className="panel-header">
+              <h2 className="text-[0.95rem] font-semibold">圖片與關聯</h2>
+            </div>
+            <div className="panel-body">
+              <span className="form-label">產品圖</span>
+              <p className="form-hint mb-2">
+                主圖同時決定列表卡與詳情頁的第一張圖 —— 換主圖兩邊會一起變。
+              </p>
+              <div className="mb-5">
+                <ImageList
+                  presetKey="square"
+                  images={draft.images}
+                  urls={urls}
+                  onChange={(images) => patch({ images })}
+                />
+              </div>
+
+              <Field label="使用情境照" hint="產品頁「適用時機」區塊左側的照片。">
+                <ImageField
+                  presetKey="photo-4x3"
+                  mediaId={draft.useCaseImageMediaId}
+                  url={draft.useCaseImageMediaId ? urls[draft.useCaseImageMediaId] : null}
+                  onChange={(media) => {
+                    remember(media);
+                    patch({ useCaseImageMediaId: media?.id ?? null });
+                  }}
+                />
+              </Field>
+
+              <MultiSelect
+                label="適用部位"
+                options={taxonomy.data?.bodyParts ?? []}
+                selected={draft.bodyPartIds}
+                onChange={(bodyPartIds) => patch({ bodyPartIds })}
+                keyOf={(b) => b.id}
+                labelOf={(b) => b.nameZhTw || b.nameEn}
+                hint="影響應用方案頁的推薦產品與產品列表的部位篩選。"
+              />
+
+              <MultiSelect
+                label="認證"
+                options={taxonomy.data?.certifications ?? []}
+                selected={draft.certificationIds}
+                onChange={(certificationIds) => patch({ certificationIds })}
+                keyOf={(c) => c.id}
+                labelOf={(c) => c.mark}
+              />
+            </div>
+          </div>
+
           <div className="panel">
             <LocaleTabs active={locale} onChange={setLocale} levels={levels} />
 
@@ -396,6 +472,11 @@ export function ProductEdit() {
                 )}
               />
 
+              <SizeChartEditor
+                value={tr.sizeChart}
+                onChange={(sizeChart) => patchTr({ sizeChart })}
+              />
+
               <Field label="SEO 標題">
                 <input
                   className="form-control"
@@ -495,6 +576,11 @@ function toRequest(draft: AdminProduct, removed: string[]) {
     isFeatured: draft.isFeatured,
     featuredSortOrder: draft.featuredSortOrder,
     sortOrder: draft.sortOrder,
+    images: draft.images,
+    bodyPartIds: draft.bodyPartIds,
+    certificationIds: draft.certificationIds,
+    useCaseImageMediaId: draft.useCaseImageMediaId,
+    clearUseCaseImage: draft.useCaseImageMediaId === null,
     // 被移除的語系要明確送 null —— 少了這一步，「沒提到」在後端是「不動它」，
     // 使用者按了移除卻刪不掉，而且畫面上已經不見了，下次重整才會發現還在
     translations: {

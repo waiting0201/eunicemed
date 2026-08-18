@@ -137,6 +137,14 @@ export const api = {
 
   certifications: () => request<AdminCertification[]>('/admin/certifications'),
 
+  mediaPresets: () => request<{ presets: MediaPreset[] }>('/admin/media-presets'),
+
+  media: (params: Record<string, string | undefined>) => {
+    const q = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) if (v) q.set(k, v);
+    return request<MediaItem[]>(`/admin/media?${q}`);
+  },
+
   product: (id: string) => request<AdminProduct>(`/admin/products/${id}`),
 
   saveProduct: (id: string, body: unknown) =>
@@ -211,6 +219,37 @@ export type AdminBodyPart = { id: string; slug: string; nameEn: string; nameZhTw
 export type AdminCertification = { id: string; slug: string; mark: string };
 
 export type ProductImageInput = { mediaId: string; isPrimary: boolean; sortOrder: number };
+
+/**
+ * 上傳尺寸規格。**畫面上的提示文字一律取自這裡**（docs/03 §5 全域規則）——
+ * 尺寸調整只改 `Api/Media/media-presets.json`，全後台同步生效。
+ */
+export type MediaPreset = {
+  key: string;
+  label: Record<string, string>;
+  aspect: string;
+  width: number;
+  height: number;
+  maxBytes: number;
+  formats: string[];
+  hint: Record<string, string>;
+};
+
+export type MediaItem = {
+  id: string;
+  presetKey: string;
+  url: string;
+  fileName: string;
+  altText: string | null;
+  width: number;
+  height: number;
+  sizeBytes: number;
+  variantCount: number;
+  usageCount: number;
+  /** 來源圖比 preset 窄 —— 放大顯示會糊，列表要標出來 */
+  belowPresetWidth: boolean;
+  createdAt: string;
+};
 
 /**
  * 產品的一個語系。JSON 欄位（features / useCases / specs / sizeChart / conditions）
