@@ -28,4 +28,4 @@ public sealed record UpsertCollectionRequest(
     string?                                          Slug         = null,
     byte                                             Strength     = 0,
     int                                              SortOrder    = 0,
-    Dictionary<string, CollectionTranslationInput>?  Translations = null);
+    Dictionary<string, CollectionTranslationInput?>? Translations = null);

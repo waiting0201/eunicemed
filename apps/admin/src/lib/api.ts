@@ -153,6 +153,27 @@ export const api = {
 
   subCategories: () => request<AdminSubCategory[]>('/admin/sub-categories'),
 
+  saveCategory: (id: string, body: unknown) =>
+    request<AdminCategory>(`/admin/categories/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+
+  saveSubCategory: (id: string, body: unknown) =>
+    request<AdminSubCategory>(`/admin/sub-categories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+
+  saveCollection: (id: string, body: unknown) =>
+    request<AdminCollection>(`/admin/collections/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+
+  saveCertification: (id: string, body: unknown) =>
+    request<AdminCertification>(`/admin/certifications/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+
   collections: () => request<AdminCollection[]>('/admin/collections'),
 
   bodyParts: () => request<AdminBodyPart[]>('/admin/body-parts'),
@@ -308,9 +329,20 @@ export type AdminProductListItem = {
 export type AdminCategory = {
   id: string;
   slug: string;
+  sortOrder: number;
+  imageMediaId: string | null;
+  heroImageMediaId: string | null;
   productCount: number;
   subCategoryCount: number;
-  translations: Record<string, { name: string }>;
+  translations: Record<string, TaxonomyTranslation>;
+  rowVersion: string | null;
+};
+
+export type TaxonomyTranslation = {
+  name?: string;
+  description?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
 };
 
 export type AdminSubCategory = {
@@ -318,18 +350,35 @@ export type AdminSubCategory = {
   categoryId: string;
   categorySlug: string;
   slug: string;
-  translations: Record<string, { name: string }>;
+  sortOrder: number;
+  status: number;
+  productCount: number;
+  imageMediaId: string | null;
+  heroImageMediaId: string | null;
+  translations: Record<string, TaxonomyTranslation>;
+  rowVersion: string | null;
 };
 
 export type AdminCollection = {
   id: string;
   slug: string;
-  translations: Record<string, { name: string }>;
+  strength: number;
+  sortOrder: number;
+  translations: Record<string, { name: string; description?: string | null }>;
 };
 
 export type AdminBodyPart = { id: string; slug: string; nameEn: string; nameZhTw: string };
 
-export type AdminCertification = { id: string; slug: string; mark: string };
+export type AdminCertification = {
+  id: string;
+  slug: string;
+  mark: string;
+  logoMediaId: string | null;
+  sortOrder: number;
+  status: number;
+  productCount: number;
+  translations: Record<string, { subLabel?: string | null; description?: string | null }>;
+};
 
 export type ProductImageInput = { mediaId: string; isPrimary: boolean; sortOrder: number };
 

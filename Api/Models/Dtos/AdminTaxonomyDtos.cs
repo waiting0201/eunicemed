@@ -32,7 +32,7 @@ public sealed record UpsertCategoryRequest(
     int?                                          SortOrder        = null,
     Guid?                                         ImageMediaId     = null,
     Guid?                                         HeroImageMediaId = null,
-    Dictionary<string, CategoryTranslationInput>? Translations     = null,
+    Dictionary<string, CategoryTranslationInput?>? Translations     = null,
     string?                                       RowVersion       = null)
 {
     public bool ClearImage     { get; init; }
@@ -68,7 +68,7 @@ public sealed record UpsertSubCategoryRequest(
     Guid?                                            ImageMediaId     = null,
     Guid?                                            HeroImageMediaId = null,
     byte?                                            Status           = null,
-    Dictionary<string, SubCategoryTranslationInput>? Translations     = null,
+    Dictionary<string, SubCategoryTranslationInput?>? Translations     = null,
     string?                                          RowVersion       = null)
 {
     public bool ClearImage     { get; init; }
@@ -99,7 +99,7 @@ public sealed record UpsertCertificationRequest(
     Guid?                                              DownloadId   = null,
     int?                                               SortOrder    = null,
     byte?                                              Status       = null,
-    Dictionary<string, CertificationTranslationInput>? Translations = null)
+    Dictionary<string, CertificationTranslationInput?>? Translations = null)
 {
     public bool ClearLogo { get; init; }
 }

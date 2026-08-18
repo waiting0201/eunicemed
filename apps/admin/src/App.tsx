@@ -15,6 +15,9 @@ import { Users } from './routes/Users';
 import { Redirects } from './routes/Redirects';
 import { Settings } from './routes/Settings';
 import { Menus } from './routes/Menus';
+import { Taxonomy } from './routes/Taxonomy';
+import { Collections } from './routes/Collections';
+import { Certifications } from './routes/Certifications';
 import { auth } from './lib/api';
 
 /**
@@ -42,9 +45,9 @@ export function App() {
             <Route path="/faqs" element={<Faqs />} />
             <Route path="/downloads" element={<Downloads />} />
             <Route path="/locations" element={<Locations />} />
-            <Route path="/categories" element={<Placeholder title="分類與子分類" />} />
-            <Route path="/collections" element={<Placeholder title="系列" />} />
-            <Route path="/certifications" element={<Placeholder title="認證" />} />
+            <Route path="/categories" element={<Taxonomy />} />
+            <Route path="/collections" element={<Collections />} />
+            <Route path="/certifications" element={<Certifications />} />
             <Route path="/media" element={<Media />} />
             <Route path="/menus" element={<Menus />} />
             <Route path="/redirects" element={<Redirects />} />
@@ -62,16 +65,4 @@ export function App() {
 function RequireAuth() {
   // token 在 sessionStorage —— 重新整理仍在，關掉分頁就登出
   return auth.access ? <Outlet /> : <Navigate to="/login" replace />;
-}
-
-function Placeholder({ title }: { title: string }) {
-  return (
-    <>
-      <div className="eyebrow">尚未建立</div>
-      <h1 className="page-title">{title}</h1>
-      <p className="mt-3 max-w-[52ch] text-[0.92rem]" style={{ color: 'var(--text-secondary)' }}>
-        這個畫面還沒做。API 已經就緒，版面沿用產品列表的骨架。
-      </p>
-    </>
-  );
 }

@@ -155,7 +155,7 @@ public sealed class CollectionHandler(AppDbContext db, ICollectionReadService re
     /// 翻譯列 upsert：只處理 request 帶到的語系，未帶到的維持原狀
     /// （避免前端只送 en 就把 zh-TW 洗掉）。
     /// </summary>
-    private static void ApplyTranslations(Collection entity, Dictionary<string, CollectionTranslationInput>? input)
+    private static void ApplyTranslations(Collection entity, Dictionary<string, CollectionTranslationInput?>? input)
     {
         if (input is null) return;
 
@@ -164,6 +164,14 @@ public sealed class CollectionHandler(AppDbContext db, ICollectionReadService re
             var locale = Locales.Normalize(rawLocale);
             if (!Locales.Supported.Contains(locale))
                 throw AppException.BadRequest($"不支援的語系：{rawLocale}");
+
+            // null = 刪除該語系（見 docs/13 的踩坑「未帶到 = 不動它」）
+            if (value is null)
+            {
+                if (entity.Translations.FirstOrDefault(t => t.Locale == locale) is { } drop)
+                    entity.Translations.Remove(drop);
+                continue;
+            }
 
             if (string.IsNullOrWhiteSpace(value.Name))
                 throw AppException.BadRequest($"語系 {locale} 的 name 為必填。");

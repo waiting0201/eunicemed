@@ -420,12 +420,20 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
     }
 
     private static void ApplyCategoryTranslations(
-        Category entity, Dictionary<string, CategoryTranslationInput>? input)
+        Category entity, Dictionary<string, CategoryTranslationInput?>? input)
     {
         if (input is null) return;
 
         foreach (var (locale, value) in Normalize(input, v => v.Name))
         {
+            // null = 刪除該語系
+            if (value is null)
+            {
+                if (entity.Translations.FirstOrDefault(t => t.Locale == locale) is { } drop)
+                    entity.Translations.Remove(drop);
+                continue;
+            }
+
             var tr = entity.Translations.FirstOrDefault(t => t.Locale == locale);
             if (tr is null)
             {
@@ -443,12 +451,20 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
     }
 
     private static void ApplySubCategoryTranslations(
-        SubCategory entity, Dictionary<string, SubCategoryTranslationInput>? input)
+        SubCategory entity, Dictionary<string, SubCategoryTranslationInput?>? input)
     {
         if (input is null) return;
 
         foreach (var (locale, value) in Normalize(input, v => v.Name))
         {
+            // null = 刪除該語系
+            if (value is null)
+            {
+                if (entity.Translations.FirstOrDefault(t => t.Locale == locale) is { } drop)
+                    entity.Translations.Remove(drop);
+                continue;
+            }
+
             var tr = entity.Translations.FirstOrDefault(t => t.Locale == locale);
             if (tr is null)
             {
@@ -465,13 +481,20 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
     }
 
     private static void ApplyCertificationTranslations(
-        Certification entity, Dictionary<string, CertificationTranslationInput>? input)
+        Certification entity, Dictionary<string, CertificationTranslationInput?>? input)
     {
         if (input is null) return;
 
         foreach (var (rawLocale, value) in input)
         {
             var locale = AdminWrite.ValidLocale(rawLocale);
+
+            if (value is null)
+            {
+                if (entity.Translations.FirstOrDefault(t => t.Locale == locale) is { } drop)
+                    entity.Translations.Remove(drop);
+                continue;
+            }
 
             var tr = entity.Translations.FirstOrDefault(t => t.Locale == locale);
             if (tr is null)
@@ -486,13 +509,27 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
         }
     }
 
-    /// <summary>翻譯字典的共同前置檢查：語系合法、name 非空。</summary>
-    private static IEnumerable<(string Locale, T Value)> Normalize<T>(
-        Dictionary<string, T> input, Func<T, string> name)
+    /// <summary>
+    /// 翻譯字典的共同前置檢查：語系合法、name 非空。
+    ///
+    /// <para>
+    /// **值為 null 代表刪除該語系**，會以 `Value = default` 回傳，由呼叫端處理。
+    /// 「未帶到 = 不動它」防止只送 en 時洗掉 zh-TW；沒有刪除途徑的話，
+    /// 編輯者加錯語系就只能改資料庫（見 docs/13 的踩坑）。
+    /// </para>
+    /// </summary>
+    private static IEnumerable<(string Locale, T? Value)> Normalize<T>(
+        Dictionary<string, T?> input, Func<T, string> name) where T : class
     {
         foreach (var (rawLocale, value) in input)
         {
             var locale = AdminWrite.ValidLocale(rawLocale);
+
+            if (value is null)
+            {
+                yield return (locale, null);
+                continue;
+            }
 
             if (string.IsNullOrWhiteSpace(name(value)))
                 throw AppException.BadRequest($"語系 {locale} 的 name 為必填。");
