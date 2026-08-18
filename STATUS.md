@@ -103,7 +103,7 @@
 |---|---|---|
 | 系列 `collections` | ✅ | |
 | 產品列表 `products`（含 facets） | ✅ | |
-| 產品詳情（三段路徑 + by-slug） | ✅ | `images[]`（含 `isPrimary` 與 `variants[]`）與 `bodyParts[]` 已補齊 |
+| 產品詳情（三段路徑 + by-slug） | ✅ | `images[]`（含 `isPrimary` 與 `variants[]`）、`bodyParts[]`、`downloads[]` 皆已補齊 |
 | 分類 `categories` | ✅ | |
 | 子分類 `sub-categories` | ✅ | |
 | 認證 `certifications` | ✅ | |
@@ -142,7 +142,8 @@ Next.js **15**（非 16 —— SWA hybrid 的支援是 preview，文件內容仍
 不在已經是 preview 的部署目標上再疊一個未驗證的大版本）。版型由 `mockup4/` 鎖定，切版照著做。
 
 **已驗證可運作**：語系前綴 middleware（含 `.swa` 排除）、`ApiResponse` 信封拆解、
-語言純度（缺翻譯回 404 不 fallback）、facet 篩選、standalone 產物 66MB／250MB。
+語言純度（缺翻譯回 404 不 fallback，且**未翻譯的區段整段不渲染**而非露出他語）、
+facet 篩選、standalone 產物 66MB／250MB。
 
 | 頁面 | 路由 | API 是否就緒 |
 |---|---|---|
@@ -151,7 +152,7 @@ Next.js **15**（非 16 —— SWA hybrid 的支援是 preview，文件內容仍
 | Products | `/[locale]/products` | 🟡 產品列表就緒，頁面文案未就緒 |
 | Product Category | `/[locale]/products/{category}` | ✅ **已切版可運作** |
 | Sub-category | `/[locale]/products/{category}/{sub}` | ✅ **已切版可運作** |
-| Product Detail | `/[locale]/products/{category}/{sub}/{slug}` | 🟡 **API 已就緒**；頁面未切 |
+| Product Detail | `/[locale]/products/{category}/{sub}/{slug}` | ✅ **已切版可運作**（缺 §08 詢價表單，待 Phase 7 的 `POST /contact`）|
 | Applications／Detail | `/[locale]/applications[/{slug}]` | ⬜ |
 | Partnership | `/[locale]/partnership` | ⬜ |
 | Resources | `/[locale]/resources` | ⬜ |

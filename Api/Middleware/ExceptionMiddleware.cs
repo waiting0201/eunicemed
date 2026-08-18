@@ -50,6 +50,15 @@ public sealed class ExceptionMiddleware(ILogger<ExceptionMiddleware> logger) : I
                 await WriteErrorAsync(context, 409,
                     "此筆資料已被其他人修改，請重新載入後再試。", "Concurrency conflict.", traceId);
             }
+            catch (JsonException jsonEx)
+            {
+                // 送進來的 JSON 壞掉（少逗號、GUID 欄位塞了非 GUID 字串…）。
+                // `ReadFromJsonAsync` 在反序列化階段就丟這個，還沒進到 Handler 的驗證，
+                // 沒接住的話客戶端拿到的是 500 —— 那會讓人以為是伺服器壞了而不是自己送錯。
+                logger.LogWarning(jsonEx, "Malformed JSON body traceId={TraceId}", traceId);
+                await WriteErrorAsync(context, 400,
+                    "請求內容不是合法的 JSON，或欄位型別不符。", jsonEx.Message, traceId);
+            }
             catch (InvalidOperationException ioEx)
                 when (ioEx.Message.Contains("Incorrect Content-Type", StringComparison.OrdinalIgnoreCase))
             {

@@ -64,6 +64,7 @@ public sealed record ProductDto(
     object?       Specs,
     object?       SizeChart,
     CertificationDto[]  Certifications,
+    DownloadDto[]       Downloads,
     ProductRelatedDto[] RelatedProducts,
     SeoDto        Seo,
     DateTime?     PublishedAt);

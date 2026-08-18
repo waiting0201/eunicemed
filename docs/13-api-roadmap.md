@@ -179,6 +179,31 @@ richtext 的伺服器端淨化與 SVG 清洗**已完成**（見下）。
 
 ## 踩到的坑（累積記錄）
 
+### 2026-08-18 · 函式不能當 prop 傳進 client component
+
+產品詳情頁的文案表照既有頁面的做法放在 server component，其中一項是
+`thumb: (n) => \`View image ${n}\``。把它傳給圖庫（client component）時整頁 500：
+
+```
+Functions cannot be passed directly to Client Components unless you
+explicitly expose it by marking it with "use server".
+```
+
+多語系文案表很容易混進這種模板函式，而它在 server 端自己用完全沒事 ——
+只有跨邊界那一刻才炸。**client component 一律傳 `locale` 進去、在裡面查自己的文案表**，
+不要把 server 的文案表拆成一堆字串 prop 硬塞。
+
+### 2026-08-18 · 壞掉的 JSON body 會回 500 而不是 400
+
+`req.ReadFromJsonAsync<T>()` 在反序列化階段丟 `JsonException`
+（少逗號、GUID 欄位塞了非 GUID 字串都算），那時還沒進到 Handler 的驗證，
+`ExceptionMiddleware` 也沒接住 —— 客戶端拿到 500，會以為是伺服器壞了而不是自己送錯。
+已在 middleware 補上 `JsonException → 400`。
+
+發現的過程也值得記：測試腳本用 zsh 寫 `set -- $M` 想拆開三個 media id，
+但 **zsh 預設不對未加引號的參數展開做 word splitting**，
+三個 id 連成一個字串塞進 `mediaId`，才撞出這個 500。
+
 ### 2026-08-18 · 讀取端做完的功能，寫入端可能根本沒有入口
 
 排程發布在 Phase 6 的讀取端就實作好了（`PublishedAt` 為未來時間者公開端點查不到），

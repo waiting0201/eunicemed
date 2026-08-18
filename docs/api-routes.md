@@ -69,7 +69,7 @@
 | Method | Path | 權限 | 說明 |
 |---|---|---|---|
 | GET | `/products?locale=&category=&subCategory=&collection=&bodyPart=&featured=&facets=&page=&pageSize=&sort=` | 公開 | facet 同維度不收斂、跨維度收斂 |
-| GET | `/products/{category}/{sub}/{slug}` | 公開 | 三段皆驗證歸屬，不符回 404；`images[]`（含 `isPrimary` 與 `variants[]`）與 `bodyParts[]` 已補齊 |
+| GET | `/products/{category}/{sub}/{slug}` | 公開 | 三段皆驗證歸屬，不符回 404；`images[]`（含 `isPrimary` 與 `variants[]`）、`bodyParts[]`、`downloads[]`（由 `ProductDownload` 掛載）皆已補齊 |
 | GET | `/products/by-slug/{slug}` | 公開 | 扁平查詢（預覽、舊 URL 301 解析） |
 
 ### 分類 / 子分類 / 認證（公開）

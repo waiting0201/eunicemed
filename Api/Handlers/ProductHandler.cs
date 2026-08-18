@@ -10,6 +10,7 @@ namespace EuniceMed.Api.Handlers;
 public sealed class ProductHandler(
     IProductReadService reader,
     ITaxonomyReadService taxonomy,
+    IContentReadService content,
     Data.AppDbContext db)
 {
     /// <summary>
@@ -80,6 +81,8 @@ public sealed class ProductHandler(
         var related   = await reader.GetRelatedAsync(r.Id, locale, take: 4);
         var images    = await reader.GetImagesAsync(r.Id);
         var bodyParts = await reader.GetBodyPartSlugsAsync(r.Id);
+        // 掛在這個產品上的檔案（ProductDownload）。列表頁不需要，只有詳情頁的下載區塊用。
+        var downloads = await content.GetDownloadsAsync(locale, type: null, productSlug: r.Slug);
 
         var dto = new ProductDto(
             r.Id, r.Slug, r.Sku, r.Name,
@@ -96,6 +99,7 @@ public sealed class ProductHandler(
             JsonField.Parse(r.SpecsJson),
             JsonField.Parse(r.SizeChartJson),
             certs.ToArray(),
+            downloads.ToArray(),
             related.Select(p => new ProductRelatedDto(p.Slug, p.Name, p.Image, p.Url)).ToArray(),
             new SeoDto(r.SeoTitle, r.SeoDescription, r.OgImageUrl),
             r.PublishedAt);

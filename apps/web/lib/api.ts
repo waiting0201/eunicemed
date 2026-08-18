@@ -132,6 +132,71 @@ export type ProductListItem = {
 
 export type SubCategoryRef = { slug: string; name: string; count: number };
 
+/** 產品圖庫的一張。比 MediaRef 多一個 isPrimary；陣列已由 API 排好序。 */
+export type ProductImage = MediaRef & { isPrimary: boolean };
+
+export type Certification = {
+  slug: string;
+  mark: string;
+  subLabel: string | null;
+  description: string | null;
+  logo: MediaRef | null;
+};
+
+export type Download = {
+  id: string;
+  title: string;
+  description: string | null;
+  type: string;
+  /** 檔案本身的語言，與站台語系無關（docs/05 §3.8） */
+  fileLocale: string;
+  fileExt: string;
+  sizeBytes: number;
+  url: string;
+};
+
+export type RelatedProduct = {
+  slug: string;
+  name: string;
+  image: MediaRef | null;
+  url: string;
+};
+
+/**
+ * 產品詳情。JSON 欄位（features / useCases / specs / sizeChart / conditions）
+ * 在 DB 是自由形狀的 JSON，由後台的產品表單填寫 —— 因此這裡的型別是
+ * **樂觀的**，元件一律要能吃到 null 或形狀不符。
+ */
+export type ProductDetail = {
+  id: string;
+  slug: string;
+  sku: string | null;
+  name: string;
+  category: SlugName | null;
+  subCategory: SlugName | null;
+  collection: SlugName | null;
+  bodyParts: string[];
+  conditions: string[] | null;
+  summary: string | null;
+  description: string | null;
+  images: ProductImage[];
+  features: { icon?: string; title?: string; body?: string }[] | null;
+  useCaseImage: MediaRef | null;
+  useCases: { title?: string; body?: string }[] | null;
+  specs: { label?: string; value?: string }[] | null;
+  sizeChart: {
+    measureLabel?: string;
+    sizes?: string[];
+    rows?: { label?: string | null; values?: string[] }[];
+    footnote?: string | null;
+  } | null;
+  certifications: Certification[];
+  downloads: Download[];
+  relatedProducts: RelatedProduct[];
+  seo: { title: string | null; description: string | null; ogImage: string | null };
+  publishedAt: string | null;
+};
+
 export type Stat = { value: string; label: string };
 
 export type CategoryDetail = {
@@ -158,6 +223,11 @@ export const api = {
   subCategory: (locale: string, category: string, sub: string) =>
     getOrNull<CategoryDetail>(
       `/sub-categories/${enc(category)}/${enc(sub)}?locale=${enc(locale)}`,
+    ),
+
+  product: (locale: string, category: string, sub: string, slug: string) =>
+    getOrNull<ProductDetail>(
+      `/products/${enc(category)}/${enc(sub)}/${enc(slug)}?locale=${enc(locale)}`,
     ),
 
   categories: (locale: string) =>
