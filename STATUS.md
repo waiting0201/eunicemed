@@ -39,9 +39,9 @@
 |---|---|---|
 | 規格文件 | ✅ | 14 份，見 [CLAUDE.md](CLAUDE.md) §3 |
 | 資料模型 | 🟡 98% | 54 張表完成 53 張（只剩 `ContactSubmission`）|
-| API | 🟡 96% | 已實作 **133** 條路由。Phase 0–7 除**表單**外全數完成 —— `POST /contact` 與收件匣擋於 SMTP 帳密 |
-| 前台 `apps/web` | 🟡 | Next.js 15 已建立，2 頁可運作；部署限制已實測 |
-| 後台 `apps/admin` | 🟡 | 視覺方向已定案（見 [docs/03](docs/03-cms.md) §8.1）；骨架＋登入＋產品列表可運作，其餘 14 個畫面待做 |
+| API | 🟡 97% | 已實作 **141** 條路由（新增標籤 CRUD 4 條、PDF 登記 1 條、頁面區段語系刪除）。Phase 0–7 除**表單**外全數完成 —— `POST /contact` 與收件匣擋於 SMTP 帳密 |
+| 前台 `apps/web` | 🟡 | 18 頁全數切版可運作；只剩 Contact 表單擋於 SMTP |
+| 後台 `apps/admin` | 🟡 | 全部畫面可運作（列表＋編輯＋富文字）；只剩相關產品拖曳與表單收件匣 |
 | 基礎設施 `infra/` | ⬜ | Bicep 尚未撰寫 |
 | CI/CD `.github/` | ⬜ | workflow 尚未撰寫 |
 
