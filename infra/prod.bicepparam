@@ -1,13 +1,13 @@
 using './main.bicep'
 
-param location = 'eastasia'
-param staticWebAppLocation = 'eastasia'
+param location = 'westus2'
+param staticWebAppLocation = 'westus2'
 param namePrefix = 'eunicemed'
 param siteUrl = 'https://www.eunicemed.com'
 
 // 機密不進版控。部署時以命令列帶入：
 //
-//   az deployment group create -g rg-eunicemed-prod \
+//   az deployment group create -g EuniceMedUS \
 //     -f infra/main.bicep -p infra/prod.bicepparam \
 //     -p jwtSigningKey="$(openssl rand -base64 48)" \
 //     -p sqlConnectionString="$SQL_CONNECTION_STRING"

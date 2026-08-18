@@ -216,7 +216,7 @@ facet 篩選、standalone 產物 66MB／250MB。
 
 | 項目 | 狀態 |
 |---|---|
-| Azure 資源建立（SWA / Function App / Storage） | ⬜ 需訂用帳戶與資源群組 |
+| Azure 資源建立（SWA / Function App / Storage） | ⬜ 資源群組 `EuniceMedUS`（West US 2），待建立 |
 | `infra/main.bicep` | 🟡 編譯通過（13 個資源）；未實際部署 |
 | `.github/workflows/api-deploy.yml` | 🟡 已寫（OIDC + functions-action + 健康檢查）|
 | `.github/workflows/web.yml` | 🟡 已寫（含預覽環境關閉）|

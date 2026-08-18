@@ -10,15 +10,18 @@
   App Setting（見下方 sqlConnectionString 參數的說明）。
 
   部署：
-    az deployment group create -g rg-eunicemed-prod \
+    az deployment group create -g EuniceMedUS \
       -f infra/main.bicep -p infra/prod.bicepparam
 */
 
-@description('資源部署的區域。SWA Free 的可用區域有限，預設用東亞。')
+@description('資源部署的區域。')
 param location string = resourceGroup().location
 
-@description('SWA 的區域。與其他資源分開，因為 SWA Free 只在部分區域可用。')
-param staticWebAppLocation string = 'eastasia'
+@description('''
+SWA 的區域。與其他資源分開成一個參數，因為 SWA 的可用區域比一般資源少 ——
+若日後把其他資源搬到 SWA 不支援的區域，這裡不必跟著動。
+''')
+param staticWebAppLocation string = 'westus2'
 
 @description('資源命名的前綴，用來組出 func-{prefix}-prod 這類名稱。')
 param namePrefix string = 'eunicemed'

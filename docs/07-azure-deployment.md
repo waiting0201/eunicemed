@@ -84,7 +84,19 @@ Flex Consumption **必須**有一個 Storage Account 存放部署包與 host met
 - **Bicep**（`infra/`）：`main.bicep` + `prod.bicepparam`，只建立 SWA、Function App（含 Flex Consumption plan）、Storage Account、以及 MI 的角色指派。
 - 機密（`jwtSigningKey`、`sqlConnectionString`）是 `@secure()` 參數，由環境變數帶入，**不進 bicepparam**。
 - **Azure SQL 由客戶提供**，Bicep 內以 `existing` 參照或純粹以參數帶入連線資訊，**不建立、不刪除**。
-- 部署：`az deployment group create -g rg-eunicemed-prod -f infra/main.bicep -p infra/prod.bicepparam`。
+- 資源群組 **`EuniceMedUS`**，區域 **West US 2**（`westus2`）。
+
+```bash
+az group create -n EuniceMedUS -l westus2
+
+# 先確認 Flex Consumption 在該區域可用（可用區域比一般 App Service 少）
+az functionapp list-flexconsumption-locations -o table
+
+az deployment group create -g EuniceMedUS \
+  -f infra/main.bicep -p infra/prod.bicepparam \
+  -p jwtSigningKey="$(openssl rand -base64 48)" \
+  -p sqlConnectionString="$SQL_CONNECTION_STRING"
+```
 - 命名：`stapp-eunicemed-prod`、`func-eunicemed-prod`、`st eunicemedprod`（Storage 不可有連字號）。
 
 ---
