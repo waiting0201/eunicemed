@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router';
 import { Icon } from './Icon';
+import { Logo } from './Logo';
 import { Gauge, type GaugeLevel } from './Gauge';
 import { menuItems } from '@/lib/menu';
 import { auth } from '@/lib/api';
@@ -23,9 +24,12 @@ export function Shell({ levels }: { levels?: Record<string, GaugeLevel> }) {
   return (
     <div className={`app-wrap ${minified ? 'nav-minified' : ''} ${navOpen ? 'nav-open' : ''}`}>
       <header className="app-header">
-        <div className="app-logo">
-          <span className="eyebrow !text-[--text-primary]">EuniceMed</span>
-        </div>
+        <a className="app-logo" href="/admin/products">
+          <Logo compact={minified} />
+          {!minified && (
+            <span className="eyebrow ml-1 whitespace-nowrap">內容管理</span>
+          )}
+        </a>
 
         <button
           type="button"
@@ -85,8 +89,8 @@ export function Shell({ levels }: { levels?: Record<string, GaugeLevel> }) {
         </div>
 
         <footer className="app-footer">
-          <span>EuniceMed 內容管理</span>
           <span className="mono">Comfort Plus Corporation</span>
+          <span>© {new Date().getFullYear()}</span>
         </footer>
       </main>
     </div>

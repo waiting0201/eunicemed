@@ -242,6 +242,14 @@
     font-weight: 500;
   }
 
+  /* 側欄收合時：logo 跟著縮到同寬並置中，否則加號會孤零零貼在左邊 */
+  .nav-minified .app-logo {
+    width: var(--menu-width-minified);
+    padding-inline: 0;
+    justify-content: center;
+    margin-right: 0.75rem;
+  }
+
   .nav-minified .nav-title { visibility: hidden; }
   .nav-minified .nav-label { display: none; }
   .nav-minified .nav-link { justify-content: center; padding-inline: 0; }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { api, auth, ApiError } from '@/lib/api';
+import { Logo } from '@/components/Logo';
 
 /**
  * 登入。
@@ -40,10 +41,8 @@ export function Login() {
         onSubmit={submit}
         className="panel w-full max-w-[22rem] p-8"
       >
-        <div className="eyebrow" style={{ color: 'var(--text-primary)' }}>
-          EuniceMed
-        </div>
-        <h1 className="page-title mt-1 text-[1.4rem]">內容管理</h1>
+        <Logo />
+        <h1 className="page-title mt-4 text-[1.4rem]">內容管理</h1>
 
         <label className="mt-7 block">
           <span className="form-label">電子郵件</span>

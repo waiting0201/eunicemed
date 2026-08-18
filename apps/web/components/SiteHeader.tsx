@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Logo } from './Logo';
 import type { MenuNode } from '@/lib/api';
 import type { Locale } from '@/lib/locale';
 import { LOCALES, LOCALE_LABELS } from '@/lib/locale';
@@ -41,11 +42,8 @@ export function SiteHeader({ locale, menu }: { locale: Locale; menu?: MenuNode[]
   return (
     <header className="sticky top-0 z-50 border-b border-hairline bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-content items-center gap-8 px-6 py-4 lg:px-16">
-        <Link
-          href={`/${locale}`}
-          className="text-lg font-semibold tracking-tight text-ink"
-        >
-          EuniceMed
+        <Link href={`/${locale}`}>
+          <Logo />
         </Link>
 
         <nav className="hidden flex-1 items-center gap-6 text-sm md:flex">

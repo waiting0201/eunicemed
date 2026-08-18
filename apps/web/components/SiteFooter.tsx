@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Logo } from './Logo';
 import type { MenuNode, Settings } from '@/lib/api';
 import type { Locale } from '@/lib/locale';
 
@@ -46,9 +47,10 @@ export function SiteFooter({
   return (
     <footer className="mt-20 border-t border-hairline bg-tint">
       <div className="mx-auto max-w-content px-6 py-12 text-sm lg:px-16">
-        <p className="text-base font-semibold text-ink">
-          Comfort Plus Corporation
-        </p>
+        <Link href={`/${locale}`}>
+          <Logo />
+        </Link>
+        <p className="mt-4 text-base font-semibold text-ink">Comfort Plus Corporation</p>
         <p className="mt-2">{address}</p>
         <p className="mt-1">
           {/* tel: 要去掉空白，否則部分手機撥號會失敗 */}
