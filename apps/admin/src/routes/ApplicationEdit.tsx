@@ -8,6 +8,7 @@ import {
   type ApplicationTranslation,
 } from '@/lib/api';
 import { Field, FieldRow } from '@/components/form/Field';
+import { RichText } from '@/components/form/RichText';
 import { Repeater } from '@/components/form/Repeater';
 import { MultiSelect } from '@/components/form/MultiSelect';
 import { ImageField } from '@/components/MediaPicker';
@@ -562,22 +563,12 @@ export function ApplicationEdit() {
                 )}
               />
 
-              <Field label="內文" hint="可用 p strong em ul ol li a blockquote，其餘標籤會在伺服器被移除。">
-                <textarea
-                  className="form-control mono"
-                  rows={8}
-                  value={tr.body ?? ''}
-                  onChange={(e) => patchTr({ body: e.target.value })}
-                />
+              <Field label="內文">
+                <RichText value={tr.body} onChange={(body) => patchTr({ body })} />
               </Field>
 
               <Field label="醫療免責" hint="留空時套用共用區段的全站預設文字。">
-                <textarea
-                  className="form-control"
-                  rows={2}
-                  value={tr.disclaimer ?? ''}
-                  onChange={(e) => patchTr({ disclaimer: e.target.value })}
-                />
+                <RichText value={tr.disclaimer} onChange={(disclaimer) => patchTr({ disclaimer })} />
               </Field>
 
               <FieldRow>

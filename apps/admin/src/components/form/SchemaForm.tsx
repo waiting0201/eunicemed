@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { emptyValue, fieldLabel, type SchemaNode } from '@/lib/schema';
 import { Field } from './Field';
+import { RichText, type RichTextProfile } from './RichText';
 import { ImageField } from '../MediaPicker';
 import { Icon } from '../Icon';
 
@@ -25,6 +26,7 @@ export function SchemaForm({
   onChange,
   mediaUrls,
   onPickMedia,
+  richTextProfile = 'section',
 }: {
   schema: SchemaNode;
   value: Record<string, unknown>;
@@ -32,6 +34,12 @@ export function SchemaForm({
   /** mediaId → url，用來顯示已選圖片的縮圖 */
   mediaUrls: Record<string, string>;
   onPickMedia: (media: { id: string; url: string }) => void;
+  /**
+   * 富文字的淨化 profile。伺服器對 `privacy` 這一頁用 Legal（多了 h2/h3），
+   * 其餘區段用 Section（`PageHandler.cs`）—— 工具列要跟著變，
+   * 否則編輯者會看到一顆按了會被靜默剝掉的按鈕。
+   */
+  richTextProfile?: RichTextProfile;
 }) {
   const required = new Set(schema.required ?? []);
 
@@ -47,6 +55,7 @@ export function SchemaForm({
           onChange={(v) => onChange({ ...value, [name]: v })}
           mediaUrls={mediaUrls}
           onPickMedia={onPickMedia}
+          richTextProfile={richTextProfile}
         />
       ))}
     </>
@@ -61,6 +70,7 @@ function SchemaField({
   onChange,
   mediaUrls,
   onPickMedia,
+  richTextProfile,
 }: {
   name: string;
   node: SchemaNode;
@@ -69,6 +79,7 @@ function SchemaField({
   onChange: (next: unknown) => void;
   mediaUrls: Record<string, string>;
   onPickMedia: (media: { id: string; url: string }) => void;
+  richTextProfile: RichTextProfile;
 }) {
   const label = fieldLabel(name);
   const type = node['x-fieldType'];
@@ -100,15 +111,12 @@ function SchemaField({
         <Field
           label={label}
           required={required}
-          hint={hint ?? '支援基本格式標記。存檔時伺服器會以白名單淨化。'}
+          hint={hint ?? '存檔時伺服器仍會以白名單淨化 —— 工具列提供的就是允許的範圍。'}
         >
-          {/* TipTap 要 code-split（docs/03 §8.1），先用純文字區。
-              淨化在伺服器端，所以這裡直接編輯 HTML 是安全的 —— 只是不好用。 */}
-          <textarea
-            className="form-control mono"
-            rows={8}
-            value={(value as string) ?? ''}
-            onChange={(e) => onChange(e.target.value)}
+          <RichText
+            value={value as string}
+            profile={richTextProfile}
+            onChange={(html) => onChange(html)}
           />
         </Field>
       );

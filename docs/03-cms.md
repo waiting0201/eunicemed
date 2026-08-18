@@ -176,7 +176,7 @@ Draft（草稿） ──提交──► Review（待審，選用） ──發布
 | **樣式** | **Tailwind CSS**（與公開站同一套設計 token，見 [08-design.md](08-design.md) §2–§4） |
 | UI 元件 | **shadcn/ui**（Tailwind 基底、複製進專案、可改） |
 | 表單 | React Hook Form + zod |
-| RTE | TipTap（輸出 HTML/JSON，淨化 sanitize；允許標籤集見 [09](09-page-blocks.md) §9.2） |
+| RTE | TipTap 3（輸出 HTML，伺服器端淨化；允許標籤集見 [09](09-page-blocks.md) §9.2）<br>以 `React.lazy` 載入，實測獨立 chunk 401KB（gzip 129KB），只有含富文字欄位的畫面會下載<br>**工具列按鈕必須等於該 profile 的白名單**：多一顆按鈕＝編輯者按了、存了，然後標籤被靜默剝掉 |
 | 拖拉排序 | dnd-kit |
 | 表單生成 | 由 `GET /admin/page-schema/{key}` 的 JSON Schema 動態生成頁面區段表單；型別以 `x-fieldType` 對應元件 |
 

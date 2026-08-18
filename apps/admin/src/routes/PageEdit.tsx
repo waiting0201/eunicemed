@@ -259,6 +259,9 @@ export function PageEdit() {
                   onPickMedia={(media) =>
                     setPickedUrls((u) => ({ ...u, [media.id]: media.url }))
                   }
+                  // 伺服器對 privacy 這一頁用 Legal profile（多了 h2/h3），
+                  // 其餘用 Section —— 見 PageHandler.cs
+                  richTextProfile={key === 'privacy' ? 'legal' : 'section'}
                 />
 
                 <p className="form-hint mt-4">

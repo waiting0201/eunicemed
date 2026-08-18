@@ -398,6 +398,22 @@ explicitly expose it by marking it with "use server".
 但 **zsh 預設不對未加引號的參數展開做 word splitting**，
 三個 id 連成一個字串塞進 `mediaId`，才撞出這個 500。
 
+### 2026-08-18 · 編輯器的工具列就是一份沒人維護的第二白名單
+
+TipTap 上線後，`section` profile 的工具列必須剛好等於伺服器允許的
+`p / strong / em / ul / ol / li / a`。多給一顆 H2 按鈕不會報錯 ——
+編輯者按了、存了、伺服器把 `<h2>` 剝掉但（因為 `KeepChildNodes = true`）留下文字，
+存回來變成 `Heading<p>Body</p>`：標題掉了、文字還在段落外面。實測確認就是這個結果。
+
+所以 `RichText` 的 profile 名稱刻意與 C# 的 `RichTextProfile` 完全一致
+（`section` / `article` / `legal`），改白名單時兩邊會一起被搜到。
+
+同一輪確認的兩件事：
+1. 淨化器會替外部連結補上 `rel="noopener noreferrer" target="_blank"`，
+   所以存回來的 HTML 與編輯器送出的**不會逐字相同** —— 不要拿它做 dirty 比對。
+2. `AllowedSchemes` 只有 https / mailto / tel，`http://` 的 href 會被整個拿掉只剩文字。
+   編輯器的連結對話框因此先擋下 `http://`，不然那是一個沒有任何訊息的失敗。
+
 ### 2026-08-18 · prettier 沒有設定檔就不是「照原樣格式化」
 
 在 `apps/admin` 跑了一次 `npx prettier --write`，它把兩支檔案的單引號全換成雙引號 ——

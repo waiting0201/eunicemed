@@ -4,6 +4,7 @@ import { api, ApiError, type AdminFaq } from '@/lib/api';
 import { DataTable, FilterGroup, ListPage, MissingCount } from '@/components/ListPage';
 import { Dialog, DialogActions } from '@/components/Dialog';
 import { Field, FieldRow } from '@/components/form/Field';
+import { RichText } from '@/components/form/RichText';
 import { LocaleGauges } from '@/components/Gauge';
 import { StatusSelect } from '@/components/StatusSelect';
 import { StatusTag } from '@/components/StatusTag';
@@ -259,16 +260,10 @@ function FaqDialog({
                   onChange={(e) => patch(locale, { question: e.target.value })}
                 />
               </Field>
-              <Field
-                label="答案"
-                required
-                hint="可用 <p> <strong> <em> <ul> <ol> <li> <a>，其餘標籤會在伺服器被移除。"
-              >
-                <textarea
-                  className="form-control"
-                  rows={6}
+              <Field label="答案" required hint="折疊面板裡的一段短文。">
+                <RichText
                   value={tr.answer}
-                  onChange={(e) => patch(locale, { answer: e.target.value })}
+                  onChange={(answer) => patch(locale, { answer })}
                 />
               </Field>
             </>

@@ -9,6 +9,7 @@ import {
   type NewsEventTranslation,
 } from '@/lib/api';
 import { Field, FieldRow } from '@/components/form/Field';
+import { RichText } from '@/components/form/RichText';
 import { MultiSelect } from '@/components/form/MultiSelect';
 import { ImageField, ImageList } from '@/components/MediaPicker';
 import { LocaleTabs, LOCALES, type Locale } from '@/components/LocaleTabs';
@@ -341,13 +342,12 @@ export function ArticleEdit() {
 
               <Field
                 label="內文"
-                hint="可用 h2 h3 p blockquote figure img ul ol li a strong em；目錄由內文的 h2 自動產生。其餘標籤會在伺服器被移除。"
+                hint="目錄由內文的 H2 自動產生 —— 想讓某一段出現在目錄裡就把它設成 H2。"
               >
-                <textarea
-                  className="form-control mono"
-                  rows={16}
-                  value={tr.body ?? ''}
-                  onChange={(e) => patchTr({ body: e.target.value })}
+                <RichText
+                  value={tr.body}
+                  profile="article"
+                  onChange={(body) => patchTr({ body })}
                 />
               </Field>
 
