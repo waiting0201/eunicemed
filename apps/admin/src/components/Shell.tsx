@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
 import { Icon } from './Icon';
 import { Logo } from './Logo';
-import { Gauge, type GaugeLevel } from './Gauge';
+import { Gauge } from './Gauge';
+import { moduleLevel } from '@/lib/completeness';
 import { menuItems } from '@/lib/menu';
-import { auth } from '@/lib/api';
+import { api, auth } from '@/lib/api';
 
 /**
  * 後台外殼。版面結構對齊 Jabez/Admin：
@@ -16,8 +18,26 @@ import { auth } from '@/lib/api';
  * 打開後台的第一眼就是「哪一區最缺中文」，那才是每天要回答的問題。
  * </p>
  */
-export function Shell({ levels }: { levels?: Record<string, GaugeLevel> }) {
+export function Shell() {
   const navigate = useNavigate();
+
+  /**
+   * 側欄儀表的資料。**由專門的統計端點提供**，不是拿各列表來算 ——
+   * 分頁的模組（產品 149 筆）只看得到第一頁，數字會騙人。
+   *
+   * 取不到就不顯示儀表，不擋畫面：導覽本身仍要能用。
+   */
+  const summary = useQuery({
+    queryKey: ['summary'],
+    queryFn: () => api.summary(),
+    staleTime: 60_000,
+  });
+
+  const levelOfUrl = (url: string) => {
+    const key = url.replace(/^\//, '');
+    const entry = summary.data?.[key];
+    return entry ? moduleLevel(entry) : undefined;
+  };
   const [minified, setMinified] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
 
@@ -69,9 +89,9 @@ export function Shell({ levels }: { levels?: Record<string, GaugeLevel> }) {
               >
                 <Icon name={item.icon} className="icon" />
                 <span className="nav-label flex-1 truncate">{item.label}</span>
-                {!minified && levels?.[item.url] !== undefined && (
+                {!minified && levelOfUrl(item.url) !== undefined && (
                   <Gauge
-                    level={levels[item.url]}
+                    level={levelOfUrl(item.url)!}
                     label={`${item.label} 的內容完整度`}
                     width="w-7"
                     onDark

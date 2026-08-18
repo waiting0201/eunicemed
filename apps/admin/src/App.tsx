@@ -3,6 +3,11 @@ import { Shell } from './components/Shell';
 import { Login } from './routes/Login';
 import { Products } from './routes/Products';
 import { ProductEdit } from './routes/ProductEdit';
+import { Articles } from './routes/Articles';
+import { Applications } from './routes/Applications';
+import { Faqs } from './routes/Faqs';
+import { Downloads } from './routes/Downloads';
+import { Locations } from './routes/Locations';
 import { auth } from './lib/api';
 
 /**
@@ -24,11 +29,11 @@ export function App() {
             <Route path="/products" element={<Products />} />
             <Route path="/products/:id" element={<ProductEdit />} />
             <Route path="/pages" element={<Placeholder title="頁面內容" />} />
-            <Route path="/applications" element={<Placeholder title="應用方案" />} />
-            <Route path="/articles" element={<Placeholder title="文章" />} />
-            <Route path="/faqs" element={<Placeholder title="FAQ" />} />
-            <Route path="/downloads" element={<Placeholder title="下載" />} />
-            <Route path="/locations" element={<Placeholder title="銷售據點" />} />
+            <Route path="/applications" element={<Applications />} />
+            <Route path="/articles" element={<Articles />} />
+            <Route path="/faqs" element={<Faqs />} />
+            <Route path="/downloads" element={<Downloads />} />
+            <Route path="/locations" element={<Locations />} />
             <Route path="/categories" element={<Placeholder title="分類與子分類" />} />
             <Route path="/collections" element={<Placeholder title="系列" />} />
             <Route path="/certifications" element={<Placeholder title="認證" />} />

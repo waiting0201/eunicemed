@@ -71,3 +71,26 @@ export function productLevel(tr: {
     Boolean(tr.seoTitle?.trim() && tr.seoDescription?.trim()),
   ]);
 }
+
+
+/**
+ * 一個模組整體的完整度，給側欄的迷你儀表用。
+ *
+ * 三段的意思在這裡是「涵蓋率」：
+ * 1. 有內容但某個語系完全空白
+ * 2. 兩個語系都有一些，但還有缺
+ * 3. 每一筆在每個語系都有翻譯
+ *
+ * 完全沒有內容（total = 0）回 0 —— 那和「有內容但沒翻譯」不同，
+ * 前者是還沒開始，後者是漏了。兩者在側欄看起來一樣是刻意的：
+ * 都表示那一區現在對訪客沒有價值。
+ */
+export function moduleLevel(entry: { total: number; locales: { en: number; zhTw: number } } | undefined): GaugeLevel {
+  if (!entry || entry.total === 0) return 0;
+
+  const covered = entry.locales.en + entry.locales.zhTw;
+  const wanted = entry.total * 2;
+
+  if (entry.locales.en === 0 || entry.locales.zhTw === 0) return 1;
+  return covered === wanted ? 3 : 2;
+}

@@ -41,7 +41,8 @@ public sealed class AppRouter(
     AdminArticleHandler adminArticles,
     ContentHandler     content,
     AdminContentHandler adminContent,
-    SiteHandler        site)
+    SiteHandler        site,
+    AdminSummaryHandler summary)
 {
     public async Task<IActionResult> RouteAsync(HttpRequest req, string route)
     {
@@ -251,6 +252,9 @@ public sealed class AppRouter(
             ("GET",    ["admin", "sales-locations", var id])  => await adminContent.GetSalesLocationAsync(id),
             ("PUT" or "PATCH", ["admin", "sales-locations", var id]) => await adminContent.UpdateSalesLocationAsync(req, id),
             ("DELETE", ["admin", "sales-locations", var id])  => await adminContent.DeleteSalesLocationAsync(id),
+
+            // ── Admin：側欄統計 ───────────────────────────────────────────
+            ("GET", ["admin", "summary"]) => await summary.GetAsync(),
 
             // ── Admin：選單 / 轉址 / 設定 ─────────────────────────────────
             ("GET", ["admin", "menus"])          => await site.AdminGetMenusAsync(),

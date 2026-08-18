@@ -112,6 +112,7 @@ var host = new HostBuilder()
         services.AddScoped<ContentHandler>();
         services.AddScoped<AdminContentHandler>();
         services.AddScoped<SiteHandler>();
+        services.AddScoped<AdminSummaryHandler>();
         services.AddScoped<MediaUsageWriter>();
 
         // ── Router ────────────────────────────────────────────────────────

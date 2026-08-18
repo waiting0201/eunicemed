@@ -252,6 +252,19 @@
 > `sitemap` 的靜態頁語系判定共用 `PageHandler.IsRenderable`（看 schema 的 `required`），
 > **不是**「翻譯列存在」—— 跨語系同步會補建只含圖片的列，那種頁面點進去是空白的。
 
+### 後台：側欄統計
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| GET | `/admin/summary` | 登入 | 各模組的 `{total, locales:{en, zhTw}}`；`locales` 是**有該語系翻譯的筆數** |
+
+> 後台側欄每一項帶一個完整度儀表（**因此不做 Dashboard 頁**）。
+> 由前端拿各列表來算是不行的：分頁的模組只看得到第一頁，數字會騙人。
+>
+> ⚠️ SQL 用 `LEFT JOIN` + `COUNT(DISTINCT CASE …)`，
+> **不可寫成 `SUM(CASE WHEN EXISTS (子查詢))`** —— SQL Server 拒絕
+> 「彙總函式內含子查詢」（Msg 130）。
+
 ### 後台：選單 / 轉址 / 設定
 
 | Method | Path | 權限 | 說明 |

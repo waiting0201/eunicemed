@@ -137,6 +137,24 @@ export const api = {
 
   certifications: () => request<AdminCertification[]>('/admin/certifications'),
 
+  summary: () => request<Record<string, SummaryEntry>>('/admin/summary'),
+
+  articles: (params: Record<string, string | undefined>) => {
+    const q = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) if (v) q.set(k, v);
+    return request<Paged<AdminArticleListItem>>(`/admin/articles?${q}`);
+  },
+
+  applications: () => request<AdminApplicationListItem[]>('/admin/applications'),
+
+  faqs: () => request<AdminFaq[]>('/admin/faqs'),
+
+  faqCategories: () => request<AdminFaqCategory[]>('/admin/faq-categories'),
+
+  downloads: () => request<AdminDownload[]>('/admin/downloads'),
+
+  salesLocations: () => request<AdminSalesLocation[]>('/admin/sales-locations'),
+
   mediaPresets: () => request<{ presets: MediaPreset[] }>('/admin/media-presets'),
 
   media: (params: Record<string, string | undefined>) => {
@@ -224,6 +242,90 @@ export type ProductImageInput = { mediaId: string; isPrimary: boolean; sortOrder
  * 上傳尺寸規格。**畫面上的提示文字一律取自這裡**（docs/03 §5 全域規則）——
  * 尺寸調整只改 `Api/Media/media-presets.json`，全後台同步生效。
  */
+/** 側欄儀表的資料來源。`locales` 是「有該語系翻譯的筆數」。 */
+export type SummaryEntry = {
+  total: number;
+  locales: { en: number; zhTw: number };
+};
+
+export type AdminArticleListItem = {
+  id: string;
+  slug: string;
+  /** 1 = news、2 = insight */
+  type: number;
+  categorySlug: string | null;
+  titleEn: string | null;
+  titleZhTw: string | null;
+  status: number;
+  isFeatured: boolean;
+  publishedAt: string | null;
+  updatedAt: string;
+};
+
+export type AdminApplicationListItem = {
+  id: string;
+  slug: string;
+  /** 1 = 依部位、2 = 特殊照護 */
+  type: number;
+  bodyPartSlug: string | null;
+  nameEn: string | null;
+  nameZhTw: string | null;
+  showOnBodyMap: boolean;
+  status: number;
+  sortOrder: number;
+  productCount: number;
+  updatedAt: string;
+};
+
+export type AdminFaq = {
+  id: string;
+  faqCategoryId: string;
+  categorySlug: string | null;
+  status: number;
+  sortOrder: number;
+  translations: Record<string, { question: string; answer: string }>;
+  updatedAt: string;
+};
+
+export type AdminFaqCategory = {
+  id: string;
+  slug: string;
+  sortOrder: number;
+  status: number;
+  faqCount: number;
+  translations: Record<string, { name: string }>;
+};
+
+export type AdminDownload = {
+  id: string;
+  mediaId: string;
+  fileUrl: string | null;
+  type: number;
+  /** 檔案本身的語言，與介面語系無關（docs/05 §3.8）*/
+  fileLocale: string;
+  status: number;
+  sortOrder: number;
+  productIds: string[];
+  translations: Record<string, { title: string; description: string | null }>;
+  createdAt: string;
+};
+
+export type AdminSalesLocation = {
+  id: string;
+  /** 1 = 台灣、2 = 國際 */
+  locationType: number;
+  countryCode: string;
+  websiteUrl: string | null;
+  phone: string | null;
+  status: number;
+  sortOrder: number;
+  translations: Record<
+    string,
+    { name: string; address: string | null; regionLabel: string | null; note: string | null }
+  >;
+  updatedAt: string;
+};
+
 export type MediaPreset = {
   key: string;
   label: Record<string, string>;
