@@ -156,11 +156,11 @@ facet 篩選、standalone 產物 66MB／250MB。
 | Applications／Detail | `/[locale]/applications[/{slug}]` | ✅ **已切版可運作**（含人體圖 SVG 互動）|
 | Partnership | `/[locale]/partnership` | ⬜ |
 | Resources | `/[locale]/resources` | ⬜ |
-| FAQ | `/[locale]/faq` | ⬜ |
+| FAQ | `/[locale]/faq` | ✅ **已切版可運作**（分類篩選 + 原生 details 手風琴）|
 | Insights／Article Detail | `/[locale]/insights[/{slug}]` | ⬜ |
 | News／News Detail | `/[locale]/news[/{slug}]` | ⬜ |
-| Downloads | `/[locale]/downloads` | ⬜ |
-| Where to Buy | `/[locale]/where-to-buy` | ⬜ |
+| Downloads | `/[locale]/downloads` | ✅ **已切版可運作**（類型篩選）|
+| Where to Buy | `/[locale]/where-to-buy` | ✅ **已切版可運作**（伺服器端分組）|
 | Contact | `/[locale]/contact` | ⬜ |
 | Privacy | `/[locale]/privacy` | ⬜ |
 

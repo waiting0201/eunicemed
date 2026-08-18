@@ -199,6 +199,44 @@ export type ProductDetail = {
 
 export type Stat = { value: string; label: string };
 
+// ── FAQ / 下載 / 據點 ──────────────────────────────────────────────────────
+
+export type Faq = {
+  id: string;
+  question: string;
+  /** 已由 API 淨化的 HTML（Services/HtmlSanitizers.cs）*/
+  answer: string;
+  category: SlugName | null;
+};
+
+export type DownloadFile = {
+  id: string;
+  title: string;
+  description: string | null;
+  /** 'catalog' | 'manual' | 'certificate' —— 固定字彙，標籤由前端依語系對照 */
+  type: string;
+  /** 檔案本身的語言（docs/05 §3.8），與站台語系無關 */
+  fileLocale: string;
+  fileExt: string;
+  sizeBytes: number;
+  url: string;
+};
+
+export type SalesLocation = {
+  name: string;
+  address: string | null;
+  note: string | null;
+  phone: string | null;
+  websiteUrl: string | null;
+  countryCode: string;
+};
+
+export type SalesLocations = {
+  domestic: SalesLocation[];
+  /** 伺服器端已分組；未填 region 者集中在最後一組（docs/04 §4）*/
+  international: { region: string | null; items: SalesLocation[] }[];
+};
+
 // ── 應用方案 ──────────────────────────────────────────────────────────────
 
 export type ApplicationListItem = {
@@ -281,6 +319,21 @@ export const api = {
 
   application: (locale: string, slug: string) =>
     getOrNull<ApplicationDetail>(`/applications/${enc(slug)}?locale=${enc(locale)}`),
+
+  faqs: (locale: string, category?: string) => {
+    const q = new URLSearchParams({ locale, facets: 'true' });
+    if (category) q.set('category', category);
+    return get<FacetedResult<Faq>>(`/faqs?${q}`);
+  },
+
+  downloads: (locale: string, type?: string) => {
+    const q = new URLSearchParams({ locale, facets: 'true' });
+    if (type) q.set('type', type);
+    return get<FacetedResult<DownloadFile>>(`/downloads?${q}`);
+  },
+
+  salesLocations: (locale: string) =>
+    get<SalesLocations>(`/sales-locations?locale=${enc(locale)}`),
 
   categories: (locale: string) =>
     get<CategoryDetail[]>(`/categories?locale=${enc(locale)}&include=subCategories`),
