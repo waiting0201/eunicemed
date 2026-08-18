@@ -1,112 +1,431 @@
 @import 'tailwindcss';
 
 /**
- * 後台設計 token。
+ * EuniceMed 後台設計 token。
  *
- * 與公開站**同源但不同調**（docs/03 §8.1）：品牌青一致，但這裡是每天用八小時的
- * 高密度工具，不套用公開站的大留白與 hero 尺度。
+ * **版面結構與元件慣例對齊 [Jabez/Admin](/Users/tim/webapps/Jabez/Admin)**
+ * —— 同一位開發者的既有後台，操作習慣一致比視覺獨創重要。
+ * 沿用它的：app-wrap 格線、可收合側欄、topbar、.btn / .form-control / .table / .badge
+ * 命名、圖示系統、斷點策略。
  *
- * 設計論點：這個站的失效模式是**靜默** —— 語言純度讓未翻譯的內容直接消失，
- * 不報錯。後台的職責因此正好相反：**讓「缺什麼」大聲**。
- * 整套視覺借用 EuniceMed 自己的產品語言（分級、量測、符合規格）。
+ * **品牌換成 EuniceMed**：Jabez 是暖米底 + 森綠側欄，這裡是冷灰底 + 深青側欄
+ * （品牌色 Pantone 7466c #00B5CD 的深色變體）。暖米配青會打架。
+ *
+ * 保留一項本專案獨有的元件：**完整度儀表**（見 components/Gauge.tsx）。
+ * 這個站的失效模式是靜默 —— 語言純度讓未翻譯內容直接消失、不報錯，
+ * 後台必須讓「缺什麼」大聲。
  */
-@theme {
-  /* 冷灰紙。刻意不是米色（太軟）也不是深色（八小時盯著會累）*/
-  --color-paper: #f2f5f6;
-  --color-surface: #ffffff;
-  --color-ink: #12262c;
-  --color-ink-soft: #4a5f66;
-  --color-ink-faint: #7d9198;
-  --color-rule: #dce5e8;
-  --color-rule-soft: #eaf0f2;
+:root {
+  /* 底色。冷灰而非 Jabez 的暖米 —— 要與品牌青共存 */
+  --bg-base: #f1f5f6;
+  --bg-surface: #ffffff;
+  --bg-elevated: #e7eef0;
+  --bg-hover: #e0e9ec;
+  --border: #d5e0e3;
+  --border-bright: #b9c9ce;
 
-  /* 品牌青。**只給儀表與作用中狀態用** —— 不當一般按鈕底色，
-     否則它就不再代表「量測」這件事了。 */
-  --color-gauge: #00b5cd;
-  --color-gauge-deep: #0092a8;
+  /* 側欄：品牌青的深色變體。純 #00B5CD 當大面積底色太亮，白字對比不足 */
+  --sidebar-bg: #0b5563;
+  --sidebar-surface: #094754;
+  --sidebar-hover: #0d687a;
+  --sidebar-border: rgb(255 255 255 / 0.16);
+  --sidebar-text: rgb(255 255 255 / 0.92);
+  --sidebar-text-dim: rgb(255 255 255 / 0.55);
 
-  /* 缺漏。**全站沒有綠色** —— 完成不是打勾，是儀表填滿。
-     鏽紅與青是色盲友善的一對。 */
-  --color-missing: #a8452b;
-  --color-missing-soft: #f7ece8;
+  /* 主要動作色 = 品牌青 */
+  --accent: #0092a8;
+  --accent-muted: #007a8d;
+  --accent-dim: rgb(0 146 168 / 0.1);
+  --accent-border: rgb(0 146 168 / 0.28);
+
+  --text-primary: #12262c;
+  --text-secondary: #4a5f66;
+  --text-muted: #7d9198;
+
+  /* 語意色。**沒有綠色代表「完成」** —— 完成由儀表填滿表達，
+     綠色只用在一般成功訊息 */
+  --green: #2f6b4f;
+  --yellow: #a8762a;
+  --red: #a8452b;
+  --purple: #6b4c7a;
+
+  /* 儀表：品牌青原色，只給它用 */
+  --gauge: #00b5cd;
+  --gauge-empty: rgb(168 69 43 / 0.25);
 
   --font-display: 'Myriad Variable Concept', 'Noto Sans TC', system-ui, sans-serif;
-  --font-sans: system-ui, -apple-system, 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
-  /* slug / SKU / ID 用等寬：那些是要逐字比對的字串，不是給人讀的句子。
-     用系統等寬而非外部字型 —— 打包體積計入 SWA Free 的 250MB。 */
-  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'Roboto Mono', monospace;
-}
+  --font-ui: system-ui, -apple-system, 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', monospace;
 
-@font-face {
-  font-family: 'Myriad Variable Concept';
-  /* 與公開站共用同一份字型檔（apps/web/public/fonts） */
-  src: url('/fonts/MyriadVariableConcept.woff2') format('woff2');
-  font-weight: 300 900;
-  font-stretch: 75% 125%;
-  font-display: swap;
+  /* 版面尺寸 —— 與 Jabez 相同，操作手感一致 */
+  --app-header-height: 5rem;
+  --menu-width: 16rem;
+  --menu-width-minified: 4.4rem;
+  --content-padding: 1.25rem 1.75rem;
+  --radius: 0.375rem;
+  --radius-sm: 0.25rem;
+  --transition: transform 470ms cubic-bezier(0.34, 1.25, 0.3, 1);
 }
 
 @layer base {
-  html {
-    color-scheme: light;
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
   }
 
   body {
-    font-family: var(--font-sans);
-    /* 行高以中文為準（docs/03 §8.1）—— 拉丁字看起來會稍鬆，那是對的取捨 */
-    line-height: 1.65;
-    color: var(--color-ink);
-    background: var(--color-paper);
+    margin: 0;
+    font-family: var(--font-ui);
+    /* 行高以中文為準（docs/03 §8.1）—— 拉丁字會稍鬆，那是對的取捨 */
+    line-height: 1.6;
+    color: var(--text-primary);
+    background: var(--bg-base);
     -webkit-font-smoothing: antialiased;
   }
 
-  /* 焦點框用品牌青，與公開站一致 */
-  :focus-visible {
-    outline: 2px solid var(--color-gauge-deep);
-    outline-offset: 2px;
-    border-radius: 3px;
+  h1, h2, h3, h4 {
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+    line-height: 1.25;
   }
 
-  ::selection {
-    background: color-mix(in srgb, var(--color-gauge) 26%, transparent);
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--text-primary); }
+
+  input, textarea, select, button { font-family: inherit; }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
+
+  /* 與 Jabez 同一組斷點：整體字級縮放而非逐處改 */
+  @media (max-width: 1280px) { html { font-size: 14px; } }
+  @media (max-width: 991px)  { html { font-size: 16px; } }
 
   @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation: none !important;
-      transition: none !important;
-    }
+    *, *::before, *::after { animation: none !important; transition: none !important; }
   }
 }
 
-@layer utilities {
-  /* 區段標籤：Myriad 的 width 軸壓窄。這是這套字型獨有的能力，
-     用它來做小標籤比換一個字型家族更貼近品牌。 */
-  .label-condensed {
+@layer components {
+  /* ─── 版面 ─────────────────────────────────────── */
+  .app-wrap {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: var(--menu-width) auto;
+    grid-template-rows: var(--app-header-height) auto;
+    grid-template-areas: 'header header' 'sidebar main';
+    transition: grid-template-columns 470ms cubic-bezier(0.34, 1.25, 0.3, 1);
+  }
+
+  .app-wrap.nav-minified { --menu-width: var(--menu-width-minified); }
+
+  .app-header {
+    grid-area: header;
+    height: var(--app-header-height);
+    padding-right: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    background: var(--bg-surface);
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+
+  .app-logo {
+    display: flex;
+    align-items: center;
+    height: var(--app-header-height);
+    width: var(--menu-width);
+    padding: 0 1.25rem;
+    gap: 0.625rem;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    margin-right: 1.25rem;
+    overflow: hidden;
+    transition: width 470ms cubic-bezier(0.34, 1.25, 0.3, 1);
+  }
+
+  .app-sidebar {
+    grid-area: sidebar;
+    width: var(--menu-width);
+    background: var(--sidebar-bg);
+    position: sticky;
+    top: var(--app-header-height);
+    height: calc(100vh - var(--app-header-height));
+    overflow-x: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    z-index: 30;
+    transition: width 470ms cubic-bezier(0.34, 1.25, 0.3, 1);
+  }
+
+  .app-body {
+    grid-area: main;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .content-wrapper {
+    flex: 1 1 auto;
+    padding: var(--content-padding);
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .app-footer {
+    padding: 0.75rem 1.75rem;
+    border-top: 1px solid var(--border);
+    background: var(--bg-surface);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 55px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  /* 991px 以下側欄變抽屜（同 Jabez）*/
+  @media (max-width: 991px) {
+    .app-wrap {
+      grid-template-columns: 0 auto;
+      grid-template-areas: 'sidebar header' 'sidebar main';
+    }
+    .app-sidebar {
+      position: fixed;
+      top: var(--app-header-height);
+      width: var(--menu-width-open, 16rem);
+      transform: translate3d(-100%, 0, 0);
+      transition: var(--transition);
+    }
+    .app-wrap.nav-open .app-sidebar { transform: translate3d(0, 0, 0); }
+    .app-logo { width: auto; border-right: 0; }
+  }
+
+  /* ─── 側欄選單 ─────────────────────────────────── */
+  .nav-title {
+    padding: 1rem 1.25rem 0.375rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--sidebar-text-dim);
+    white-space: nowrap;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.9rem;
+    color: var(--sidebar-text);
+    white-space: nowrap;
+    border-left: 3px solid transparent;
+    transition: background-color 0.15s, border-color 0.15s;
+  }
+
+  .nav-link:hover { background: var(--sidebar-hover); color: #fff; }
+
+  .nav-link.active {
+    background: rgb(255 255 255 / 0.16);
+    border-left-color: var(--gauge);
+    color: #fff;
+    font-weight: 500;
+  }
+
+  .nav-minified .nav-title { visibility: hidden; }
+  .nav-minified .nav-label { display: none; }
+  .nav-minified .nav-link { justify-content: center; padding-inline: 0; }
+
+  /* ─── 圖示 ─────────────────────────────────────── */
+  .icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+    display: block;
+  }
+  .icon-sm { width: 1rem; height: 1rem; }
+  .icon-lg { width: 1.5rem; height: 1.5rem; }
+
+  /* ─── 面板 ─────────────────────────────────────── */
+  .panel {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .panel-header {
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .panel-body { padding: 1.25rem; }
+
+  /* ─── 按鈕（命名同 Jabez）───────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.875rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    background: transparent;
+    color: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.5;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+  }
+
+  .btn:disabled, .btn.disabled { opacity: 0.55; cursor: not-allowed; pointer-events: none; }
+  .btn-sm { padding: 0.25rem 0.625rem; font-size: 0.8125rem; border-radius: var(--radius-sm); }
+  .btn-block { display: flex; width: 100%; }
+
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #007a8d; border-color: #007a8d; }
+
+  .btn-danger { background: var(--red); border-color: var(--red); color: #fff; }
+  .btn-danger:hover { background: #8e3a24; border-color: #8e3a24; }
+
+  .btn-secondary { background: var(--bg-surface); border-color: var(--border); color: var(--text-primary); }
+  .btn-secondary:hover { background: var(--bg-hover); border-color: var(--border-bright); }
+
+  .btn-ghost { color: var(--text-secondary); }
+  .btn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+  /* ─── 表單 ─────────────────────────────────────── */
+  .form-label {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  .form-control {
+    display: block;
+    width: 100%;
+    padding: 0.4375rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--text-primary);
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    appearance: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .form-control:focus {
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: 0 0 0 3px var(--accent-dim);
+  }
+
+  .form-control::placeholder { color: var(--text-muted); }
+  .form-hint { margin-top: 0.25rem; font-size: 0.78rem; color: var(--text-muted); }
+
+  /* ─── 表格 ─────────────────────────────────────── */
+  .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+  }
+
+  .table th,
+  .table td {
+    padding: 0.625rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+
+  .table thead th {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    background: var(--bg-elevated);
+    white-space: nowrap;
+  }
+
+  .table tbody tr:last-child td { border-bottom: none; }
+  .table-hover tbody tr:hover { background: var(--bg-hover); }
+
+  /* ─── 標記 ─────────────────────────────────────── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    padding: 0.25em 0.6em;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+  }
+
+  .alert {
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    border-left: 3px solid var(--red);
+    background: rgb(168 69 43 / 0.08);
+    color: var(--red);
+    font-size: 0.875rem;
+  }
+
+  .mono { font-family: var(--font-mono); font-size: 0.82rem; letter-spacing: -0.01em; }
+
+  .page-title {
+    font-family: var(--font-display);
+    /* Myriad 是 variable font —— 用它的 width 軸，這是這套字型獨有的能力 */
+    font-stretch: 92%;
+    font-weight: 500;
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+
+  .eyebrow {
     font-family: var(--font-display);
     font-stretch: 82%;
     font-weight: 620;
+    font-size: 0.68rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    font-size: 0.68rem;
-  }
-
-  .mono {
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
-    letter-spacing: -0.01em;
+    color: var(--text-muted);
   }
 }
 
-/* 儀表的交錯重繪：切換語系時讓人「看見」中文軌塌陷。
-   全站唯一的動態，其餘一律靜態。 */
+/* 儀表交錯重繪：切換語系時讓人「看見」中文軌塌陷 */
 @keyframes gauge-in {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
 }

@@ -13,17 +13,23 @@
  * </p>
  */
 const STATUS = {
-  0: { label: '草稿', mark: 'border border-ink-faint bg-transparent' },
-  1: { label: '已發布', mark: 'bg-ink' },
-  2: { label: '封存', mark: 'bg-[repeating-linear-gradient(135deg,var(--color-ink-faint)_0_2px,transparent_2px_4px)]' },
+  0: { label: '草稿', style: { border: '1px solid var(--text-muted)' } },
+  1: { label: '已發布', style: { background: 'var(--text-primary)' } },
+  2: {
+    label: '封存',
+    style: {
+      background:
+        'repeating-linear-gradient(135deg,var(--text-muted) 0 2px,transparent 2px 4px)',
+    },
+  },
 } as const;
 
 export function StatusTag({ status, scheduled }: { status: number; scheduled?: boolean }) {
   const s = STATUS[status as keyof typeof STATUS] ?? STATUS[0];
 
   return (
-    <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[0.78rem] text-ink-soft">
-      <span aria-hidden className={`h-2 w-2 shrink-0 rounded-[2px] ${s.mark}`} />
+    <span className="badge">
+      <span aria-hidden className="h-2 w-2 shrink-0 rounded-[2px]" style={s.style} />
       {/* 排程發布在後端是 Published + 未來時間 —— 對編輯者而言那是第四種狀態，
           不標出來的話他會以為已經上線了 */}
       {scheduled ? '已排程' : s.label}

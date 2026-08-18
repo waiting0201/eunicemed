@@ -25,6 +25,7 @@ export function Gauge({
   label,
   width = 'w-11',
   animateKey,
+  onDark = false,
 }: {
   /** 0 = 完全沒有內容、3 = 齊全 */
   level: GaugeLevel;
@@ -33,6 +34,8 @@ export function Gauge({
   width?: string;
   /** 變動時觸發交錯重繪（切換語系用）。相同值不重播。 */
   animateKey?: string | number;
+  /** 放在深色側欄上時，未填段要提亮才看得見 */
+  onDark?: boolean;
 }) {
   const empty = level === 0;
 
@@ -49,22 +52,21 @@ export function Gauge({
           <span
             key={`${animateKey}-${i}`}
             aria-hidden
-            style={
-              filled
-                ? {
-                    animation: 'gauge-in 260ms cubic-bezier(.22,1,.36,1) both',
-                    animationDelay: `${i * 45}ms`,
-                    transformOrigin: 'left',
-                  }
-                : undefined
-            }
-            className={`h-[3px] flex-1 rounded-[1px] ${
-              filled
-                ? 'bg-gauge'
-                : empty
-                  ? 'bg-missing/25'
-                  : 'bg-rule'
-            }`}
+            className="h-[3px] flex-1 rounded-[1px]"
+            style={{
+              background: filled
+                ? 'var(--gauge)'
+                : onDark
+                  ? 'rgb(255 255 255 / 0.22)'
+                  : empty
+                    ? 'var(--gauge-empty)'
+                    : 'var(--border)',
+              ...(filled && {
+                animation: 'gauge-in 260ms cubic-bezier(.22,1,.36,1) both',
+                animationDelay: `${i * 45}ms`,
+                transformOrigin: 'left',
+              }),
+            }}
           />
         );
       })}
@@ -89,7 +91,10 @@ export function LocaleGauges({
     <span className="inline-flex flex-col gap-[3px]">
       {Object.entries(levels).map(([locale, level]) => (
         <span key={locale} className="inline-flex items-center gap-1.5">
-          <span className="mono w-9 shrink-0 text-[0.68rem] text-ink-faint">
+          <span
+            className="mono w-9 shrink-0 text-[0.68rem]"
+            style={{ color: 'var(--text-muted)' }}
+          >
             {locale}
           </span>
           <Gauge level={level} label={labelOf(locale, level)} animateKey={animateKey} />

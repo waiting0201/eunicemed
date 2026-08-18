@@ -51,12 +51,12 @@ function RequireAuth() {
 
 function Placeholder({ title }: { title: string }) {
   return (
-    <div className="px-8 py-6">
-      <div className="label-condensed text-ink-faint">尚未建立</div>
-      <h1 className="font-display text-[1.6rem] font-normal">{title}</h1>
-      <p className="mt-3 max-w-[52ch] text-[0.92rem] text-ink-soft">
+    <>
+      <div className="eyebrow">尚未建立</div>
+      <h1 className="page-title">{title}</h1>
+      <p className="mt-3 max-w-[52ch] text-[0.92rem]" style={{ color: 'var(--text-secondary)' }}>
         這個畫面還沒做。API 已經就緒，版面沿用產品列表的骨架。
       </p>
-    </div>
+    </>
   );
 }

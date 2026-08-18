@@ -38,39 +38,41 @@ export function Login() {
     <div className="flex min-h-screen items-center justify-center px-6">
       <form
         onSubmit={submit}
-        className="w-full max-w-[22rem] border border-rule bg-surface p-8"
+        className="panel w-full max-w-[22rem] p-8"
       >
-        <div className="label-condensed text-ink">EuniceMed</div>
-        <h1 className="mt-1 font-display text-[1.4rem] font-normal">內容管理</h1>
+        <div className="eyebrow" style={{ color: 'var(--text-primary)' }}>
+          EuniceMed
+        </div>
+        <h1 className="page-title mt-1 text-[1.4rem]">內容管理</h1>
 
         <label className="mt-7 block">
-          <span className="label-condensed text-ink-faint">電子郵件</span>
+          <span className="form-label">電子郵件</span>
           <input
             type="email"
             required
             autoComplete="username"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mono mt-1.5 w-full border border-rule bg-paper px-3 py-2 focus:border-gauge focus:outline-none"
+            className="form-control mono"
           />
         </label>
 
         <label className="mt-4 block">
-          <span className="label-condensed text-ink-faint">密碼</span>
+          <span className="form-label">密碼</span>
           <input
             type="password"
             required
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1.5 w-full border border-rule bg-paper px-3 py-2 focus:border-gauge focus:outline-none"
+            className="form-control"
           />
         </label>
 
         {error && (
           <p
             role="alert"
-            className="mt-4 border-l-2 border-missing bg-missing-soft px-3 py-2 text-[0.85rem] text-missing"
+            className="alert mt-4"
           >
             {error}
           </p>
@@ -79,7 +81,7 @@ export function Login() {
         <button
           type="submit"
           disabled={busy}
-          className="mt-6 w-full bg-ink px-4 py-2.5 text-[0.92rem] font-medium text-white transition hover:bg-ink-soft disabled:opacity-50"
+          className="btn btn-primary btn-block mt-6"
         >
           {busy ? '登入中…' : '登入'}
         </button>

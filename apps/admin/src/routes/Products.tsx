@@ -37,19 +37,19 @@ export function Products() {
   const missingZh = data?.items.filter((p) => !p.nameZhTw).length ?? 0;
 
   return (
-    <div className="px-8 py-6">
-      <header className="flex flex-wrap items-baseline justify-between gap-4">
+    <>
+      <header className="mb-4 flex flex-wrap items-baseline justify-between gap-4">
         <div>
-          <div className="label-condensed text-ink-faint">內容</div>
-          <h1 className="font-display text-[1.6rem] font-normal">產品</h1>
+          <div className="eyebrow">內容</div>
+          <h1 className="page-title">產品</h1>
         </div>
         {data && (
-          <p className="text-[0.85rem] text-ink-soft">
+          <p className="text-[0.85rem]" style={{ color: 'var(--text-secondary)' }}>
             共 <span className="mono">{data.totalCount}</span> 筆
             {missingZh > 0 && (
               <>
                 {' · '}
-                <span className="text-missing">
+                <span style={{ color: 'var(--red)' }}>
                   本頁 <span className="mono">{missingZh}</span> 筆缺中文
                 </span>
               </>
@@ -58,7 +58,7 @@ export function Products() {
         )}
       </header>
 
-      <div className="mt-5 flex flex-wrap gap-2">
+      <div className="mb-4 flex flex-wrap gap-2">
         <input
           type="search"
           placeholder="搜尋名稱或 SKU"
@@ -67,7 +67,7 @@ export function Products() {
             setSearch(e.target.value);
             setPage(1);
           }}
-          className="w-64 border border-rule bg-surface px-3 py-1.5 text-[0.9rem] focus:border-gauge focus:outline-none"
+          className="form-control w-64"
         />
         {/* 搜尋比對名稱與 SKU，不比對 slug —— 與後端一致（docs/api-routes.md），
             寫在 placeholder 裡讓人不必猜 */}
@@ -85,11 +85,7 @@ export function Products() {
               setPage(1);
             }}
             aria-pressed={status === option.value}
-            className={`border px-3 py-1.5 text-[0.85rem] transition ${
-              status === option.value
-                ? 'border-ink bg-ink text-white'
-                : 'border-rule bg-surface hover:border-ink-faint'
-            }`}
+            className={`btn btn-sm ${status === option.value ? 'btn-primary' : 'btn-secondary'}`}
           >
             {option.label}
           </button>
@@ -97,32 +93,32 @@ export function Products() {
       </div>
 
       {isError && (
-        <p
-          role="alert"
-          className="mt-6 border-l-2 border-missing bg-missing-soft px-4 py-3 text-[0.9rem] text-missing"
-        >
+        <p role="alert" className="alert mb-4">
           {error instanceof Error ? error.message : '讀取失敗。'}
         </p>
       )}
 
-      <div className="mt-5 border border-rule bg-surface">
-        <table className="w-full border-collapse text-left">
+      <div className="panel table-responsive">
+        <table className="table table-hover">
           <thead>
-            <tr className="border-b border-rule text-ink-faint">
-              <Th className="w-[3.25rem]" />
-              <Th>名稱</Th>
-              <Th className="w-28">SKU</Th>
-              <Th className="w-32">分類</Th>
-              <Th className="w-32">內容完整度</Th>
-              <Th className="w-24">狀態</Th>
+            <tr>
+              <th className="w-[3.25rem]" />
+              <th>名稱</th>
+              <th className="w-28">SKU</th>
+              <th className="w-36">分類</th>
+              <th className="w-36">內容完整度</th>
+              <th className="w-24">狀態</th>
             </tr>
           </thead>
           <tbody>
             {isPending &&
               Array.from({ length: 6 }, (_, i) => (
-                <tr key={i} className="border-b border-rule-soft">
-                  <td colSpan={6} className="px-3 py-3">
-                    <span className="block h-4 w-full animate-pulse bg-rule-soft" />
+                <tr key={i}>
+                  <td colSpan={6}>
+                    <span
+                      className="block h-4 w-full animate-pulse rounded-sm"
+                      style={{ background: 'var(--bg-elevated)' }}
+                    />
                   </td>
                 </tr>
               ))}
@@ -131,7 +127,7 @@ export function Products() {
 
             {data?.items.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-16 text-center text-ink-faint">
+                <td colSpan={6} className="py-16 text-center" style={{ color: 'var(--text-muted)' }}>
                   沒有符合條件的產品。調整搜尋或篩選再試一次。
                 </td>
               </tr>
@@ -141,29 +137,29 @@ export function Products() {
       </div>
 
       {data && data.totalPages > 1 && (
-        <div className="mt-4 flex items-center gap-3 text-[0.85rem]">
+        <div className="mt-4 flex items-center gap-3">
           <button
             type="button"
+            className="btn btn-sm btn-secondary"
             disabled={page <= 1}
             onClick={() => setPage((p) => p - 1)}
-            className="border border-rule bg-surface px-3 py-1.5 disabled:opacity-40"
           >
             上一頁
           </button>
-          <span className="mono text-ink-soft">
+          <span className="mono" style={{ color: 'var(--text-secondary)' }}>
             {data.page} / {data.totalPages}
           </span>
           <button
             type="button"
+            className="btn btn-sm btn-secondary"
             disabled={page >= data.totalPages}
             onClick={() => setPage((p) => p + 1)}
-            className="border border-rule bg-surface px-3 py-1.5 disabled:opacity-40"
           >
             下一頁
           </button>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
@@ -171,9 +167,12 @@ function Row({ product }: { product: AdminProductListItem }) {
   const levels = completenessOf(product);
 
   return (
-    <tr className="border-b border-rule-soft align-middle transition hover:bg-rule-soft">
-      <Td>
-        <span className="block h-9 w-9 overflow-hidden rounded-[3px] bg-paper">
+    <tr>
+      <td>
+        <span
+          className="block h-9 w-9 overflow-hidden rounded-sm"
+          style={{ background: 'var(--bg-elevated)' }}
+        >
           {product.primaryImageUrl && (
             <img
               src={product.primaryImageUrl}
@@ -183,31 +182,36 @@ function Row({ product }: { product: AdminProductListItem }) {
             />
           )}
         </span>
-      </Td>
+      </td>
 
-      <Td>
+      <td className="max-w-0">
         <span className="block truncate font-medium">
           {product.nameEn ?? product.nameZhTw ?? '（未命名）'}
         </span>
         {/* slug 用等寬：它是要逐字比對的字串，不是給人讀的句子 */}
-        <span className="mono block truncate text-ink-faint">{product.slug}</span>
-      </Td>
+        <span className="mono block truncate" style={{ color: 'var(--text-muted)' }}>
+          {product.slug}
+        </span>
+      </td>
 
-      <Td>
+      <td>
         <span className="mono">{product.sku ?? '—'}</span>
-      </Td>
+      </td>
 
-      <Td>
-        <span className="mono block truncate text-[0.78rem] text-ink-soft">
+      <td className="max-w-0">
+        <span
+          className="mono block truncate text-[0.78rem]"
+          style={{ color: 'var(--text-secondary)' }}
+        >
           {product.subCategorySlug ?? product.categorySlug ?? '—'}
         </span>
-      </Td>
+      </td>
 
-      <Td>
+      <td>
         <LocaleGauges levels={levels} labelOf={describeLevel} animateKey={product.id} />
-      </Td>
+      </td>
 
-      <Td>
+      <td>
         <StatusTag
           status={product.status}
           scheduled={
@@ -216,7 +220,7 @@ function Row({ product }: { product: AdminProductListItem }) {
             new Date(product.publishedAt) > new Date()
           }
         />
-      </Td>
+      </td>
     </tr>
   );
 }
@@ -236,10 +240,4 @@ function completenessOf(product: AdminProductListItem): LocaleLevels {
   };
 }
 
-function Th({ children, className = '' }: { children?: React.ReactNode; className?: string }) {
-  return <th className={`label-condensed px-3 py-2 font-normal ${className}`}>{children}</th>;
-}
 
-function Td({ children }: { children: React.ReactNode }) {
-  return <td className="max-w-0 px-3 py-2">{children}</td>;
-}

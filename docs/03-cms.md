@@ -199,23 +199,45 @@ Draft（草稿） ──提交──► Review（待審，選用） ──發布
 2. 先定調：後台是**高密度資料工具**，不是行銷頁面。優先序是可掃視性、表單效率、狀態清晰，不是視覺張力。
 3. 產出該畫面的版面後再寫程式碼；同類型畫面（列表／編輯／設定）**一旦定案就沿用同一個骨架**，不逐頁重新設計。
 
-**已定案的視覺方向（2026-08-18，`frontend-design` skill 產出）**
+**已定案的視覺方向（2026-08-18）**
+
+> **版面結構與元件慣例對齊 [Jabez/Admin](/Users/tim/webapps/Jabez/Admin)** ——
+> 同一位開發者的既有後台。操作習慣一致比視覺獨創重要，
+> 就像 API 骨架刻意與 Jabez/Api 同源一樣。
+
+**沿用 Jabez 的部分**
+
+| 項目 | 內容 |
+|---|---|
+| 版面 | `app-wrap` CSS 格線：`'header header' / 'sidebar main'`。全寬 sticky topbar（5rem）＋ 可收合側欄（16rem ⇄ 4.4rem）＋ footer |
+| 響應 | 1280px 以下整體字級縮到 14px；991px 以下側欄變 off-canvas 抽屜 |
+| 元件命名 | `.btn` / `.btn-primary` / `.btn-sm` / `.form-control` / `.form-label` / `.table` / `.table-hover` / `.badge` / `.panel` / `.alert` |
+| 圖示 | stroke-only、1.5 線寬、`.icon` / `.icon-sm` / `.icon-lg`（Jabez 是 sprite 檔，這裡用 inline SVG —— 只有用到的會進 bundle）|
+| 選單資料 | `menuItems` 陣列，`isTitle` 為群組標題（同 Jabez 的 `data.ts`）|
+| 圓角 | 統一 0.375rem |
+
+**換成 EuniceMed 品牌的部分**
+
+| 項目 | Jabez | EuniceMed |
+|---|---|---|
+| 底色 | 暖米 `#F5F2ED` | 冷灰 `#F1F5F6` —— 暖米配品牌青會打架 |
+| 側欄 | 森綠 `#699F34` | 深青 `#0B5563`（品牌青 `#00B5CD` 的深色變體；純品牌青當大面積底色白字對比不足）|
+| 主要動作 | taupe `#8C7355` | 品牌青 `#0092A8` |
+| 字 | Playfair + Montserrat + Lora | Myriad Variable Concept（**用 width 軸**）＋ 系統字 ＋ Noto Sans TC |
+| 等寬 | JetBrains Mono | 系統等寬 —— slug/SKU 要逐字比對；不引外部字型，省 250MB 額度 |
+
+**本專案獨有的一個元件：完整度儀表**
 
 論點：**這個站的失效模式是靜默** —— 語言純度讓未翻譯的內容直接消失、不報錯。
 公開站這樣做是對的，後台必須相反：**讓「缺什麼」大聲**。
-視覺語彙借用 EuniceMed 自己的產品語言（分級、量測、符合規格）。
 
 | 項目 | 決定 |
 |---|---|
-| 色 | ink `#12262C`／paper `#F2F5F6`（冷灰紙）／surface `#FFF`／rule `#DCE5E8`／gauge `#00B5CD`／missing `#A8452B` |
-| **全站不用綠色** | 「完成」由儀表填滿表達，不是打勾。青與鏽紅是色盲友善的一對 |
-| 品牌青只給儀表 | 不當一般按鈕底色 —— 那會讓它不再代表「量測」。主要動作用 ink |
-| 字 | 標題 Myriad Variable Concept（**實際使用 width 軸**做小標籤）／內文系統字 + Noto Sans TC／slug·SKU·ID 用系統等寬 |
-| 等寬字的理由 | slug 與 SKU 是要逐字比對的字串，不是給人讀的句子。用系統等寬不引外部字型，省 250MB 額度 |
-| **簽名元素** | **完整度儀表**：三段軌道，形狀取自壓力襪包裝的壓力梯度圖。三段對應 required / recommended / complete，因為品牌把所有東西分三級（Care·Protect·Advance） |
+| 形狀 | 三段軌道，取自壓力襪包裝的壓力梯度圖 |
+| 三段的理由 | 對應 required / recommended / complete —— 因為品牌把所有東西分三級（Care·Protect·Advance），是結構資訊不是裝飾 |
 | 雙軌 | 列表每列兩軌（en / zh-TW），掃過 149 列就看見整條中文軌是空的 |
-| **沒有 Dashboard 頁** | 側欄每項自帶迷你儀表 —— 打開後台第一眼就是「哪一區最缺中文」，那才是每天要回答的問題。統計卡首頁看過一次就不再看 |
-| 動態 | 只有一處：切換語系時儀表交錯重繪，讓人看見中文軌塌陷。其餘全靜態 |
+| **沒有 Dashboard 頁** | 側欄每項可帶迷你儀表 —— 打開後台第一眼就是「哪一區最缺中文」。統計卡首頁看過一次就不再看 |
+| 綠色 | **不用綠色代表「完成」** —— 完成是儀表填滿。綠色只留給一般成功訊息 |
 
 判準檔在 `apps/admin/src/lib/completeness.ts`：**第 0 段與第 1 段的分界必須與後端的
 `PageHandler.IsRenderable` 一致** —— 兩邊各寫一套的話，後台顯示「有內容」而前台是 404。
