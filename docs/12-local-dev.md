@@ -219,3 +219,20 @@ InvalidOperationException: A parameterless default constructor or one matching s
 訊息只會列出它期待的簽章，**完全不會提到 DateOnly**，很容易誤判成 DTO 欄位順序寫錯而白花時間。
 
 已在 `Program.cs` 全域註冊 `DateOnlyTypeHandler` / `TimeOnlyTypeHandler`（見 `Api/Services/Dapper/DateOnlyTypeHandler.cs`）。新增 `date` / `time` 欄位時不需再做任何事；但若把讀取搬到新的 host 或測試專案，記得一併註冊。
+
+---
+
+## 正式站的後台帳號
+
+| | |
+|---|---|
+| 網址 | <https://zealous-sand-0bdf5e01e.7.azurestaticapps.net/admin> |
+| 帳號 | `sa@system.local` |
+| 密碼 | `Admin@123` |
+
+與本機同一組，方便切換。首次登入會要求變更密碼（`mustChangePassword`）。
+
+> ⚠️ **這組密碼只有 9 碼，而 `/admin` 對全網際網路開放** ——
+> SWA Free 沒有 IP 限制可用（[07 §7.1](07-azure-deployment.md)），
+> 唯一的補償是登入失敗 5 次鎖 15 分鐘與每分鐘 30 次的 IP 速率限制。
+> 正式對外之前應換成長密碼，並把 `Auth__MinPasswordLength` 調回 12。
