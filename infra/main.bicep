@@ -1,10 +1,16 @@
 /*
   EuniceMed 正式環境基礎設施。
 
-  只建立三個資源（docs/07-azure-deployment.md §1）：
+  建立的資源（docs/07-azure-deployment.md §1）：
     1. Storage Account —— 媒體 + Function App 的部署包與 host metadata
     2. Function App（Flex Consumption）—— API
     3. Static Web App（Free）—— Next.js 公開站 + /admin
+    4. Log Analytics workspace + Application Insights —— **Flex Consumption 必要**
+
+  ⚠️ 第 4 項原本被方案排除（「不使用 Application Insights」），2026-08-19 實測推翻：
+  沒有 `APPLICATIONINSIGHTS_CONNECTION_STRING` 的 Flex Consumption app **起不來** ——
+  host 回 500、trigger 同步失敗、而且因為記錄管線就是它，所以連錯誤訊息都拿不到。
+  同訂用帳戶的四個正常 Flex app 全都設了這一項。見 docs/13 的踩坑紀錄。
 
   **Azure SQL 由客戶提供**，此檔不建立也不參照它 —— 連線字串是部署後才填入的
   App Setting（見下方 sqlConnectionString 參數的說明）。
@@ -105,6 +111,30 @@ resource deploymentPackage 'Microsoft.Storage/storageAccounts/blobServices/conta
   parent: blobService
   name: deploymentContainer
   properties: { publicAccess: 'None' }
+}
+
+// ── 監控（Flex Consumption 的必要條件，不是選配）──────────────────────────
+// workspace-based 的 App Insights 需要一個 Log Analytics workspace（classic 已退役）。
+// 保留 30 天、按量計費；本站流量遠低於每月 5GB 的免費額度。
+
+resource logs 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
+  name: 'log-${namePrefix}-prod'
+  location: location
+  properties: {
+    sku: { name: 'PerGB2018' }
+    retentionInDays: 30
+  }
+}
+
+resource insights 'Microsoft.Insights/components@2020-02-02' = {
+  name: 'appi-${namePrefix}-prod'
+  location: location
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    WorkspaceResourceId: logs.id
+    // 取樣交給 host.json 決定，這裡不動
+  }
 }
 
 // ── Function App（Flex Consumption）────────────────────────────────────────
@@ -213,6 +243,11 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'Cors__AllowedOrigins'
           value: siteUrl
+        }
+        {
+          // ⚠️ **不要拿掉。** 少了它 Flex Consumption 的 host 起不來（見檔頭說明）。
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: insights.properties.ConnectionString
         }
         // SMTP 與 reCAPTCHA 的值尚未取得（CLAUDE.md §7）。
         // 刻意不在這裡放空字串佔位 —— 空的 Smtp__Host 會讓寄信在執行期才失敗，
@@ -334,3 +369,4 @@ output storageAccountName string = storage.name
 output mediaBaseUrl string = '${storage.properties.primaryEndpoints.blob}${mediaContainer}'
 output staticWebAppName string = staticWebApp.name
 output staticWebAppHost string = staticWebApp.properties.defaultHostname
+output appInsightsName string = insights.name

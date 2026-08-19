@@ -14,8 +14,15 @@
 | 2 | **Azure Function App** | **Flex Consumption**（Linux，.NET 10 isolated） | API `/api/v1/*` |
 | 3 | **Azure Storage（Blob）** | StorageV2、Hot、LRS | 媒體（圖片/PDF）＋ Function App 部署包與 host metadata |
 | 4 | **Azure SQL Database** | **由品牌方／客戶提供** | 資料庫（本專案不建立、不管理此資源） |
+| 5 | **Log Analytics workspace** | PerGB2018、保留 30 天 | workspace-based App Insights 的必要載體（classic 已退役） |
+| 6 | **Application Insights** | workspace-based | **Flex Consumption 的必要條件**（見下），同時是本方案唯一的可觀測性來源 |
 
-> 沒有第 5 個資源。任何新需求若需要額外 Azure 資源，必須先回頭確認。
+> ⚠️ **5 與 6 原本被排除，2026-08-19 因實測加回。**
+> 沒有 `APPLICATIONINSIGHTS_CONNECTION_STRING` 的 Flex Consumption app **起不來**：
+> host 對每個請求回 500、trigger 同步失敗，而且因為它就是記錄管線，
+> 所以沒有任何錯誤訊息可查。這一點在同訂用帳戶的四個正常 Flex app 上都得到印證。
+>
+> 除此之外，任何新需求若需要額外 Azure 資源，仍必須先回頭確認。
 
 ### 1.1 一個 Storage Account 的容器切分
 

@@ -398,6 +398,36 @@ explicitly expose it by marking it with "use server".
 但 **zsh 預設不對未加引號的參數展開做 word splitting**，
 三個 id 連成一個字串塞進 `mediaId`，才撞出這個 500。
 
+### 2026-08-19 · Flex Consumption 沒有 Application Insights 就起不來（方案前提被實測推翻）
+
+部署成功、資源正常、程式碼在本機用正式設定 4.2 秒跑完啟動 —— 但雲端上
+**每一個請求都不回應**，`/admin/host/status` 回 500，trigger 同步失敗。
+
+二分法把範圍砍到見底：
+
+| 測試 | 結果 |
+|---|---|
+| 我們的 API（.NET 10、DB、DI） | ❌ |
+| 最小 hello-world（.NET 10，無 DI 無 DB） | ❌ 完全相同 |
+| 最小 hello-world（.NET 8 + 1.x worker 套件） | ❌ 完全相同 |
+| 砍掉整個 Function App 重建 | ❌ 完全相同 |
+| storage 允許共用金鑰 / `AzureWebJobsStorage` 改連線字串 | ❌ |
+| `maximumInstanceCount` 10 → 40 | ❌ |
+| 部署儲存體驗證 MI → 連線字串 | ❌ |
+
+最後是**跟同訂用帳戶四個正常運作的 Flex app 逐項比對設定**才找到：
+它們全都有 `APPLICATIONINSIGHTS_CONNECTION_STRING`，我們沒有 —— 因為方案明文排除它。
+其中 `func-20skin-api-prod` 連部署驗證都跟我們原本一樣是 SystemAssignedIdentity，照樣正常，
+所以那不是差異點。
+
+**Flex Consumption 的主機記錄管線就掛在 App Insights 上，缺了它 host 起不來 ——
+而且正因為缺的是記錄管線本身，失敗完全沒有訊息。**
+
+兩個通則：
+
+1. **「不裝可觀測性」不是可以省的成本，在某些 PaaS 上它是執行前提。**
+2. 卡在無訊息的失敗時，**跟一個已知正常的同型資源逐項比對設定**，比繼續猜快得多。
+
 ### 2026-08-18 · 連線字串的 App Setting 鍵名，文件與程式碼不一致
 
 `docs/07 §6.1` 從頭到尾寫 `Sql__ConnectionString`，Bicep 也照著設；

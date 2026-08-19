@@ -56,12 +56,17 @@
 | CMS | **自建後台**（React Admin SPA，**掛在同一個 SWA 的 `/admin`**） | 產品/應用方案/文章(News·Insights)/FAQ/下載/據點/頁面內容維護 |
 | 資料庫 DB | **Azure SQL Database（SQL Server）**，**由客戶提供** | 透過 EF Core（.NET 10）存取 |
 | 媒體儲存 | **Azure Blob Storage**（匿名讀取容器，**無 CDN**） | 圖片、PDF；兼作 Function App 部署包儲存 |
-| 部署 Hosting | **Azure，只用 4 個資源**：SWA Free（Next.js SSR hybrid + `/admin`）＋ Function App（**Flex Consumption**，獨立非 SWA linked）＋ Blob Storage ＋ Azure SQL（客戶提供） | 見部署文件 |
+| 部署 Hosting | **Azure，6 個資源**：SWA Free（Next.js SSR hybrid + `/admin`）＋ Function App（**Flex Consumption**，獨立非 SWA linked）＋ Blob Storage ＋ Azure SQL（客戶提供）＋ **Log Analytics workspace + Application Insights** | 見部署文件 |
 
 > 架構原則：**Headless**。前端與 CMS 後台都只透過 Functions API 取用資料；資料庫不直接對外。
 >
-> **部署方案硬性邊界（已定案）**：全站只有上述 4 個 Azure 資源、只有**一套 prod 環境**。
-> **不使用** Front Door／CDN、Key Vault、Application Insights／Log Analytics、Communication Services、Container Registry、Entra ID、APIM、Defender for Storage。
+> **部署方案硬性邊界（已定案）**：全站只有上述資源、只有**一套 prod 環境**。
+> **不使用** Front Door／CDN、Key Vault、Communication Services、Container Registry、Entra ID、APIM、Defender for Storage。
+>
+> ⚠️ **Application Insights 原本也在排除清單上，2026-08-19 因實測推翻**：
+> 沒有 `APPLICATIONINSIGHTS_CONNECTION_STRING` 的 Flex Consumption app 起不來
+> （host 回 500，且因為記錄管線就是它，連錯誤訊息都拿不到）。
+> 同訂用帳戶四個正常運作的 Flex app 全都設了這一項。見 [docs/13](docs/13-api-roadmap.md) 踩坑。
 > 這帶來數個必須在開發時就遵守的限制（SWA Free 100GB/月頻寬與 250MB 產物上限、無 WAF/IP 限制、無分散式追蹤、無雲端 staging）——**動手寫任何前端圖片邏輯、部署設定或安全機制前，先讀 [docs/07-azure-deployment.md](docs/07-azure-deployment.md) §7～§12**。
 
 ---
