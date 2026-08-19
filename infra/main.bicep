@@ -253,6 +253,13 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
           value: siteUrl
         }
         {
+          // ⚠️ 預設是 12。降到 8 是**應要求**放寬的，代價是後台密碼可以很短 ——
+          // `/admin` 對全網際網路開放（SWA Free 沒有 IP 限制），
+          // 唯一的補償是登入失敗 5 次鎖 15 分鐘與 IP 速率限制（docs/07 §7.4）。
+          name: 'Auth__MinPasswordLength'
+          value: '8'
+        }
+        {
           // ⚠️ **不要拿掉。** 少了它 Flex Consumption 的 host 起不來（見檔頭說明）。
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: insights.properties.ConnectionString
