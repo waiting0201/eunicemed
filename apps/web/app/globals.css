@@ -16,12 +16,17 @@
   --color-body: #44565d; /* 內文 */
   --color-tint: #f5fafb; /* 區塊淺底 */
   --color-tint-deep: #f0f6f8; /* 次級淺底（兄弟分類帶） */
-  --color-hairline: #e3edf0;
+  --color-hairline: #dfe9ec;
 
-  /* 系列專色（docs/08）：Care 7746c / Protect 5415c / Advance 5125c */
-  --color-care: #7ba05b;
-  --color-protect: #5b7f9e;
-  --color-advance: #6b4c7a;
+  /**
+   * 系列專色（Care 7746c / Protect 5415c / Advance 5125c）。
+   * **值取自 mockup4**，不是 docs/08 §2 表格裡的那組 —— 版型用它們當**白底上的文字色**，
+   * 所以比印刷專色暗一階（docs/08 的 #A8AD3C 當文字會讀不清楚）。
+   * 同一組值也足以當徽章底色配白字（對比皆 > 4.5:1）。
+   */
+  --color-care: #7a8022;
+  --color-protect: #4b6b7e;
+  --color-advance: #7a4d6f;
 
   --font-sans:
     'Myriad Variable Concept', 'Microsoft JhengHei', 'Noto Sans TC', system-ui, sans-serif;

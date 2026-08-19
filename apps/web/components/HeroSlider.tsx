@@ -35,7 +35,12 @@ export function HeroSlider({
   const css = animated ? keyframesFor(n) : '';
 
   return (
-    <section className="relative aspect-[8/3] w-full overflow-hidden bg-tint-deep">
+    <section
+      // 8:3 但有上下界：37.5vw 就是 8:3，clamp 讓它在窄螢幕不會縮成一條
+      // （aspect-[8/3] 在手機上只剩 140px 高）、在超寬螢幕不會佔滿整個視窗。
+      // 值取自 mockup4 的 `height:clamp(380px,37.5vw,960px)`。
+      className="relative h-[clamp(380px,37.5vw,960px)] w-full overflow-hidden bg-tint-deep"
+    >
       {animated && <style>{css}</style>}
 
       {withImage.map((slide, i) => (

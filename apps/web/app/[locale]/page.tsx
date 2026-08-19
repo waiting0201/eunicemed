@@ -7,7 +7,7 @@ import { srcSetOf } from '@/lib/image';
 import { isLocale, type Locale } from '@/lib/locale';
 import { section, type SectionCta } from '@/lib/page';
 import { HeroSlider } from '@/components/HeroSlider';
-import { SectionHeading } from '@/components/SectionHeading';
+import { RuledSectionHeading, SectionHeading } from '@/components/SectionHeading';
 
 type Params = { locale: string };
 
@@ -102,49 +102,73 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
         <HeroSlider slides={slider.slides} intervalSeconds={slider.intervalSeconds} />
       )}
 
+      {/* HERO COPY —— 只有上方留白：下方的留白由「01 精選產品」自己的 padding 給
+          （mockup4 的 `padding: … 0`），兩段各自負責的話會疊成兩倍 */}
       {intro && (
-        <section className="mx-auto max-w-content px-6 py-14 text-center lg:px-16">
+        <section className="mx-auto max-w-content px-6 pt-[clamp(40px,5vw,64px)] text-center lg:px-16">
           {intro.eyebrow && (
-            <p className="text-[0.82rem] font-bold uppercase tracking-[0.16em] text-brand-deep">
+            <p className="text-[clamp(0.7rem,0.9vw,0.82rem)] font-[680] uppercase tracking-[0.2em] text-brand-deep">
               {intro.eyebrow}
             </p>
           )}
           {intro.title && (
-            <h1 className="mx-auto mt-3 max-w-[18ch] text-[clamp(2.2rem,5vw,3.4rem)] font-normal leading-[1.08]">
+            <h1 className="mt-[14px] text-[clamp(2rem,3.8vw,3.4rem)] font-normal leading-[1.12] tracking-[-0.02em]">
               <Highlight text={intro.title} />
             </h1>
           )}
           {intro.lead && (
-            <p className="mx-auto mt-4 max-w-[60ch] text-[1.1rem]">{intro.lead}</p>
+            <p className="mx-auto mt-[18px] max-w-[52ch] text-[clamp(0.95rem,1.3vw,1.15rem)]">
+              {intro.lead}
+            </p>
           )}
         </section>
       )}
 
       {/* 01 精選產品 —— Pinterest 式瀑布流 */}
       {featuredCopy && featured.items.length > 0 && (
-        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
-          <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-            <SectionHeading index={next()} title={featuredCopy.title ?? ''} />
-            {featuredCopy.allLink?.url && (
-              <CtaLink cta={featuredCopy.allLink} variant="text" />
-            )}
-          </div>
+        <section className="mx-auto max-w-content px-6 py-[clamp(64px,8vw,96px)] lg:px-16">
+          <RuledSectionHeading
+            index={next()}
+            title={featuredCopy.title ?? ''}
+            action={
+              featuredCopy.allLink?.url && (
+                <CtaLink cta={featuredCopy.allLink} variant="text" />
+              )
+            }
+            className="mb-9"
+          />
 
           <FeaturedMasonry items={featured.items} />
 
           {featuredCopy.promo && (
-            <div className="mt-8 flex flex-wrap items-center justify-between gap-6 rounded-[22px] bg-[linear-gradient(135deg,#00b5cd_0%,#009db6_55%,#0092a8_100%)] p-8 text-white">
-              <div>
-                {featuredCopy.promo.eyebrow && (
-                  <p className="text-[0.78rem] font-bold uppercase tracking-[0.16em] text-white/80">
-                    {featuredCopy.promo.eyebrow}
-                  </p>
-                )}
-                {featuredCopy.promo.title && (
-                  <p className="mt-1 text-[clamp(1.3rem,2.4vw,1.7rem)]">
-                    {featuredCopy.promo.title}
-                  </p>
-                )}
+            <div className="mt-9 flex flex-wrap items-center justify-between gap-7 rounded-[20px] bg-[linear-gradient(120deg,#00b5cd,#007d95)] px-9 py-[30px] text-white">
+              <div className="flex items-center gap-[26px]">
+                {/* 動線標記：三條同心的「起身」曲線，取自 mockup4。
+                    純裝飾，不進無障礙樹。 */}
+                <svg
+                  viewBox="0 0 190 140"
+                  aria-hidden="true"
+                  className="w-[78px] flex-none opacity-85"
+                >
+                  <g fill="none" stroke="#fff" strokeWidth="9">
+                    <path d="M 40 140 V 75 Q 40 40 75 40 H 190" />
+                    <path d="M 62 140 V 97 Q 62 62 97 62 H 190" />
+                    <path d="M 84 140 V 119 Q 84 84 119 84 H 190" />
+                  </g>
+                </svg>
+
+                <div>
+                  {featuredCopy.promo.eyebrow && (
+                    <p className="text-[0.85rem] font-[620] uppercase tracking-[0.12em] text-white/85">
+                      {featuredCopy.promo.eyebrow}
+                    </p>
+                  )}
+                  {featuredCopy.promo.title && (
+                    <p className="mt-1.5 text-[1.5rem] font-medium">
+                      {featuredCopy.promo.title}
+                    </p>
+                  )}
+                </div>
               </div>
               {featuredCopy.promo.link?.url && (
                 <CtaLink cta={featuredCopy.promo.link} variant="onDark" />
@@ -284,11 +308,15 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
 
       {/* 05 最新消息 */}
       {latestCopy && news.items.length > 0 && (
-        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
-          <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-            <SectionHeading index={next()} title={latestCopy.title ?? ''} />
-            {latestCopy.allLink?.url && <CtaLink cta={latestCopy.allLink} variant="text" />}
-          </div>
+        <section className="mx-auto max-w-content px-6 py-[clamp(64px,8vw,96px)] lg:px-16">
+          <RuledSectionHeading
+            index={next()}
+            title={latestCopy.title ?? ''}
+            action={
+              latestCopy.allLink?.url && <CtaLink cta={latestCopy.allLink} variant="text" />
+            }
+            className="mb-3"
+          />
           <div className="grid gap-6 sm:grid-cols-3">
             {news.items.slice(0, 3).map((item) => (
               <NewsRow key={item.slug} item={item} locale={locale} />
@@ -311,16 +339,23 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
  */
 const RATIOS = ['aspect-square', 'aspect-[4/5]', 'aspect-[5/4]'] as const;
 
+/** 系列專色。與 `CollectionBadge` 同一組 token，這裡吃的是文字色。 */
+const COLLECTION_TEXT: Record<string, string> = {
+  care: 'text-care',
+  protect: 'text-protect',
+  advance: 'text-advance',
+};
+
 function FeaturedMasonry({ items }: { items: ProductListItem[] }) {
   return (
-    <div className="gap-5 sm:columns-2 lg:columns-4">
+    <div className="gap-6 sm:columns-2 lg:columns-4">
       {items.map((p, i) => (
         <Link
           key={p.slug}
           href={p.url}
-          className="group mb-5 block break-inside-avoid overflow-hidden rounded-[18px] border border-hairline bg-white transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(10,60,72,.10)]"
+          className="group mb-6 block break-inside-avoid overflow-hidden rounded-[20px] border border-hairline bg-white transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(10,60,72,.10)]"
         >
-          <div className={`${RATIOS[i % RATIOS.length]} overflow-hidden bg-tint`}>
+          <div className={`${RATIOS[i % RATIOS.length]} overflow-hidden rounded-[18px] bg-tint-deep`}>
             {p.image && (
               <img
                 src={p.image.url}
@@ -335,14 +370,19 @@ function FeaturedMasonry({ items }: { items: ProductListItem[] }) {
               />
             )}
           </div>
-          <div className="p-4">
+          <div className="px-[18px] pb-5 pt-4">
             {p.collection && (
-              <span className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-brand-deep">
+              <span
+                className={`text-[0.72rem] font-bold uppercase tracking-[0.1em] ${
+                  // 未知 slug 退回品牌青，不要讓沒見過的系列變成看不見的文字
+                  COLLECTION_TEXT[p.collection.slug] ?? 'text-brand-deep'
+                }`}
+              >
                 {p.collection.name}
               </span>
             )}
-            <h3 className="mt-1 text-[1.02rem] font-semibold">{p.name}</h3>
-            {p.featuredBlurb && <p className="mt-1 text-[0.88rem]">{p.featuredBlurb}</p>}
+            <h3 className="mt-1 text-[1.08rem] font-[570]">{p.name}</h3>
+            {p.featuredBlurb && <p className="mt-0.5 text-[0.86rem]">{p.featuredBlurb}</p>}
           </div>
         </Link>
       ))}

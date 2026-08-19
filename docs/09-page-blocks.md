@@ -215,6 +215,22 @@ number · date · bool · enum[...] · ref:Entity · repeatable{...}(min–max)
 > 與後台座標選取器 `apps/admin/src/components/BodyMapPicker.tsx` 的 `Figure`。
 > 兩份必須一致 —— 後台放的位置是相對人形的，人形不同就會對不上。改一邊記得改另一邊。
 
+### 5.2a 首頁 hero 與 01 精選產品的版型細節（2026-08-18 mockup4 更新）
+
+`mockup4/Home.dc.html` 在 2026-08-18 調過樣式，實作已跟上：
+
+| 項目 | 值 | 備註 |
+|---|---|---|
+| hero 高度 | `clamp(380px, 37.5vw, 960px)` | 37.5vw 就是 8:3。**不要用 `aspect-[8/3]`** —— 手機上只剩約 140px 高 |
+| hero 文案區 | 只有上留白 `clamp(40px,5vw,64px)` | 下方留白由 01 區段自己的 padding 給，兩邊都給會變兩倍 |
+| eyebrow | `clamp(.7rem,.9vw,.82rem)` / weight 680 / 字距 .2em | |
+| h1 | `clamp(2rem,3.8vw,3.4rem)` / 行高 1.12 / 字距 -.02em | |
+| lead | `clamp(.95rem,1.3vw,1.15rem)` / 最寬 52ch | |
+| 區段標題（**僅首頁 01 與 05**）| 序號與標題**同一行** + 1.5px 底線 | 其他頁維持序號在上方的堆疊式，因此是兩個元件（`RuledSectionHeading` / `SectionHeading`）|
+| 瀑布流 | 4 欄、間距 24px、卡片圓角 20px、圖片圓角 18px | 比例仍是 1:1 → 4:5 → 5:4 輪替 |
+| 系列標籤 | **逐系列專色的文字**，不是統一品牌青 | 值見 [08-design.md](08-design.md) §2 的提醒 |
+| 促銷橫幅 | `linear-gradient(120deg,#00B5CD,#007D95)`、圓角 20px、內距 30/36 | 左側有一枚 78px 的**動線 SVG**（三條同心曲線），純裝飾 |
+
 ### 5.3 人體圖互動規格（`BodyPartMap`，client component）
 
 > 視覺準則見 [08-design.md](08-design.md) §5.1a。實作範例：`mockup4/Applications.dc.html`。

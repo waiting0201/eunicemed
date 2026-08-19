@@ -48,6 +48,12 @@
 | **PROTECT** | Pantone 5415c | `#5B7F95`（灰藍） | 高強度活動的強力支撐 |
 | **ADVANCE** | Pantone 5125c | `#7A4D6F`（暗紫） | 復健導向的針對性保護 |
 
+> ⚠️ **網站實作用的是 mockup4 的那一組，比上表暗一階**：
+> Care `#7A8022`、Protect `#4B6B7E`、Advance `#7A4D6F`。
+> 原因是版型把系列色當**白底上的文字**用（產品卡的系列標籤），
+> 而 `#A8AD3C` 這種亮度當文字讀不清楚。同一組值拿來當徽章底色配白字也夠對比（皆 > 4.5:1）。
+> token 定義在 `apps/web/app/globals.css`，改動前先對照 `mockup4/`。
+
 ### 2.3 Tailwind 設計 token（建議命名）
 
 ```js
