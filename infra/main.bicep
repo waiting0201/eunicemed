@@ -223,6 +223,17 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
 }
 
 // ── 角色指派 ───────────────────────────────────────────────────────────────
+// ⚠️ **Function App 砍掉重建之前，要先手動刪掉這四筆角色指派。**
+//
+// 指派的名稱是 `guid(storage.id, functionApp.id, role)`。app 重建後名稱（因而 id）
+// 不變，但 MI 的 principalId 會換一組 —— ARM 會把它看成「要改既有指派的 principal」
+// 而拒絕：`RoleAssignmentUpdateNotPermitted`，整個 deployment 失敗。
+//
+// principalId 是執行期才知道的值，不能放進名稱（Bicep BCP120），所以只能靠流程：
+//
+//   ST=$(az storage account show -n steunicemedprod -g EuniceMedUS --query id -o tsv)
+//   az role assignment list --scope "$ST" --query "[?principalType=='ServicePrincipal'].id" -o tsv \
+//     | xargs -n1 az role assignment delete --ids
 // 文件 §6.2 原本寫「限 media 容器」，但同一個帳戶還放著 Flex Consumption 的
 // 部署包與 host metadata，容器層級的授權會讓 Function App 起不來。
 // 因此範圍是帳戶，權限取最小可用的三個角色。
