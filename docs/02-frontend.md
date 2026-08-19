@@ -187,7 +187,7 @@ export async function getProductPage(
 
 ## 7. 表單（Contact / Inquiry）
 
-- 三種表單共用同一提交端點 `POST /api/v1/contact`，以 `type` 區分：
+- 三種表單共用同一提交端點 `POST /api/contact`，以 `type` 區分：
   - `general`（Contact 頁）
   - `product`（產品詳情頁詢價，附 `productSlug`）
   - `partnership`（Partnership 頁，附公司/國家欄位）
@@ -242,7 +242,7 @@ export async function getProductPage(
 
 | 變數 | 用途 |
 |------|------|
-| `API_BASE` | 伺服器端呼叫 API 的基底 URL（`https://func-eunicemed-prod.azurewebsites.net/api/v1`） |
+| `API_BASE` | 伺服器端呼叫 API 的基底 URL（`https://func-eunicemed-prod.azurewebsites.net/api`） |
 | `NEXT_PUBLIC_API_BASE` | `/admin` SPA 由瀏覽器呼叫 API 用（需 Function App 端開 CORS） |
 | `NEXT_PUBLIC_SITE_URL` | 正式網域（canonical/sitemap） |
 | `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | reCAPTCHA 前端金鑰 |

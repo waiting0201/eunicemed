@@ -14,7 +14,12 @@
 ## 1. 通則
 
 - **平台**：Azure Functions v4、.NET 10 isolated worker、C#、HTTP trigger。
-- **基底**：`https://{host}/api/v1`
+- **基底**：`https://{host}/api`（`host.json` 的 `routePrefix`）
+
+> ⚠️ **URL 沒有版本段。** 本文件早期寫 `/api/v1`，實作從來沒有 ——
+> `AppRouter` 比對的是 `["collections"]` 這種形狀。把前端的 `API_BASE`
+> 設成 `/api/v1` 會讓每一頁 SSR 都 500，而 API 自己完全正常
+> （2026-08-19 上線時實際發生過，見 [07 §13](07-azure-deployment.md)）。
 - **格式**：JSON（UTF-8）；request/response 皆 camelCase。
 - **版本**：URL 前綴 `v1`。破壞性變更升 `v2`。
 - **語系**：讀取端點吃 `?locale=en|zh-TW`（預設 `en`）。
@@ -24,9 +29,9 @@
 ### 端點分類
 | 類別 | 路徑前綴 | 驗證 |
 |------|----------|------|
-| 公開讀取 | `/api/v1/*` | 匿名 |
-| 後台讀寫 | `/api/v1/admin/*` | JWT + 角色 |
-| 認證 | `/api/v1/auth/*` | 視端點 |
+| 公開讀取 | `/api/*` | 匿名 |
+| 後台讀寫 | `/api/admin/*` | JWT + 角色 |
+| 認證 | `/api/auth/*` | 視端點 |
 
 ---
 
@@ -38,9 +43,9 @@
 - 簽章金鑰存 **Function App 的 App Settings**（`Jwt__SigningKey`，本案無 Key Vault）；token 失效採短效 + refresh 輪替。
 
 ```
-POST /api/v1/auth/login        { email, password } → { accessToken, refreshToken, user }
-POST /api/v1/auth/refresh      { refreshToken } → { accessToken, refreshToken }
-POST /api/v1/auth/logout       (撤銷 refresh token)
+POST /api/auth/login        { email, password } → { accessToken, refreshToken, user }
+POST /api/auth/refresh      { refreshToken } → { accessToken, refreshToken }
+POST /api/auth/logout       (撤銷 refresh token)
 ```
 
 ---
@@ -142,11 +147,11 @@ POST /api/v1/auth/logout       (撤銷 refresh token)
 
 ### 產品
 ```
-GET /api/v1/products
+GET /api/products
     ?locale=en&category={slug}&subCategory={slug}&collection={slug}&bodyPart=knee
     &featured=true&facets=true&page=1&pageSize=20&sort=newest|name|collection
-GET /api/v1/products/{category}/{sub}/{slug}?locale=en    # 公開產品詳情（與 URL 同構）
-GET /api/v1/products/by-slug/{slug}?locale=en             # 扁平查詢：預覽、後台、舊 URL 301 解析
+GET /api/products/{category}/{sub}/{slug}?locale=en    # 公開產品詳情（與 URL 同構）
+GET /api/products/by-slug/{slug}?locale=en             # 扁平查詢：預覽、後台、舊 URL 301 解析
 ```
 
 - `featured=true` 時依 `Product.FeaturedSortOrder` 排序（首頁 01 Hero products）；回應含 `towerImage`。
@@ -202,12 +207,12 @@ GET /api/v1/products/by-slug/{slug}?locale=en             # 扁平查詢：預�
 
 ### 分類 / 子分類 / 系列 / 認證
 ```
-GET /api/v1/categories?locale=en&include=subCategories
-GET /api/v1/categories/{category}?locale=en            # 分類落地頁內容（hero/stats/supportLevels/SEO）
-GET /api/v1/sub-categories?locale=en&category={slug}
-GET /api/v1/sub-categories/{category}/{sub}?locale=en  # 子分類落地頁內容
-GET /api/v1/collections?locale=en
-GET /api/v1/certifications?locale=en                   # About 認證帶與產品頁標章列共用
+GET /api/categories?locale=en&include=subCategories
+GET /api/categories/{category}?locale=en            # 分類落地頁內容（hero/stats/supportLevels/SEO）
+GET /api/sub-categories?locale=en&category={slug}
+GET /api/sub-categories/{category}/{sub}?locale=en  # 子分類落地頁內容
+GET /api/collections?locale=en
+GET /api/certifications?locale=en                   # About 認證帶與產品頁標章列共用
 ```
 
 `CategoryDto` / `SubCategoryDto`：
@@ -229,9 +234,9 @@ GET /api/v1/certifications?locale=en                   # About 認證帶與產�
 
 ### 應用方案（Applications）
 ```
-GET /api/v1/applications?locale=en&type=body-part|special-care
-GET /api/v1/applications/body-map?locale=en       # 人體圖專用：僅 ShowOnBodyMap=1
-GET /api/v1/applications/{slug}?locale=en         # 含關聯產品、concerns、supportLevels、howTo
+GET /api/applications?locale=en&type=body-part|special-care
+GET /api/applications/body-map?locale=en       # 人體圖專用：僅 ShowOnBodyMap=1
+GET /api/applications/{slug}?locale=en         # 含關聯產品、concerns、supportLevels、howTo
 ```
 
 `BodyMapDto`（陣列）：
@@ -262,11 +267,11 @@ GET /api/v1/applications/{slug}?locale=en         # 含關聯產品、concerns�
 
 ### 文章（News / Insights，同一 Article 實體）
 ```
-GET /api/v1/news?locale=en&category={slug}&tag={slug}&facets=true&page=1&pageSize=10
-GET /api/v1/news/{slug}?locale=en
-GET /api/v1/insights?locale=en&category={slug}&facets=true&page=1
-GET /api/v1/insights/{slug}?locale=en
-GET /api/v1/article-categories?locale=en&kind=news|insight&facets=true
+GET /api/news?locale=en&category={slug}&tag={slug}&facets=true&page=1&pageSize=10
+GET /api/news/{slug}?locale=en
+GET /api/insights?locale=en&category={slug}&facets=true&page=1
+GET /api/insights/{slug}?locale=en
+GET /api/article-categories?locale=en&kind=news|insight&facets=true
 ```
 
 `ArticleDto`（詳情，News 與 Insights 共用；不適用欄位回 `null`）：
@@ -299,13 +304,13 @@ GET /api/v1/article-categories?locale=en&kind=news|insight&facets=true
 
 ### FAQ
 ```
-GET /api/v1/faqs?locale=en&category={slug}&facets=true
-GET /api/v1/faq-categories?locale=en&facets=true
+GET /api/faqs?locale=en&category={slug}&facets=true
+GET /api/faq-categories?locale=en&facets=true
 ```
 
 ### 下載中心
 ```
-GET /api/v1/downloads?locale=en&type=catalog|manual|certificate&productSlug={slug}&facets=true
+GET /api/downloads?locale=en&type=catalog|manual|certificate&productSlug={slug}&facets=true
 ```
 
 `DownloadDto`：
@@ -319,7 +324,7 @@ GET /api/v1/downloads?locale=en&type=catalog|manual|certificate&productSlug={slu
 
 ### 銷售據點（Where to Buy）
 ```
-GET /api/v1/sales-locations?locale=en
+GET /api/sales-locations?locale=en
 ```
 ```json
 {
@@ -332,7 +337,7 @@ GET /api/v1/sales-locations?locale=en
 
 ### 頁面（區段內容）
 ```
-GET /api/v1/pages/{key}?locale=en
+GET /api/pages/{key}?locale=en
 ```
 
 `key` ∈ 18 個（見 [05-database.md](05-database.md) §4）：
@@ -370,13 +375,13 @@ GET /api/v1/pages/{key}?locale=en
 
 ### 導覽 / 設定
 ```
-GET /api/v1/menus?locale=en            # 主選單 / 頁尾結構（Resources 次導覽固定於模板，不在此）
-GET /api/v1/settings?locale=en         # 公司資訊（地址/電話/信箱/營業時間）、社群、SEO 預設
+GET /api/menus?locale=en            # 主選單 / 頁尾結構（Resources 次導覽固定於模板，不在此）
+GET /api/settings?locale=en         # 公司資訊（地址/電話/信箱/營業時間）、社群、SEO 預設
 ```
 
 ### Sitemap 資料（供前端產生 sitemap.xml）
 ```
-GET /api/v1/sitemap                    # 回所有可索引 URL + lastmod（含子分類落地頁，見 06 文件）
+GET /api/sitemap                    # 回所有可索引 URL + lastmod（含子分類落地頁，見 06 文件）
 ```
 
 ---
@@ -385,7 +390,7 @@ GET /api/v1/sitemap                    # 回所有可索引 URL + lastmod（含�
 
 ### 聯絡 / 詢價 / 合作表單（共用端點，以 `type` 區分）
 ```
-POST /api/v1/contact
+POST /api/contact
 {
   "type": "general | product | partnership",
   "name": "...", "email": "...", "phone": "...",
@@ -409,7 +414,7 @@ POST /api/v1/contact
 
 ## 6. 後台端點（JWT + 角色）
 
-CRUD 對應每個內容模組，皆 `/api/v1/admin/...`：
+CRUD 對應每個內容模組，皆 `/api/admin/...`：
 
 ```
 # 產品
@@ -491,7 +496,7 @@ GET/POST/PUT/DELETE /admin/users[/{id}]
 > 尺寸規格總表見 [11-media-specs.md](11-media-specs.md)。**API 是縮圖的執行者**，後台只負責顯示提示與送出 `presetKey`。
 
 ```http
-GET /api/v1/admin/media-presets
+GET /api/admin/media-presets
 200 OK
 {
   "presets": [
@@ -504,7 +509,7 @@ GET /api/v1/admin/media-presets
 ```
 
 ```http
-POST /api/v1/admin/media          # multipart/form-data
+POST /api/admin/media          # multipart/form-data
   file=<binary>  presetKey=square  altText=...
 201 Created
 {

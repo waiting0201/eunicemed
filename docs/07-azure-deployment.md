@@ -11,7 +11,7 @@
 | # | 資源 | SKU/設定 | 用途 |
 |---|------|----------|------|
 | 1 | **Azure Static Web Apps** | **Free** | Next.js 公開網站（hybrid **純 SSR**，preview）+ `/admin` CMS 後台，同一個 app |
-| 2 | **Azure Function App** | **Flex Consumption**（Linux，.NET 10 isolated） | API `/api/v1/*` |
+| 2 | **Azure Function App** | **Flex Consumption**（Linux，.NET 10 isolated） | API `/api/*`（**URL 無版本段**，見 §6.4） |
 | 3 | **Azure Storage（Blob）** | StorageV2、Hot、LRS | 媒體（圖片/PDF）＋ Function App 部署包與 host metadata |
 | 4 | **Azure SQL Database** | **由品牌方／客戶提供** | 資料庫（本專案不建立、不管理此資源） |
 | 5 | **Log Analytics workspace** | PerGB2018、保留 30 天 | workspace-based App Insights 的必要載體（classic 已退役） |
@@ -165,31 +165,65 @@ Flex Consumption **不支援 deployment slot**。API 部署即為就地更新（
 
 ### 6.1 Function App 應用程式設定
 
+**標「⚠️ 起不來」的四項，錯了的話 host 根本不會啟動，而且不會有任何錯誤訊息**
+（Flex Consumption 的記錄管線本身就是 App Insights）。
+
 | 設定 | 值／來源 | 備註 |
 |------|----------|------|
-| `ConnectionStrings__DefaultConnection` | 客戶提供 | **優先改用 Managed Identity**（`Authentication=Active Directory Default`），則此設定不含密碼 |
-| `Jwt__Secret` | 隨機 32+ bytes | 後台 JWT 簽章；輪替時需讓既有 token 失效 |
-| `Storage__AccountName` | `steunicemedprod` | 搭配 MI，不存金鑰 |
-| `Storage__MediaContainer` | `media` | |
-| `Smtp__Host` / `Smtp__Port` / `Smtp__User` / `Smtp__Password` | 品牌方提供 | 聯絡表單通知信（見 §6.3） |
-| `Smtp__From` / `Smtp__To` | `service@comfortplus-medical.com` | |
-| `Recaptcha__SecretKey` | Google | 表單防機器人 |
+| `APPLICATIONINSIGHTS_CONNECTION_STRING` | 由 Bicep 從 App Insights 帶入 | ⚠️ **起不來**。原本方案排除 App Insights，2026-08-19 實測推翻（見 §1） |
+| `AzureWebJobsStorage` | Storage 的**連線字串** | ⚠️ **起不來**。不要用 `__accountName` + `__credential` 的 MI 形式 —— 同訂用帳戶四個正常運作的 Flex app 全是連線字串 |
+| `DEPLOYMENT_STORAGE_CONNECTION_STRING` | 同上 | ⚠️ 搭配 `functionAppConfig.deployment.storage.authentication.type = StorageAccountConnectionString` |
+| `ConnectionStrings__DefaultConnection` | 客戶提供 | ⚠️ **每個請求 500**。鍵名不是 `Sql__ConnectionString`（程式讀 `ConnectionStrings:DefaultConnection`）|
+| `Jwt__Secret` | 隨機 32+ bytes | ⚠️ **每個請求 500**。鍵名不是 `Jwt__SigningKey`（程式讀 `Jwt:Secret`，見 `JwtService.cs`）。輪替會讓既有 token 全部失效 |
+| `Storage__AccountName` | `steunicemedprod` | 我們自己的媒體存取走 MI，不存金鑰 |
+| `Storage__MediaContainer` / `Storage__OriginalsContainer` | `media` / `media-originals` | |
+| `Storage__PublicBaseUrl` | `https://steunicemedprod.blob.core.windows.net/media` | 前台圖片直連用 |
 | `Cors__AllowedOrigins` | `https://www.eunicemed.com` | 給 `/admin` 的瀏覽器 XHR 用 |
+| `Jwt__Issuer` / `Jwt__Audience` / `Jwt__ExpiryMinutes` / `Jwt__RefreshExpiryDays` | 選填 | 有預設值（`eunicemed-api` / `eunicemed-admin` / 15 / 30）|
+| `Auth__MinPasswordLength` | 選填，預設 12 | |
+| `Maintenance__Key` | 隨機字串 | `POST /admin/maintenance/*` 需要，尚未設定 |
+| `Seed__AdminEmail` / `Seed__AdminPassword` / `Seed__AdminDisplayName` | 選填 | 只在 `User` 表為空時建立第一個管理者。**正式環境目前未設**，需另行建帳號 |
+| `Smtp__Host` / `Smtp__Port` / `Smtp__Username` / `Smtp__Password` / `Smtp__From` / `Smtp__To` | 品牌方提供 | 尚未取得（§6.3）|
+| `Recaptcha__SecretKey` | Google | 尚未取得 |
 
-### 6.2 Managed Identity 設定（取代 Key Vault 的關鍵）
+`functionAppConfig` 裡另外三個值也會讓 host 起不來：
 
-- Storage：授予 Function App MI 四個角色，**範圍是整個帳戶**（`infra/main.bicep` 已寫好）：
-  | 角色 | 為什麼需要 |
-  |---|---|
-  | Storage Blob Data Owner | 媒體讀寫，以及 Flex Consumption 自己的部署包容器 |
-  | Storage Blob **Delegator** | 簽 user delegation SAS（PDF 直傳）。**Data Owner 不含這個動作** —— 少了它，圖片一切正常但 PDF 上傳只在正式站失敗 |
-  | Storage Queue / Table Data Contributor | Functions host 的內部狀態 |
+| 欄位 | 正確值 | 錯了會怎樣 |
+|---|---|---|
+| `runtime.version` | **`10.0`** | 填 `10`（`az functionapp list-flexconsumption-runtimes` 回的就是這個）→ host 完全不回應 |
+| `runtime.name` | `dotnet-isolated` | 只給 version 不給 name → ARM 直接退回 |
+| `deployment.storage.authentication.type` | `StorageAccountConnectionString` | 見上表 |
 
-  > 原本規劃「限 `media` 容器」，但同一個帳戶還放著部署包與 host metadata
-  > （§1.1，方案只允許 4 個資源所以不能分兩個帳戶），容器層級的授權會讓 Function App 起不來。
-- SQL：在客戶的 SQL Server 設定 Entra 管理員後執行
-  `CREATE USER [func-eunicemed-prod] FROM EXTERNAL PROVIDER;` 並授 `db_datareader` / `db_datawriter` / `EXECUTE`。
-  **若客戶只願提供 SQL 帳密**，則退回連線字串放 App Settings，並使用非 `sa` 的最小權限帳號。
+### 6.2 Managed Identity 的實際範圍（沒有 Key Vault 之下的取捨）
+
+**MI 只用在「我們自己的程式碼存取媒體」**，Functions host 自己的儲存體與部署包**走連線字串**。
+原本規劃全部走 MI，2026-08-19 實測時 host 起不來（詳見 §13），改為以下組合：
+
+| 用途 | 驗證方式 | 說明 |
+|---|---|---|
+| 我們的程式讀寫 `media` / `media-originals` | **Managed Identity** | `BlobStorageService` 以 `Storage__AccountName` + `ManagedIdentityCredential` 連線 |
+| PDF 直傳的 user delegation SAS | **Managed Identity** | 需 **Storage Blob Delegator** 角色，Blob Data Owner **不含**這個動作 |
+| Functions host 的內部狀態（`azure-webjobs-*`）| 連線字串 | `AzureWebJobsStorage` |
+| 部署包 | 連線字串 | `DEPLOYMENT_STORAGE_CONNECTION_STRING` |
+
+因此 Storage 帳戶的 **`allowSharedKeyAccess` 必須維持 `true`**。
+
+MI 需要的角色（`infra/main.bicep` 已寫好，範圍是整個帳戶）：
+
+| 角色 | 為什麼需要 |
+|---|---|
+| Storage Blob Data Owner | 媒體讀寫 |
+| Storage Blob **Delegator** | 簽 user delegation SAS（PDF 直傳）。**Data Owner 不含這個動作** —— 少了它，圖片一切正常但 PDF 上傳只在正式站失敗 |
+| Storage Queue / Table Data Contributor | Functions host 的內部狀態 |
+
+> ⚠️ **Function App 砍掉重建前，要先手動刪掉這四筆角色指派** ——
+> 指派名稱由 `guid(storage.id, functionApp.id, role)` 決定，重建後名稱不變但 principalId 會換，
+> ARM 會以 `RoleAssignmentUpdateNotPermitted` 拒絕整個 deployment。指令寫在 `infra/main.bicep` 的註解裡。
+
+**SQL 仍未使用 MI**：客戶的 SQL Server 尚未設定 Entra 管理員，目前以帳密連線字串連線。
+若日後可設，執行 `CREATE USER [func-eunicemed-prod] FROM EXTERNAL PROVIDER;`
+並授 `db_datareader` / `db_datawriter` / `EXECUTE`，再把連線字串改成
+`Authentication=Active Directory Default` 的形式。
 
 ### 6.3 寄信：SMTP
 
@@ -203,12 +237,17 @@ Flex Consumption **不支援 deployment slot**。API 部署即為就地更新（
 
 | 變數 | 值 |
 |------|-----|
-| `API_BASE`（server-only） | `https://func-eunicemed-prod.azurewebsites.net/api/v1` |
+| `API_BASE`（server-only） | `https://func-eunicemed-prod.azurewebsites.net/api` ⚠️ **沒有 `/v1`** |
 | `NEXT_PUBLIC_API_BASE` | 同上（`/admin` SPA 用） |
 | `NEXT_PUBLIC_MEDIA_BASE` | `https://steunicemedprod.blob.core.windows.net/media` |
 | `NEXT_PUBLIC_SITE_URL` | `https://www.eunicemed.com` |
 
-> SWA 的環境變數需**同時**設在 GitHub Actions build step（build-time）與 SWA 資源的 Environment variables（request-time）。
+> SWA 的環境變數需**同時**設在 GitHub Actions build step（build-time，`gh variable set`）
+> 與 SWA 資源的 Environment variables（request-time，由 Bicep 設定）。
+>
+> ⚠️ **URL 裡沒有版本段。** 早期文件寫 `/api/v1`，實作從來沒有 —— `host.json` 的
+> `routePrefix` 是 `api`，端點就是 `/api/collections`。設成 `/api/v1` 的症狀是
+> **API 自己完全正常、但前台每一頁 500**，而且錯誤訊息在 SSR 端不會提到網址。
 
 ---
 
@@ -269,21 +308,31 @@ Flex Consumption **不支援 deployment slot**。API 部署即為就地更新（
 
 ---
 
-## 8. 監控（無 Application Insights）
+## 8. 監控（Application Insights）
 
-明確取捨：**沒有分散式追蹤、沒有例外堆疊長期保留、沒有可用性測試**。可用的是：
+**App Insights 不是選配，是 Flex Consumption 的執行前提**（§1、§13）。既然一定要有，
+它同時就是本方案的可觀測性來源。
 
 | 來源 | 用途 |
 |------|------|
-| Function App **Log stream / Diagnose and solve problems** | 即時查錯（不留存） |
-| **Azure Monitor 平台指標**（免額外資源） | Function 執行數、失敗數、HTTP 5xx、回應時間；可設定 metric alert 寄信 |
-| SWA 內建 Metrics | 請求數、頻寬（**務必**盯著 100GB/月） |
+| **Application Insights**（`appi-eunicemed-prod`）| host 啟動記錄、例外堆疊、requests、traces。**排查啟動失敗只有這一條路** |
+| **Azure Monitor 平台指標** | Function 執行數、失敗數、HTTP 5xx、回應時間；可設 metric alert 寄信 |
+| SWA 內建 Metrics | 請求數、頻寬（**務必**盯著 100GB/月）|
 | Azure SQL 內建監控 | 由客戶端提供／查看 |
-| API 自寫結構化 log + `traceId` | 統一 ProblemDetails 帶 `traceId`，出事時對照 Log stream |
+| API 自寫結構化 log + `traceId` | `ApiResponse.errors` 會帶 `traceId`，可直接在 App Insights 查 |
+
+查啟動失敗的指令：
+
+```bash
+az monitor app-insights query --app appi-eunicemed-prod -g EuniceMedUS \
+  --analytics-query "union traces,exceptions | where timestamp>ago(30m) \
+    | project timestamp, m=coalesce(message,outerMessage) | order by timestamp desc | take 20"
+```
 
 **建議設定的告警**：Function 失敗數 > 0（5 分鐘）、HTTP 5xx 率、SWA 月頻寬達 80GB。
 
-> 若日後排查困難，加一個 Application Insights 是成本極低（低流量近乎免費）的補救；目前依決策不建。
+> 保留 30 天、PerGB2018；本站流量遠低於每月 5GB 免費額度。
+> Log Analytics workspace 是 workspace-based App Insights 的必要載體（classic 已退役）。
 
 ---
 
@@ -324,9 +373,16 @@ Flex Consumption **不支援 deployment slot**。API 部署即為就地更新（
 ## 11. 上線檢查清單
 
 - [ ] Bicep 可重建 SWA / Function App / Storage（SQL 為 existing 參照）
+- [ ] **`GET /api/health` 回 200** —— 這一項失敗時，先讀 §13 再查別的
+- [ ] **`functionAppConfig.runtime.version` 是 `10.0`**（不是 `10`）
+- [ ] **`APPLICATIONINSIGHTS_CONNECTION_STRING` 存在**
+- [ ] **App Settings 鍵名核對**：`ConnectionStrings__DefaultConnection`、`Jwt__Secret`
+- [ ] **`API_BASE` 沒有 `/v1`**，且前台實際頁面（非健康檢查）回 200
 - [ ] `next build` 產物 `standalone` 且 **≤ 250MB**，CI 有 gate
+- [ ] `public/.swa/health.html` 存在（用 `skip_app_build` 時平台不會幫你放）
 - [ ] middleware / redirects 已排除 `.swa` 路徑，部署驗證通過
-- [ ] Managed Identity 已可存取 Blob 與 SQL；App Settings 無多餘明碼
+- [ ] `dotnet publish` 有指定 `-r linux-x64`（否則部署包 160MB+，冷啟動吃掉 app init）
+- [ ] Managed Identity 可存取 Blob（含 **Blob Delegator**，PDF 直傳要簽 SAS）；App Settings 無多餘明碼
 - [ ] `www` + apex 自訂網域綁定、HTTPS 正常、apex 301 轉 www
 - [ ] 安全標頭由 Next.js `headers()` 輸出並通過檢測
 - [ ] Function App CORS 僅允許正式網域
@@ -349,3 +405,66 @@ Flex Consumption **不支援 deployment slot**。API 部署即為就地更新（
 5. **無雲端 staging**，且 DB 遷移在 Function App 啟動時自動對 prod 套用。migration 失敗等於正式站起不來，且無 slot 可退。
 6. **Blob LRS 且無異地備援**，區域級事故會遺失媒體檔（原始素材需另存一份）。
 7. **Flex Consumption 無 slot**，回滾靠重新部署。
+
+---
+
+## 13. 首次部署踩到的坑（2026-08-19 實測）
+
+第一次把這套方案部到 Azure，花了整整一天。**五個問題疊在一起，而且症狀幾乎一樣**——
+「部署成功、資源 Running、但每個請求都不回應」。按這個順序查最快：
+
+| # | 問題 | 症狀 | 修法 |
+|---|---|---|---|
+| 1 | 缺 `APPLICATIONINSIGHTS_CONNECTION_STRING` | host 對所有請求（含 `/admin/host/status`）回 500 或不回應，**且沒有任何日誌** | 建 Log Analytics + App Insights，見 §1、§8 |
+| 2 | `runtime.version` 填 `10` | 同上 | 改 `10.0`。`az functionapp list-flexconsumption-runtimes` 回的 `10` **不是**這個欄位要填的值 |
+| 3 | `AzureWebJobsStorage` 用 MI 形式 | 同上 | 改連線字串，見 §6.2 |
+| 4 | `Jwt__Secret` 寫成 `Jwt__SigningKey` | host 起得來，但**每個請求 500** | 見 §6.1 |
+| 5 | `API_BASE` 帶 `/v1` | **API 正常，但前台每一頁 500** | 見 §6.4 |
+
+### 為什麼難查
+
+Flex Consumption 的記錄管線**就是** App Insights。缺它的時候，host 起不來且完全沒有訊息 ——
+連 Azure 自己的 activity log 也只給 `Encountered an error (InternalServerError) from host runtime`。
+在那個狀態下，任何猜測都無法驗證。
+
+### 下次遇到「起不來又沒訊息」時的兩招
+
+**1. 跟一個已知正常的同型資源逐項比對。** 這次是同訂用帳戶的 `jabez-api`：
+
+```bash
+az resource show -g <rg> -n <正常的app> --resource-type Microsoft.Web/sites \
+  --query "properties.functionAppConfig" -o json
+az functionapp config appsettings list -g <rg> -n <正常的app> --query "[].name" -o tsv | sort
+```
+
+差異就是答案。問題 2～5 全部是這樣找到的，比查文件可靠 ——
+文件與 CLI 清單都曾經把我引導到錯的方向。
+
+必要時直接用 `az functionapp create` 開一個對照組，部署一個 hello-world 上去；
+它一次就活，兩邊 diff 立刻收斂。
+
+**2. 把正式環境的 App Settings 灌進本機跑一次。**
+
+```bash
+az functionapp config appsettings list -g EuniceMedUS -n func-eunicemed-prod -o json \
+  | python3 -c "import json,sys,os;[print(f\"export {s['name']}='{s['value']}'\") for s in json.load(sys.stdin)]"
+# 套用之後
+dotnet Api/bin/Release/net10.0/EuniceMed.Api.dll
+```
+
+`ConnectionStrings__DefaultConnection` 那個鍵名錯誤就是這樣在 **0.1 秒**內找到的
+（會直接丟 `InvalidOperationException`）。沒有雲端日誌時，這是最快的路。
+
+### 二分法的順序
+
+真的要從頭查時，這個順序能最快切掉一半：
+
+1. 部署包對不對 —— 下載 `deployment-package/released-package.zip`，確認 root 有
+   `host.json`、`functions.metadata`、`worker.config.json`
+2. 是不是我們的程式 —— 部署一個最小 hello-world（同樣的套件組），一樣壞就與程式無關
+3. 是不是 .NET 版本 —— 換一個 TFM 再測一次
+4. 是不是這個資源壞了 —— 砍掉重建（**記得先刪角色指派**，見 §6.2）
+5. 逐項比對正常的 app（上面那一招）
+
+> 這五步在 2026-08-19 全部走過一遍，前四步都是「一樣壞」，第五步一次命中。
+> 更完整的過程與每個錯誤的原始訊息記在 [13-api-roadmap.md](13-api-roadmap.md)。

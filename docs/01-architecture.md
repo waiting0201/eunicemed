@@ -32,7 +32,7 @@
                ▼                      ▼                      │
        ┌──────────────────────────────────────────┐          │
        │ Azure Functions API (.NET 10, Flex)      │          │
-       │  /api/v1/*                               │          │
+       │  /api/*                               │          │
        └───────┬──────────────────────┬───────────┘          │
                │ EF Core (MI)         │ 上傳 (MI)            │
                ▼                      ▼                      │
@@ -66,17 +66,17 @@
 ### 4.1 訪客瀏覽產品頁
 1. 訪客請求 `/en/products/orthopedic-support/knee-support/knee-support-iu`。
 2. 請求進入 SWA 的 managed backend。
-3. SWA 上的 Next.js 以 SSR 並行呼叫 `GET /api/v1/products/{category}/{sub}/{slug}`（實體內容）與 `GET /api/v1/pages/product-detail`（共用文案）渲染頁面回傳（無 ISR、無邊緣快取；尖峰仰賴 DB 索引與 API 端快取）。
+3. SWA 上的 Next.js 以 SSR 並行呼叫 `GET /api/products/{category}/{sub}/{slug}`（實體內容）與 `GET /api/pages/product-detail`（共用文案）渲染頁面回傳（無 ISR、無邊緣快取；尖峰仰賴 DB 索引與 API 端快取）。
 4. 頁面內圖片指向 **Blob 上已依尺寸 preset 產生的變體**（見 [11-media-specs.md](11-media-specs.md)），由瀏覽器直接取用，不經 SWA 圖片優化端點。
 
 ### 4.2 編輯發布內容
 1. 編輯於 CMS 登入（取得 JWT）。
-2. 編輯產品 → `PUT /api/v1/admin/products/{id}`；上傳圖 → `POST /api/v1/admin/media`（multipart 代傳，帶 `presetKey`；API 端 **SkiaSharp 依 preset 寬縮圖**後寫 Blob。PDF 則走 `POST /admin/uploads/sas` 直傳）。
+2. 編輯產品 → `PUT /api/admin/products/{id}`；上傳圖 → `POST /api/admin/media`（multipart 代傳，帶 `presetKey`；API 端 **SkiaSharp 依 preset 寬縮圖**後寫 Blob。PDF 則走 `POST /admin/uploads/sas` 直傳）。
 3. 內容存入 Azure SQL，狀態 `Draft → Published`。
 4. 發布僅更新 DB 狀態為 `Published`；因前端為**純 SSR**，下一次請求即反映最新內容，**無需 revalidation webhook**。
 
 ### 4.3 聯絡表單
-1. 訪客送 `POST /api/v1/contact`。
+1. 訪客送 `POST /api/contact`。
 2. API 驗證（含 reCAPTCHA/honeypot/速率限制）、寫入 `ContactSubmission`、再以**品牌方既有信箱的 SMTP** 寄信通知 service 信箱。寄信失敗只記 log，不讓端點回錯（避免訪客重複送出）。
 3. 回傳成功；後台可於 CMS 檢視表單清單。
 

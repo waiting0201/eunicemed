@@ -8,7 +8,7 @@
 
 ## 1. 定位
 
-自建後台供內部編輯維護網站內容，**不直接連 DB**，所有操作透過 Functions API 的 `/api/v1/admin/*` 受保護端點。
+自建後台供內部編輯維護網站內容，**不直接連 DB**，所有操作透過 Functions API 的 `/api/admin/*` 受保護端點。
 
 - 形式：**React SPA（Vite）**，**掛在公開網站同一個 Static Web App 的 `/admin` 路徑下**（部署方案只有一個 SWA，見 [07-azure-deployment.md](07-azure-deployment.md) §1）。無 `admin.eunicemed.com` 子網域。
 - 使用者：少量內部編輯/管理者。
@@ -143,7 +143,7 @@ Draft（草稿） ──提交──► Review（待審，選用） ──發布
 
 1. 上傳格顯示該欄位 preset 的建議尺寸（`GET /admin/media-presets`）。
 2. 選檔 → 前端立即以 `createImageBitmap` 讀出寬高，比例／解析度不符時**當場提示**（仍可續傳）。
-3. `POST /api/v1/admin/media`（multipart，帶 `presetKey`）→ 伺服器 SkiaSharp **依 preset 寬等比縮圖（只縮不放）**、輸出 WebP + 原格式、去 EXIF、轉 sRGB、正規化檔名。
+3. `POST /api/admin/media`（multipart，帶 `presetKey`）→ 伺服器 SkiaSharp **依 preset 寬等比縮圖（只縮不放）**、輸出 WebP + 原格式、去 EXIF、轉 sRGB、正規化檔名。
 4. 寫入 Blob（master 與 variants）與 `Media` / `MediaVariant`，回傳 `warnings` 供後台顯示。
 5. 圖片由 **Blob 匿名讀取容器直接對外**（無 CDN）；上傳時寫入長 `Cache-Control`，前端以 custom loader 指向已產生的尺寸變體，不經 SWA 圖片優化端點（見 [07-azure-deployment.md](07-azure-deployment.md) §7.3）。
 

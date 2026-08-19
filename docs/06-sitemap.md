@@ -70,7 +70,7 @@ Home  /[locale]
 
 ## 3. sitemap.xml
 
-由 Next.js `app/sitemap.ts` 動態產生，資料來源 `GET /api/v1/sitemap`：
+由 Next.js `app/sitemap.ts` 動態產生，資料來源 `GET /api/sitemap`：
 
 - 列出所有**已發布**且可索引的頁面（靜態頁 + 分類 + **子分類** + 產品 + 應用方案 + News/Insights + 下載中心）。
 - 每筆含 `loc`、`lastmod`（內容 `UpdatedAt`）、`changefreq`、`priority`。

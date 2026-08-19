@@ -17,7 +17,7 @@
 上傳後系統會自動縮至 1200px 寬
 ```
 
-這串文字不是各畫面各自寫死的，而是由 preset 產生：後台以 `GET /api/v1/admin/media-presets` 取回本檔表格的機器可讀版本，欄位再依自己的 `presetKey` 取用。**新增欄位時只需指定 `presetKey`，提示文字自動出現。**
+這串文字不是各畫面各自寫死的，而是由 preset 產生：後台以 `GET /api/admin/media-presets` 取回本檔表格的機器可讀版本，欄位再依自己的 `presetKey` 取用。**新增欄位時只需指定 `presetKey`，提示文字自動出現。**
 
 ### 1.2 上傳後一律依 preset 寬度等比縮圖
 
