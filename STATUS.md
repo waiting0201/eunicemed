@@ -230,44 +230,42 @@ facet 篩選、standalone 產物 66MB／250MB。
 
 ---
 
-## 六之二、正式環境目前狀態（2026-08-18）
+## 六之二、正式環境狀態（2026-08-19）
+
+**全站已在 Azure 上運作。** <https://zealous-sand-0bdf5e01e.7.azurestaticapps.net>
 
 | 元件 | 狀態 |
 |---|---|
-| 資源群組 `EuniceMedUS` / West US 2 | ✅ Storage、Function App（Flex FC1）、SWA Free 皆已建立 |
-| 前台 SWA | ✅ 已部署：<https://zealous-sand-0bdf5e01e.7.azurestaticapps.net><br>`/` 轉 `/en`、`/.swa/health.html` 回 200；頁面因 API 未起而 500 |
-| Azure SQL `eunicemed/EuniceMedDb` | ✅ 客戶已建立（Basic 5 DTU）。**collation `SQL_Latin1_General_CP1_CI_AS`（不分大小寫）**，與本機一致；防火牆已允許 Azure 服務 |
-| 資料庫 schema | ✅ 全部 migration 已套用（從本機 `dotnet ef database update` 確認 up to date）|
-| API Function App | 🔴 **部署成功但 host 起不來** —— TLS 連得上、HTTP 不回應，`/admin/host/status` 回 500 |
+| 前台 18 頁 | ✅ `/en`、`/zh-TW`、產品／About／FAQ 等皆 200，內容來自正式 API |
+| 後台 `/admin` | ✅ 200 |
+| API | ✅ `/api/health` healthy；公開端點回真實資料 |
+| Azure SQL | ✅ 客戶提供（Basic 5 DTU），schema 已套用，collation `_CI_` |
+| sitemap.xml | ✅ |
+| 資源（`EuniceMedUS` / West US 2） | Storage、Function App（Flex FC1）、SWA Free、Log Analytics、Application Insights |
 
-### API 起不來：已排除與待查
+### 上線當天踩到的五個坑（全部記在 [docs/13](docs/13-api-roadmap.md)）
 
-已修掉並確認**不是**原因的：
+1. **Flex Consumption 沒有 Application Insights 就起不來** —— 方案原本明文排除它。
+   缺的是記錄管線本身，所以失敗完全沒有訊息。
+2. **runtime 版本要填 `10.0` 不是 `10`** —— `az functionapp list-flexconsumption-runtimes`
+   回的是 `10`，照著填會讓 host 完全不回應。以 `az resource show` 對照正常的 app 才看得出來。
+3. **`Jwt__Secret` 不是 `Jwt__SigningKey`** —— host 起得來但每個請求 500。
+4. **host 儲存體與部署包要用連線字串** —— 同訂用帳戶四個正常的 Flex app 都是這樣。
+5. **`API_BASE` 沒有 `/v1`** —— 實際端點是 `/api/collections`，早期文件寫的 `/api/v1` 從未實作，
+   照抄會讓前台每一頁 500 而 API 本身正常。
 
-1. `Api/bin\Debug` 的 45 個 build 產物進了版控 → Linux 上 MSB3552，CI 根本 build 不了
-2. csproj 的反斜線 glob（同上，可攜性問題）
-3. Flex Consumption 的 runtime 版本要寫 `10` 不是 `10.0`（ARM 不擋，但 worker 起不來）
-4. `dotnet publish` 未指定 RID → 部署包 162MB（含三個 Windows 版 SkiaSharp 的 .pdb 共 257MB）→ 冷啟動吃掉 30 秒 app init。指定 `linux-x64` 後 17MB
-5. 連線字串的 App Setting 鍵名：程式讀 `ConnectionStrings:DefaultConnection`，而 bicep／docs 寫的是 `Sql__ConnectionString` → host 在 `HostBuilder.Build()` 就丟例外
+> 找到 2～5 的方法都是同一招：**跟一個已知正常的同型資源逐項比對**，
+> 以及**把正式環境的設定灌進本機跑一次**。在沒有可觀測性的環境裡，這兩招比猜快得多。
 
-以上五項全部修完後**仍然起不來**。剩下兩個假設：
+### 待辦
 
-| 假設 | 如何驗證 |
+| 項目 | 說明 |
 |---|---|
-| 啟動時的 migration／seed／區段同步超過 Flex Consumption 的 **30 秒 app init 硬上限** | 本機（台灣→West US 2）實測那段是 **30.7 秒**，但跨太平洋 RTT 佔大部分；同區域應該快得多。要確認只能看雲端啟動日誌 |
-| DI 或平台層的其他例外 | 同上 |
-
-**下一步**：Flex Consumption 的啟動日誌只能經 Application Insights 取得
-（診斷設定封存到 storage 實測無效，SCM 的 logstream 端點在 Flex 上是 404）。
-方案明文排除 App Insights，因此這一步需要先取得同意 —— 建議「暫時開啟、查完刪除、不收進 bicep」。
-
-> 本機重現正式環境問題最快的方法（無雲端日誌時的通用手法）：
-> ```bash
-> CS=$(az functionapp config appsettings list -g EuniceMedUS -n func-eunicemed-prod \
->       --query "[?name=='ConnectionStrings__DefaultConnection'].value" -o tsv)
-> cd Api && ConnectionStrings__DefaultConnection="$CS" dotnet bin/Release/net10.0/EuniceMed.Api.dll
-> ```
-> 第 5 項就是這樣在 0.1 秒內找到的。
+| 自訂網域 `www.eunicemed.com` | 尚未綁定，目前是 `*.azurestaticapps.net` |
+| SMTP | 表單與收件匣仍擋在這裡 |
+| Managed Identity 存取 SQL | 客戶 SQL 尚未設 Entra 管理員，目前用帳密連線字串 |
+| 資料庫層級 | Basic 5 DTU；純 SSR 每頁多次查詢，有流量時需評估升級 |
+| 內容 | 149 筆產品與首頁 7 區段的 zh-TW 文案仍缺（見下方§七）|
 
 ---
 
