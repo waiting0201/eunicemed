@@ -6,7 +6,7 @@
 > [docs/api-routes.md](docs/api-routes.md) 是**路由契約**（與 `Api/Routing/AppRouter.cs` 逐條對應）。
 > 三份不要互相抄，各司其職。
 
-**最後更新**：2026-08-18
+**最後更新**：2026-08-19
 
 ---
 
@@ -40,7 +40,7 @@
 | 規格文件 | ✅ | 14 份，見 [CLAUDE.md](CLAUDE.md) §3 |
 | 資料模型 | 🟡 98% | 54 張表完成 53 張（只剩 `ContactSubmission`）|
 | API | 🟡 97% | 已實作 **141** 條路由（新增標籤 CRUD 4 條、PDF 登記 1 條、頁面區段語系刪除）。Phase 0–7 除**表單**外全數完成 —— `POST /contact` 與收件匣擋於 SMTP 帳密 |
-| 前台 `apps/web` | 🟡 | 18 頁全數切版可運作；只剩 Contact 表單擋於 SMTP |
+| 前台 `apps/web` | 🟡 | 18 頁全數切版可運作，**版型已逐頁對回 mockup4**（見 §四）；三支表單的送出端點擋於 SMTP |
 | 後台 `apps/admin` | 🟡 | 全部畫面可運作（列表＋編輯＋富文字）；只剩相關產品拖曳與表單收件匣 |
 | 基礎設施 `infra/` | ✅ | 已部署至 `EuniceMedUS`（West US 2）：Storage／Function App／SWA 共 13 個資源 |
 | CI/CD `.github/` | 🟡 | infra 與 web 兩支已實際部署成功；api 部署成功但健康檢查失敗（等 SQL 連線字串）|
@@ -156,17 +156,23 @@ facet 篩選、standalone 產物 66MB／250MB。
 | Products | `/[locale]/products` | ✅ **已切版可運作**（hero／cta 兩個 schema + 動態分類卡與產品格）|
 | Product Category | `/[locale]/products/{category}` | ✅ **已切版可運作** |
 | Sub-category | `/[locale]/products/{category}/{sub}` | ✅ **已切版可運作** |
-| Product Detail | `/[locale]/products/{category}/{sub}/{slug}` | ✅ **已切版可運作**（缺 §08 詢價表單，待 Phase 7 的 `POST /contact`）|
+| Product Detail | `/[locale]/products/{category}/{sub}/{slug}` | ✅ **已切版可運作**（§08 詢價面板已切，送出擋於 `POST /contact`）|
 | Applications／Detail | `/[locale]/applications[/{slug}]` | ✅ **已切版可運作**（含人體圖 SVG 互動）|
-| Partnership | `/[locale]/partnership` | ✅ **已切版可運作**（表單本體待 Phase 7）|
+| Partnership | `/[locale]/partnership` | ✅ **已切版可運作**（§03 洽詢表單已切，送出擋於 `POST /contact`）|
 | Resources | `/[locale]/resources` | ✅ **已切版可運作**（含 `ref:Article` / `ref:Download` 解析）|
 | FAQ | `/[locale]/faq` | ✅ **已切版可運作**（分類篩選 + 原生 details 手風琴）|
 | Insights／Article Detail | `/[locale]/insights[/{slug}]` | ✅ **已切版可運作**（含伺服器端 TOC）|
 | News／News Detail | `/[locale]/news[/{slug}]` | ✅ **已切版可運作**（含活動面板、圖庫、prev/next）|
 | Downloads | `/[locale]/downloads` | ✅ **已切版可運作**（類型篩選）|
 | Where to Buy | `/[locale]/where-to-buy` | ✅ **已切版可運作**（伺服器端分組）|
-| Contact | `/[locale]/contact` | 🔴 擋於 Phase 7 的 `POST /contact`（SMTP 帳密未提供）|
+| Contact | `/[locale]/contact` | ✅ **已切版可運作**；🔴 送出擋於 Phase 7 的 `POST /contact`（SMTP 帳密未提供）|
 | Privacy | `/[locale]/privacy` | ✅ **已切版可運作**（Legal 淨化 profile）|
+
+**2026-08-19 版型校正**：頁首（滿版 76px、Where to Buy 藥丸鈕、EN·中）、頁尾（深色 `#14262C` 面）、
+右下角浮動聯絡鈕、`px-gutter`（`clamp(24px,5vw,64px)`，取代原本 `px-6 lg:px-16` 的斷點近似）、
+逐頁的 `clamp()` 垂直節奏、產品卡／文章卡／篩選 chips／側欄篩選／分類 hero 全部對回 mockup4。
+另補齊 mockup4 有而先前未實作的區塊：Contact 整頁、分類頁的兄弟切換列與 §4/§5、
+應用方案詳情 §7、產品詳情 §08、Partnership §03 表單。
 
 前台共通項目：i18n 語系前綴 ✅、`output: 'standalone'` 與 250MB gate ✅（目前 66MB）、
 圖片走 Blob 直連（`unoptimized: true` + 自訂 srcSet）✅、`.swa` 路徑排除 ✅、安全標頭 ✅、
