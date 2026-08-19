@@ -85,7 +85,9 @@ resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
     // media 容器要能匿名讀取（訪客瀏覽器直接抓圖，不經 SWA 以省頻寬），
     // 因此帳戶層級必須允許 public blob access
     allowBlobPublicAccess: true
-    allowSharedKeyAccess: false
+    // ⚠️ Functions host 的儲存體與部署包都走連線字串（見 Function App 的 appSettings），
+    // 所以共用金鑰不能停用。我們自己的程式碼存取媒體仍走 Managed Identity。
+    allowSharedKeyAccess: true
   }
 }
 
@@ -166,17 +168,18 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
           type: 'blobContainer'
           value: '${storage.properties.primaryEndpoints.blob}${deploymentContainer}'
           authentication: {
-            // 沒有 Key Vault，也不用共用金鑰 —— 部署包以 MI 存取
-            type: 'SystemAssignedIdentity'
+            type: 'StorageAccountConnectionString'
+            storageAccountConnectionStringName: 'DEPLOYMENT_STORAGE_CONNECTION_STRING'
           }
         }
       }
       runtime: {
         name: 'dotnet-isolated'
-        // ⚠️ 是 '10' 不是 '10.0'。Flex Consumption 收得下 '10.0'（ARM 不驗），
-        // 但 worker 起不來 —— 症狀是 host 活著、每一條路由都回 404。
-        // 可用值以 `az functionapp list-flexconsumption-runtimes -l <region>` 為準。
-        version: '10'
+        // ⚠️ **是 '10.0' 不是 '10'。**
+        // `az functionapp list-flexconsumption-runtimes` 回的是 `10`，照著填的話
+        // host 完全不回應（連 /admin/host/status 都 500，且無任何日誌）。
+        // `az functionapp create` 自己填的、以及同訂用帳戶所有正常運作的 app，都是 '10.0'。
+        version: '10.0'
       }
       scaleAndConcurrency: {
         // 2048MB 是媒體管線定案時一併決定的：512MB 會在 SkiaSharp
@@ -197,12 +200,15 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
       appSettings: [
         // Flex Consumption 的 host 儲存體以 MI 存取，不放連線字串
         {
-          name: 'AzureWebJobsStorage__accountName'
-          value: storage.name
+          // Functions host 自己的儲存體。**用連線字串而非 Managed Identity** ——
+          // 同訂用帳戶四個正常運作的 Flex app 全都是連線字串形式。
+          // 媒體存取（我們自己的程式）仍走 MI，見下方 Storage__AccountName。
+          name: 'AzureWebJobsStorage'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${storage.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
         }
         {
-          name: 'AzureWebJobsStorage__credential'
-          value: 'managedidentity'
+          name: 'DEPLOYMENT_STORAGE_CONNECTION_STRING'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${storage.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
         }
         {
           name: 'BlobStorageConnection__accountName'
@@ -229,7 +235,9 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
           value: '${storage.properties.primaryEndpoints.blob}${mediaContainer}'
         }
         {
-          name: 'Jwt__SigningKey'
+          // ⚠️ 鍵名是 `Jwt__Secret`。程式讀 `Jwt:Secret`（JwtService.cs），
+          // docs/07 原本寫成 Jwt__SigningKey —— 不一致的話 host 起得來但每個請求都 500。
+          name: 'Jwt__Secret'
           value: jwtSigningKey
         }
         {

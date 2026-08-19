@@ -471,18 +471,17 @@ Flex Consumption 每次冷啟動都要下載並解壓那個包，而 app init �
 同一輪也修了 smoke test：`curl` 沒有 `-m`，app 掛住時那一步跑了 15 分鐘還沒結束，
 而不是在五分鐘內失敗。**輪詢式的健康檢查，每一發都要有逾時。**
 
-### 2026-08-18 · Flex Consumption 的 runtime 版本字串是 `10`，寫 `10.0` 不會被擋
+### 2026-08-19 · Flex Consumption 的 runtime 版本是 `10.0`，不是 CLI 列出來的 `10`
 
-Bicep 裡寫 `functionAppConfig.runtime.version: '10.0'`，ARM 照收、部署成功、
-app 顯示 Running —— 但**每一條路由都回 404**（Kestrel 回的，代表 host 在、
-只是一個 function 都沒索引到）。
+**這一則推翻了它前一天的版本。** 當時看到 404 就去查
+`az functionapp list-flexconsumption-runtimes`，它回 `10`，於是把 Bicep 從 `10.0` 改成 `10` ——
+**改錯方向**。`10` 之後症狀從 404 惡化成「完全不回應」。
 
-正確值要以 `az functionapp list-flexconsumption-runtimes -l westus2 --runtime dotnet-isolated`
-為準，它回的是 `10`。
+正確值是 **`10.0`**：`az functionapp create` 自己填的是 `10.0`，
+同訂用帳戶所有正常運作的 Flex app 也都是 `10.0`。CLI 那份清單列的是 runtime 的
+「主版本」標籤，不是 `functionAppConfig.runtime.version` 該填的字串。
 
-這一類「設定值不合法但沒人擋」的錯誤，症狀都長得像別的問題：
-當下第一個懷疑的是啟動時的 migration 失敗，實際上 migration 早就跑完了
-（`dotnet ef database update` 從本機連上去確認過是 up to date）。
+**教訓：拿一個已知正常的同型資源 `az resource show` 出來對，比查文件或 CLI 清單可靠。**
 
 ### 2026-08-18 · GitHub OIDC 的 subject 不是文件上那個格式
 
