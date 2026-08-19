@@ -364,8 +364,11 @@ resource staticWebAppSettings 'Microsoft.Web/staticSites/config@2023-12-01' = {
   parent: staticWebApp
   name: 'appsettings'
   properties: {
-    API_BASE: 'https://${functionApp.properties.defaultHostName}/api/v1'
-    NEXT_PUBLIC_API_BASE: 'https://${functionApp.properties.defaultHostName}/api/v1'
+    // ⚠️ 沒有 `/v1`。host.json 的 routePrefix 是 `api`，AppRouter 直接比對
+    // `["collections"]` 這種形狀 —— 實際端點是 `/api/collections`。
+    // docs 舊版寫 `/api/v1` 是錯的（URL 沒有版本段），照抄會讓前台每一頁都 500。
+    API_BASE: 'https://${functionApp.properties.defaultHostName}/api'
+    NEXT_PUBLIC_API_BASE: 'https://${functionApp.properties.defaultHostName}/api'
     NEXT_PUBLIC_MEDIA_BASE: '${storage.properties.primaryEndpoints.blob}${mediaContainer}'
     NEXT_PUBLIC_SITE_URL: siteUrl
   }

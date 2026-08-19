@@ -4,7 +4,11 @@
 > **這份表就是 API 契約。** 與 [`Api/Routing/AppRouter.cs`](../Api/Routing/AppRouter.cs) 必須逐條一致 —— 改路由時兩邊同步，否則視為不完整的變更。
 >
 > 端點規格（DTO 形狀、查詢參數、錯誤碼）見 [04-api.md](04-api.md)。回應一律包在 `ApiResponse` 信封內。
-> 所有路徑省略 `/api/v1` 前綴。
+> 所有路徑省略 `/api` 前綴（`host.json` 的 `routePrefix`）。
+>
+> ⚠️ **URL 裡沒有版本段。** 早期文件寫過 `/api/v1`，那是錯的 —— `AppRouter` 比對的是
+> `["collections"]` 這種形狀，實際端點就是 `/api/collections`。
+> 把 `API_BASE` 設成 `/api/v1` 會讓前台每一頁都 500。
 
 ## 圖例
 

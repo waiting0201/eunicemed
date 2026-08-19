@@ -152,7 +152,7 @@ EuniceMed/
 
 ### 5.3 API（Azure Functions, C#）
 - **寫程式前先讀 [Jabez/Api](/Users/tim/webapps/Jabez/Api) 的同類型檔案當範本**，不要憑空想像架構。本專案的骨架刻意與它同源。
-- RESTful、複數名詞、kebab/lower：`GET /api/v1/products`。版本前綴 `v1`。
+- RESTful、複數名詞、kebab/lower：`GET /api/products`。**URL 不帶版本段** —— 早期文件寫過 `v1`，實作沒有（見 [docs/api-routes.md](docs/api-routes.md)）。
 - 公開讀取端點匿名可用；**所有寫入/後台端點需 JWT 驗證 + 角色授權**，且授權一律在 `AppRouter` 執行，**Handler 內禁止重複檢查角色**。
 - 統一回應信封 `ApiResponse{success,data,message,errors,timestamp}`（**不是** ProblemDetails），統一分頁 `PagedResult`。
 - **讀取走 Dapper read service、寫入走 EF Core**；Function 內**不拼接 SQL 字串**（防注入）。禁止 Repository Pattern。
