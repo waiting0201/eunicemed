@@ -5,7 +5,7 @@ import { isLocale, type Locale } from '@/lib/locale';
 import { ArticleListPage } from '@/components/ArticleListPage';
 
 type Params = { locale: string };
-type Search = { category?: string };
+type Search = { category?: string; page?: string };
 
 const COPY: Record<Locale, { eyebrow: string; title: string; lead: string; empty: string }> = {
   en: {
@@ -57,7 +57,7 @@ export default async function NewsPage({
   const q = await searchParams;
   if (!isLocale(locale)) notFound();
 
-  const result = await api.articles(locale, 'news', q.category);
+  const result = await api.articles(locale, 'news', q.category, q.page);
 
   return (
     <ArticleListPage

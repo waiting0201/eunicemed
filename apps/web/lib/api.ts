@@ -410,9 +410,17 @@ export const api = {
   salesLocations: (locale: string) =>
     get<SalesLocations>(`/sales-locations?locale=${enc(locale)}`),
 
-  articles: (locale: string, kind: 'news' | 'insights', category?: string) => {
+  articles: (
+    locale: string,
+    kind: 'news' | 'insights',
+    category?: string,
+    page?: string,
+  ) => {
     const q = new URLSearchParams({ locale, facets: 'true' });
     if (category) q.set('category', category);
+    // 頁碼由 query string 帶進來，非數字或小於 1 就當第一頁（網址可以被人手改）
+    const n = Number(page);
+    if (Number.isFinite(n) && n > 1) q.set('page', String(Math.floor(n)));
     return get<FacetedResult<ArticleListItem>>(`/${kind}?${q}`);
   },
 

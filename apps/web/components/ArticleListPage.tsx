@@ -4,6 +4,7 @@ import { ArticleCard } from './ArticleCard';
 import { PageHero } from './PageHero';
 import { ResourcesSubnav } from './ResourcesSubnav';
 import { SideFilter } from './SideFilter';
+import { Pagination } from './Pagination';
 
 /**
  * News 與 Insights 的列表版型。兩頁在 mockup4 只差三件事：
@@ -66,6 +67,13 @@ export function ArticleListPage({
                     <ArticleCard key={item.slug} item={item} locale={locale} kind={kind} />
                   ))}
                 </div>
+
+                <Pagination
+                  page={result.page}
+                  totalPages={result.totalPages}
+                  basePath={basePath}
+                  query={{ category: activeCategory }}
+                />
               </>
             )}
           </div>

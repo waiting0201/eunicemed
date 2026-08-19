@@ -75,6 +75,8 @@ const COPY: Record<
 /** 內文的排版。richtext 由 API 淨化過，標籤集固定（docs/09 §9.2），這裡只負責樣式。 */
 const PROSE = [
   '[&_p]:mt-4',
+  // 第一段是導引段：比內文大一階且用 ink（mockup4）
+  '[&>p:first-child]:mt-0 [&>p:first-child]:text-[1.18rem] [&>p:first-child]:leading-[1.6] [&>p:first-child]:text-ink',
   '[&_h2]:mt-[38px] [&_h2]:mb-3 [&_h2]:text-[1.55rem] [&_h2]:font-[520] [&_h2]:scroll-mt-24',
   '[&_h3]:mt-7 [&_h3]:text-[1.2rem] [&_h3]:font-[570]',
   '[&_ul]:mt-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mt-4 [&_ol]:list-decimal [&_ol]:pl-5',
@@ -117,27 +119,39 @@ export function ArticleDetailPage({
         <span className="text-ink">{a.title}</span>
       </nav>
 
-      {/* 標題區 */}
-      <header className="mx-auto max-w-content px-gutter">
-        <div className="mx-auto max-w-[760px] text-center">
+      {/* 標題區 —— 量體 820px（比一般頁窄），分類是純色字而不是藥丸 */}
+      <header className="mx-auto max-w-content px-gutter pt-[clamp(16px,2vw,24px)]">
+        <div className="mx-auto max-w-[820px] text-center">
           {a.category && (
-            <span className="inline-block rounded-full bg-tint-deep px-3.5 py-1 text-[0.72rem] font-bold uppercase tracking-[0.1em] text-brand-deep">
+            <span className="text-[0.74rem] font-bold tracking-[0.14em] text-brand-deep uppercase">
               {a.category.name}
             </span>
           )}
-          <h1 className="mt-3.5 text-[clamp(2rem,3.6vw,2.8rem)] font-normal">{a.title}</h1>
-          {a.standfirst && <p className="mt-3.5 text-[1.1rem]">{a.standfirst}</p>}
+          <h1 className="mt-3 text-[clamp(2rem,3.8vw,3rem)] font-normal">{a.title}</h1>
+          {/* standfirst 是編輯者另寫的導言；沒寫就用摘要，兩者都沒有才不顯示 */}
+          {(a.standfirst ?? a.excerpt) && (
+            <p className="mt-4 text-[1.15rem]">{a.standfirst ?? a.excerpt}</p>
+          )}
 
-          <p className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[0.88rem] text-grey">
-            {a.publishedAt && <span>{formatDate(a.publishedAt, locale)}</span>}
-            {a.author && <span>{c.by} {a.author}</span>}
-            {a.readMinutes !== null && <span>{c.readMinutes(a.readMinutes)}</span>}
-          </p>
+          <div className="mt-5 flex flex-wrap justify-center gap-2.5 text-[0.85rem] text-[#66787F]">
+            {[
+              a.publishedAt ? formatDate(a.publishedAt, locale) : null,
+              a.author ? `${c.by} ${a.author}` : null,
+              a.readMinutes !== null ? c.readMinutes(a.readMinutes) : null,
+            ]
+              .filter((x): x is string => Boolean(x))
+              .map((part, i) => (
+                <span key={part} className="contents">
+                  {i > 0 && <span className="text-[#B7C4C8]">·</span>}
+                  <span>{part}</span>
+                </span>
+              ))}
+          </div>
         </div>
       </header>
 
       {a.cover && (
-        <div className="mx-auto mt-9 max-w-content px-gutter">
+        <div className="mx-auto max-w-content px-gutter pt-[clamp(28px,3.5vw,44px)]">
           <img
             src={a.cover.url}
             srcSet={srcSetOf(a.cover)}
@@ -146,7 +160,7 @@ export function ArticleDetailPage({
             width={1600}
             height={900}
             decoding="async"
-            className="aspect-[16/9] w-full rounded-[22px] object-cover"
+            className="aspect-[16/9] w-full rounded-[24px] object-cover"
           />
         </div>
       )}
@@ -203,12 +217,18 @@ export function ArticleDetailPage({
           <aside className="space-y-8 lg:sticky lg:top-24 lg:self-start">
             {a.toc.length > 0 && (
               <div>
-                <p className="mb-2 text-[0.78rem] font-bold uppercase tracking-[0.14em] text-grey">
+                <p className="pb-2.5 text-[0.72rem] font-[620] tracking-[0.14em] text-[#8AA0A6] uppercase">
                   {c.onThisPage}
                 </p>
-                <nav className="flex flex-col gap-1.5 border-l border-hairline pl-3 text-[0.9rem]">
+                {/* 每一項左側一條色條；目前段落在 mockup4 是品牌青，
+                    但捲動位置要 client JS 才知道，所以這裡一律用細線色。 */}
+                <nav className="flex flex-col gap-0.5 text-[0.92rem]">
                   {a.toc.map((t) => (
-                    <a key={t.id} href={`#${t.id}`} className="hover:text-brand-deep">
+                    <a
+                      key={t.id}
+                      href={`#${t.id}`}
+                      className="border-l-[3px] border-hairline px-3.5 py-2 leading-[1.4] hover:border-brand hover:text-brand-deep"
+                    >
                       {t.text}
                     </a>
                   ))}

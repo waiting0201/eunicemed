@@ -134,15 +134,11 @@ export default async function DownloadsPage({
  * 那不是漏翻（docs/05 §3.8）。
  */
 function meta(d: DownloadFile): string {
-  return [d.fileLocale, d.fileExt, formatSize(d.sizeBytes), d.description]
+  return [d.fileLocale, d.fileExt, d.description]
     .filter(Boolean)
     .join(' · ');
 }
 
-function formatSize(bytes: number): string {
-  if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
-}
 
 function FileIcon() {
   return (

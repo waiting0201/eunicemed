@@ -31,19 +31,23 @@ export function SectionCtaLink({
 }) {
   if (!cta?.url) return null;
 
-  const text = label ?? cta.label ?? cta.url;
+  const raw = label ?? cta.label ?? cta.url;
+  const text = variant === 'text' ? withArrow(raw) : raw;
   const cls = `${STYLES[variant]} ${className}`.trim();
-  const suffix = variant === 'text' ? ' →' : '';
 
   return cta.external ? (
     <a href={cta.url} target="_blank" rel="noopener" className={cls}>
       {text}
-      {suffix}
     </a>
   ) : (
     <Link href={cta.url} className={cls}>
       {text}
-      {suffix}
     </Link>
   );
 }
+
+/** 標籤若已自帶箭頭就不再補一個 —— 後台的文案常常已經寫成「All news →」。 */
+function withArrow(label: string): string {
+  return /[→>›»]\s*$/.test(label) ? label : `${label} →`;
+}
+

@@ -113,7 +113,8 @@ export function ArticleCard({
             </span>
           )}
           <h3 className="my-1.5 text-[1.22rem] font-[570]">{item.title}</h3>
-          {item.excerpt && <p className="text-[0.92rem]">{item.excerpt}</p>}
+          {/* mockup4 的摘要是 2–3 行；夾住才不會讓同一排卡片高度散開 */}
+          {item.excerpt && <p className="line-clamp-3 text-[0.92rem]">{item.excerpt}</p>}
         </div>
       )}
     </Link>

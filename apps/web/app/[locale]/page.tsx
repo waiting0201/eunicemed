@@ -172,7 +172,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
                 </div>
               </div>
               {featuredCopy.promo.link?.url && (
-                <CtaLink cta={featuredCopy.promo.link} variant="onDark" />
+                <PromoArrow cta={featuredCopy.promo.link} />
               )}
             </div>
           )}
@@ -199,22 +199,25 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
           )}
           {!band.background && <div className="absolute inset-0 bg-[#12333c]" />}
 
-          <div className="relative mx-auto grid max-w-content gap-12 px-gutter lg:grid-cols-2">
+          <div className="relative mx-auto grid max-w-content items-center gap-14 px-gutter lg:grid-cols-[0.9fr_1.1fr]">
             <div>
-              <span className="text-lg font-medium text-white/60">
+              <span className="text-[1.1rem] font-medium text-[#7FE0EC]">
                 {String(next()).padStart(2, '0')}
               </span>
               {band.title && (
-                <h2 className="mt-2 text-[clamp(2rem,4vw,2.6rem)] font-normal leading-[1.08] text-white">
+                <h2 className="mt-2 mb-[18px] text-[clamp(2rem,4vw,2.6rem)] font-normal leading-[1.08] text-white">
                   {band.title}
                 </h2>
               )}
-              {band.lead && <p className="mt-4 max-w-[46ch] text-white/80">{band.lead}</p>}
-              {band.cta?.url && <CtaLink cta={band.cta} variant="onDark" />}
+              {band.lead && (
+                <p className="max-w-[44ch] text-[1.05rem] text-white/[.78]">{band.lead}</p>
+              )}
+              {band.cta?.url && <CtaLink cta={band.cta} variant="onDarkOutline" />}
             </div>
 
+            {/* 四格是**一塊**面板：1px 的格線由容器底色透出來，不是各自獨立的卡片 */}
             {band.tiles && band.tiles.length > 0 && (
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[20px] border border-white/[.14] bg-white/[.14]">
                 {band.tiles.map((tile, i) => (
                   <TileLink key={tile.title ?? i} tile={tile} />
                 ))}
@@ -227,51 +230,79 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
       {/* 03 合作優勢 */}
       {why && (
         <section className="mx-auto max-w-content px-gutter py-[clamp(64px,8vw,96px)]">
-          <SectionHeading index={next()} title={why.title ?? ''} className="mb-8 max-w-[24ch]" />
+          <SectionHeading
+            index={next()}
+            title={why.title ?? ''}
+            titleClassName="max-w-[20ch] text-[clamp(2rem,4vw,2.6rem)]"
+            className="mb-11"
+          />
+          {/* 每欄頂上一條 2px 品牌青（mockup4） */}
           {why.items && why.items.length > 0 && (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
               {why.items.map((item, i) => (
-                <div key={item.title ?? i}>
-                  {item.title && <h3 className="text-[1.1rem] font-semibold">{item.title}</h3>}
-                  {item.body && <p className="mt-1.5 text-[0.95rem]">{item.body}</p>}
+                <div key={item.title ?? i} className="border-t-2 border-brand pt-5">
+                  {item.title && (
+                    <h3 className="mb-2 text-[1.2rem] font-[570]">{item.title}</h3>
+                  )}
+                  {item.body && <p className="text-[0.92rem]">{item.body}</p>}
                 </div>
               ))}
             </div>
           )}
-          {why.cta?.url && <CtaLink cta={why.cta} variant="primary" />}
+          {why.cta?.url && <CtaLink cta={why.cta} variant="ink" />}
         </section>
       )}
 
       {/* 04 客戶見證 */}
       {testimonial && (
         <section className="bg-tint py-[clamp(64px,8vw,96px)]">
-          <div className="mx-auto grid max-w-content gap-12 px-gutter lg:grid-cols-2">
+          <div className="mx-auto grid max-w-content items-center gap-[clamp(40px,6vw,72px)] px-gutter lg:grid-cols-[1.02fr_0.98fr]">
             <div>
-              <SectionHeading index={next()} title={testimonial.title ?? ''} />
+              <SectionHeading
+                index={next()}
+                title={testimonial.title ?? ''}
+                accent
+                titleClassName="text-[clamp(2rem,4vw,2.6rem)] leading-[1.08]"
+              />
+
+              {/* 起引號記號，純裝飾 */}
+              <svg viewBox="0 0 92 62" width="56" aria-hidden className="my-9 block">
+                <g fill="none" stroke="#0092A8" strokeWidth="11" strokeLinecap="round">
+                  <path d="M33 9 Q13 9 13 31 V53" />
+                  <path d="M80 9 Q60 9 60 31 V53" />
+                </g>
+              </svg>
+
               {testimonial.quote && (
-                <blockquote className="mt-6 text-[clamp(1.3rem,2.6vw,1.8rem)] leading-[1.35] text-ink">
+                <blockquote className="max-w-[20ch] text-[clamp(1.5rem,2.5vw,2.05rem)] leading-[1.3] font-[440] tracking-[-0.01em] text-ink">
                   {testimonial.quote}
                 </blockquote>
               )}
               {testimonial.attribution?.name && (
-                <p className="mt-4 font-medium">
+                <p className="mt-4 text-[0.9rem] font-semibold">
                   {testimonial.attribution.name}
                   {testimonial.attribution.region && (
-                    <span className="text-grey"> · {testimonial.attribution.region}</span>
+                    <span className="font-medium text-[#66787F]">
+                      {' '}
+                      · {testimonial.attribution.region}
+                    </span>
                   )}
                 </p>
               )}
 
+              {/* 短引言是一張細線清單，不是卡片（mockup4） */}
               {testimonial.miniQuotes && testimonial.miniQuotes.length > 0 && (
-                <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                <div className="mt-10 border-t border-hairline">
                   {testimonial.miniQuotes.map((m, i) => (
                     <div
                       key={m.source ?? i}
-                      className="rounded-[14px] border border-hairline bg-white p-4"
+                      className="flex items-baseline justify-between gap-5 border-b border-hairline py-4"
                     >
-                      {m.quote && <p className="text-[0.95rem]">{m.quote}</p>}
+                      {m.quote && (
+                        <p className="text-[0.98rem] font-[530] text-ink">{m.quote}</p>
+                      )}
                       {m.source && (
-                        <span className="mt-2 block text-[0.82rem] text-grey">
+                        <span className="text-[0.75rem] font-[650] tracking-[0.1em] whitespace-nowrap text-[#66787F] uppercase">
                           {m.source}
                         </span>
                       )}
@@ -282,24 +313,32 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
             </div>
 
             <div className="relative">
-              {testimonial.video?.poster ? (
-                <img
-                  src={testimonial.video.poster.url}
-                  srcSet={srcSetOf(testimonial.video.poster)}
-                  sizes="(max-width: 1024px) 100vw, 560px"
-                  alt={testimonial.video.poster.alt ?? ''}
-                  loading="lazy"
-                  decoding="async"
-                  width={800}
-                  height={500}
-                  className="aspect-[16/10] w-full rounded-[20px] object-cover"
-                />
-              ) : (
-                <div className="aspect-[16/10] w-full rounded-[20px] bg-tint-deep" />
-              )}
+              <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[24px] bg-tint-deep shadow-[0_30px_60px_rgba(10,60,72,.16)]">
+                {testimonial.video?.poster && (
+                  <img
+                    src={testimonial.video.poster.url}
+                    srcSet={srcSetOf(testimonial.video.poster)}
+                    sizes="(max-width: 1024px) 100vw, 560px"
+                    alt={testimonial.video.poster.alt ?? ''}
+                    loading="lazy"
+                    decoding="async"
+                    width={800}
+                    height={500}
+                    className="h-full w-full object-cover"
+                  />
+                )}
+                {/* 播放鈕。影片來源未定（CLAUDE.md §7），先只放記號不接播放器 */}
+                <span className="absolute top-1/2 left-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-brand text-white shadow-[0_14px_30px_rgba(10,60,72,.16)]">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden className="ml-[3px]">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </span>
+              </div>
 
+              {/* 浮出左緣的深色標籤（mockup4：`left:-22px`） */}
               {testimonial.floatingChip && (
-                <span className="absolute -bottom-4 left-6 rounded-full bg-white px-5 py-2 text-[0.9rem] font-semibold text-brand-deep shadow-[0_10px_28px_rgba(10,60,72,.16)]">
+                <span className="absolute bottom-7 -left-[22px] inline-flex items-center gap-2.5 rounded-full border border-hairline bg-[rgba(6,26,34,.85)] px-4 py-2.5 text-[0.82rem] font-[620] text-white shadow-[0_10px_26px_rgba(10,60,72,.14)] backdrop-blur-[6px]">
+                  <span className="h-2.5 w-2.5 rounded-full bg-brand-deep shadow-[0_0_0_4px_rgba(0,181,205,.18)]" />
                   {testimonial.floatingChip}
                 </span>
               )}
@@ -319,11 +358,9 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
             }
             className="mb-3"
           />
-          <div className="grid gap-6 sm:grid-cols-3">
-            {news.items.slice(0, 3).map((item) => (
-              <NewsRow key={item.slug} item={item} locale={locale} />
-            ))}
-          </div>
+          {news.items.slice(0, 3).map((item) => (
+            <NewsRow key={item.slug} item={item} locale={locale} />
+          ))}
         </section>
       )}
     </>
@@ -385,16 +422,18 @@ function FeaturedMasonry({ items }: { items: ProductListItem[] }) {
   );
 }
 
+/** 首頁 §05 的一列：固定寬度的日期、佔滿剩餘寬度的標題、右端的 Read →（mockup4）。 */
 function NewsRow({ item, locale }: { item: ArticleListItem; locale: Locale }) {
   return (
-    <Link href={item.url} className="group block border-t border-hairline pt-4">
-      {item.publishedAt && (
-        <p className="text-[0.82rem] text-grey">
-          {formatDate(item.publishedAt, locale).slice(0, 9)}
-        </p>
-      )}
-      <h3 className="mt-1 text-[1.05rem] font-semibold">{item.title}</h3>
-      <span className="mt-2 inline-block text-[0.9rem] font-semibold text-brand-deep">
+    <Link
+      href={item.url}
+      className="flex items-center gap-6 border-b border-hairline py-6"
+    >
+      <span className="w-[90px] flex-none text-[0.85rem] text-[#66787F]">
+        {item.publishedAt ? formatDate(item.publishedAt, locale).slice(0, 9) : ''}
+      </span>
+      <h3 className="flex-1 text-[1.3rem] font-[570]">{item.title}</h3>
+      <span className="flex-none font-[620] text-brand-deep">
         {locale === 'en' ? 'Read →' : '閱讀 →'}
       </span>
     </Link>
@@ -405,13 +444,16 @@ function TileLink({ tile }: { tile: NonNullable<BodyPartBandSection['tiles']>[nu
   const inner = (
     <>
       <TileIcon name={tile.icon} />
-      {tile.title && <h3 className="mt-3 text-[1.05rem] font-semibold text-white">{tile.title}</h3>}
-      {tile.subtitle && <p className="mt-0.5 text-[0.88rem] text-white/70">{tile.subtitle}</p>}
+      {tile.title && (
+        <h3 className="mt-3.5 mb-1 text-[1.15rem] font-[570] text-white">{tile.title}</h3>
+      )}
+      {tile.subtitle && <p className="text-[0.88rem] text-white/[.66]">{tile.subtitle}</p>}
     </>
   );
 
+  // 沒有自己的圓角與外框：格線是容器透出來的 1px gap（mockup4）
   const className =
-    'rounded-[16px] border border-white/20 bg-white/5 p-5 transition hover:border-white/50 hover:bg-white/10';
+    'bg-[rgba(6,26,34,.72)] px-7 py-[30px] backdrop-blur-[6px] transition hover:bg-[rgba(6,26,34,.86)]';
 
   return tile.link?.url ? (
     <Link href={tile.link.url} className={className}>
@@ -426,6 +468,24 @@ function TileLink({ tile }: { tile: NonNullable<BodyPartBandSection['tiles']>[nu
  * 圖示對照表。`icon` 是 schema 的固定字彙（enum，寫入時已驗過），
  * **新增一個值必須同時在這裡補圖形**，否則格子會沒有圖示。
  */
+/**
+ * 全型錄卡右端的箭頭。mockup4 是一個 1.4rem 的白色 `→` 字符，
+ * 不是白色圓鈕 —— 那張卡整塊就是連結，再放一顆按鈕會是兩個點擊目標。
+ */
+function PromoArrow({ cta }: { cta: SectionCta }) {
+  const arrow = <span className="flex-none text-[1.4rem] font-[620] text-white">→</span>;
+
+  return cta.external ? (
+    <a href={cta.url} target="_blank" rel="noopener" aria-label={cta.label ?? undefined}>
+      {arrow}
+    </a>
+  ) : (
+    <Link href={cta.url!} aria-label={cta.label ?? undefined}>
+      {arrow}
+    </Link>
+  );
+}
+
 function TileIcon({ name }: { name?: string }) {
   const paths: Record<string, React.ReactNode> = {
     knee: (
@@ -468,25 +528,31 @@ function CtaLink({
   variant,
 }: {
   cta: SectionCta;
-  variant: 'primary' | 'onDark' | 'text';
+  variant: 'primary' | 'onDark' | 'onDarkOutline' | 'ink' | 'text';
 }) {
   const className = {
     primary:
-      'mt-8 inline-block rounded-full bg-brand px-7 py-3 font-semibold text-white shadow-[0_10px_30px_rgba(0,181,205,.32)] transition hover:bg-brand-deep hover:text-white',
+      'mt-8 inline-block rounded-full bg-brand px-7 py-3 font-[620] text-white shadow-[0_10px_30px_rgba(0,181,205,.32)] transition hover:bg-brand-deep hover:text-white',
     onDark:
-      'mt-6 inline-block rounded-full bg-white px-7 py-3 font-semibold text-brand-deep transition hover:bg-white/90',
-    text: 'font-semibold text-brand-deep',
+      'mt-6 inline-block rounded-full bg-white px-7 py-3 font-[620] text-brand-deep transition hover:bg-white/90',
+    // 照片帶上的次要動作：透明底、半透明白框（mockup4 §02）
+    onDarkOutline:
+      'mt-7 inline-block rounded-full border-[1.5px] border-white/55 px-7 py-3 font-[620] text-white hover:text-white',
+    // 白底上的主要動作在 mockup4 §03 是 ink 實心，不是品牌青
+    ink: 'mt-11 inline-block rounded-full bg-ink px-[30px] py-[13px] font-[620] text-white hover:text-white',
+    text: 'font-[620] text-brand-deep',
   }[variant];
 
-  const label = cta.label ?? cta.url!;
+  const raw = cta.label ?? cta.url!;
+  const label = variant === 'text' ? withArrow(raw) : raw;
 
   return cta.external ? (
     <a href={cta.url} target="_blank" rel="noopener" className={className}>
-      {label} {variant === 'text' && '→'}
+      {label}
     </a>
   ) : (
     <Link href={cta.url!} className={className}>
-      {label} {variant === 'text' && '→'}
+      {label}
     </Link>
   );
 }
@@ -515,4 +581,9 @@ function Highlight({ text }: { text: string }) {
 /** metadata 的 title 不能帶標記。 */
 function plain(text: string): string {
   return text.replace(/\*\*(.+?)\*\*/g, '$1');
+}
+
+/** 標籤若已自帶箭頭就不再補一個 —— 後台的文案常常已經寫成「All news →」。 */
+function withArrow(label: string): string {
+  return /[→>›»]\s*$/.test(label) ? label : `${label} →`;
 }
