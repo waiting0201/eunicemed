@@ -560,6 +560,11 @@ function CtaLink({
 /**
  * `**…**` 標記的高亮字（docs/09 §2）。刻意只認這一種標記、不接 markdown 解析器：
  * 這是一個標題欄位，不是富文字。
+ *
+ * <p>
+ * 顏色是 `#0092A8` 而不是品牌青 `#00B5CD` —— 後者壓在白底上只有約 2.9:1，
+ * 當文字不合格。**品牌青只負責填色**，一旦當文字就換深一階（DESIGN.md）。
+ * </p>
  */
 function Highlight({ text }: { text: string }) {
   const parts = text.split(/\*\*(.+?)\*\*/g);
@@ -567,7 +572,7 @@ function Highlight({ text }: { text: string }) {
     <>
       {parts.map((part, i) =>
         i % 2 === 1 ? (
-          <span key={i} className="text-brand">
+          <span key={i} className="text-brand-deep">
             {part}
           </span>
         ) : (
