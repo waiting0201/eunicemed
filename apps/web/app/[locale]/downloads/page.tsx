@@ -80,8 +80,8 @@ export default async function DownloadsPage({
       <ResourcesSubnav locale={locale} active="/downloads" />
       <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />
 
-      <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
-        <div className="grid gap-10 lg:grid-cols-[240px_1fr]">
+      <section className="mx-auto max-w-content px-gutter py-[clamp(48px,6vw,72px)]">
+        <div className="grid items-start gap-[clamp(32px,4vw,56px)] lg:grid-cols-[240px_1fr]">
           <SideFilter
             label={c.categories}
             param="type"
@@ -92,9 +92,9 @@ export default async function DownloadsPage({
             labelOf={(f) => TYPE_LABEL[locale][f.slug] ?? f.label}
           />
 
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {result.items.length === 0 ? (
-              <p className="py-16 text-center text-grey">{c.empty}</p>
+              <p className="py-16 text-center text-[#8AA0A6]">{c.empty}</p>
             ) : (
               result.items.map((d) => (
                 <a
@@ -104,20 +104,18 @@ export default async function DownloadsPage({
                   // 交給瀏覽器依 Content-Type 決定開啟或下載
                   target="_blank"
                   rel="noopener"
-                  className="flex items-center gap-4 rounded-[16px] border border-hairline p-4 transition hover:border-brand-bright hover:bg-tint"
+                  className="flex items-center gap-[18px] rounded-[16px] border border-hairline px-[22px] py-5 transition hover:border-brand-bright"
                 >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] bg-[#e9f8fa] text-brand-deep">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] bg-[#E9F8FA] text-brand-deep">
                     <FileIcon />
                   </span>
 
                   <span className="min-w-0 flex-1">
-                    <span className="block font-semibold text-ink">{d.title}</span>
-                    <span className="block text-[0.88rem] text-grey">
-                      {meta(d)}
-                    </span>
+                    <span className="block text-[1.08rem] font-[570] text-ink">{d.title}</span>
+                    <span className="block text-[0.85rem] text-[#66787F]">{meta(d)}</span>
                   </span>
 
-                  <span className="shrink-0 whitespace-nowrap font-semibold text-brand-deep">
+                  <span className="shrink-0 font-[620] whitespace-nowrap text-brand-deep">
                     {c.download} ↓
                   </span>
                 </a>

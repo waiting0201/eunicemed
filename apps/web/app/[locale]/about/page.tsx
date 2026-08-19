@@ -9,6 +9,9 @@ import { SectionHeading } from '@/components/SectionHeading';
 
 type Params = { locale: string };
 
+/** About 整頁的區段標題字級（mockup4 這頁比其他頁大一階）。 */
+const ABOUT_H2 = 'text-[clamp(1.9rem,3.6vw,2.5rem)]';
+
 /**
  * About。**全站第一個吃 `GET /pages/{key}` 的頁面** ——
  * 版面固定（照 mockup4），欄位內容全部由後台維護。
@@ -90,9 +93,9 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
     <>
       {hero?.band && <Band media={hero.band} />}
 
-      <section className="mx-auto max-w-content px-6 pt-10 lg:px-16">
+      <section className="mx-auto max-w-content px-gutter pt-[clamp(32px,4vw,48px)]">
         <div className="mx-auto max-w-[760px] text-center">
-          <p className="text-[0.78rem] font-bold uppercase tracking-[0.16em] text-brand-deep">
+          <p className="text-[0.78rem] font-[680] uppercase tracking-[0.16em] text-brand-deep">
             {hero?.eyebrow ?? FALLBACK[locale].eyebrow}
           </p>
           <h1 className="mt-2.5 text-[clamp(2rem,3.6vw,2.8rem)] font-normal">
@@ -104,10 +107,10 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
 
       {/* 01 品牌故事 */}
       {story && (
-        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-gutter py-[clamp(64px,8vw,96px)]">
           <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
             <div>
-              <SectionHeading index={next()} title={story.title ?? ''} className="mb-4" />
+              <SectionHeading titleClassName={ABOUT_H2} index={next()} title={story.title ?? ''} className="mb-4" />
               {story.body && (
                 <div
                   className="[&_a]:text-brand-deep [&_li]:mt-1 [&_p]:mt-4 [&_ul]:list-disc [&_ul]:pl-5"
@@ -134,7 +137,7 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
 
       {/* 02 里程碑 */}
       {milestones && (
-        <section className="relative overflow-hidden py-16">
+        <section className="relative overflow-hidden py-[clamp(72px,9vw,110px)]">
           {milestones.background && (
             <>
               <img
@@ -147,11 +150,12 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
                 className="absolute inset-0 h-full w-full object-cover"
               />
               {/* 背景圖上要壓字，一定要有遮罩 —— 圖是編輯者換的，不能假設它夠暗 */}
-              <div className="absolute inset-0 bg-[rgba(10,38,46,.72)]" />
+              {/* 由左至右的深青遮罩：左側文字讀得到、右側照片保持乾淨（DESIGN.md） */}
+              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,36,45,.74)_0%,rgba(9,36,45,.5)_52%,rgba(9,36,45,.14)_100%)]" />
             </>
           )}
 
-          <div className="relative mx-auto max-w-content px-6 lg:px-16">
+          <div className="relative mx-auto max-w-content px-gutter">
             <span className="text-lg font-medium text-white/60">
               {String(next()).padStart(2, '0')}
             </span>
@@ -175,21 +179,21 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
         </section>
       )}
 
-      {/* 03 核心價值 */}
+      {/* 03 核心價值 —— 只有上留白，下方由 04 的 padding 接手（mockup4 的 `… 0`） */}
       {values && (
-        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
-          <SectionHeading index={next()} title={values.title ?? ''} />
-          {values.lead && <p className="mt-3 max-w-[68ch] text-[1.05rem]">{values.lead}</p>}
+        <section className="mx-auto max-w-content px-gutter pt-[clamp(64px,8vw,96px)]">
+          <SectionHeading titleClassName={ABOUT_H2} index={next()} title={values.title ?? ''} />
+          {values.lead && <p className="mt-3 max-w-[60ch]">{values.lead}</p>}
 
           {values.items && values.items.length > 0 && (
-            <div className="mt-8 grid gap-6 lg:grid-cols-3">
+            <div className="mt-9 grid gap-6 lg:grid-cols-3">
               {values.items.map((v, i) => (
                 <div
                   key={v.title ?? i}
-                  className="rounded-[18px] border border-hairline p-6"
+                  className="rounded-[20px] border border-hairline px-[26px] py-7"
                 >
-                  {v.title && <h3 className="text-[1.2rem] font-semibold">{v.title}</h3>}
-                  {v.body && <p className="mt-2">{v.body}</p>}
+                  {v.title && <h3 className="text-[1.25rem] font-[570]">{v.title}</h3>}
+                  {v.body && <p className="mt-2 text-[0.95rem]">{v.body}</p>}
                 </div>
               ))}
             </div>
@@ -199,12 +203,12 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
 
       {/* 04 製造與品質 */}
       {manufacturing && (
-        <section className="bg-tint py-14">
-          <div className="mx-auto max-w-content px-6 lg:px-16">
-            <SectionHeading index={next()} title={manufacturing.title ?? ''} className="mb-8" />
+        <section className="mx-auto max-w-content px-gutter py-[clamp(64px,8vw,96px)]">
+          <div>
+            <SectionHeading titleClassName={ABOUT_H2} index={next()} title={manufacturing.title ?? ''} className="mb-8" />
 
             {(manufacturing.imageWide || manufacturing.imageSquare) && (
-              <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
+              <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
                 {manufacturing.imageWide && (
                   <img
                     src={manufacturing.imageWide.url}
@@ -235,11 +239,12 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
             )}
 
             {manufacturing.points && manufacturing.points.length > 0 && (
-              <div className="mt-8 grid gap-6 lg:grid-cols-3">
+              /* 每欄頂上一條 2px 品牌青（mockup4） */
+              <div className="mt-10 grid gap-8 lg:grid-cols-3">
                 {manufacturing.points.map((p, i) => (
-                  <div key={p.title ?? i}>
-                    {p.title && <h3 className="text-[1.1rem] font-semibold">{p.title}</h3>}
-                    {p.body && <p className="mt-1.5 text-[0.95rem]">{p.body}</p>}
+                  <div key={p.title ?? i} className="border-t-2 border-brand pt-[18px]">
+                    {p.title && <h3 className="text-[1.15rem] font-[570]">{p.title}</h3>}
+                    {p.body && <p className="mt-1.5 text-[0.92rem]">{p.body}</p>}
                   </div>
                 ))}
               </div>
@@ -250,11 +255,13 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
 
       {/* 05 認證 */}
       {certificates && (
-        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
-          <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr]">
+        <section className="bg-tint py-[clamp(64px,8vw,96px)]">
+          <div className="mx-auto grid max-w-content items-center gap-[clamp(36px,5vw,72px)] px-gutter lg:grid-cols-[0.85fr_1.15fr]">
             <div>
-              <SectionHeading index={next()} title={certificates.title ?? ''} />
-              {certificates.lead && <p className="mt-3">{certificates.lead}</p>}
+              <SectionHeading titleClassName={ABOUT_H2} index={next()} title={certificates.title ?? ''} />
+              {certificates.lead && (
+                <p className="mt-4 max-w-[42ch]">{certificates.lead}</p>
+              )}
               {certificates.cta?.url && certificates.cta.label && (
                 <Cta cta={certificates.cta} />
               )}

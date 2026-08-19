@@ -5,9 +5,14 @@ import type { Locale } from '@/lib/locale';
 const ALL: Record<Locale, string> = { en: 'All', 'zh-TW': '全部' };
 
 /**
- * 側欄分類篩選。mockup4 的 FAQ 與 Downloads 兩頁共用這個版型
- * （<see cref="FilterChips"/> 是產品頁的橫向版本，兩者刻意不共用 ——
- * 一個是側欄清單、一個是橫向 chips，只有語意像）。
+ * 側欄分類篩選。版型照 mockup4 的 News / Insights / FAQ / Downloads 側欄：
+ * 240px 寬、`top:100px` 黏頂，每列左側一條 3px 色條，右上與右下圓角
+ * （`border-radius:0 12px 12px 0`），右端一顆計數藥丸。
+ *
+ * <p>
+ * <see cref="FilterChips"/> 是產品頁的橫向版本，兩者刻意不共用 ——
+ * 一個是側欄清單、一個是橫向 chips，只有語意像。
+ * </p>
  *
  * 篩選走 query string，維持純 SSR 且可分享網址。
  */
@@ -35,20 +40,18 @@ export function SideFilter({
   const total = facets.reduce((sum, f) => sum + f.count, 0);
 
   return (
-    <aside>
-      <p className="mb-3 text-[0.78rem] font-bold uppercase tracking-[0.14em] text-grey">
+    <aside className="flex flex-col gap-1.5 lg:sticky lg:top-[100px]">
+      <p className="px-4 pb-2 text-[0.72rem] font-[620] uppercase tracking-[0.14em] text-[#8AA0A6]">
         {label}
       </p>
-      <div className="flex flex-row gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
-        <Row href={href()} active={!active} count={total}>
-          {ALL[locale]}
+      <Row href={href()} active={!active} count={total}>
+        {ALL[locale]}
+      </Row>
+      {facets.map((f) => (
+        <Row key={f.slug} href={href(f.slug)} active={active === f.slug} count={f.count}>
+          {labelOf ? labelOf(f) : f.label}
         </Row>
-        {facets.map((f) => (
-          <Row key={f.slug} href={href(f.slug)} active={active === f.slug} count={f.count}>
-            {labelOf ? labelOf(f) : f.label}
-          </Row>
-        ))}
-      </div>
+      ))}
     </aside>
   );
 }
@@ -68,14 +71,20 @@ function Row({
     <Link
       href={href}
       aria-current={active ? 'true' : undefined}
-      className={`flex shrink-0 items-center justify-between gap-3 whitespace-nowrap rounded-[12px] border px-4 py-2.5 text-[0.95rem] transition ${
+      className={`flex items-center justify-between gap-3 rounded-r-[12px] border-l-[3px] py-3 pr-4 pl-[13px] text-[0.95rem] leading-[1.4] ${
         active
-          ? 'border-brand bg-white font-semibold text-brand-deep'
-          : 'border-transparent hover:border-hairline hover:bg-white'
+          ? 'border-brand bg-[#E9F8FA] font-[620] text-brand-deep'
+          : 'border-hairline font-medium text-body'
       }`}
     >
       <span>{children}</span>
-      <span className="text-[0.8rem] text-grey">{count}</span>
+      <span
+        className={`rounded-full px-[9px] py-0.5 text-[0.72rem] font-bold ${
+          active ? 'bg-brand text-white' : 'bg-[#EDF4F6] text-[#66787F]'
+        }`}
+      >
+        {count}
+      </span>
     </Link>
   );
 }

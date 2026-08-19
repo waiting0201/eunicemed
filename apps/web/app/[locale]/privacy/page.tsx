@@ -70,10 +70,11 @@ export default async function PrivacyPage({ params }: { params: Promise<Params> 
 
       <PageHero eyebrow={hero?.eyebrow ?? c.title} title={hero?.title ?? c.title} />
 
-      <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
-        <div className="mx-auto max-w-[74ch]">
+      {/* mockup4 這頁的量體是 820px（不是全站的 1180px）—— 法務條文要窄一點才讀得下去 */}
+      <section className="mx-auto max-w-[820px] px-gutter py-[clamp(48px,6vw,72px)]">
+        <div>
           {content?.lastUpdated && (
-            <p className="text-[0.88rem] text-grey">
+            <p className="text-[0.88rem] text-[#66787F]">
               {c.lastUpdated}
               {formatDate(content.lastUpdated, locale)}
             </p>
@@ -83,7 +84,7 @@ export default async function PrivacyPage({ params }: { params: Promise<Params> 
             <div
               // Legal profile 允許 h2/h3（Services/HtmlSanitizers.cs）——
               // 法務條文靠編號小節閱讀，這是與一般區段 richtext 的差別。
-              className="mt-6 [&_a]:text-brand-deep [&_a]:underline [&_h2]:mt-9 [&_h2]:text-[1.3rem] [&_h2]:font-semibold [&_h3]:mt-6 [&_h3]:text-[1.1rem] [&_h3]:font-semibold [&_li]:mt-1.5 [&_ol]:mt-4 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mt-4 [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:pl-5"
+              className="mt-6 [&_a]:text-brand-deep [&_a]:underline [&_h2]:mt-9 [&_h2]:mb-3 [&_h2]:text-[1.4rem] [&_h2]:font-normal [&_h3]:mt-6 [&_h3]:text-[1.15rem] [&_h3]:font-[570] [&_li]:mt-1.5 [&_ol]:mt-4 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mt-4 [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:pl-5"
               dangerouslySetInnerHTML={{ __html: content.body }}
             />
           )}

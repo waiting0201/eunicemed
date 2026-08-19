@@ -6,6 +6,7 @@ import { srcSetOf } from '@/lib/image';
 import { isLocale, type Locale } from '@/lib/locale';
 import { CollectionBadge } from '@/components/CollectionBadge';
 import { ProductCard } from '@/components/ProductCard';
+import { ProductInquiry } from '@/components/ProductInquiry';
 import { ProductGallery } from '@/components/ProductGallery';
 import { SectionHeading } from '@/components/SectionHeading';
 import { SizeChart } from '@/components/SizeChart';
@@ -26,6 +27,8 @@ const COPY: Record<
     related: string;
     quote: string;
     viewSpecs: string;
+    inquiryTitle: string;
+    inquiryBody: string;
     fileMeta: (d: Download) => string;
   }
 > = {
@@ -41,6 +44,9 @@ const COPY: Record<
     related: 'Related products',
     quote: 'Request a quote',
     viewSpecs: 'View specifications',
+    inquiryTitle: 'Interested in this product?',
+    inquiryBody:
+      'Send us an inquiry and our team will reply with pricing, availability and fitting guidance.',
     fileMeta: (d) => `${d.fileLocale} · ${d.fileExt} · ${formatSize(d.sizeBytes)}`,
   },
   'zh-TW': {
@@ -55,6 +61,8 @@ const COPY: Record<
     related: '相關產品',
     quote: '索取報價',
     viewSpecs: '查看規格',
+    inquiryTitle: '對這項產品有興趣嗎？',
+    inquiryBody: '留下訊息，我們會回覆價格、供貨狀況與穿戴建議。',
     fileMeta: (d) => `${d.fileLocale} · ${d.fileExt} · ${formatSize(d.sizeBytes)}`,
   },
 };
@@ -108,7 +116,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
       <Breadcrumb locale={locale} product={p} productsLabel={c.products} />
 
       {/* 01 圖庫 + 摘要 */}
-      <section className="mx-auto max-w-content px-6 pb-14 pt-2 lg:px-16">
+      <section className="mx-auto max-w-content px-gutter pt-2 pb-[clamp(56px,7vw,80px)]">
         <div className="grid gap-12 lg:grid-cols-2">
           <ProductGallery images={p.images} productName={p.name} locale={locale} />
 
@@ -144,8 +152,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
 
       {/* 02 特色 */}
       {p.features && p.features.length > 0 && (
-        <section className="bg-tint py-14">
-          <div className="mx-auto max-w-content px-6 lg:px-16">
+        <section className="bg-tint py-[clamp(56px,7vw,80px)]">
+          <div className="mx-auto max-w-content px-gutter">
             <SectionHeading index={next()} title={c.features} className="mb-9" />
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {p.features.map((f, i) => (
@@ -164,7 +172,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
 
       {/* 03 適用時機 */}
       {p.useCases && p.useCases.length > 0 && (
-        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-gutter py-[clamp(56px,7vw,80px)]">
           <div className="grid items-center gap-14 lg:grid-cols-2">
             {p.useCaseImage ? (
               <img
@@ -205,8 +213,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
 
       {/* 04 規格與尺寸 */}
       {(p.specs?.length || p.sizeChart) && (
-        <section id="specs" className="bg-tint py-14">
-          <div className="mx-auto max-w-content px-6 lg:px-16">
+        <section id="specs" className="bg-tint py-[clamp(56px,7vw,80px)]">
+          <div className="mx-auto max-w-content px-gutter">
             <SectionHeading index={next()} title={c.specsAndSizes} accent className="mb-9" />
             <div className="grid gap-12 lg:grid-cols-[1fr_1.3fr]">
               {p.specs && p.specs.length > 0 && (
@@ -237,7 +245,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
 
       {/* 05 認證 + 06 下載 */}
       {(p.certifications.length > 0 || p.downloads.length > 0) && (
-        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-gutter py-[clamp(56px,7vw,80px)]">
           <div className="grid gap-14 lg:grid-cols-2">
             {p.certifications.length > 0 && (
               <div>
@@ -296,8 +304,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
 
       {/* 07 相關產品 */}
       {p.relatedProducts.length > 0 && (
-        <section className="bg-tint py-14">
-          <div className="mx-auto max-w-content px-6 lg:px-16">
+        <section className="bg-tint py-[clamp(56px,7vw,80px)]">
+          <div className="mx-auto max-w-content px-gutter">
             <SectionHeading index={next()} title={c.related} className="mb-8" />
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {p.relatedProducts.map((r) => (
@@ -322,7 +330,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
         </section>
       )}
 
-      {/* 08 詢價表單 —— 待 Phase 7 的 POST /contact，見頁面說明 */}
+      {/* 08 詢價 —— 送件走 `POST /contact`（type=product，帶型號快照）。
+          **該端點尚未實作**（擋於 SMTP 帳密），上線前送出會顯示失敗訊息。 */}
+      <ProductInquiry
+        locale={locale}
+        title={c.inquiryTitle}
+        body={c.inquiryBody}
+        productName={p.name}
+        productSku={p.sku}
+      />
     </>
   );
 }
@@ -352,7 +368,7 @@ function Breadcrumb({
   ].filter(Boolean) as { href: string; label: string }[];
 
   return (
-    <nav className="mx-auto max-w-content px-6 py-4 text-[0.85rem] font-medium text-[#66787f] lg:px-16">
+    <nav className="mx-auto max-w-content px-gutter py-4 text-[0.85rem] font-medium text-[#66787f]">
       {crumbs.map((crumb) => (
         <span key={crumb.href}>
           <Link href={crumb.href}>{crumb.label}</Link>

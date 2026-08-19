@@ -21,6 +21,10 @@ const COPY: Record<
     allProducts: (n: number, name: string) => string;
     howTo: string;
     related: string;
+    ctaTitle: string;
+    ctaBody: string;
+    ctaPrimary: string;
+    ctaSecondary: string;
     seeSolutions: string;
     ask: string;
     moreFaq: string;
@@ -37,7 +41,12 @@ const COPY: Record<
     recommended: (name) => `Recommended for ${name}`,
     allProducts: (n, name) => `All ${n} ${name} products →`,
     howTo: 'How to choose & wear',
-    related: 'Related applications',
+    related: 'Other applications',
+    ctaTitle: 'Ready to find it in store?',
+    ctaBody:
+      'Find an authorised distributor near you, or send us the details and our team will recommend a fit.',
+    ctaPrimary: 'Where to buy',
+    ctaSecondary: 'Contact us',
     seeSolutions: 'See solutions',
     ask: 'Ask a specialist',
     moreFaq: 'More sizing & care questions →',
@@ -53,7 +62,11 @@ const COPY: Record<
     recommended: (name) => `${name}推薦產品`,
     allProducts: (n, name) => `查看全部 ${n} 項${name}產品 →`,
     howTo: '如何選擇與穿戴',
-    related: '相關應用方案',
+    related: '其他應用方案',
+    ctaTitle: '準備好到門市選購了嗎？',
+    ctaBody: '找到離您最近的授權經銷據點，或把需求告訴我們，由團隊為您推薦合適的款式。',
+    ctaPrimary: '銷售據點',
+    ctaSecondary: '聯絡我們',
     seeSolutions: '查看解決方案',
     ask: '諮詢專業建議',
     moreFaq: '更多尺寸與保養問題 →',
@@ -105,17 +118,17 @@ export default async function ApplicationDetailPage({
 
   return (
     <>
-      <nav className="mx-auto max-w-content px-6 py-4 text-[0.85rem] font-medium text-[#66787f] lg:px-16">
+      <nav className="mx-auto max-w-content px-gutter py-4 text-[0.85rem] font-medium text-[#66787f]">
         <Link href={`/${locale}/applications`}>{c.applications}</Link>
         <span className="mx-2 text-[#b7c4c8]">/</span>
         <span className="text-ink">{a.name}</span>
       </nav>
 
       {/* 01 導言 */}
-      <section className="mx-auto max-w-content px-6 pb-14 lg:px-16">
+      <section className="mx-auto max-w-content px-gutter pb-[clamp(48px,6vw,72px)]">
         <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
           <div>
-            <p className="text-[0.78rem] font-bold uppercase tracking-[0.16em] text-brand-deep">
+            <p className="text-[0.78rem] font-[680] uppercase tracking-[0.16em] text-brand-deep">
               {kind}
             </p>
             <h1 className="mt-2.5 text-[clamp(2rem,3.6vw,2.8rem)] font-normal">{a.name}</h1>
@@ -180,8 +193,8 @@ export default async function ApplicationDetailPage({
 
       {/* 02 常見困擾 */}
       {a.concerns && a.concerns.length > 0 && (
-        <section className="bg-tint py-14">
-          <div className="mx-auto max-w-content px-6 lg:px-16">
+        <section className="bg-tint py-[clamp(56px,7vw,80px)]">
+          <div className="mx-auto max-w-content px-gutter">
             <SectionHeading index={next()} title={c.concerns} className="mb-8" />
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {a.concerns.map((x, i) => (
@@ -200,7 +213,7 @@ export default async function ApplicationDetailPage({
 
       {/* 03 支撐強度 */}
       {a.supportLevels && a.supportLevels.length > 0 && (
-        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-gutter py-[clamp(56px,7vw,80px)]">
           <SectionHeading index={next()} title={c.supportLevels} className="mb-8" />
           <div className="grid gap-6 lg:grid-cols-3">
             {a.supportLevels.map((lv, i) => (
@@ -239,8 +252,8 @@ export default async function ApplicationDetailPage({
 
       {/* 04 推薦產品 */}
       {a.recommendedProducts.length > 0 && (
-        <section id="products" className="bg-tint py-14">
-          <div className="mx-auto max-w-content px-6 lg:px-16">
+        <section id="products" className="bg-tint py-[clamp(56px,7vw,80px)]">
+          <div className="mx-auto max-w-content px-gutter">
             <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
               <SectionHeading index={next()} title={c.recommended(a.name)} />
               {a.type !== 'special-care' && (
@@ -263,7 +276,7 @@ export default async function ApplicationDetailPage({
 
       {/* 05 如何選擇 */}
       {a.howTo && a.howTo.length > 0 && (
-        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-gutter py-[clamp(56px,7vw,80px)]">
           <div className="grid items-center gap-14 lg:grid-cols-2">
             <div>
               <SectionHeading index={next()} title={c.howTo} className="mb-4" />
@@ -311,7 +324,7 @@ export default async function ApplicationDetailPage({
       {/* 醫療免責。**刻意放在區段之外**：它一開始寫在「如何選擇」裡，
           結果該區沒內容時整段免責跟著消失 —— 中文頁就完全看不到。
           這是法務要求的固定文字，未填時用模板預設（docs/09 §應用方案）。 */}
-      <section className="mx-auto max-w-content px-6 pb-4 lg:px-16">
+      <section className="mx-auto max-w-content px-gutter pb-4">
         <p className="text-[0.85rem] text-grey">
           {a.disclaimer ?? DEFAULT_DISCLAIMER[locale]}
         </p>
@@ -319,30 +332,50 @@ export default async function ApplicationDetailPage({
 
       {/* 06 相關應用方案 */}
       {a.related.length > 0 && (
-        <section className="bg-tint py-14">
-          <div className="mx-auto max-w-content px-6 lg:px-16">
-            <SectionHeading index={next()} title={c.related} className="mb-8" />
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="bg-tint py-[clamp(56px,7vw,80px)]">
+          <div className="mx-auto max-w-content px-gutter">
+            <h2 className="mb-7 text-[clamp(1.6rem,3vw,2.1rem)] font-normal">{c.related}</h2>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {a.related.map((r) => (
                 <Link
                   key={r.slug}
                   href={r.url}
-                  className="rounded-[14px] border border-hairline bg-white p-5 transition hover:border-brand-bright"
+                  className="block rounded-[20px] border border-hairline bg-white px-[22px] py-6 transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(10,60,72,.10)]"
                 >
-                  <span className="flex items-baseline justify-between gap-2">
-                    <span className="text-[1.05rem] font-semibold text-ink">
-                      {r.name}
-                    </span>
+                  <h3 className="flex items-baseline justify-between gap-2 text-[1.08rem] font-[570]">
+                    {r.name}
                     <small className="text-[0.8rem] font-bold text-brand-deep">
                       {r.productCount}
                     </small>
-                  </span>
+                  </h3>
                 </Link>
               ))}
             </div>
           </div>
         </section>
       )}
+
+      {/* 7 收尾 CTA */}
+      <section className="mx-auto flex max-w-content flex-wrap items-center justify-between gap-7 px-gutter py-[clamp(48px,6vw,72px)]">
+        <div className="max-w-[600px]">
+          <h2 className="text-[clamp(1.6rem,3vw,2.1rem)] font-normal">{c.ctaTitle}</h2>
+          <p className="mt-2.5">{c.ctaBody}</p>
+        </div>
+        <div className="flex flex-wrap gap-3.5">
+          <Link
+            href={`/${locale}/where-to-buy`}
+            className="rounded-full bg-brand px-7 py-3 font-[620] text-white shadow-[0_8px_22px_rgba(0,150,170,.28)] hover:text-white"
+          >
+            {c.ctaPrimary}
+          </Link>
+          <Link
+            href={`/${locale}/contact`}
+            className="rounded-full border border-hairline bg-white px-7 py-3 font-[620]"
+          >
+            {c.ctaSecondary}
+          </Link>
+        </div>
+      </section>
     </>
   );
 }

@@ -28,11 +28,27 @@
   --color-protect: #4b6b7e;
   --color-advance: #7a4d6f;
 
+  /**
+   * 同三個系列的**印刷專色原值**（docs/08 §2）。DESIGN.md 講得很清楚：
+   * 「填色（chip、色帶）維持 Pantone 原值」，只有當成小級數文字時才壓深成上面那組。
+   * mockup4 的支撐強度卡片頂線用的就是這一組。
+   */
+  --color-care-fill: #a8ad3c;
+  --color-protect-fill: #5b7f95;
+  --color-advance-fill: #7a4d6f;
+
   --font-sans:
     'Myriad Variable Concept', 'Microsoft JhengHei', 'Noto Sans TC', system-ui, sans-serif;
 
   /* mockup4 的內容寬度 */
   --container-content: 1180px;
+
+  /**
+   * mockup4 全站的左右留白 —— `padding:0 clamp(24px,5vw,64px)`，出現 116 次。
+   * 原本用 `px-6 lg:px-16` 近似，但那是在 1024px 斷點跳一次，
+   * mockup4 是連續縮放的：兩者在中間尺寸差到 20px 以上。
+   */
+  --spacing-gutter: clamp(24px, 5vw, 64px);
 }
 
 @font-face {
@@ -75,6 +91,11 @@
 
   a:hover {
     color: var(--color-brand-deep);
+  }
+
+  /* 頁尾是全站唯一的深色面，#0092A8 壓在 #14262C 上讀不出來（mockup4 就有這條） */
+  footer a:hover {
+    color: var(--color-brand-bright);
   }
 
   :focus-visible {

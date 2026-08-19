@@ -7,21 +7,24 @@ export function SectionHeading({
   title,
   accent = false,
   className = '',
+  titleClassName = 'text-[clamp(1.8rem,3.4vw,2.3rem)]',
 }: {
   index: number;
   title: string;
   /** mockup4 的深色底區段把序號改成品牌色 */
   accent?: boolean;
   className?: string;
+  /** 標題字級。多數頁面是 `clamp(1.8rem,3.4vw,2.3rem)`，About 整頁大一階 */
+  titleClassName?: string;
 }) {
   return (
     <div className={className}>
       <span
-        className={`text-lg font-medium ${accent ? 'text-brand-deep' : 'text-[#9fb4ba]'}`}
+        className={`text-[1.1rem] font-medium ${accent ? 'text-brand-deep' : 'text-[#9fb4ba]'}`}
       >
         {String(index).padStart(2, '0')}
       </span>
-      <h2 className="mt-2 text-[clamp(1.8rem,3.4vw,2.3rem)] font-normal">{title}</h2>
+      <h2 className={`mt-2 font-normal ${titleClassName}`}>{title}</h2>
     </div>
   );
 }

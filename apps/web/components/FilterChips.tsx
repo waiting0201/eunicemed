@@ -26,6 +26,7 @@ export function FilterChips({
   basePath,
   query,
   locale,
+  tone = 'brand',
 }: {
   label: string;
   param: string;
@@ -34,6 +35,11 @@ export function FilterChips({
   basePath: string;
   query: Record<string, string | undefined>;
   locale: Locale;
+  /**
+   * 選中狀態的顏色。mockup4 兩頁不同：Products 總覽是 ink 底、
+   * 分類／子分類頁是品牌青底加陰影。
+   */
+  tone?: Tone;
 }) {
   if (facets.length === 0) return null;
 
@@ -46,45 +52,99 @@ export function FilterChips({
   };
 
   return (
-    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
-      <span className="w-24 shrink-0 text-xs uppercase tracking-wide text-grey">
-        {label}
-      </span>
+    <div className="flex flex-wrap items-center gap-3">
+      <span className="mr-2 shrink-0 font-[620] text-ink">{label}</span>
 
-      <Chip href={href()} active={!active}>
+      <Chip href={href()} active={!active} tone={tone}>
         {ALL[locale]}
       </Chip>
 
       {facets.map((f) => (
-        <Chip key={f.slug} href={href(f.slug)} active={active === f.slug}>
+        <Chip key={f.slug} href={href(f.slug)} active={active === f.slug} tone={tone}>
           {f.label}
-          <span className="ml-1.5 text-xs opacity-60">{f.count}</span>
+          <span className="ml-1.5 text-[0.75rem] opacity-60">{f.count}</span>
         </Chip>
       ))}
     </div>
   );
 }
 
+export type Tone = 'ink' | 'brand';
+
+const ACTIVE: Record<Tone, string> = {
+  ink: 'bg-ink',
+  brand: 'bg-brand shadow-[0_6px_16px_rgba(0,150,170,.24)]',
+};
+
 function Chip({
   href,
   active,
+  tone,
   children,
 }: {
   href: string;
   active: boolean;
+  tone: Tone;
   children: React.ReactNode;
 }) {
   return (
     <Link
       href={href}
       aria-current={active ? 'true' : undefined}
-      className={
+      className={`rounded-full px-4 py-[7px] text-[0.85rem] ${
         active
-          ? 'rounded-full bg-brand-deep px-3.5 py-1.5 text-sm text-white'
-          : 'rounded-full border border-hairline px-3.5 py-1.5 text-sm hover:border-brand'
-      }
+          ? `font-semibold text-white hover:text-white ${ACTIVE[tone]}`
+          : 'border border-hairline bg-white font-medium text-body hover:border-brand'
+      }`}
     >
       {children}
     </Link>
+  );
+}
+
+/**
+ * 連結版的 chips 列。外觀與 <see cref="FilterChips"/> 完全相同，
+ * 但每一項是**真的頁面**而不是 query 篩選 —— 子分類是唯一有獨立 URL 的
+ * 產品維度（docs/06 §2），拿 query 表示它會失去 SEO 落地頁。
+ */
+export function LinkChips({
+  label,
+  items,
+  allHref,
+  allLabel,
+  activeHref,
+  tone = 'brand',
+}: {
+  label: string;
+  items: { href: string; label: string; count?: number }[];
+  allHref: string;
+  allLabel: string;
+  activeHref?: string;
+  tone?: Tone;
+}) {
+  if (items.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <span className="mr-2 shrink-0 font-[620] text-ink">{label}</span>
+
+      <Chip href={allHref} active={!activeHref} tone={tone}>
+        {allLabel}
+      </Chip>
+
+      {items.map((item) => (
+        <Chip
+          key={item.href}
+          href={item.href}
+          active={activeHref === item.href}
+          tone={tone}
+        >
+          {item.label}
+          {typeof item.count === 'number' && (
+            <span className="ml-1.5 text-[0.75rem] opacity-60">{item.count}</span>
+          )}
+        </Chip>
+      ))}
+    </div>
   );
 }

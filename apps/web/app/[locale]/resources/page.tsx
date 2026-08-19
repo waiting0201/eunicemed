@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { api, type ArticleListItem } from '@/lib/api';
-import { formatDate } from '@/lib/date';
+import { srcSetOf } from '@/lib/image';
 import { isLocale, type Locale } from '@/lib/locale';
 import {
   section,
@@ -11,7 +11,6 @@ import {
   type PageContent,
   type SectionCta,
 } from '@/lib/page';
-import { PageHero } from '@/components/PageHero';
 import { ResourcesSubnav } from '@/components/ResourcesSubnav';
 import { SectionCtaLink } from '@/components/SectionCtaLink';
 
@@ -94,20 +93,26 @@ export default async function ResourcesPage({ params }: { params: Promise<Params
     <>
       <ResourcesSubnav locale={locale} active="/resources" />
 
-      {/* 淺青漸層頁首，**無 band 圖**（docs/09 §7.1）*/}
-      <div className="bg-[linear-gradient(180deg,#eaf8fa_0%,#ffffff_100%)]">
-        <PageHero
-          eyebrow={hero?.eyebrow ?? COPY[locale].title}
-          title={hero?.title ?? COPY[locale].title}
-          lead={hero?.lead}
-        />
-        <div className="h-8" />
-      </div>
+      {/* 淺青漸層頁首，**無 band 圖**（docs/09 §7.1）。
+          這頁的標題比通用 PageHero 大一階，所以不共用那支元件。 */}
+      <section className="bg-[linear-gradient(160deg,#F4FAFC_0%,#E3F2F6_46%,#CFE9EF_100%)] px-gutter pt-[clamp(52px,6vw,84px)] pb-[clamp(40px,5vw,60px)]">
+        <div className="mx-auto max-w-content text-center">
+          <p className="text-[0.78rem] font-[680] uppercase tracking-[0.16em] text-brand-deep">
+            {hero?.eyebrow ?? COPY[locale].title}
+          </p>
+          <h1 className="mx-auto mt-3 max-w-[760px] text-[clamp(2.1rem,4vw,3.1rem)] font-normal">
+            {hero?.title ?? COPY[locale].title}
+          </h1>
+          {hero?.lead && (
+            <p className="mx-auto mt-4 max-w-[620px] text-[1.1rem]">{hero.lead}</p>
+          )}
+        </div>
+      </section>
 
       {/* 四大入口卡 */}
       {hub?.items && hub.items.length > 0 && (
-        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="mx-auto max-w-content px-gutter pt-[clamp(48px,6vw,72px)] pb-[clamp(24px,3vw,36px)]">
+          <div className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(250px,1fr))]">
             {hub.items.map((item, i) => (
               <HubCard key={item.title ?? i} item={item} />
             ))}
@@ -117,60 +122,90 @@ export default async function ResourcesPage({ params }: { params: Promise<Params
 
       {/* 最新發布 */}
       {recent && recentItems.length > 0 && (
-        <section className="bg-tint py-14">
-          <div className="mx-auto max-w-content px-6 lg:px-16">
-            <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-              <h2 className="text-[clamp(1.6rem,3vw,2rem)] font-normal">{recent.title}</h2>
-              <SectionCtaLink cta={recent.allLink} variant="text" />
-            </div>
-            <div className="grid gap-6 sm:grid-cols-3">
-              {recentItems.map((item) => (
-                <Link
-                  key={item.url}
-                  href={item.url}
-                  className="rounded-[16px] border border-hairline bg-white p-5 transition hover:border-brand-bright"
-                >
-                  <p className="text-[0.8rem] uppercase tracking-[0.1em] text-brand-deep">
-                    {item.kind === 'news' ? (locale === 'en' ? 'News' : '消息') : locale === 'en' ? 'Insight' : '專欄'}
-                    {item.publishedAt && (
-                      <span className="ml-2 normal-case tracking-normal text-grey">
-                        {formatDate(item.publishedAt, locale)}
-                      </span>
-                    )}
-                  </p>
-                  <h3 className="mt-1.5 text-[1.05rem] font-semibold">{item.title}</h3>
-                  {item.excerpt && <p className="mt-1.5 text-[0.9rem]">{item.excerpt}</p>}
-                </Link>
-              ))}
-            </div>
+        <section className="mx-auto max-w-content px-gutter py-[clamp(32px,4vw,52px)]">
+          <div className="flex flex-wrap items-baseline justify-between gap-5">
+            <h2 className="text-[clamp(1.6rem,2.6vw,2.1rem)] font-normal">{recent.title}</h2>
+            <SectionCtaLink cta={recent.allLink} variant="text" className="text-[0.92rem]" />
+          </div>
+          <div className="mt-7 grid gap-7 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
+            {recentItems.map((item) => (
+              <Link key={item.url} href={item.url} className="group block">
+                <div className="aspect-[16/10] overflow-hidden rounded-[18px] bg-tint-deep">
+                  {item.coverUrl && (
+                    <img
+                      src={item.coverUrl}
+                      srcSet={item.coverSrcSet}
+                      sizes="(max-width: 640px) 100vw, 360px"
+                      alt={item.coverAlt ?? item.title}
+                      loading="lazy"
+                      decoding="async"
+                      width={800}
+                      height={500}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                    />
+                  )}
+                </div>
+                <div className="mt-4">
+                  <span className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-brand-deep">
+                    {item.kind === 'news'
+                      ? locale === 'en'
+                        ? 'News'
+                        : '消息'
+                      : locale === 'en'
+                        ? 'Insights'
+                        : '專欄'}
+                  </span>
+                  <h3 className="my-1.5 text-[1.22rem] font-[570]">{item.title}</h3>
+                  {item.excerpt && <p className="text-[0.92rem]">{item.excerpt}</p>}
+                </div>
+              </Link>
+            ))}
           </div>
         </section>
       )}
 
       {/* 熱門下載 —— 由 ref:Download 指定，refs 查不到的就略過 */}
       {quick && (
-        <QuickDownloads section={quick} refs={page.refs.downloads} locale={locale} />
+        <QuickDownloads section={quick} refs={page.refs.downloads} />
       )}
 
       {/* 兩塊底部 CTA */}
       {panels?.items && panels.items.length > 0 && (
-        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
-          <div className="grid gap-6 sm:grid-cols-2">
-            {panels.items.map((panel, i) => (
-              <div
-                key={panel.title ?? i}
-                className="rounded-[20px] border border-hairline bg-tint p-7"
-              >
-                {panel.title && <h3 className="text-[1.2rem] font-semibold">{panel.title}</h3>}
-                {panel.body && <p className="mt-1.5 text-[0.95rem]">{panel.body}</p>}
-                <SectionCtaLink
-                  cta={panel.link}
-                  label={panel.ctaLabel}
-                  variant="text"
-                  className="mt-4 inline-block"
-                />
-              </div>
-            ))}
+        <section className="mx-auto max-w-content px-gutter py-[clamp(56px,7vw,88px)]">
+          <div className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+            {panels.items.map((panel, i) => {
+              // 第一塊是青色漸層面板配白字，其餘是白底細框（mockup4）
+              const solid = i === 0;
+              return (
+                <div
+                  key={panel.title ?? i}
+                  className={`rounded-[22px] p-[clamp(30px,4vw,44px)] ${
+                    solid
+                      ? 'bg-[linear-gradient(150deg,#00B5CD_0%,#0092A8_100%)] text-white'
+                      : 'border border-hairline'
+                  }`}
+                >
+                  {panel.title && (
+                    <h2
+                      className={`text-[clamp(1.5rem,2.4vw,2rem)] font-normal ${
+                        solid ? 'text-white' : ''
+                      }`}
+                    >
+                      {panel.title}
+                    </h2>
+                  )}
+                  {panel.body && (
+                    <p className={`mt-3 ${solid ? 'text-[#DFF6FA]' : ''}`}>{panel.body}</p>
+                  )}
+                  <SectionCtaLink
+                    cta={panel.link}
+                    label={panel.ctaLabel}
+                    variant={solid ? 'onDark' : 'outline'}
+                    className="mt-[22px] text-[0.92rem]"
+                  />
+                </div>
+              );
+            })}
           </div>
         </section>
       )}
@@ -181,11 +216,9 @@ export default async function ResourcesPage({ params }: { params: Promise<Params
 function QuickDownloads({
   section: s,
   refs,
-  locale,
 }: {
   section: QuickDownloadsSection;
   refs: Record<string, DownloadRefEntry>;
-  locale: Locale;
 }) {
   const files = (s.items ?? [])
     .map((item) => (item.download ? refs[item.download] : undefined))
@@ -194,33 +227,36 @@ function QuickDownloads({
   if (files.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <h2 className="text-[clamp(1.6rem,3vw,2rem)] font-normal">{s.title}</h2>
-        <SectionCtaLink cta={s.allLink} variant="text" />
-      </div>
-      <div className="space-y-3">
-        {files.map((d) => (
-          <a
-            key={d.url!}
-            href={d.url!}
-            target="_blank"
-            rel="noopener"
-            className="flex items-center justify-between gap-4 rounded-[16px] border border-hairline p-4 transition hover:border-brand-bright hover:bg-tint"
-          >
-            <span className="min-w-0">
-              <span className="block font-semibold text-ink">{d.title}</span>
-              <span className="block text-[0.86rem] text-grey">
-                {[d.fileLocale, d.fileExt, formatSize(d.sizeBytes), d.description]
-                  .filter(Boolean)
-                  .join(' · ')}
+    /* mockup4：`#F0F6F8` 帶，上下各一條細線 */
+    <section className="border-y border-hairline bg-tint-deep px-gutter py-[clamp(48px,6vw,72px)]">
+      <div className="mx-auto max-w-content">
+        <div className="flex flex-wrap items-baseline justify-between gap-5">
+          <h2 className="text-[clamp(1.6rem,2.6vw,2.1rem)] font-normal">{s.title}</h2>
+          <SectionCtaLink cta={s.allLink} variant="text" className="text-[0.92rem]" />
+        </div>
+        <div className="mt-7 grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+          {files.map((d) => (
+            <a
+              key={d.url!}
+              href={d.url!}
+              target="_blank"
+              rel="noopener"
+              className="flex items-center gap-4 rounded-[14px] border border-hairline bg-white px-5 py-[18px]"
+            >
+              <span className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[10px] bg-[#E9F8FA] text-[0.66rem] font-bold tracking-[0.04em] text-brand-deep">
+                {(d.fileExt ?? 'PDF').toUpperCase()}
               </span>
-            </span>
-            <span className="shrink-0 font-semibold text-brand-deep">
-              {locale === 'en' ? 'Download' : '下載'} ↓
-            </span>
-          </a>
-        ))}
+              <span className="min-w-0">
+                <b className="block font-semibold text-ink">{d.title}</b>
+                <span className="block text-[0.85rem] text-[#66787F]">
+                  {[d.fileLocale, d.fileExt, formatSize(d.sizeBytes)]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </span>
+              </span>
+            </a>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -228,15 +264,16 @@ function QuickDownloads({
 
 function HubCard({ item }: { item: NonNullable<HubCardsSection['items']>[number] }) {
   return (
-    <div className="rounded-[20px] border border-hairline p-6">
+    /* 卡片等高：內文 flex-1 把 CTA 壓到底（mockup4 的 `flex:1`） */
+    <div className="flex flex-col rounded-[20px] border border-hairline px-7 py-[30px]">
       <HubIcon name={item.icon} />
-      {item.title && <h3 className="mt-3 text-[1.15rem] font-semibold">{item.title}</h3>}
-      {item.body && <p className="mt-1.5 text-[0.92rem]">{item.body}</p>}
+      {item.title && <h3 className="mt-[18px] mb-2 text-[1.3rem] font-[570]">{item.title}</h3>}
+      {item.body && <p className="flex-1 text-[0.95rem]">{item.body}</p>}
       <SectionCtaLink
         cta={item.link}
         label={item.ctaLabel}
         variant="text"
-        className="mt-4 inline-block"
+        className="mt-[18px] inline-block text-[0.9rem]"
       />
     </div>
   );
@@ -278,18 +315,20 @@ function HubIcon({ name }: { name?: string }) {
   if (!shape) return null;
 
   return (
-    <svg
-      viewBox="0 0 24 24"
-      width="30"
-      height="30"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      aria-hidden
-      className="text-brand-deep"
-    >
-      {shape}
-    </svg>
+    <span className="flex h-[46px] w-[46px] items-center justify-center rounded-[14px] bg-[#E9F8FA] text-brand-deep">
+      <svg
+        viewBox="0 0 24 24"
+        width="22"
+        height="22"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        aria-hidden
+      >
+        {shape}
+      </svg>
+    </span>
   );
 }
 
@@ -305,6 +344,10 @@ function mixLatest(items: ArticleListItem[], take: number) {
       kind: a.type,
       publishedAt: a.publishedAt,
       url: a.url,
+      // `ref:Article` 解出來的封面只有一個 URL，所以這裡也降成 URL + srcSet
+      coverUrl: a.cover?.url ?? null,
+      coverSrcSet: a.cover ? srcSetOf(a.cover) : undefined,
+      coverAlt: a.cover?.alt ?? null,
     }));
 }
 
@@ -319,6 +362,9 @@ function resolveArticles(items: { article?: string }[] | undefined, page: PageCo
       kind: a.kind,
       publishedAt: a.publishedAt,
       url: a.url,
+      coverUrl: a.cover,
+      coverSrcSet: undefined,
+      coverAlt: null,
     }));
 }
 

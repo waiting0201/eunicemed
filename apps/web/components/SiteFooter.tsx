@@ -4,26 +4,44 @@ import type { MenuNode, Settings } from '@/lib/api';
 import type { Locale } from '@/lib/locale';
 
 /**
- * 站台頁尾。公司資訊由 `GET /settings` 提供 —— docs/03-cms.md §3 明訂
- * Contact 頁與頁尾共用同一份設定，不重複維護。
+ * 站台頁尾。**全站唯一的深色面**（`#14262C`），版型照 mockup4：
+ * 上排是 logo 與連結左右分置，下排一條 `#2C3E44` 細線隔開版權與品牌主張。
  *
  * <p>
- * 與頁首同樣的原則：**取不到就退回內建值**。頁尾的地址與聯絡方式是
- * 法規與信任要素，空著比稍舊更糟。
+ * 連結由 `GET /menus` 的 `footer` 提供；與頁首同樣的原則：
+ * **取不到就退回內建值**。
+ * </p>
+ *
+ * <p>
+ * 公司地址／電話／營業時間由 `GET /settings` 提供（docs/03-cms.md §3 明訂
+ * Contact 頁與頁尾共用同一份設定）。mockup4 的頁尾**沒有**印這些 ——
+ * 它們在 Contact 頁。這裡只留 `settings` 參數不再輸出，避免頁尾與版型不符。
  * </p>
  */
-const COPY: Record<Locale, { hours: string; address: string; rights: string }> = {
+const COPY: Record<Locale, { rights: string; company: string }> = {
   en: {
-    hours: 'Mon–Fri 09:00–18:00 (UTC+8)',
-    address:
-      '11F, No. 123-9, Xingde Rd., Sanchong Dist., New Taipei City 24158, Taiwan',
     rights: 'All rights reserved.',
+    company: 'Comfort Plus Corporation',
   },
   'zh-TW': {
-    hours: '週一至週五 09:00–18:00（UTC+8）',
-    address: '24158 新北市三重區興德路 123-9 號 11 樓',
     rights: '版權所有。',
+    company: '康得適股份有限公司',
   },
+};
+
+const FALLBACK: Record<Locale, { href: string; label: string }[]> = {
+  en: [
+    { href: '/contact', label: 'Contact Us' },
+    { href: '/news', label: 'Latest News' },
+    { href: '/privacy', label: 'Privacy & Legal' },
+    { href: '/where-to-buy', label: 'Where to Buy' },
+  ],
+  'zh-TW': [
+    { href: '/contact', label: '聯絡我們' },
+    { href: '/news', label: '最新消息' },
+    { href: '/privacy', label: '隱私權與法律聲明' },
+    { href: '/where-to-buy', label: '銷售據點' },
+  ],
 };
 
 export function SiteFooter({
@@ -36,43 +54,46 @@ export function SiteFooter({
   settings?: Settings;
 }) {
   const c = COPY[locale];
-  const s = (key: string, fallback: string) =>
-    typeof settings?.[key] === 'string' ? (settings[key] as string) : fallback;
+  const items =
+    menu && menu.length > 0
+      ? menu.map((m) => ({ href: m.url, label: m.label }))
+      : FALLBACK[locale];
 
-  const address = s('company.address', c.address);
-  const hours   = s('company.hours', c.hours);
-  const phone   = s('company.phone', '+886 2 8511 3758');
-  const email   = s('company.email', 'service@comfortplus-medical.com');
+  const linkedIn =
+    typeof settings?.['social.linkedin'] === 'string'
+      ? (settings['social.linkedin'] as string)
+      : null;
 
   return (
-    <footer className="mt-20 border-t border-hairline bg-tint">
-      <div className="mx-auto max-w-content px-6 py-12 text-sm lg:px-16">
-        <Link href={`/${locale}`}>
-          <Logo />
-        </Link>
-        <p className="mt-4 text-base font-semibold text-ink">Comfort Plus Corporation</p>
-        <p className="mt-2">{address}</p>
-        <p className="mt-1">
-          {/* tel: 要去掉空白，否則部分手機撥號會失敗 */}
-          <a href={`tel:${phone.replace(/\s+/g, '')}`}>{phone}</a>
-          {' · '}
-          <a href={`mailto:${email}`}>{email}</a>
-        </p>
-        <p className="mt-1 text-grey">{hours}</p>
+    <footer className="bg-[#14262C] px-gutter pt-14 pb-9 text-[0.92rem] text-[#9FAFB5]">
+      <div className="mx-auto max-w-content">
+        <div className="flex flex-wrap items-center justify-between gap-10">
+          <Link href={`/${locale}`}>
+            <Logo onDark />
+          </Link>
 
-        {menu && menu.length > 0 && (
-          <nav className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
-            {menu.map((item) => (
-              <Link key={item.url} href={`/${locale}${item.url}`}>
+          <nav className="flex flex-wrap gap-[26px] font-medium">
+            {items.map((item) => (
+              <Link key={item.href} href={`/${locale}${item.href}`}>
                 {item.label}
               </Link>
             ))}
+            {/* LinkedIn 是外站連結，沒設定就不印空殼 */}
+            {linkedIn && (
+              <a href={linkedIn} target="_blank" rel="noreferrer noopener">
+                LinkedIn
+              </a>
+            )}
           </nav>
-        )}
+        </div>
 
-        <p className="mt-8 text-grey">
-          © {new Date().getFullYear()} Comfort Plus Corporation. {c.rights}
-        </p>
+        <div className="mt-9 flex flex-wrap justify-between gap-3 border-t border-[#2C3E44] pt-[22px] text-[0.8rem] text-[#74868C]">
+          <span>
+            © {new Date().getFullYear()} {c.company}. {c.rights}
+          </span>
+          {/* 品牌主張是品牌符號，兩種語系都不翻譯（docs/08 §5.2 例外清單） */}
+          <span>Not Just a Motion</span>
+        </div>
       </div>
     </footer>
   );

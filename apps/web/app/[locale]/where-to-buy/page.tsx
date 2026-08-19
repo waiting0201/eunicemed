@@ -29,7 +29,7 @@ const COPY: Record<
     domestic: 'Taiwan',
     international: 'International distributors',
     otherRegions: 'Other regions',
-    visit: 'Visit website →',
+    visit: 'Visit website',
     empty: 'Distributor listings are being updated. Please contact us for the nearest partner.',
     ctaTitle: 'Not in your region yet?',
     ctaBody:
@@ -42,7 +42,7 @@ const COPY: Record<
     domestic: '台灣',
     international: '國際經銷夥伴',
     otherRegions: '其他地區',
-    visit: '前往官網 →',
+    visit: '前往官網',
     empty: '經銷資訊更新中，請直接與我們聯絡以取得最近的合作夥伴。',
     ctaTitle: '你的地區還沒有據點？',
     ctaBody: '與我們聯絡，我們會為你介紹最近的合作夥伴，或洽談成為經銷商。',
@@ -85,13 +85,15 @@ export default async function WhereToBuyPage({ params }: { params: Promise<Param
     <>
       <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />
 
-      <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
-        {isEmpty && <p className="py-10 text-center text-grey">{c.empty}</p>}
+      <section className="mx-auto max-w-content px-gutter py-[clamp(56px,7vw,80px)]">
+        {isEmpty && <p className="py-10 text-center text-[#8AA0A6]">{c.empty}</p>}
 
         {data.domestic.length > 0 && (
           <>
-            <h2 className="text-[clamp(1.6rem,3vw,2rem)] font-normal">{c.domestic}</h2>
-            <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <h2 className="border-b-[1.5px] border-hairline pb-3.5 text-[1.6rem] font-normal">
+              {c.domestic}
+            </h2>
+            <div className="mt-7 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {data.domestic.map((loc) => (
                 <Card key={cardKey(loc)} loc={loc} visit={c.visit} />
               ))}
@@ -101,7 +103,7 @@ export default async function WhereToBuyPage({ params }: { params: Promise<Param
 
         {data.international.length > 0 && (
           <>
-            <h2 className="mt-14 text-[clamp(1.6rem,3vw,2rem)] font-normal">
+            <h2 className="mt-16 border-b-[1.5px] border-hairline pb-3.5 text-[1.6rem] font-normal">
               {c.international}
             </h2>
             {data.international.map((group) => (
@@ -114,10 +116,10 @@ export default async function WhereToBuyPage({ params }: { params: Promise<Param
                   （`RegionLabel` 是 nullable 但實際資料多為空字串），
                   `??` 接不到空字串，那組會渲染成一行空白標題。
                 */}
-                <p className="text-[0.78rem] font-bold uppercase tracking-[0.14em] text-brand-deep">
+                <p className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-brand-deep">
                   {group.region?.trim() || c.otherRegions}
                 </p>
-                <div className="mt-3 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-3 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {group.items.map((loc) => (
                     <Card key={cardKey(loc)} loc={loc} visit={c.visit} />
                   ))}
@@ -135,12 +137,12 @@ export default async function WhereToBuyPage({ params }: { params: Promise<Param
 
 function Card({ loc, visit }: { loc: SalesLocation; visit: string }) {
   return (
-    <div className="rounded-[18px] border border-hairline p-6">
-      <h3 className="text-[1.1rem] font-semibold">{loc.name}</h3>
-      {loc.address && <p className="mt-2 text-[0.92rem]">{loc.address}</p>}
-      {loc.note && <p className="mt-1 text-[0.88rem] text-grey">{loc.note}</p>}
+    <div className="rounded-[18px] border border-hairline px-[26px] py-6">
+      <h3 className="text-[1.1rem] font-[570]">{loc.name}</h3>
+      {loc.address && <p className="mt-2 mb-3 text-[0.9rem]">{loc.address}</p>}
+      {loc.note && <p className="mb-3 text-[0.9rem]">{loc.note}</p>}
       {loc.phone && (
-        <p className="mt-2 text-[0.92rem]">
+        <p className="text-[0.9rem] text-[#66787F]">
           {/* 電話用 tel: —— 這頁在手機上的主要用途就是直接撥號 */}
           <a href={`tel:${loc.phone.replace(/\s+/g, '')}`}>{loc.phone}</a>
         </p>
@@ -150,9 +152,9 @@ function Card({ loc, visit }: { loc: SalesLocation; visit: string }) {
           href={loc.websiteUrl}
           target="_blank"
           rel="noopener"
-          className="mt-3 inline-block font-semibold text-brand-deep"
+          className="inline-block text-[0.9rem] font-[620] text-brand-deep"
         >
-          {visit}
+          {visit} →
         </a>
       )}
     </div>

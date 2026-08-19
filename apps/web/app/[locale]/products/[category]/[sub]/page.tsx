@@ -1,26 +1,31 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { api } from '@/lib/api';
 import { isLocale, type Locale } from '@/lib/locale';
 import { CategoryHero } from '@/components/CategoryHero';
 import { FilterChips } from '@/components/FilterChips';
 import { ProductGrid } from '@/components/ProductGrid';
+import { Breadcrumb } from '@/components/Breadcrumb';
+import { SiblingNav } from '@/components/SiblingNav';
+import { CategoryOutro } from '@/components/CategoryOutro';
 
 type Params = { locale: string; category: string; sub: string };
 type Search = { collection?: string; bodyPart?: string };
 
-const COPY: Record<Locale, { collection: string; bodyPart: string; back: string; count: (n: number) => string }> = {
+const COPY: Record<
+  Locale,
+  { collection: string; bodyPart: string; products: string; count: (n: number) => string }
+> = {
   en: {
     collection: 'Collection',
     bodyPart: 'Body part',
-    back: 'Back to',
+    products: 'Products',
     count: (n) => `${n} product${n === 1 ? '' : 's'}`,
   },
   'zh-TW': {
     collection: '系列',
     bodyPart: '適用部位',
-    back: '返回',
+    products: '產品',
     count: (n) => `${n} 項產品`,
   },
 };
@@ -67,6 +72,9 @@ export default async function SubCategoryPage({
   const data = await api.subCategory(locale, category, sub);
   if (!data) notFound();
 
+  // 兄弟子分類切換列（mockup4 §2 的同層版本）。取不到就不渲染那條，不擋整頁。
+  const parent = await api.category(locale, category).catch(() => null);
+
   const result = await api.products(locale, {
     subCategory: sub,
     collection: q.collection,
@@ -81,17 +89,31 @@ export default async function SubCategoryPage({
 
   return (
     <>
-      <div className="mx-auto max-w-content px-6 pt-6 text-sm lg:px-16">
-        <Link href={`/${locale}/products/${category}`} className="text-grey">
-          ← {c.back} {category}
-        </Link>
-      </div>
+      <Breadcrumb
+        trail={[
+          { href: `/${locale}/products`, label: c.products },
+          { href: `/${locale}/products/${category}`, label: parent?.name ?? category },
+        ]}
+        current={data.name}
+      />
 
       <CategoryHero data={data} locale={locale} kind="subCategory" />
 
-      <section id="grid" className="bg-tint py-14">
-        <div className="mx-auto max-w-content px-6 lg:px-16">
-          <div className="space-y-3">
+      <SiblingNav
+        items={(parent?.subCategories ?? []).map((s) => ({
+          href: `/${locale}/products/${category}/${s.slug}`,
+          label: s.name,
+        }))}
+        activeHref={basePath}
+        tail={{
+          href: `/${locale}/products/${category}`,
+          label: parent?.name ?? c.products,
+        }}
+      />
+
+      <section id="grid" className="bg-tint py-[clamp(48px,6vw,72px)]">
+        <div className="mx-auto max-w-content px-gutter">
+          <div className="space-y-3.5">
             <FilterChips
               label={c.collection}
               param="collection"
@@ -112,13 +134,15 @@ export default async function SubCategoryPage({
             />
           </div>
 
-          <p className="mt-6 text-sm text-grey">{c.count(result.totalCount)}</p>
+          <p className="mt-6 text-[0.85rem] text-[#66787F]">{c.count(result.totalCount)}</p>
 
-          <div className="mt-5">
+          <div className="mt-6">
             <ProductGrid items={result.items} locale={locale} />
           </div>
         </div>
       </section>
+
+      <CategoryOutro supportLevels={data.supportLevels} locale={locale} />
     </>
   );
 }

@@ -119,7 +119,7 @@ export default async function ProductsPage({
 
       {/* 三大分類卡 —— 動態取自 GET /categories */}
       {categories.length > 0 && (
-        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-gutter pt-[clamp(56px,7vw,80px)]">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {categories.map((cat) => (
               <CategoryCard key={cat.slug} category={cat} locale={locale} />
@@ -129,8 +129,11 @@ export default async function ProductsPage({
       )}
 
       {/* 篩選 + 產品格 */}
-      <section id="grid" className="bg-tint py-14">
-        <div className="mx-auto max-w-content px-6 lg:px-16">
+      <section
+        id="grid"
+        className="mt-[clamp(56px,7vw,80px)] bg-tint py-[clamp(56px,7vw,80px)]"
+      >
+        <div className="mx-auto max-w-content px-gutter">
           <div className="space-y-3">
             <FilterChips
               label={c.category}
@@ -140,6 +143,7 @@ export default async function ProductsPage({
               basePath={basePath}
               query={q}
               locale={locale}
+              tone="ink"
             />
             <FilterChips
               label={c.collection}
@@ -149,6 +153,7 @@ export default async function ProductsPage({
               basePath={basePath}
               query={q}
               locale={locale}
+              tone="ink"
             />
             <FilterChips
               label={c.bodyPart}
@@ -158,12 +163,13 @@ export default async function ProductsPage({
               basePath={basePath}
               query={q}
               locale={locale}
+              tone="ink"
             />
           </div>
 
-          <p className="mt-6 text-sm text-grey">{c.count(result.totalCount)}</p>
+          <p className="mt-6 text-[0.85rem] text-[#66787F]">{c.count(result.totalCount)}</p>
 
-          <div className="mt-5">
+          <div className="mt-6">
             <ProductGrid items={result.items} locale={locale} />
           </div>
         </div>
@@ -171,7 +177,7 @@ export default async function ProductsPage({
 
       {/* 頁尾 CTA 帶 */}
       {cta && (
-        <section className="relative overflow-hidden py-16">
+        <section className="relative overflow-hidden py-[clamp(72px,9vw,110px)]">
           {cta.background ? (
             <>
               <img
@@ -183,22 +189,25 @@ export default async function ProductsPage({
                 decoding="async"
                 className="absolute inset-0 h-full w-full object-cover"
               />
-              <div className="absolute inset-0 bg-[rgba(10,38,46,.74)]" />
+              {/* 由左至右的深青遮罩：左側文字讀得到、右側照片保持乾淨（DESIGN.md） */}
+              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,36,45,.74)_0%,rgba(9,36,45,.5)_52%,rgba(9,36,45,.14)_100%)]" />
             </>
           ) : (
             <div className="absolute inset-0 bg-[#12333c]" />
           )}
 
-          <div className="relative mx-auto max-w-content px-6 text-center lg:px-16">
+          <div className="relative mx-auto max-w-content px-gutter text-center">
             {cta.title && (
-              <h2 className="mx-auto max-w-[24ch] text-[clamp(1.8rem,3.4vw,2.3rem)] font-normal text-white">
+              <h2 className="mx-auto max-w-[24ch] text-[clamp(1.8rem,3.4vw,2.4rem)] font-normal text-white">
                 {cta.title}
               </h2>
             )}
             {cta.body && (
-              <p className="mx-auto mt-4 max-w-[52ch] text-white/80">{cta.body}</p>
+              <p className="mx-auto mt-3.5 max-w-[52ch] text-[1.05rem] text-white/[.82]">
+                {cta.body}
+              </p>
             )}
-            <div className="mt-7 flex flex-wrap justify-center gap-3">
+            <div className="mt-[30px] flex flex-wrap justify-center gap-3">
               {cta.primaryCta?.url && <CtaLink cta={cta.primaryCta} primary />}
               {cta.secondaryCta?.url && <CtaLink cta={cta.secondaryCta} />}
             </div>
@@ -225,7 +234,7 @@ function CategoryCard({
       href={`/${locale}/products/${category.slug}`}
       className="group overflow-hidden rounded-[20px] border border-hairline bg-white transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(10,60,72,.10)]"
     >
-      <div className="aspect-[4/3] overflow-hidden bg-tint-deep">
+      <div className="aspect-square overflow-hidden bg-tint-deep">
         {category.heroImage && (
           <img
             src={category.heroImage.url}
@@ -235,14 +244,14 @@ function CategoryCard({
             loading="lazy"
             decoding="async"
             width={1200}
-            height={900}
+            height={1200}
             className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
           />
         )}
       </div>
-      <div className="px-5 pb-6 pt-5">
-        <h3 className="text-[1.15rem] font-semibold">{category.name}</h3>
-        {category.description && <p className="mt-1.5 text-[0.92rem]">{category.description}</p>}
+      <div className="px-[22px] pt-5 pb-6">
+        <h3 className="text-[1.15rem] font-[570]">{category.name}</h3>
+        {category.description && <p className="mt-1 text-[0.9rem]">{category.description}</p>}
       </div>
     </Link>
   );
@@ -250,8 +259,8 @@ function CategoryCard({
 
 function CtaLink({ cta, primary = false }: { cta: SectionCta; primary?: boolean }) {
   const className = primary
-    ? 'rounded-full bg-white px-7 py-3 font-semibold text-brand-deep transition hover:bg-white/90'
-    : 'rounded-full border-[1.5px] border-white/50 px-7 py-3 font-semibold text-white transition hover:border-white';
+    ? 'inline-block rounded-full bg-brand px-[30px] py-[13px] font-[620] text-white hover:text-white'
+    : 'inline-block rounded-full border-[1.5px] border-white/55 px-7 py-3 font-[620] text-white hover:text-white';
 
   const label = cta.label ?? cta.url!;
 

@@ -6,6 +6,7 @@ import { formatDate } from '@/lib/date';
 import { srcSetOf } from '@/lib/image';
 import { isLocale, type Locale } from '@/lib/locale';
 import { section, type SectionCta } from '@/lib/page';
+import { COLLECTION_TEXT } from '@/lib/collection';
 import { HeroSlider } from '@/components/HeroSlider';
 import { RuledSectionHeading, SectionHeading } from '@/components/SectionHeading';
 
@@ -105,7 +106,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
       {/* HERO COPY —— 只有上方留白：下方的留白由「01 精選產品」自己的 padding 給
           （mockup4 的 `padding: … 0`），兩段各自負責的話會疊成兩倍 */}
       {intro && (
-        <section className="mx-auto max-w-content px-6 pt-[clamp(40px,5vw,64px)] text-center lg:px-16">
+        <section className="mx-auto max-w-content px-gutter pt-[clamp(40px,5vw,64px)] text-center">
           {intro.eyebrow && (
             <p className="text-[clamp(0.7rem,0.9vw,0.82rem)] font-[680] uppercase tracking-[0.2em] text-brand-deep">
               {intro.eyebrow}
@@ -126,7 +127,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
 
       {/* 01 精選產品 —— Pinterest 式瀑布流 */}
       {featuredCopy && featured.items.length > 0 && (
-        <section className="mx-auto max-w-content px-6 py-[clamp(64px,8vw,96px)] lg:px-16">
+        <section className="mx-auto max-w-content px-gutter py-[clamp(64px,8vw,96px)]">
           <RuledSectionHeading
             index={next()}
             title={featuredCopy.title ?? ''}
@@ -180,7 +181,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
 
       {/* 02 依部位找支撐 */}
       {band && (
-        <section className="relative overflow-hidden py-16">
+        <section className="relative mt-[clamp(48px,6vw,80px)] overflow-hidden py-[clamp(72px,9vw,120px)]">
           {band.background && (
             <>
               <img
@@ -192,12 +193,13 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
                 decoding="async"
                 className="absolute inset-0 h-full w-full object-cover"
               />
-              <div className="absolute inset-0 bg-[rgba(10,38,46,.74)]" />
+              {/* 由左至右的深青遮罩：左側文字讀得到、右側照片保持乾淨（DESIGN.md） */}
+              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,36,45,.74)_0%,rgba(9,36,45,.5)_52%,rgba(9,36,45,.14)_100%)]" />
             </>
           )}
           {!band.background && <div className="absolute inset-0 bg-[#12333c]" />}
 
-          <div className="relative mx-auto grid max-w-content gap-12 px-6 lg:grid-cols-2 lg:px-16">
+          <div className="relative mx-auto grid max-w-content gap-12 px-gutter lg:grid-cols-2">
             <div>
               <span className="text-lg font-medium text-white/60">
                 {String(next()).padStart(2, '0')}
@@ -224,7 +226,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
 
       {/* 03 合作優勢 */}
       {why && (
-        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-gutter py-[clamp(64px,8vw,96px)]">
           <SectionHeading index={next()} title={why.title ?? ''} className="mb-8 max-w-[24ch]" />
           {why.items && why.items.length > 0 && (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -242,8 +244,8 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
 
       {/* 04 客戶見證 */}
       {testimonial && (
-        <section className="bg-tint py-14">
-          <div className="mx-auto grid max-w-content gap-12 px-6 lg:grid-cols-2 lg:px-16">
+        <section className="bg-tint py-[clamp(64px,8vw,96px)]">
+          <div className="mx-auto grid max-w-content gap-12 px-gutter lg:grid-cols-2">
             <div>
               <SectionHeading index={next()} title={testimonial.title ?? ''} />
               {testimonial.quote && (
@@ -308,7 +310,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
 
       {/* 05 最新消息 */}
       {latestCopy && news.items.length > 0 && (
-        <section className="mx-auto max-w-content px-6 py-[clamp(64px,8vw,96px)] lg:px-16">
+        <section className="mx-auto max-w-content px-gutter py-[clamp(64px,8vw,96px)]">
           <RuledSectionHeading
             index={next()}
             title={latestCopy.title ?? ''}
@@ -338,13 +340,6 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
  * </p>
  */
 const RATIOS = ['aspect-square', 'aspect-[4/5]', 'aspect-[5/4]'] as const;
-
-/** 系列專色。與 `CollectionBadge` 同一組 token，這裡吃的是文字色。 */
-const COLLECTION_TEXT: Record<string, string> = {
-  care: 'text-care',
-  protect: 'text-protect',
-  advance: 'text-advance',
-};
 
 function FeaturedMasonry({ items }: { items: ProductListItem[] }) {
   return (

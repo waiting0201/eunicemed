@@ -40,8 +40,8 @@ export function ArticleListPage({
       <ResourcesSubnav locale={locale} active={`/${kind}`} />
       <PageHero eyebrow={copy.eyebrow} title={copy.title} lead={copy.lead} />
 
-      <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
-        <div className="grid gap-10 lg:grid-cols-[240px_1fr]">
+      <section className="mx-auto max-w-content px-gutter py-[clamp(48px,6vw,72px)]">
+        <div className="grid items-start gap-[clamp(32px,4vw,56px)] lg:grid-cols-[240px_1fr]">
           <SideFilter
             label={CATEGORIES[locale]}
             param="category"
@@ -53,17 +53,17 @@ export function ArticleListPage({
 
           <div>
             {result.items.length === 0 ? (
-              <p className="py-16 text-center text-grey">{copy.empty}</p>
+              <p className="py-16 text-center text-[#8AA0A6]">{copy.empty}</p>
             ) : (
               <>
                 {featured && (
-                  <div className="mb-6">
-                    <ArticleCard item={featured} locale={locale} featured />
+                  <div className="mb-14">
+                    <ArticleCard item={featured} locale={locale} kind={kind} featured />
                   </div>
                 )}
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-7 sm:grid-cols-2">
                   {rest.map((item) => (
-                    <ArticleCard key={item.slug} item={item} locale={locale} />
+                    <ArticleCard key={item.slug} item={item} locale={locale} kind={kind} />
                   ))}
                 </div>
               </>

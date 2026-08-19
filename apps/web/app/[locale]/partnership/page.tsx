@@ -6,6 +6,7 @@ import { isLocale, type Locale } from '@/lib/locale';
 import { section } from '@/lib/page';
 import { PageHero } from '@/components/PageHero';
 import { SectionHeading } from '@/components/SectionHeading';
+import { PartnershipForm } from '@/components/PartnershipForm';
 
 type Params = { locale: string };
 
@@ -28,7 +29,32 @@ type BecomePartnerSection = {
 
 const FALLBACK: Record<Locale, string> = { en: 'Partnership', 'zh-TW': '合作夥伴' };
 
+const SUBMIT: Record<Locale, string> = { en: 'Send inquiry', 'zh-TW': '送出洽詢' };
+
 const PROSE = '[&_a]:text-brand-deep [&_li]:mt-1 [&_p]:mt-4 [&_ul]:list-disc [&_ul]:pl-5';
+
+/** 這頁的區段標題比預設大一階（mockup4：clamp(1.8rem,3.4vw,2.4rem)）。 */
+const PART_H2 = 'text-[clamp(1.8rem,3.4vw,2.4rem)]';
+
+/** §01 / §02 共用的 21:9 大圖，圓角 22px 加一層柔和落影（mockup4）。 */
+function WideShot({ image, focus }: { image: MediaRef; focus: string }) {
+  return (
+    <div className="aspect-[21/9] overflow-hidden rounded-[22px] shadow-[0_30px_60px_rgba(10,60,72,.16)]">
+      <img
+        src={image.url}
+        srcSet={srcSetOf(image)}
+        sizes="100vw"
+        alt={image.alt ?? ''}
+        loading="lazy"
+        decoding="async"
+        width={2100}
+        height={900}
+        className="h-full w-full object-cover"
+        style={{ objectPosition: focus }}
+      />
+    </div>
+  );
+}
 
 export async function generateMetadata({
   params,
@@ -93,77 +119,63 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
 
       {/* 01 OEM / ODM */}
       {oem && (
-        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            <div>
-              <SectionHeading index={next()} title={oem.title ?? ''} className="mb-4" />
-              {oem.body && <div className={PROSE} dangerouslySetInnerHTML={{ __html: oem.body }} />}
+        <section className="mx-auto max-w-content px-gutter py-[clamp(56px,7vw,80px)]">
+          <div className="flex flex-col gap-10">
+            <div className="max-w-[720px]">
+              <SectionHeading
+                index={next()}
+                title={oem.title ?? ''}
+                titleClassName={PART_H2}
+                className="mb-[18px]"
+              />
+              {oem.body && (
+                <div
+                  className={`text-[1.05rem] ${PROSE}`}
+                  dangerouslySetInnerHTML={{ __html: oem.body }}
+                />
+              )}
+              {/* 服務項目：每格頂上一條 2px 品牌青（mockup4），不是藥丸 chips */}
               {oem.chips && oem.chips.length > 0 && (
-                <div className="mt-6 flex flex-wrap gap-2.5">
+                <div className="mt-5 grid gap-3.5 sm:grid-cols-2">
                   {oem.chips.map((chip, i) => (
-                    <span
-                      key={chip.label ?? i}
-                      className="rounded-full border border-hairline bg-tint-deep px-3.5 py-1.5 text-[0.85rem] font-medium"
-                    >
-                      {chip.label}
-                    </span>
+                    <div key={chip.label ?? i} className="border-t-2 border-brand pt-3">
+                      <h3 className="text-[1.02rem] font-[570]">{chip.label}</h3>
+                    </div>
                   ))}
                 </div>
               )}
             </div>
             {oem.image ? (
-              <img
-                src={oem.image.url}
-                srcSet={srcSetOf(oem.image)}
-                sizes="(max-width: 1024px) 100vw, 560px"
-                alt={oem.image.alt ?? ''}
-                loading="lazy"
-                decoding="async"
-                width={1600}
-                height={900}
-                className="aspect-[16/9] w-full rounded-[20px] object-cover"
-              />
+              <WideShot image={oem.image} focus="center 30%" />
             ) : (
-              <div className="aspect-[16/9] rounded-[20px] bg-tint-deep" />
+              <div className="aspect-[21/9] rounded-[22px] bg-tint-deep" />
             )}
           </div>
         </section>
       )}
 
-      {/* 02 經銷服務 —— 背景圖上壓字 */}
+      {/* 02 經銷服務 —— mockup4 是淺底帶，圖在文字下方 */}
       {distributor && (
-        <section className="relative overflow-hidden py-16">
-          {distributor.image ? (
-            <>
-              <img
-                src={distributor.image.url}
-                srcSet={srcSetOf(distributor.image)}
-                sizes="100vw"
-                alt=""
-                loading="lazy"
-                decoding="async"
-                className="absolute inset-0 h-full w-full object-cover"
+        <section className="bg-tint py-[clamp(56px,7vw,80px)]">
+          <div className="mx-auto flex max-w-content flex-col gap-10 px-gutter">
+            <div className="max-w-[720px]">
+              <SectionHeading
+                index={next()}
+                title={distributor.title ?? ''}
+                titleClassName={PART_H2}
+                className="mb-[18px]"
               />
-              <div className="absolute inset-0 bg-[rgba(10,38,46,.74)]" />
-            </>
-          ) : (
-            <div className="absolute inset-0 bg-[#12333c]" />
-          )}
-
-          <div className="relative mx-auto max-w-content px-6 lg:px-16">
-            <span className="text-lg font-medium text-white/60">
-              {String(next()).padStart(2, '0')}
-            </span>
-            {distributor.title && (
-              <h2 className="mt-2 max-w-[20ch] text-[clamp(1.8rem,3.4vw,2.3rem)] font-normal text-white">
-                {distributor.title}
-              </h2>
-            )}
-            {distributor.body && (
-              <div
-                className={`mt-4 max-w-[62ch] text-white/85 ${PROSE} [&_a]:text-white`}
-                dangerouslySetInnerHTML={{ __html: distributor.body }}
-              />
+              {distributor.body && (
+                <div
+                  className={`text-[1.05rem] ${PROSE}`}
+                  dangerouslySetInnerHTML={{ __html: distributor.body }}
+                />
+              )}
+            </div>
+            {distributor.image ? (
+              <WideShot image={distributor.image} focus="center 25%" />
+            ) : (
+              <div className="aspect-[21/9] rounded-[22px] bg-tint-deep" />
             )}
           </div>
         </section>
@@ -171,51 +183,54 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
 
       {/* 03 成為夥伴 */}
       {become && (
-        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
-          <SectionHeading index={next()} title={become.title ?? ''} className="mb-8" />
+        <section id="inquiry" className="mx-auto max-w-content px-gutter py-[clamp(56px,7vw,80px)]">
+          <SectionHeading
+            index={next()}
+            title={become.title ?? ''}
+            titleClassName={PART_H2}
+            className="mb-10"
+          />
 
+          {/* 四個步驟：頂上一條細線、序號用品牌青（mockup4），不是卡片 */}
           {become.steps && become.steps.length > 0 && (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mb-13 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {become.steps.map((step, i) => (
-                <div
-                  key={step.title ?? i}
-                  className="rounded-[18px] border border-hairline p-6"
-                >
-                  <span className="font-bold text-brand-deep">
+                <div key={step.title ?? i} className="border-t border-hairline pt-[18px]">
+                  <div className="text-[1.4rem] font-[680] text-brand-deep">
                     {String(i + 1).padStart(2, '0')}
-                  </span>
-                  {step.title && <h3 className="mt-1 text-[1.1rem] font-semibold">{step.title}</h3>}
-                  {step.body && <p className="mt-1.5 text-[0.95rem]">{step.body}</p>}
+                  </div>
+                  {step.title && (
+                    <h3 className="mt-1.5 mb-1 text-[1.08rem] font-[570]">{step.title}</h3>
+                  )}
+                  {step.body && <p className="text-[0.9rem]">{step.body}</p>}
                 </div>
               ))}
             </div>
           )}
 
           {/*
-            表單本體待 Phase 7 的 POST /contact（type=partnership）——
-            它與 Contact 頁、產品詢價共用同一個 client 表單元件，三處一起做。
-            這裡先渲染標題與說明，因為那是編輯者已經填好的文案；
-            **刻意不放一個按下去沒反應的送出鈕**。
+            詢問表單。送件走 `POST /contact`（type=partnership）——
+            **該端點尚未實作**（擋於 SMTP 帳密，見 CLAUDE.md §7），
+            上線前送出會顯示失敗訊息，不會靜默吞掉。
           */}
           {(become.formTitle || become.formIntro) && (
-            <div className="mt-10 rounded-[20px] border border-hairline bg-tint p-7">
-              {become.formTitle && (
-                <h3 className="text-[1.2rem] font-semibold">{become.formTitle}</h3>
-              )}
-              {become.formIntro && <p className="mt-1.5 text-[0.95rem]">{become.formIntro}</p>}
-
-              {become.partnershipTypes && become.partnershipTypes.length > 0 && (
-                <div className="mt-4 flex flex-wrap gap-2.5">
-                  {become.partnershipTypes.map((t, i) => (
-                    <span
-                      key={t.key ?? i}
-                      className="rounded-full border border-hairline bg-white px-3.5 py-1.5 text-[0.85rem] font-medium"
-                    >
-                      {t.label}
-                    </span>
-                  ))}
+            <div className="rounded-[26px] bg-tint-deep p-[clamp(32px,4vw,48px)]">
+              <div className="grid items-start gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+                <div>
+                  {become.formTitle && (
+                    <h3 className="text-[1.6rem] font-normal">{become.formTitle}</h3>
+                  )}
+                  {become.formIntro && (
+                    <p className="mt-3 max-w-[32ch]">{become.formIntro}</p>
+                  )}
                 </div>
-              )}
+
+                <PartnershipForm
+                  locale={locale}
+                  types={become.partnershipTypes ?? []}
+                  submitLabel={become.submitLabel ?? SUBMIT[locale]}
+                />
+              </div>
             </div>
           )}
         </section>

@@ -26,17 +26,18 @@ const ITEMS: Record<Locale, { href: string; label: string }[]> = {
 
 export function ResourcesSubnav({ locale, active }: { locale: Locale; active: string }) {
   return (
-    <div className="border-b border-hairline bg-tint">
-      <nav className="mx-auto flex max-w-content gap-6 overflow-x-auto px-6 py-3 text-[0.92rem] lg:px-16">
+    <div className="bg-tint-deep px-gutter">
+      <nav className="mx-auto flex max-w-content gap-7 overflow-x-auto text-[0.92rem] font-medium">
         {ITEMS[locale].map((item) => (
           <Link
             key={item.href}
             href={`/${locale}${item.href}`}
             aria-current={item.href === active ? 'page' : undefined}
-            className={`whitespace-nowrap ${
+            /* 現在頁是 ink 字 + 品牌青底線，不是青字加粗（mockup4） */
+            className={`whitespace-nowrap border-b-2 py-4 ${
               item.href === active
-                ? 'font-semibold text-brand-deep'
-                : 'text-body'
+                ? 'border-brand text-ink'
+                : 'border-transparent text-body'
             }`}
           >
             {item.label}

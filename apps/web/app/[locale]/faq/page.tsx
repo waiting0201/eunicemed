@@ -82,8 +82,8 @@ export default async function FaqPage({
       <ResourcesSubnav locale={locale} active="/faq" />
       <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />
 
-      <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
-        <div className="grid gap-10 lg:grid-cols-[240px_1fr]">
+      <section className="mx-auto max-w-content px-gutter py-[clamp(48px,6vw,72px)]">
+        <div className="grid items-start gap-[clamp(32px,4vw,56px)] lg:grid-cols-[260px_1fr]">
           <SideFilter
             label={c.categories}
             param="category"
@@ -95,22 +95,17 @@ export default async function FaqPage({
 
           <div>
             {result.items.length === 0 ? (
-              <p className="py-16 text-center text-grey">{c.empty}</p>
+              <p className="py-16 text-center text-[#8AA0A6]">{c.empty}</p>
             ) : (
               result.items.map((faq) => (
-                <details
-                  key={faq.id}
-                  className="group border-b border-hairline py-1"
-                >
+                <details key={faq.id} className="group border-b border-hairline">
                   {/*
                     用原生 <details> 而不是 useState 的手風琴：
                     這頁不需要任何 client JS，且鍵盤操作與無障礙語意瀏覽器已經給了。
                     marker:hidden 是為了拿掉預設三角形，改用右側的 +/−。
                   */}
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 marker:hidden [&::-webkit-details-marker]:hidden">
-                    <h3 className="text-[1.05rem] font-semibold text-ink">
-                      {faq.question}
-                    </h3>
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-5 px-1 py-5 marker:hidden [&::-webkit-details-marker]:hidden">
+                    <h3 className="text-[1.08rem] font-[570] text-ink">{faq.question}</h3>
                     <span
                       aria-hidden
                       className="shrink-0 text-xl leading-none text-brand-deep transition group-open:rotate-45"
@@ -119,7 +114,7 @@ export default async function FaqPage({
                     </span>
                   </summary>
                   <div
-                    className="pb-5 pr-8 [&_a]:text-brand-deep [&_li]:mt-1 [&_p]:mt-2 [&_ul]:list-disc [&_ul]:pl-5"
+                    className="max-w-[72ch] px-1 pb-5 [&_a]:text-brand-deep [&_li]:mt-1 [&_p]:mt-2 [&_ul]:list-disc [&_ul]:pl-5"
                     // 已在寫入時以白名單淨化，前端不再淨化一次（見產品詳情頁的說明）
                     dangerouslySetInnerHTML={{ __html: faq.answer }}
                   />

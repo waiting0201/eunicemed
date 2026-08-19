@@ -1,26 +1,45 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { api } from '@/lib/api';
 import { isLocale, type Locale } from '@/lib/locale';
 import { CategoryHero } from '@/components/CategoryHero';
-import { FilterChips } from '@/components/FilterChips';
+import { FilterChips, LinkChips } from '@/components/FilterChips';
 import { ProductGrid } from '@/components/ProductGrid';
+import { Breadcrumb } from '@/components/Breadcrumb';
+import { SiblingNav } from '@/components/SiblingNav';
+import { CategoryOutro } from '@/components/CategoryOutro';
 
 type Params = { locale: string; category: string };
 type Search = { collection?: string; bodyPart?: string; subCategory?: string };
 
-const COPY: Record<Locale, { collection: string; bodyPart: string; subCategory: string; count: (n: number) => string }> = {
+const COPY: Record<
+  Locale,
+  {
+    collection: string;
+    bodyPart: string;
+    subCategory: string;
+    products: string;
+    allProducts: string;
+    all: string;
+    count: (n: number) => string;
+  }
+> = {
   en: {
     collection: 'Collection',
     bodyPart: 'Body part',
     subCategory: 'Sub-category',
+    products: 'Products',
+    allProducts: 'All products',
+    all: 'All',
     count: (n) => `${n} product${n === 1 ? '' : 's'}`,
   },
   'zh-TW': {
     collection: '系列',
     bodyPart: '適用部位',
     subCategory: '子分類',
+    products: '產品',
+    allProducts: '全部產品',
+    all: '全部',
     count: (n) => `${n} 項產品`,
   },
 };
@@ -67,6 +86,9 @@ export default async function CategoryPage({
   const data = await api.category(locale, category);
   if (!data) notFound();
 
+  // 兄弟分類切換列（mockup4 §2）。取不到就不渲染那條，不擋整頁。
+  const siblings = await api.categories(locale).catch(() => []);
+
   const result = await api.products(locale, {
     category,
     subCategory: q.subCategory,
@@ -82,25 +104,38 @@ export default async function CategoryPage({
 
   return (
     <>
+      <Breadcrumb
+        trail={[{ href: `/${locale}/products`, label: c.products }]}
+        current={data.name}
+      />
+
       <CategoryHero data={data} locale={locale} kind="category" />
 
-      {/* 子分類：唯一有獨立 URL 的產品維度（docs/06 §2），因此用連結而非 chip 篩選 */}
-      {data.subCategories.length > 0 && (
-        <section className="border-y border-hairline bg-tint-deep">
-          <div className="mx-auto flex max-w-content flex-wrap gap-x-6 gap-y-2 px-6 py-4 text-sm lg:px-16">
-            {data.subCategories.map((s) => (
-              <Link key={s.slug} href={`${basePath}/${s.slug}`} className="hover:underline">
-                {s.name}
-                <span className="ml-1.5 text-grey">{s.count}</span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
+      <SiblingNav
+        items={siblings.map((s) => ({
+          href: `/${locale}/products/${s.slug}`,
+          label: s.name,
+        }))}
+        activeHref={basePath}
+        tail={{ href: `/${locale}/products`, label: c.allProducts }}
+      />
 
-      <section id="grid" className="bg-tint py-14">
-        <div className="mx-auto max-w-content px-6 lg:px-16">
-          <div className="space-y-3">
+      <section id="grid" className="bg-tint py-[clamp(48px,6vw,72px)]">
+        <div className="mx-auto max-w-content px-gutter">
+          <div className="space-y-3.5">
+            {/* 子分類是唯一有獨立 URL 的產品維度（docs/06 §2），所以是連結而非 query 篩選 */}
+            {data.subCategories.length > 0 && (
+              <LinkChips
+                label={c.subCategory}
+                items={data.subCategories.map((s) => ({
+                  href: `${basePath}/${s.slug}`,
+                  label: s.name,
+                  count: s.count,
+                }))}
+                allHref={basePath}
+                allLabel={c.all}
+              />
+            )}
             <FilterChips
               label={c.collection}
               param="collection"
@@ -121,13 +156,15 @@ export default async function CategoryPage({
             />
           </div>
 
-          <p className="mt-6 text-sm text-grey">{c.count(result.totalCount)}</p>
+          <p className="mt-6 text-[0.85rem] text-[#66787F]">{c.count(result.totalCount)}</p>
 
-          <div className="mt-5">
+          <div className="mt-6">
             <ProductGrid items={result.items} locale={locale} />
           </div>
         </div>
       </section>
+
+      <CategoryOutro supportLevels={data.supportLevels} locale={locale} />
     </>
   );
 }

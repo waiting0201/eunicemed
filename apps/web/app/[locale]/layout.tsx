@@ -5,6 +5,7 @@ import { api, type Menus, type Settings } from '@/lib/api';
 import { isLocale, LOCALES } from '@/lib/locale';
 import { SiteHeader } from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
+import { FloatingContact } from '@/components/FloatingContact';
 import '../globals.css';
 
 export const viewport: Viewport = {
@@ -69,6 +70,7 @@ export default async function LocaleLayout({
         <SiteHeader locale={locale} menu={menus.header} />
         <main className="flex-1">{children}</main>
         <SiteFooter locale={locale} menu={menus.footer} settings={settings} />
+        <FloatingContact locale={locale} />
       </body>
     </html>
   );

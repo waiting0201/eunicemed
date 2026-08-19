@@ -28,7 +28,10 @@ const COPY: Record<
     requestMeeting: string;
     prev: string;
     next: string;
-    related: string;
+    relatedNews: string;
+    relatedInsights: string;
+    allNews: string;
+    allInsights: string;
     readMinutes: (n: number) => string;
     by: string;
   }
@@ -43,7 +46,10 @@ const COPY: Record<
     requestMeeting: 'Request a meeting',
     prev: '← Previous',
     next: 'Next →',
-    related: 'More stories',
+    relatedNews: 'More news',
+    relatedInsights: 'Related insights',
+    allNews: 'All news',
+    allInsights: 'All insights',
     readMinutes: (n) => `${n} min read`,
     by: 'By',
   },
@@ -57,7 +63,10 @@ const COPY: Record<
     requestMeeting: '預約洽談',
     prev: '← 上一篇',
     next: '下一篇 →',
-    related: '延伸閱讀',
+    relatedNews: '更多消息',
+    relatedInsights: '相關文章',
+    allNews: '全部消息',
+    allInsights: '全部文章',
     readMinutes: (n) => `閱讀時間 ${n} 分鐘`,
     by: '作者',
   },
@@ -66,12 +75,13 @@ const COPY: Record<
 /** 內文的排版。richtext 由 API 淨化過，標籤集固定（docs/09 §9.2），這裡只負責樣式。 */
 const PROSE = [
   '[&_p]:mt-4',
-  '[&_h2]:mt-10 [&_h2]:text-[1.5rem] [&_h2]:font-semibold [&_h2]:scroll-mt-24',
-  '[&_h3]:mt-7 [&_h3]:text-[1.15rem] [&_h3]:font-semibold',
+  '[&_h2]:mt-[38px] [&_h2]:mb-3 [&_h2]:text-[1.55rem] [&_h2]:font-[520] [&_h2]:scroll-mt-24',
+  '[&_h3]:mt-7 [&_h3]:text-[1.2rem] [&_h3]:font-[570]',
   '[&_ul]:mt-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mt-4 [&_ol]:list-decimal [&_ol]:pl-5',
   '[&_li]:mt-1.5',
   '[&_a]:text-brand-deep [&_a]:underline',
-  '[&_blockquote]:mt-6 [&_blockquote]:border-l-2 [&_blockquote]:border-brand [&_blockquote]:pl-4 [&_blockquote]:italic',
+  // 引言：左側 3px 品牌青、淺底、右側圓角（mockup4），不是斜體
+  '[&_blockquote]:my-[30px] [&_blockquote]:rounded-r-2xl [&_blockquote]:border-l-[3px] [&_blockquote]:border-brand [&_blockquote]:bg-tint [&_blockquote]:px-[26px] [&_blockquote]:py-[22px] [&_blockquote]:text-[1.1rem] [&_blockquote]:font-medium [&_blockquote]:text-ink [&_blockquote]:leading-[1.5]',
   '[&_figure]:mt-6 [&_img]:rounded-[14px] [&_figcaption]:mt-2 [&_figcaption]:text-[0.85rem] [&_figcaption]:text-grey',
 ].join(' ');
 
@@ -93,7 +103,7 @@ export function ArticleDetailPage({
     <>
       <ResourcesSubnav locale={locale} active={`/${kind}`} />
 
-      <nav className="mx-auto max-w-content px-6 py-4 text-[0.85rem] font-medium text-[#66787f] lg:px-16">
+      <nav className="mx-auto max-w-content px-gutter py-4 text-[0.85rem] font-medium text-[#66787f]">
         <Link href={`/${locale}/${kind}`}>{listLabel}</Link>
         {a.category && (
           <>
@@ -108,7 +118,7 @@ export function ArticleDetailPage({
       </nav>
 
       {/* 標題區 */}
-      <header className="mx-auto max-w-content px-6 lg:px-16">
+      <header className="mx-auto max-w-content px-gutter">
         <div className="mx-auto max-w-[760px] text-center">
           {a.category && (
             <span className="inline-block rounded-full bg-tint-deep px-3.5 py-1 text-[0.72rem] font-bold uppercase tracking-[0.1em] text-brand-deep">
@@ -127,7 +137,7 @@ export function ArticleDetailPage({
       </header>
 
       {a.cover && (
-        <div className="mx-auto mt-9 max-w-content px-6 lg:px-16">
+        <div className="mx-auto mt-9 max-w-content px-gutter">
           <img
             src={a.cover.url}
             srcSet={srcSetOf(a.cover)}
@@ -142,9 +152,9 @@ export function ArticleDetailPage({
       )}
 
       {/* 內文 + 側欄 */}
-      <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
-        <div className="grid gap-12 lg:grid-cols-[1fr_280px]">
-          <article className="min-w-0">
+      <section className="mx-auto max-w-content px-gutter py-[clamp(40px,5vw,64px)]">
+        <div className="grid items-start gap-[clamp(40px,5vw,72px)] lg:grid-cols-[minmax(0,1fr)_260px]">
+          <article className="min-w-0 text-[1.06rem]">
             {a.body && (
               <div
                 className={PROSE}
@@ -225,14 +235,22 @@ export function ArticleDetailPage({
       </section>
 
       {a.related.length > 0 && (
-        <section className="bg-tint py-14">
-          <div className="mx-auto max-w-content px-6 lg:px-16">
-            <h2 className="mb-8 text-[clamp(1.6rem,3vw,2rem)] font-normal">{c.related}</h2>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="bg-tint py-[clamp(56px,7vw,80px)]">
+          <div className="mx-auto max-w-content px-gutter">
+            <div className="mb-7 flex flex-wrap items-baseline justify-between gap-4">
+              <h2 className="text-[clamp(1.6rem,3vw,2.1rem)] font-normal">
+                {kind === 'news' ? c.relatedNews : c.relatedInsights}
+              </h2>
+              <Link href={`/${locale}/${kind}`} className="font-[620] text-brand-deep">
+                {kind === 'news' ? c.allNews : c.allInsights} →
+              </Link>
+            </div>
+            <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
               {a.related.map((r) => (
                 <ArticleCard
                   key={r.slug}
                   locale={locale}
+                  kind={kind}
                   item={{
                     slug: r.slug,
                     type: a.type,

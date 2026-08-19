@@ -38,3 +38,12 @@ export const LOCALE_LABELS: Record<Locale, string> = {
   en: 'English',
   'zh-TW': '繁體中文',
 };
+
+/**
+ * 頁首用的短標籤。mockup4 的頁首是「EN · 中」——
+ * 76px 高的單行版型放不下 `English` / `繁體中文`，那會把 Where to Buy 擠掉。
+ */
+export const LOCALE_SHORT_LABELS: Record<Locale, string> = {
+  en: 'EN',
+  'zh-TW': '中',
+};

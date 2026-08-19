@@ -66,9 +66,9 @@ export default async function ApplicationsPage({ params }: { params: Promise<Par
 
   return (
     <>
-      <section className="mx-auto max-w-content px-6 pt-10 lg:px-16">
+      <section className="mx-auto max-w-content px-gutter pt-[clamp(32px,4vw,48px)]">
         <div className="mx-auto max-w-[760px] text-center">
-          <p className="text-[0.78rem] font-bold uppercase tracking-[0.16em] text-brand-deep">
+          <p className="text-[0.78rem] font-[680] uppercase tracking-[0.16em] text-brand-deep">
             {c.eyebrow}
           </p>
           <h1 className="mt-2.5 text-[clamp(2rem,3.6vw,2.8rem)] font-normal">{c.title}</h1>
@@ -77,15 +77,15 @@ export default async function ApplicationsPage({ params }: { params: Promise<Par
       </section>
 
       {spots.length > 0 && (
-        <section className="mx-auto max-w-content px-6 py-14 lg:px-16">
+        <section className="mx-auto max-w-content px-gutter py-[clamp(56px,7vw,80px)]">
           <SectionHeading index={next()} title={c.byBodyPart} className="mb-10" />
           <BodyMap spots={spots} locale={locale} />
         </section>
       )}
 
       {special.length > 0 && (
-        <section className="bg-tint py-14">
-          <div className="mx-auto max-w-content px-6 lg:px-16">
+        <section className="bg-tint py-[clamp(56px,7vw,80px)]">
+          <div className="mx-auto max-w-content px-gutter">
             <SectionHeading index={next()} title={c.bySpecial} className="mb-8" />
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {special.map((a) => (
@@ -109,8 +109,8 @@ export default async function ApplicationsPage({ params }: { params: Promise<Par
                       />
                     )}
                   </div>
-                  <div className="px-5 pb-6 pt-5">
-                    <h3 className="text-[1.15rem] font-semibold">{a.name}</h3>
+                  <div className="px-[22px] pt-5 pb-6">
+                    <h3 className="text-[1.15rem] font-[570]">{a.name}</h3>
                     {a.lead && <p className="mt-1 text-[0.9rem]">{a.lead}</p>}
                   </div>
                 </Link>

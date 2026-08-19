@@ -15,11 +15,11 @@ export function ProductGrid({
   locale: Locale;
 }) {
   if (items.length === 0) {
-    return <p className="py-16 text-center text-grey">{EMPTY[locale]}</p>;
+    return <p className="py-16 text-center text-[#8AA0A6]">{EMPTY[locale]}</p>;
   }
 
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
       {items.map((item) => (
         <ProductCard key={item.slug} item={item} />
       ))}
