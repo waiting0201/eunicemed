@@ -832,6 +832,7 @@ export type AdminProduct = {
   isFeatured: boolean;
   featuredSortOrder: number;
   useCaseImageMediaId: string | null;
+  sizeChartDiagramMediaId: string | null;
   sortOrder: number;
   publishedAt: string | null;
   images: ProductImageInput[];

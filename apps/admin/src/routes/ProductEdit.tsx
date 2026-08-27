@@ -320,6 +320,21 @@ export function ProductEdit() {
                 />
               </Field>
 
+              <Field
+                label="量測部位圖"
+                hint="顯示在產品頁的尺寸表旁邊，標出要量哪裡。線稿不含文字，所以各語系共用同一張。"
+              >
+                <ImageField
+                  presetKey="measure-diagram"
+                  mediaId={draft.sizeChartDiagramMediaId}
+                  url={draft.sizeChartDiagramMediaId ? urls[draft.sizeChartDiagramMediaId] : null}
+                  onChange={(media) => {
+                    remember(media);
+                    patch({ sizeChartDiagramMediaId: media?.id ?? null });
+                  }}
+                />
+              </Field>
+
               <MultiSelect
                 label="適用部位"
                 options={taxonomy.data?.bodyParts ?? []}
@@ -581,6 +596,8 @@ function toRequest(draft: AdminProduct, removed: string[]) {
     certificationIds: draft.certificationIds,
     useCaseImageMediaId: draft.useCaseImageMediaId,
     clearUseCaseImage: draft.useCaseImageMediaId === null,
+    sizeChartDiagramMediaId: draft.sizeChartDiagramMediaId,
+    clearSizeChartDiagram: draft.sizeChartDiagramMediaId === null,
     // 被移除的語系要明確送 null —— 少了這一步，「沒提到」在後端是「不動它」，
     // 使用者按了移除卻刪不掉，而且畫面上已經不見了，下次重整才會發現還在
     translations: {

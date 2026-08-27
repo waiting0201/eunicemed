@@ -76,6 +76,11 @@ export function SizeChartEditor({
         value={chart.measureLabel ?? ''}
         onChange={(e) => onChange({ ...chart, measureLabel: e.target.value })}
       />
+      {/* 量測部位圖不分語系，所以不在這個語系分頁裡 —— 沒有這行指路，
+          填完表的人會在這裡找一個不存在的上傳欄位 */}
+      <p className="form-hint mb-3">
+        表格旁邊的量測部位圖在「圖片與關聯」設定，各語系共用。
+      </p>
 
       <div className="table-responsive panel mb-2">
         <table className="table">
