@@ -1,21 +1,25 @@
+import logo from '@/assets/eunicemed-logo.png';
+import logoOnDark from '@/assets/eunicemed-logo-on-dark.png';
+import mark from '@/assets/eunicemed-mark.png';
+
 /**
- * 品牌標誌。
+ * 品牌標誌。**用品牌方提供的正式圖檔**，與公開站同一組檔案
+ * （`apps/web/public/brand/`），來源與重出方式見 [docs/14-assets.md](../../../../docs/14-assets.md)。
  *
  * <p>
- * **復刻 mockup4 的鎖定樣式**（客戶已定案的版型）：圓角外框內「EUNICE / MED®」
- * 兩行，右側一個品牌青的加號。倉庫裡沒有向量 logo 檔 ——
- * `reference/sbk/` 只有規範 PDF 與 JPG 形象圖，而從 JPG 取點陣圖
- * 會在側欄縮放與深色底反白時都不好看。用標記組出來可縮放、可換色、零位元組。
+ * 顏色取規範 PDF 的「數位媒體用」那組（灰 `rgb(137,137,137)`、青 `rgb(0,181,205)`），
+ * 版本取「小於 45mm（®加大）」那支 —— 後台的版位一律遠小於 45mm。
  * </p>
  *
  * <p>
- * 深色底（側欄／頁尾）換一組色，與 mockup4 的頁尾版一致：
- * 外框與字轉為淺灰，加號**維持品牌青不變** —— 那是識別的固定元素。
+ * ⚠️ **`compact` 用的加號是規範裡沒有的用法。** 那個形狀是官方原稿裡的加號原封不動裁下來的，
+ * 但「加號單獨當標記」是我們為了收合側欄與 favicon 自己延伸的 —— 完整鎖定樣式在 32px 讀不出來。
+ * 客戶若給了正式的 icon 版本，這裡與 `apps/web/app/favicon.ico` 一起換掉。
  * </p>
  *
  * <p>
- * ⚠️ 字級與字距是規範的一部分（`標準EuniceMed logo 及其他圖形使用規範.pdf`），
- * 不要為了塞進某個版位而個別調整；要縮就整個 `scale`。
+ * 後台是 Vite，圖檔走 `import` 讓打包器處理 `base: '/admin/'` 與 hash；
+ * **不要**改成寫死 `/brand/...` 的絕對路徑 —— 那在 `vite dev`（:5173）會 404。
  * </p>
  */
 export function Logo({
@@ -23,45 +27,20 @@ export function Logo({
   compact = false,
 }: {
   onDark?: boolean;
-  /** 側欄收合時只留加號 —— 縮小整個鎖定樣式會讓字距失真 */
+  /** 側欄收合時只留加號 —— 完整鎖定樣式縮到這個寬度會糊掉 */
   compact?: boolean;
 }) {
-  const frame = onDark ? '#4A585E' : '#16333B';
-  const word = onDark ? '#9FAFB5' : '#16333B';
-
   if (compact) {
-    return (
-      <span
-        role="img"
-        aria-label="EuniceMed"
-        className="inline-flex h-8 w-8 items-center justify-center rounded-[10px] font-extrabold"
-        style={{ border: `2.5px solid ${frame}`, color: '#00B5CD', fontSize: '1.15rem' }}
-      >
-        +
-      </span>
-    );
+    return <img src={mark} alt="EuniceMed" width={512} height={512} className="block h-8 w-8" />;
   }
 
   return (
-    <span
-      role="img"
-      aria-label="EuniceMed"
-      className="inline-flex items-center gap-2 rounded-[10px] px-3 py-[5px] leading-none"
-      style={{ border: `2.5px solid ${frame}` }}
-    >
-      <span
-        aria-hidden
-        style={{ color: word, fontWeight: 680, letterSpacing: '.12em', fontSize: '.82rem' }}
-      >
-        EUNICE
-        <br />
-        MED
-        <span style={{ fontSize: '.5em', verticalAlign: 'super' }}>®</span>
-      </span>
-      {/* 加號在深色底也維持品牌青 —— 它是識別的固定元素 */}
-      <span aria-hidden style={{ color: '#00B5CD', fontWeight: 800, fontSize: '1.15rem' }}>
-        +
-      </span>
-    </span>
+    <img
+      src={onDark ? logoOnDark : logo}
+      alt="EuniceMed"
+      width={480}
+      height={189}
+      className="block h-[38px] w-auto"
+    />
   );
 }
