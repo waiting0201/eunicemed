@@ -194,6 +194,7 @@ GET /api/products/by-slug/{slug}?locale=en             # 扁平查詢：預覽�
     "rows": [ { "label": null, "values": ["34–38","38–42","42–46","46–50","50–54"] } ],
     "footnote": null
   },
+  "sizeChartDiagram": { "url": "…", "alt": null },
   "certifications": [ { "slug": "iso-13485", "mark": "ISO 13485", "subLabel": "…", "logo": "…" } ],
   "downloads": [ { "title": "Catalogue", "url": "…pdf", "type": "catalog",
                    "fileLocale": "EN", "fileExt": "PDF", "description": "…", "sizeBytes": 1048576 } ],

@@ -52,6 +52,7 @@ public sealed record ProductRow(
     string?   CollectionSlug,
     string?   CollectionName,
     string?   UseCaseImageUrl,
+    string?   SizeChartDiagramUrl,
     DateTime? PublishedAt);
 
 public sealed class ProductReadService(IDbConnection db) : IProductReadService
@@ -186,6 +187,7 @@ public sealed class ProductReadService(IDbConnection db) : IProductReadService
                sc.Slug AS SubCategorySlug, sct.Name AS SubCategoryName,
                col.Slug AS CollectionSlug, colt.Name AS CollectionName,
                (SELECT BlobUrl FROM Media WHERE Id = p.UseCaseImageMediaId) AS UseCaseImageUrl,
+               (SELECT BlobUrl FROM Media WHERE Id = p.SizeChartDiagramMediaId) AS SizeChartDiagramUrl,
                p.PublishedAt
         """;
 

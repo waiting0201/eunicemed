@@ -98,6 +98,7 @@ public sealed class ProductHandler(
             JsonField.Parse(r.UseCasesJson),
             JsonField.Parse(r.SpecsJson),
             JsonField.Parse(r.SizeChartJson),
+            r.SizeChartDiagramUrl is null ? null : new MediaRefDto(r.SizeChartDiagramUrl, null),
             certs.ToArray(),
             downloads.ToArray(),
             related.Select(p => new ProductRelatedDto(p.Slug, p.Name, p.Image, p.Url)).ToArray(),

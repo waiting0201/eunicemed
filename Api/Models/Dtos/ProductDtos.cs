@@ -63,6 +63,7 @@ public sealed record ProductDto(
     object?       UseCases,
     object?       Specs,
     object?       SizeChart,
+    MediaRefDto?  SizeChartDiagram,
     CertificationDto[]  Certifications,
     DownloadDto[]       Downloads,
     ProductRelatedDto[] RelatedProducts,

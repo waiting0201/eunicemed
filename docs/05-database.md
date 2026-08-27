@@ -160,6 +160,8 @@ CREATE TABLE Product (
     -- 【2026-08-14 移除】TowerImageMediaId（1:2, 700×1400）：首頁改 Pinterest 式 masonry，
     --   各版位皆用 ProductImage 的主圖（preset `square`），大小只由版位決定。見 11-media-specs.md §3。
     UseCaseImageMediaId  UNIQUEIDENTIFIER NULL,  -- 產品頁 02 使用情境照（preset `photo-4x3`）
+    SizeChartDiagramMediaId UNIQUEIDENTIFIER NULL, -- 產品頁 03 尺寸表旁的量測部位線稿（preset `measure-diagram`）；
+                                                  --   語系無關：圖上沒有文字，部位名稱在 SizeChartJson.measureLabel
     SortOrder     INT NOT NULL DEFAULT 0,
     PublishedAt   DATETIME2 NULL,
     IsDeleted     BIT NOT NULL DEFAULT 0,

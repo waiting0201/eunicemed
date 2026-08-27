@@ -47,6 +47,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
          .HasForeignKey(i => i.ProductId).OnDelete(DeleteBehavior.Cascade);
 
         CategoryConfiguration.MediaFk(b, nameof(Product.UseCaseImageMediaId));
+        CategoryConfiguration.MediaFk(b, nameof(Product.SizeChartDiagramMediaId));
     }
 }
 

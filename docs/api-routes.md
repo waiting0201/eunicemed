@@ -109,7 +109,7 @@
 
 | Method | Path | 權限 | 說明 |
 |---|---|---|---|
-| GET | `/admin/media-presets` | 登入 | 13 個 preset 的機器可讀規格；後台提示文字來源 |
+| GET | `/admin/media-presets` | 登入 | 14 個 preset 的機器可讀規格；後台提示文字來源 |
 | POST | `/admin/media` | Author+ | multipart 代傳，必帶 `presetKey`；415/413/400 硬拒絕、`warnings[]` 軟提醒 |
 | GET | `/admin/media?search=&presetKey=` | 登入 | 媒體庫 |
 | GET | `/admin/media/{id}/usages` | 登入 | 引用反查（含埋在 `DataJson` 內的，schema 驅動） |

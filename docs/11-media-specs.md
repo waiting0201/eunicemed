@@ -45,7 +45,7 @@ Blob 只會把檔案原樣吐出來不會幫你縮 —— **沒在上傳當下�
 | `wide-16x10` / `photo-4x3` / `content-16x9` / `square` | 1200 · 800 · 400 | 1200 | 4 |
 | `portrait-4x5` | 1000 · 800 · 400 | 1000 | 4 |
 | `card-16x10` | 800 · 400 | 800 | 3 |
-| `logo-mark` | 400 | 400 | 2 |
+| `measure-diagram` / `logo-mark` | 400 | 400 | 2 |
 | `og-image` | —（不出 WebP） | 1200 | 1 |
 | `document` | — | — | 0 |
 
@@ -82,11 +82,12 @@ Blob 只會把檔案原樣吐出來不會幫你縮 —— **沒在上傳當下�
 | `portrait-4x5` | 4:5 | **1000 × 1250** | ≤ 250 KB | About 人物照、應用方案 hero |
 | `square` | 1:1 | **1200 × 1200** | ≤ 250 KB | **全站產品圖（唯一規格）**、分類卡、About 方圖 |
 | `card-16x10` | 16:10 | **800 × 500** | ≤ 150 KB | 卡片封面（特殊照護／Resources／影片 poster） |
+| `measure-diagram` | 1:1 | **400 × 400** | ≤ 80 KB | 產品尺寸表旁的量測部位線稿（PNG 透明底或 SVG） |
 | `logo-mark` | 1:1 | **400 × 400** | ≤ 80 KB | 認證標章 logo（PNG 透明底或 SVG） |
 | `og-image` | 1.91:1 | **1200 × 630** | ≤ 200 KB | SEO Open Graph 圖 |
 | `document` | — | PDF（不縮圖） | ≤ 20 MB | 型錄／認證文件／使用手冊 |
 
-**共 12 個圖片 preset。** 縮圖階梯只有 6 個寬度值：`2560 · 1600 · 1200 · 1000 · 800 · 400`。
+**共 13 個圖片 preset。** 縮圖階梯只有 6 個寬度值：`2560 · 1600 · 1200 · 1000 · 800 · 400`。
 
 > **不再有「產品縮圖 200×200」這個上傳規格**——產品頁的縮圖列由 `square` master 經 `next/image` 產生。
 > **不再有「首頁塔位 700×1400」這個上傳規格**——見 §3。
@@ -167,6 +168,7 @@ Blob 只會把檔案原樣吐出來不會幫你縮 —— **沒在上傳當下�
 | `Category.HeroImageMediaId`／`SubCategory.HeroImageMediaId` | `wide-16x10` |
 | `ProductImage.MediaId`（主圖與其餘圖） | `square` |
 | `Product.UseCaseImageMediaId` | `photo-4x3` |
+| `Product.SizeChartDiagramMediaId` | `measure-diagram` |
 | `Application.ImageMediaId` | `portrait-4x5` |
 | `Application.CardImageMediaId` | `card-16x10` |
 | `Application.FittingImageMediaId` | `wide-16x10` |

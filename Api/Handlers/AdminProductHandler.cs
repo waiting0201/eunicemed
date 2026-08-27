@@ -347,6 +347,9 @@ public sealed class AdminProductHandler(
         if (body.ClearUseCaseImage)                     entity.UseCaseImageMediaId = null;
         else if (body.UseCaseImageMediaId is { } ucId)  entity.UseCaseImageMediaId = ucId;
 
+        if (body.ClearSizeChartDiagram)                    entity.SizeChartDiagramMediaId = null;
+        else if (body.SizeChartDiagramMediaId is { } scId) entity.SizeChartDiagramMediaId = scId;
+
         ApplyTranslations(entity, body.Translations);
 
         // 刪到一個語系都不剩的話，這筆產品在前台每個語系都查不到，
@@ -475,7 +478,7 @@ public sealed class AdminProductHandler(
     /// <summary>FK 型的媒體引用（use-case 圖、og 圖）也要驗，否則會撞 FK 變成 500。</summary>
     private async Task ValidateMediaAsync(Product entity)
     {
-        var ids = new List<Guid?> { entity.UseCaseImageMediaId };
+        var ids = new List<Guid?> { entity.UseCaseImageMediaId, entity.SizeChartDiagramMediaId };
         ids.AddRange(entity.Translations.Select(t => t.OgImageMediaId));
 
         await AdminWrite.EnsureMediaExistsAsync(db, ids);
@@ -493,6 +496,7 @@ public sealed class AdminProductHandler(
         for (var i = 0; i < ordered.Length; i++) refs.Add(($"images/{i}", ordered[i].MediaId));
 
         if (entity.UseCaseImageMediaId is { } uc) refs.Add(("useCaseImage", uc));
+        if (entity.SizeChartDiagramMediaId is { } sc) refs.Add(("sizeChartDiagram", sc));
 
         foreach (var tr in entity.Translations.Where(t => t.OgImageMediaId is not null))
             refs.Add(($"translations/{tr.Locale}/ogImage", tr.OgImageMediaId!.Value));
@@ -504,7 +508,7 @@ public sealed class AdminProductHandler(
         p.Id, p.Slug, p.Sku,
         p.CategoryId, p.SubCategoryId, p.CollectionId,
         p.Status, p.IsFeatured, p.FeaturedSortOrder,
-        p.UseCaseImageMediaId, p.SortOrder, p.PublishedAt,
+        p.UseCaseImageMediaId, p.SizeChartDiagramMediaId, p.SortOrder, p.PublishedAt,
         p.Images.OrderBy(i => i.SortOrder)
                 .Select(i => new AdminProductImageInput(i.MediaId, i.IsPrimary, i.SortOrder)).ToArray(),
         p.BodyParts.Select(b => b.BodyPartId).ToArray(),

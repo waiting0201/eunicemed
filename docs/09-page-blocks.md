@@ -34,7 +34,7 @@ number · date · bool · enum[...] · ref:Entity · repeatable{...}(min–max)
 
 - 每個 `media` 欄位在 JSON Schema 內只帶 **`x-mediaPreset`**（如 `square`、`page-band`）；比例、建議尺寸、大小上限、提示文字一律由 [11-media-specs.md](11-media-specs.md) §2 的 preset 表展開，**本文件與 schema 都不手抄尺寸數字**。
   後台每個上傳欄位據此顯示「建議尺寸 W×H（比例）· 格式 · ≤NN KB · 上傳後自動縮至 W px 寬」，不符時警示（不阻擋）。本文件各表內括號中的尺寸僅為閱讀方便的註記。
-  現行 12 個圖片 preset：`hero-slide` 2560×960 ·`page-band` 2560×480 ·`section-bg` 2560×900 ·`wide-16x9` 1600×900 ·`wide-16x10` 1200×750 ·`photo-4x3` 1200×900 ·`content-16x9` 1200×675 ·`portrait-4x5` 1000×1250 ·`square` 1200×1200（**全站產品圖唯一規格**）·`card-16x10` 800×500 ·`logo-mark` 400×400 ·`og-image` 1200×630。
+  現行 13 個圖片 preset：`hero-slide` 2560×960 ·`page-band` 2560×480 ·`section-bg` 2560×900 ·`wide-16x9` 1600×900 ·`wide-16x10` 1200×750 ·`photo-4x3` 1200×900 ·`content-16x9` 1200×675 ·`portrait-4x5` 1000×1250 ·`square` 1200×1200（**全站產品圖唯一規格**）·`card-16x10` 800×500 ·`logo-mark` 400×400 ·`measure-diagram` 400×400 ·`og-image` 1200×630。
   > 兩項已修正的不一致：①`IMAGES.md` 對 About 人物照建議 `1000×1333`（3:4），版面實為 4:5 → 以 `portrait-4x5`（1000×1250）為準。②產品圖原有 1:1／3:4／1:2 三種規格 → 統一為 `square`，見 [11](11-media-specs.md) §3。
 - `richtext` 由 TipTap 產生、伺服器端淨化；允許標籤集見 §9.2。
 - `ref:Entity` 於 `DataJson` 內存 GUID 字串；API 回應時解析為精簡 DTO 放進 `refs`（見 [04-api.md](04-api.md) §4）。
@@ -162,7 +162,7 @@ number · date · bool · enum[...] · ref:Entity · repeatable{...}(min–max)
 | — | 主/次 CTA | 固定：`Request a quote`（錨點 `#inquiry`）／`View specifications`（錨點 `#specs`） |
 | **01** | Features | `FeaturesJson` repeatable(2–6){ `icon` enum、`title` text、`body` text } |
 | **02** | When to use it | `UseCaseImageMediaId` media(`photo-4x3`)、`UseCasesJson` repeatable(2–5){ `title` text、`body` text }（模板自動編號 01/02/03） |
-| **03** | Specifications & size chart | `SpecsJson` repeatable{ `label` text、`value` text }<br>`SizeChartJson`{ `measureLabel` text（如 `thigh circumference`，顯示於標題括號內）、`sizes` text[]（S…XXL）、`rows` repeatable{ `label` text?、`values` text[] }、`footnote` text? } |
+| **03** | Specifications & size chart | `SpecsJson` repeatable{ `label` text、`value` text }<br>`SizeChartJson`{ `measureLabel` text（如 `thigh circumference`，顯示於標題括號內）、`sizes` text[]（S…XXL）、`rows` repeatable{ `label` text?、`values` text[] }、`footnote` text? }<br>`SizeChartDiagramMediaId` media(`measure-diagram`)：表格右側的量測部位線稿，**語系無關**（圖上沒有文字），沒掛就不出現；有圖但沒有尺寸表時也不出現 |
 | **04** | Certifications | `ProductCertification` → `Certification`（與 About 共用） |
 | **05** | Downloads | `ProductDownload` → `Download`（列顯示 `標題` + `EN · PDF`） |
 | **06** | Related products | `ProductRelated`（人工指定 0–4，4 格固定版位，卡圖 `square` 1:1）；**空則自動**以同 SubCategory → 同 Category → 同 BodyPart 補足 4 筆 |

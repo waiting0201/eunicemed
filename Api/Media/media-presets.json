@@ -340,6 +340,34 @@
       }
     },
     {
+      "key": "measure-diagram",
+      "label": {
+        "en": "Measurement diagram (1:1)",
+        "zh-TW": "量測部位圖（1:1）"
+      },
+      "aspect": "1:1",
+      "width": 400,
+      "height": 400,
+      "maxBytes": 81920,
+      "formats": [
+        "png",
+        "svg",
+        "webp"
+      ],
+      "note": {
+        "en": "Line drawing beside the product size chart, showing where to measure (transparent PNG or SVG)",
+        "zh-TW": "產品尺寸表旁的量測部位線稿（PNG 透明底或 SVG）"
+      },
+      "output": {
+        "webp": [
+          400
+        ],
+        "original": [
+          400
+        ]
+      }
+    },
+    {
       "key": "og-image",
       "label": {
         "en": "Open Graph image (1.91:1)",

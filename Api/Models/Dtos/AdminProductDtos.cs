@@ -43,6 +43,7 @@ public sealed record AdminProductDto(
     bool                                        IsFeatured,
     int                                         FeaturedSortOrder,
     Guid?                                       UseCaseImageMediaId,
+    Guid?                                       SizeChartDiagramMediaId,
     int                                         SortOrder,
     DateTime?                                   PublishedAt,
     AdminProductImageInput[]                    Images,
@@ -89,6 +90,7 @@ public sealed record UpsertProductRequest(
     bool?                                        IsFeatured          = null,
     int?                                         FeaturedSortOrder   = null,
     Guid?                                        UseCaseImageMediaId = null,
+    Guid?                                        SizeChartDiagramMediaId = null,
     int?                                         SortOrder           = null,
     AdminProductImageInput[]?                    Images              = null,
     Guid[]?                                      BodyPartIds         = null,
@@ -106,6 +108,7 @@ public sealed record UpsertProductRequest(
     public bool ClearSubCategory       { get; init; }
     public bool ClearCollection        { get; init; }
     public bool ClearUseCaseImage      { get; init; }
+    public bool ClearSizeChartDiagram  { get; init; }
 }
 
 /// <summary>PUT /admin/products/{id}/related —— 順序即畫面順序。空陣列 = 回到自動計算。</summary>

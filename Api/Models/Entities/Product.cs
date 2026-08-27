@@ -29,6 +29,16 @@ public class Product : ITranslatable<ProductTranslation>
     /// <summary>產品頁 §02 使用情境照（preset `photo-4x3`）</summary>
     public Guid? UseCaseImageMediaId { get; set; }
 
+    /// <summary>
+    /// 產品頁 §03 尺寸表旁的量測部位圖（preset `measure-diagram`）。
+    ///
+    /// <para>
+    /// 語系無關，所以掛在 <see cref="Product"/> 而不是翻譯上 —— 線稿只有箭頭沒有文字，
+    /// 量測部位的**名稱**是 <c>SizeChartJson.measureLabel</c> 的事。
+    /// </para>
+    /// </summary>
+    public Guid? SizeChartDiagramMediaId { get; set; }
+
     public int       SortOrder   { get; set; }
     public DateTime? PublishedAt { get; set; }
 
