@@ -80,7 +80,7 @@ number · date · bool · enum[...] · ref:Entity · repeatable{...}(min–max)
 |---|---|---|---|
 | `heroSlider` | Hero 輪播 | 區段 | `slides` repeatable(1–5){ `image` media(`hero-slide`)、`alt` text、`link` link? }；`intervalSeconds` number（預設 6） |
 | `heroIntro` | Hero 文案 | 區段 | `eyebrow` text（`Not Just a Motion · Made in Taiwan`）、`title` text（含一段高亮字，以 `**…**` 標記）、`lead` text |
-| `featuredProducts` | **01** Hero products | 區段 + 動態 | 區段：`title` text、`allLink` link、`promo`{ `eyebrow` text、`title` text、`link` link }（全型錄漸層帶）<br>動態：`GET /products?featured=true&pageSize=8`，依 `FeaturedSortOrder`；**Pinterest 式 masonry：等寬 4 欄、卡片高度不一、往下堆疊**，版位比例依序輪替 `1:1 / 4:5 / 5:4`，全部用產品主圖（`ProductImage` 的 `IsPrimary`，preset `square`）；卡片文案取 `ProductTranslation.FeaturedBlurb` |
+| `featuredProducts` | **01** Hero products | 區段 + 動態 | 區段：`title` text、`promo`{ `eyebrow` text、`title` text、`link` link }（全型錄漸層帶）<br>動態：`GET /products?featured=true&pageSize=8`，依 `FeaturedSortOrder`；**Pinterest 式 masonry：等寬 4 欄、卡片高度不一、往下堆疊**，版位比例依序輪替 `1:1 / 4:5 / 5:4`，全部用產品主圖（`ProductImage` 的 `IsPrimary`，preset `square`）；卡片文案取 `ProductTranslation.FeaturedBlurb` |
 | `bodyPartBand` | **02** Find support by body part | 區段 | `background` media(`section-bg`)、`title` text、`lead` text、`cta` link、`tiles` repeatable(4){ `icon` enum、`title` text、`subtitle` text、`link` link } |
 | `whyPartner` | **03** A team your business can truly count on | 區段 | `title` text、`items` repeatable(4){ `title` text、`body` text }、`cta` link |
 | `testimonial` | **04** Trusted worldwide | 區段 | `title` text、`quote` text、`attribution`{ `name` text、`region` text }、`miniQuotes` repeatable(0–3){ `quote` text、`source` text }、`video`{ `poster` media(`card-16x10`)、`source` text }、`floatingChip` text |

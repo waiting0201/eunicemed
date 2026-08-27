@@ -7,14 +7,6 @@
   "required": ["title"],
   "properties": {
     "title": { "type": "string", "maxLength": 120, "x-fieldType": "text" },
-    "allLink": {
-      "type": "object", "additionalProperties": false, "x-fieldType": "link",
-      "properties": {
-        "label":    { "type": "string", "maxLength": 60, "x-fieldType": "text" },
-        "url":      { "type": "string", "maxLength": 400, "x-fieldType": "text", "x-localeInvariant": true },
-        "external": { "type": "boolean", "x-fieldType": "bool", "x-localeInvariant": true }
-      }
-    },
     "promo": {
       "type": "object", "additionalProperties": false,
       "properties": {

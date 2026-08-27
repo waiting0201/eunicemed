@@ -19,7 +19,6 @@ type HeroSliderSection = {
 type HeroIntroSection = { eyebrow?: string; title?: string; lead?: string };
 type FeaturedSection = {
   title?: string;
-  allLink?: SectionCta;
   promo?: { eyebrow?: string; title?: string; link?: SectionCta };
 };
 type BodyPartBandSection = {
@@ -128,16 +127,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
       {/* 01 精選產品 —— Pinterest 式瀑布流 */}
       {featuredCopy && featured.items.length > 0 && (
         <section className="mx-auto max-w-content px-gutter py-[clamp(64px,8vw,96px)]">
-          <RuledSectionHeading
-            index={next()}
-            title={featuredCopy.title ?? ''}
-            action={
-              featuredCopy.allLink?.url && (
-                <CtaLink cta={featuredCopy.allLink} variant="text" />
-              )
-            }
-            className="mb-9"
-          />
+          <RuledSectionHeading index={next()} title={featuredCopy.title ?? ''} className="mb-9" />
 
           <FeaturedMasonry items={featured.items} />
 
