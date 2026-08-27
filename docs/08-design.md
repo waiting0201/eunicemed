@@ -85,8 +85,14 @@ collection: {
 | 深色背景版（反白） | 深色背景；灰改 25% 濃度處理 |
 | 小尺寸版（寬 < 45mm，® 加大） | 印刷小面積；網站上小尺寸（如 favicon 旁、footer）比照使用 ® 加大版向量檔 |
 | 紙盒用（青底白框反白） | 包裝；網站深青色塊上可比照 |
+| **單獨加號標記**（青加號，無外框無字） | favicon（`apps/web/app/favicon.ico`）與後台側欄收合時。**規範未定義此用法** —— 形狀是原稿裡的加號原封不動裁下來的，但「加號單獨使用」是本專案為了 16–32px 版位自行延伸的，待客戶確認；完整鎖定樣式在這個尺寸讀不出來。|
 
-- Logo 檔一律使用 `reference/sbk/EuniceMed 素材整理新版 20250110.ai` 內的向量原稿轉出 SVG，**不得自行重繪或改色**。
+- Logo 檔一律從 `reference/sbk/EuniceMed 素材整理新版 20250110.ai` 內的向量原稿轉出，**不得自行重繪或改色**。
+  目前站上是 480px 寬的去背 PNG（`apps/web/public/brand/`）—— 本機沒有 Illustrator，
+  poppler 轉出的 SVG 帶著整張素材總表的遮罩與合成群組（5.8MB），不能用。
+  日後若有人用 Illustrator 存一份乾淨 SVG，直接換掉是升級。重出步驟見 [14-assets.md](14-assets.md)。
+- **網站上的顏色取規範 PDF 的「數位媒體用」那一組**（灰 `rgb(137,137,137)`、青 `rgb(0,181,205)`），
+  不是 `.ai` 內的特別色印刷值（`rgb(137,140,141)` / `rgb(11,157,184)`）。
 - 子品牌：**AerGo**（青色字標，Pantone 7466c）、**motif MEDICAL**；與主 logo 並用時遵循素材檔配置。
 - 認證/產地標章素材（ISO 13485、CE、Oeko-Tex Confidence in Textiles、Patented、Taiwan）也在素材檔內，供 About/產品頁/footer 使用。
 

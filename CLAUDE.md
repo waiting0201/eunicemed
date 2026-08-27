@@ -213,6 +213,10 @@ EuniceMed/
       後台已可逐產品掛認證，但公開端點忽略它 —— 編輯者掛了會是靜默的無效操作。
       改成逐產品的話，在內容建好之前所有產品頁的標章列會變成空的（目前 `ProductCertification` 0 筆），
       所以先維持現狀等拍板：標章列是「品牌共用」還是「逐產品」？
+- [ ] **favicon 與後台收合側欄用的「單獨加號標記」規範未定義**（2026-08-27 起用）。
+      形狀取自 `.ai` 原稿的加號，但單獨使用是本專案的延伸；完整 logo 在 16–32px 讀不出來。
+      客戶若有正式 icon 版本，換掉 `apps/web/app/favicon.ico`、`apps/web/public/brand/eunicemed-mark.png`
+      與 `apps/admin/src/assets/eunicemed-mark.png` 三處。見 [docs/08](docs/08-design.md) §3
 - [ ] reCAPTCHA 用哪個版本（v2 checkbox / v2 invisible / v3 score）？v3 需決定分數門檻。另 [07](docs/07-azure-deployment.md) §6.4 只有後端 `Recaptcha__SecretKey`，缺前端 site key
 - [ ] `mockup/`、`mockup2/`、`mockup3/`（共約 120MB 的早期版型）要不要納入版控？目前以 `.gitignore` 擋著 —— 圖片進了 git 歷史就拿不掉了
 

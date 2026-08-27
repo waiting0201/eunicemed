@@ -1,43 +1,50 @@
+import Image from 'next/image';
+
 /**
- * 品牌標誌。復刻 mockup4 的鎖定樣式：圓角外框內「EUNICE / MED®」兩行，
- * 右側一個品牌青的加號。
+ * 品牌標誌。**用品牌方提供的正式圖檔**，不再以標記復刻。
  *
  * <p>
- * 倉庫裡沒有向量 logo 檔（`reference/sbk/` 只有規範 PDF 與 JPG 形象圖），
- * 所以用標記組出來 —— 可縮放、可換色、零位元組。
+ * 來源是 `reference/sbk/EuniceMed 素材整理新版 20250110.ai` 裡的向量原稿，
+ * 依 `reference/sbk/標準EuniceMed logo 及其他圖形使用規範.pdf` 取兩件事：
+ * </p>
+ *
+ * <ul>
+ *   <li>**顏色用「數位媒體用」那組**：灰 `rgb(137,137,137)`、青 `rgb(0,181,205)`
+ *       —— 不是 .ai 裡的特別色印刷值（那組是 `rgb(137,140,141)` / `rgb(11,157,184)`）。</li>
+ *   <li>**版本用「小於 45mm（®加大）」那支**：45mm 約等於 170px，
+ *       網站上不論頁首或頁尾都遠小於此，標準版的 ® 在這個尺寸會糊掉。</li>
+ * </ul>
+ *
+ * <p>
+ * 深色底另有一支官方版本（外框與字為淺灰 `#E1E1E1`，加號維持品牌青），
+ * 對應規範裡的「深色背景用」，不是把亮版濾色濾出來的。
  * </p>
  *
  * <p>
- * ⚠️ **後台有一份幾乎相同的 `apps/admin/src/components/Logo.tsx`。**
- * 兩個 app 沒有共用套件，為一個純呈現元件開一個 workspace package 不划算；
- * 但改動時**兩邊都要改** —— 字級與字距是品牌規範的一部分
- * （`標準EuniceMed logo 及其他圖形使用規範.pdf`），不可各自漂移。
+ * ⚠️ 圖檔是 480×189 的點陣圖（規範 PDF 與 .ai 都沒有可直接上網的 SVG）。
+ * 以 4.5 倍密度輸出，頁首 42px 高綽綽有餘；**要放大到 200px 以上請回頭從 .ai 重出**，
+ * 不要拉伸。重出流程見 docs/14-assets.md。
+ * </p>
+ *
+ * <p>
+ * ⚠️ **後台 `apps/admin/src/components/Logo.tsx` 是另一份**，同樣吃這兩個檔；
+ * 換圖時兩邊都要換。
  * </p>
  */
-export function Logo({ onDark = false }: { onDark?: boolean }) {
-  const frame = onDark ? '#4A585E' : '#16333B';
-  const word = onDark ? '#9FAFB5' : '#16333B';
+const SRC = {
+  light: '/brand/eunicemed-logo.png',
+  dark: '/brand/eunicemed-logo-on-dark.png',
+} as const;
 
+export function Logo({ onDark = false }: { onDark?: boolean }) {
   return (
-    <span
-      role="img"
-      aria-label="EuniceMed"
-      className="inline-flex items-center gap-2 rounded-[10px] px-3 py-[5px] leading-none"
-      style={{ border: `2.5px solid ${frame}` }}
-    >
-      <span
-        aria-hidden
-        style={{ color: word, fontWeight: 680, letterSpacing: '.12em', fontSize: '.82rem' }}
-      >
-        EUNICE
-        <br />
-        MED
-        <span style={{ fontSize: '.5em', verticalAlign: 'super' }}>®</span>
-      </span>
-      {/* 加號在深色底也維持品牌青 —— 它是識別的固定元素 */}
-      <span aria-hidden style={{ color: '#00B5CD', fontWeight: 800, fontSize: '1.15rem' }}>
-        +
-      </span>
-    </span>
+    <Image
+      src={onDark ? SRC.dark : SRC.light}
+      alt="EuniceMed"
+      width={480}
+      height={189}
+      /* 高度鎖 42px、寬度自動 —— 與 mockup4 的鎖定樣式同尺寸，且不會壓到原比例 */
+      className="block h-[42px] w-auto"
+    />
   );
 }
