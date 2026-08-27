@@ -5,8 +5,8 @@
 # 反斜線路徑在 macOS/Linux 是**檔名的一部分**，不是分隔符 ——
 # 所以 `**/bin/` 比對不到名為 `bin\Debug` 的目錄，那 45 個 build 產物
 # 就這樣進了版控，並在 Linux 上讓 resx 的 glob 掃描炸掉整個 build。
-**/bin\Debug/
-**/obj\*/
+**/bin\\Debug/
+**/obj\\*/
 
 .vs/
 .vscode/
