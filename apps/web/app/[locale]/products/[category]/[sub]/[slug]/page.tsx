@@ -22,6 +22,8 @@ const COPY: Record<
     specsAndSizes: string;
     specs: string;
     sizeChart: (measure?: string) => string;
+    measureDiagram: (measure?: string) => string;
+    whereToMeasure: string;
     certifications: string;
     downloads: string;
     related: string;
@@ -39,6 +41,8 @@ const COPY: Record<
     specsAndSizes: 'Specifications & sizes',
     specs: 'Specifications',
     sizeChart: (m) => (m ? `Size chart (${m})` : 'Size chart'),
+    measureDiagram: (m) => (m ? `Where to measure: ${m}` : 'Where to measure'),
+    whereToMeasure: 'Where to measure',
     certifications: 'Certifications',
     downloads: 'Downloads',
     related: 'Related products',
@@ -56,6 +60,8 @@ const COPY: Record<
     specsAndSizes: '規格與尺寸',
     specs: '規格',
     sizeChart: (m) => (m ? `尺寸對照（${m}）` : '尺寸對照'),
+    measureDiagram: (m) => (m ? `量測部位：${m}` : '量測部位'),
+    whereToMeasure: '量測部位',
     certifications: '認證',
     downloads: '相關下載',
     related: '相關產品',
@@ -235,7 +241,45 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
               {p.sizeChart && (
                 <div>
                   <SubHeading>{c.sizeChart(p.sizeChart.measureLabel)}</SubHeading>
-                  <SizeChart chart={p.sizeChart} />
+                  <div
+                    className={
+                      p.sizeChartDiagram
+                        ? 'flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-7'
+                        : undefined
+                    }
+                  >
+                    <div className="w-full min-w-0 flex-1">
+                      <SizeChart chart={p.sizeChart} />
+                    </div>
+
+                    {/* 量測部位線稿：後台逐產品上傳（400×400 透明底 PNG/SVG），沒掛圖就整欄不出現
+                        （表格自動吃滿寬度，不留破圖佔位框）。housing 沿用 Features icon 同一套
+                        teal-tint 底（bg-[#E9F8FA]），讓線稿讀作「品牌插圖」而不是載入失敗；
+                        圖本身無文字、跨語系共用，下方的「測量位置」短標籤才是可翻譯的說明文字。 */}
+                    {p.sizeChartDiagram && (
+                      <div className="w-[152px] flex-none">
+                        <div className="flex aspect-square items-center justify-center rounded-[22px] bg-[#E9F8FA] p-[18px]">
+                          <img
+                            src={p.sizeChartDiagram.url}
+                            srcSet={srcSetOf(p.sizeChartDiagram)}
+                            sizes="152px"
+                            alt={
+                              p.sizeChartDiagram.alt ??
+                              c.measureDiagram(p.sizeChart.measureLabel)
+                            }
+                            loading="lazy"
+                            decoding="async"
+                            width={400}
+                            height={400}
+                            className="block max-h-full max-w-full object-contain"
+                          />
+                        </div>
+                        <p className="mt-2.5 text-center text-[0.78rem] text-grey">
+                          {c.whereToMeasure}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

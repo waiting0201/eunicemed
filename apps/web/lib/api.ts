@@ -185,6 +185,8 @@ export type ProductDetail = {
     rows?: { label?: string | null; values?: string[] }[];
     footnote?: string | null;
   } | null;
+  /** 尺寸表旁的量測部位線稿。語系無關，沒掛就是 null */
+  sizeChartDiagram: MediaRef | null;
   certifications: Certification[];
   downloads: Download[];
   relatedProducts: RelatedProduct[];
