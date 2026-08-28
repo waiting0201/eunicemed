@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { api, type MediaRef } from '@/lib/api';
 import { formatDate } from '@/lib/date';
-import { srcSetOf } from '@/lib/image';
 import { isLocale, type Locale } from '@/lib/locale';
 import { section } from '@/lib/page';
 import { PageBand } from '@/components/PageBand';
