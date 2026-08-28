@@ -41,6 +41,7 @@
     "min-width:0": "grid 子項預設 min-width:auto，長字串（無空白的網址）會把欄位撐開。mockup4 是靜態稿，內容長度可控。",
     "scroll-margin-top:100px": "側欄目錄跳到 h2 時要避開黏在頂部的頁首（76px）。mockup4 的目錄連結是 href=\"#\"，不會真的跳。",
     "margin:0": "mockup4 兩篇範例文章的 <ul> 上距不一致：Article Detail 是 margin:16px 0 0（接在段落後），News Detail 是 margin:0（緊接標題）。`.m4-prose` 只能有一組，取有間距的那個 —— CMS 的內文多半是段落後接清單。",
-    "width:42px": "認證標章圖。mockup4 的 ISO 卡是內嵌 SVG，尺寸寫在 width/height 屬性上（42×42）；本站是編輯者上傳的圖檔，要用 CSS 配 object-fit:contain 才不會變形。"
+    "width:42px": "認證標章圖。mockup4 的 ISO 卡是內嵌 SVG，尺寸寫在 width/height 屬性上（42×42）；本站是編輯者上傳的圖檔，要用 CSS 配 object-fit:contain 才不會變形。",
+    "border-top:1px solid rgba(255,255,255,0.1)": "mockup4 的 Resources.dc.html 頁尾細線沒跟上深→淺轉換（其餘 17 頁是 #2C3E44）。採多數值，見同一份檔案裡 border-top:1px solid #2c3e44 那一條。"
   }
 }
