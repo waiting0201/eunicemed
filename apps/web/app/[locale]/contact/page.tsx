@@ -141,7 +141,7 @@ export default async function ContactPage({ params }: { params: Promise<Params> 
 
   return (
     <section style={S.section}>
-      <div style={S.grid} data-r="stack">
+      <div style={S.grid}>
         <div>
           <p style={S.eyebrow}>{c.eyebrow}</p>
           <h1 style={S.title}>{c.title}</h1>

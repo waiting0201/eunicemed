@@ -93,7 +93,7 @@ export default async function ApplicationsPage({ params }: { params: Promise<Par
         <section style={S.special}>
           <div style={S.specialInner}>
             <SectionHeading index={next()} title={c.bySpecial} titleStyle={S.specialH2} />
-            <div style={S.grid} data-r="stack">
+            <div style={S.grid} data-r="cols-2">
               {special.map((a) => (
                 <Link key={a.slug} href={a.url} style={S.card} data-hover="lift-shadow">
                   <div style={S.cardMedia}>

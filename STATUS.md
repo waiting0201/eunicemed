@@ -40,7 +40,7 @@
 | 規格文件 | ✅ | 14 份，見 [CLAUDE.md](CLAUDE.md) §3 |
 | 資料模型 | 🟡 98% | 54 張表完成 53 張（只剩 `ContactSubmission`）|
 | API | 🟡 97% | 已實作 **141** 條路由（新增標籤 CRUD 4 條、PDF 登記 1 條、頁面區段語系刪除）。Phase 0–7 除**表單**外全數完成 —— `POST /contact` 與收件匣擋於 SMTP 帳密 |
-| 前台 `apps/web` | 🟡 | 18 頁全數切版可運作，**版型已逐元素照抄 mockup4**（`mockup:check` 18/18 100%，見 §四）；🔴 **手機斷點待重建**（見 docs/rwd-backlog.md）；三支表單的送出端點擋於 SMTP |
+| 前台 `apps/web` | 🟡 | 18 頁全數切版可運作，**版型已逐元素照抄 mockup4**（`mockup:check` 18/18 100%，見 §四）；手機／平板已完成並實測；三支表單的送出端點擋於 SMTP |
 | 後台 `apps/admin` | 🟡 | 全部畫面可運作（列表＋編輯＋富文字）；只剩相關產品拖曳與表單收件匣 |
 | 基礎設施 `infra/` | ✅ | 已部署至 `EuniceMedUS`（West US 2）：Storage／Function App／SWA 共 13 個資源 |
 | CI/CD `.github/` | 🟡 | infra 與 web 兩支已實際部署成功；api 部署成功但健康檢查失敗（等 SQL 連線字串）|
@@ -180,8 +180,10 @@ About §02 里程碑的格線與分隔線做反、系列徽章用了壓深的文
 產品卡在分類頁少了整個外框版本、分類頁完全沒有分頁器（第 25 個產品點不到）、
 News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 
-⚠️ **手機版斷點已全數移除**，逐項記在 [docs/rwd-backlog.md](docs/rwd-backlog.md)；
-其中四項需要現場設計（手機導覽、人體圖、側欄篩選、尺寸表）。**做完前不要合併。**
+**2026-08-28 響應式**：mockup4 沒有斷點，所以這一層是現場設計的
+（[docs/rwd-backlog.md](docs/rwd-backlog.md)）。四個需要真的設計的地方都已處理：
+手機導覽（新增 `MobileNav`，mockup4 完全沒有）、人體圖 chip、側欄篩選、尺寸表橫向捲動。
+18 頁 × 390／768／1280px 以 CDP 實測**無橫向溢出**，桌機版與照抄結果一致（`mockup:check` 仍 18/18 100%）。
 
 前台共通項目：i18n 語系前綴 ✅、`output: 'standalone'` 與 250MB gate ✅（目前 66MB）、
 圖片走 Blob 直連（`unoptimized: true` + 自訂 srcSet）✅、`.swa` 路徑排除 ✅、安全標頭 ✅、

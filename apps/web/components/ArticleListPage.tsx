@@ -52,7 +52,7 @@ export function ArticleListPage({
       <PageHero eyebrow={copy.eyebrow} title={copy.title} lead={copy.lead} />
 
       <section style={S.section}>
-        <div style={S.grid} data-r="stack">
+        <div style={S.grid}>
           <SideFilter
             label={CATEGORIES[locale]}
             param="category"
@@ -72,7 +72,7 @@ export function ArticleListPage({
                     <ArticleCard item={featured} locale={locale} kind={kind} featured />
                   </div>
                 )}
-                <div style={S.cards} data-r="stack">
+                <div style={S.cards} data-r="cols-2">
                   {rest.map((item) => (
                     <ArticleCard key={item.slug} item={item} locale={locale} kind={kind} />
                   ))}

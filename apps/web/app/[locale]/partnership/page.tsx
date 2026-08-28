@@ -154,7 +154,7 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
               )}
               {/* 服務項目：每格頂上一條 2px 品牌青（mockup4），不是藥丸 chips */}
               {oem.chips && oem.chips.length > 0 && (
-                <div style={S.chips} data-r="stack">
+                <div style={S.chips} data-r="cols-2">
                   {oem.chips.map((chip, i) => (
                     <div key={chip.label ?? i} style={S.chip}>
                       <h3 style={S.chipTitle}>{chip.label}</h3>
@@ -226,7 +226,7 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
           */}
           {(become.formTitle || become.formIntro) && (
             <div style={S.panel}>
-              <div style={S.panelGrid} data-r="stack">
+              <div style={S.panelGrid}>
                 <div>
                   {become.formTitle && <h3 style={S.panelTitle}>{become.formTitle}</h3>}
                   {become.formIntro && <p style={S.panelIntro}>{become.formIntro}</p>}

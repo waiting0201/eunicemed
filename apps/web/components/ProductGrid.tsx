@@ -29,7 +29,7 @@ export function ProductGrid({
   }
 
   return (
-    <div style={S.grid} data-r="cols-2">
+    <div style={S.grid} data-r="cols-2-phone">
       {items.map((item) => (
         <ProductCard key={item.slug} item={item} variant={variant} />
       ))}

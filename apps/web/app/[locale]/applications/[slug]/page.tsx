@@ -183,7 +183,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
 
       {/* 01 導言 */}
       <section style={S.intro}>
-        <div style={S.introGrid} data-r="stack">
+        <div style={S.introGrid}>
           <div>
             <p style={S.eyebrow}>{kind}</p>
             <h1 style={S.title}>{a.name}</h1>
@@ -273,7 +273,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
             numeralStyle={NUMERAL.muted}
             titleStyle={S.h2}
           />
-          <div style={S.cards3} data-r="stack">
+          <div style={S.cards3} data-r="cols-2">
             {a.supportLevels.map((lv, i) => (
               <div
                 key={lv.collection?.slug ?? i}
@@ -326,7 +326,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
       {/* 05 如何選擇 */}
       {a.howTo && a.howTo.length > 0 && (
         <section style={S.plain}>
-          <div style={S.howGrid} data-r="stack">
+          <div style={S.howGrid}>
             <div>
               <SectionHeading
                 index={next()}

@@ -148,8 +148,10 @@ EuniceMed/
   刻意的偏離一律寫進 `tools/mockup-diff/allow.json` 並附理由。
 - Tailwind 保留給 inline style 表達不了的東西：hover／pseudo-class、`@keyframes`、
   以及套用在 API 產生的 HTML 上的排版（`globals.css` 的 `.m4-*`）。
-- ⚠️ **手機版斷點尚未重建**：mockup4 完全沒有 RWD，照抄階段把既有斷點全數移除，
-  逐項記在 [docs/rwd-backlog.md](docs/rwd-backlog.md)。**這批做完之前不要合併到 `main`。**
+- **響應式**：mockup4 沒有任何斷點，所以手機／平板這一層是**現場設計**的，
+  規則集中在 `globals.css` 最後一段（全站唯一允許 `!important` 的地方 —— class 打不過 inline）。
+  作法與 `data-r` 標記的意思見 [docs/rwd-backlog.md](docs/rwd-backlog.md)；
+  用 `tools/mockup-diff/viewport-check.mjs` 量測有無橫向溢出。
 - 元件庫集中於 `apps/web/components`。
 
 ### 5.2a 後台 UI（CMS `/admin`）

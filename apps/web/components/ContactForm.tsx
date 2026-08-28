@@ -114,7 +114,7 @@ export function ContactForm({ locale }: { locale: Locale }) {
 
       <h2 style={S.heading}>{c.heading}</h2>
 
-      <div style={S.pair} data-r="stack">
+      <div style={S.pair}>
         <label style={S.label}>
           <span style={S.labelText}>{c.name}</span>
           <input name="name" required placeholder={c.namePlaceholder} style={S.field} />

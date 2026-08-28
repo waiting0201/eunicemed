@@ -264,7 +264,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
 
             {/* 四格是**一塊**面板：1px 的格線由容器底色透出來，不是各自獨立的卡片 */}
             {band.tiles && band.tiles.length > 0 && (
-              <div style={S.tiles}>
+              <div style={S.tiles} data-r="cols-2">
                 {band.tiles.map((tile, i) => (
                   <TileLink key={tile.title ?? i} tile={tile} />
                 ))}
@@ -280,7 +280,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
           <SectionHeading index={next()} title={why.title ?? ''} titleStyle={S.s03Title} />
           {/* 每欄頂上一條 2px 品牌青（mockup4） */}
           {why.items && why.items.length > 0 && (
-            <div style={S.s03Grid}>
+            <div style={S.s03Grid} data-r="cols-2">
               {why.items.map((item, i) => (
                 <div key={item.title ?? i} style={S.s03Item}>
                   {item.title && <h3 style={S.s03ItemTitle}>{item.title}</h3>}
@@ -413,7 +413,7 @@ const RATIOS = [css`aspect-ratio:1/1;`, css`aspect-ratio:4/5;`, css`aspect-ratio
 
 function FeaturedMasonry({ items }: { items: ProductListItem[] }) {
   return (
-    <div style={S.masonry} data-r="cols-1">
+    <div style={S.masonry}>
       {items.map((p, i) => (
         <Link key={p.slug} href={p.url} style={S.card} data-hover="lift-4">
           <div style={{ ...S.cardMedia, ...RATIOS[i % RATIOS.length] }}>

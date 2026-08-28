@@ -99,7 +99,7 @@ export default async function DownloadsPage({
       <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />
 
       <section style={S.section}>
-        <div style={S.grid} data-r="stack">
+        <div style={S.grid}>
           <SideFilter
             label={c.categories}
             param="type"

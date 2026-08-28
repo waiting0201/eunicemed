@@ -193,7 +193,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
 
       {/* 01 圖庫 + 摘要 */}
       <section style={S.top}>
-        <div style={S.topGrid} data-r="stack">
+        <div style={S.topGrid}>
           <ProductGallery images={p.images} productName={p.name} locale={locale} />
 
           <div>
@@ -241,7 +241,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
       {/* 03 適用時機 */}
       {p.useCases && p.useCases.length > 0 && (
         <section style={S.plain}>
-          <div style={S.useGrid} data-r="stack">
+          <div style={S.useGrid}>
             {p.useCaseImage ? (
               <img
                 src={p.useCaseImage.url}
@@ -287,7 +287,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
               numeralStyle={NUMERAL.accent}
               titleStyle={S.h2Specs}
             />
-            <div style={S.specsGrid} data-r="stack">
+            <div style={S.specsGrid}>
               {p.specs && p.specs.length > 0 && (
                 <div>
                   <SubHeading>{c.specs}</SubHeading>
@@ -303,7 +303,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
               {p.sizeChart && (
                 <div>
                   <SubHeading>{c.sizeChart(p.sizeChart.measureLabel)}</SubHeading>
-                  <div style={p.sizeChartDiagram ? S.sizeWrap : undefined} data-r="stack">
+                  <div style={p.sizeChartDiagram ? S.sizeWrap : undefined}>
                     <div style={S.sizeTable}>
                       <SizeChart chart={p.sizeChart} />
                     </div>
@@ -343,7 +343,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
       {/* 05 認證 + 06 下載 */}
       {(p.certifications.length > 0 || p.downloads.length > 0) && (
         <section style={S.plain}>
-          <div style={S.certsGrid} data-r="stack">
+          <div style={S.certsGrid}>
             {p.certifications.length > 0 && (
               <div>
                 <SectionHeading index={next()} title={c.certifications} titleStyle={S.h3} />

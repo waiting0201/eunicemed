@@ -13,7 +13,15 @@ const S = {
   head: css`background:#F0F6F8;padding:14px;text-align:center;color:#0092A8;font-weight:620;`,
   cell: css`background:#F0F6F8;padding:14px;text-align:center;color:#4B5B61;font-size:.9rem;`,
   footnote: css`color:#66787F;font-size:.82rem;margin-top:12px;`,
+  /**
+   * 窄螢幕：表格**不收欄**（收成單欄就不再是尺寸表了），改成整塊橫向捲動。
+   * `-webkit-overflow-scrolling` 讓 iOS 有慣性捲動。
+   */
+  scroller: css`overflow-x:auto;-webkit-overflow-scrolling:touch;`,
 } as const;
+
+/** 每欄至少要放得下「XXL」與三位數的數值 */
+const MIN_COL = 64;
 
 export function SizeChart({ chart }: { chart: NonNullable<ProductDetail['sizeChart']> }) {
   const sizes = chart.sizes ?? [];
@@ -26,22 +34,31 @@ export function SizeChart({ chart }: { chart: NonNullable<ProductDetail['sizeCha
 
   return (
     <div>
-      <div style={{ ...S.grid, gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
-        {hasRowLabels && <Cell head />}
-        {sizes.map((s) => (
-          <Cell key={s} head>
-            {s}
-          </Cell>
-        ))}
+      <div style={S.scroller}>
+        <div
+          data-r="keep"
+          style={{
+            ...S.grid,
+            gridTemplateColumns: `repeat(${columns}, minmax(${MIN_COL}px, 1fr))`,
+            minWidth: `${columns * MIN_COL}px`,
+          }}
+        >
+          {hasRowLabels && <Cell head />}
+          {sizes.map((s) => (
+            <Cell key={s} head>
+              {s}
+            </Cell>
+          ))}
 
-        {rows.map((row, i) => (
-          <Row
-            key={row.label ?? i}
-            label={hasRowLabels ? (row.label ?? '') : null}
-            values={row.values ?? []}
-            width={sizes.length}
-          />
-        ))}
+          {rows.map((row, i) => (
+            <Row
+              key={row.label ?? i}
+              label={hasRowLabels ? (row.label ?? '') : null}
+              values={row.values ?? []}
+              width={sizes.length}
+            />
+          ))}
+        </div>
       </div>
 
       {chart.footnote && <p style={S.footnote}>{chart.footnote}</p>}

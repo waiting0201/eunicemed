@@ -217,7 +217,7 @@ export function ArticleDetailPage({
 
       {/* 內文 + 側欄 */}
       <section style={S.body}>
-        <div style={S.bodyGrid} data-r="stack">
+        <div style={S.bodyGrid}>
           <article style={S.article}>
             {a.body && (
               <div
@@ -231,7 +231,7 @@ export function ArticleDetailPage({
             {a.event && <EventPanel event={a.event} locale={locale} copy={c} />}
 
             {a.gallery.length > 0 && (
-              <div style={S.gallery} data-r="stack">
+              <div style={S.gallery} data-r="cols-2">
                 {a.gallery.map((img) => (
                   <img
                     key={img.url}
@@ -254,14 +254,14 @@ export function ArticleDetailPage({
             )}
 
             {(a.prev || a.next) && (
-              <div style={S.prevNext} data-r="stack">
+              <div style={S.prevNext}>
                 {a.prev ? <NavCard item={a.prev} label={c.prev} /> : <span />}
                 {a.next && <NavCard item={a.next} label={c.next} align="right" />}
               </div>
             )}
           </article>
 
-          <aside style={S.rail} data-r="static">
+          <aside style={S.rail} data-r="unstick">
             {a.toc.length > 0 && (
               <div>
                 <p style={S.railLabel}>{c.onThisPage}</p>
@@ -301,7 +301,7 @@ export function ArticleDetailPage({
                 {kind === 'news' ? c.allNews : c.allInsights} →
               </Link>
             </div>
-            <div style={S.relatedGrid} data-r="stack">
+            <div style={S.relatedGrid} data-r="cols-2">
               {a.related.map((r) => (
                 <ArticleCard
                   key={r.slug}
@@ -359,7 +359,7 @@ function EventPanel({
   return (
     <div style={S.facts}>
       <h3 style={S.factsTitle}>{copy.eventDetails}</h3>
-      <dl style={S.factsGrid}>
+      <dl style={S.factsGrid} data-r="keep">
         {rows.map(([label, value]) => (
           <div key={label} className="contents">
             <dt style={S.factsKey}>{label}</dt>

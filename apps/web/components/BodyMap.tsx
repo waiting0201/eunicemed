@@ -88,7 +88,7 @@ export function BodyMap({ spots, locale }: { spots: BodyMapSpot[]; locale: Local
   const active = plotted.find((s) => s.slug === activeSlug) ?? plotted[0];
 
   return (
-    <div style={S.grid} data-r="stack">
+    <div style={S.grid}>
       {/* 人形 + 熱區 + 膠囊 */}
       <div style={S.figure}>
         <div style={{ position: 'relative' }}>
@@ -184,6 +184,7 @@ export function BodyMap({ spots, locale }: { spots: BodyMapSpot[]; locale: Local
               key={spot.slug}
               type="button"
               onClick={() => setActiveSlug(spot.slug)}
+              data-r="hide-narrow"
               style={{
                 ...CHIP_BASE,
                 WebkitBackdropFilter: 'blur(6px)',
@@ -214,7 +215,7 @@ export function BodyMap({ spots, locale }: { spots: BodyMapSpot[]; locale: Local
           {active.ctaLabel ?? c.fallbackCta}
         </Link>
 
-        <div style={S.cards} data-r="stack">
+        <div style={S.cards} data-r="cols-2">
           {plotted.map((spot) => (
             <button
               key={spot.slug}

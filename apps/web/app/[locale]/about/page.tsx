@@ -159,7 +159,7 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
       {/* 01 品牌故事 */}
       {story && (
         <section style={S.s01}>
-          <div style={S.s01Grid} data-r="stack">
+          <div style={S.s01Grid}>
             <div>
               <SectionHeading index={next()} title={story.title ?? ''} titleStyle={S.h2} />
               {story.body && (
@@ -211,7 +211,7 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
             {milestones.title && <h2 style={S.s02Title}>{milestones.title}</h2>}
 
             {milestones.items && milestones.items.length > 0 && (
-              <div style={S.s02Grid} data-r="stack">
+              <div style={S.s02Grid} data-r="cols-2">
                 {milestones.items.map((m, i) => (
                   <div key={m.year ?? i} style={S.s02Cell}>
                     <div style={S.s02Year}>{m.year}</div>
@@ -231,7 +231,7 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
           {values.lead && <p style={S.s03Lead}>{values.lead}</p>}
 
           {values.items && values.items.length > 0 && (
-            <div style={S.s03Grid} data-r="stack">
+            <div style={S.s03Grid} data-r="cols-2">
               {values.items.map((v, i) => (
                 <div key={v.title ?? i} style={S.s03Card}>
                   {v.title && <h3 style={S.s03CardTitle}>{v.title}</h3>}
@@ -254,7 +254,7 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
             />
 
             {(manufacturing.imageWide || manufacturing.imageSquare) && (
-              <div style={S.s04Shots} data-r="stack">
+              <div style={S.s04Shots}>
                 {manufacturing.imageWide && (
                   <img
                     src={manufacturing.imageWide.url}
@@ -286,7 +286,7 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
 
             {manufacturing.points && manufacturing.points.length > 0 && (
               /* 每欄頂上一條 2px 品牌青（mockup4） */
-              <div style={S.s04Grid} data-r="stack">
+              <div style={S.s04Grid} data-r="cols-2">
                 {manufacturing.points.map((p, i) => (
                   <div key={p.title ?? i} style={S.s04Item}>
                     {p.title && <h3 style={S.s04ItemTitle}>{p.title}</h3>}
@@ -303,7 +303,7 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
       {certificates && (
         <section style={S.s05}>
           <div style={S.s05Inner}>
-            <div style={S.s05Grid} data-r="stack">
+            <div style={S.s05Grid}>
               <div>
                 <SectionHeading index={next()} title={certificates.title ?? ''} titleStyle={S.h2} />
                 {certificates.lead && <p style={S.s05Lead}>{certificates.lead}</p>}
@@ -311,7 +311,7 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
               </div>
 
               {certificates.items && certificates.items.length > 0 && (
-                <div style={S.s05Cards} data-r="stack">
+                <div style={S.s05Cards} data-r="cols-2">
                   {certificates.items.map((item, i) => (
                     <CertCard
                       key={item.certification ?? i}

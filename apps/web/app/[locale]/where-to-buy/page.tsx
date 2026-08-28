@@ -105,7 +105,7 @@ export default async function WhereToBuyPage({ params }: { params: Promise<Param
         {data.domestic.length > 0 && (
           <>
             <h2 style={S.heading}>{c.domestic}</h2>
-            <div style={{ ...S.grid, ...S.group }} data-r="stack">
+            <div style={{ ...S.grid, ...S.group }} data-r="cols-2">
               {data.domestic.map((loc) => (
                 <Card key={cardKey(loc)} loc={loc} visit={c.visit} />
               ))}
@@ -127,7 +127,7 @@ export default async function WhereToBuyPage({ params }: { params: Promise<Param
                   `??` 接不到空字串，那組會渲染成一行空白標題。
                 */}
                 <p style={S.region}>{group.region?.trim() || c.otherRegions}</p>
-                <div style={S.grid} data-r="stack">
+                <div style={S.grid} data-r="cols-2">
                   {group.items.map((loc) => (
                     <Card key={cardKey(loc)} loc={loc} visit={c.visit} />
                   ))}

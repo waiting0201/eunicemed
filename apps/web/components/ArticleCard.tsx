@@ -90,7 +90,7 @@ export function ArticleCard({
   // News 列表的頭條：圖文並置，1.2fr / 1fr
   if (featured) {
     return (
-      <Link href={item.url} style={S.featured} data-r="stack">
+      <Link href={item.url} style={S.featured}>
         <Cover item={item} style={S.featuredCover} sizes="(max-width: 1024px) 100vw, 620px" />
         <div>
           {item.publishedAt && <p style={S.featuredDate}>{formatDate(item.publishedAt, locale)}</p>}

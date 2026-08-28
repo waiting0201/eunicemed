@@ -44,7 +44,7 @@ export function CategoryHero({
 }) {
   return (
     <section style={S.section}>
-      <div style={S.grid} data-r="stack">
+      <div style={S.grid}>
         <div>
           <p style={S.eyebrow}>
             {kind === 'category' ? EYEBROW[locale].category : EYEBROW[locale].subCategory}

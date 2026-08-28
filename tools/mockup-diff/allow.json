@@ -58,6 +58,7 @@
     "opacity:0.9": "同上，選中。",
     "transform:scale(1)": "同上，外環／白心的未選中比例。",
     "transform:scale(1.45)": "同上，外環選中放大。",
-    "transform:scale(1.2)": "同上，白心選中放大。"
+    "transform:scale(1.2)": "同上，白心選中放大。",
+    "-webkit-overflow-scrolling:touch": "尺寸表在窄螢幕改成橫向捲動（不收欄，收了就不是表了）。iOS 需要這一條才有慣性捲動。mockup4 沒有 RWD，自然也沒有這個需求。"
   }
 }

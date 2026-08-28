@@ -110,7 +110,7 @@ export function PartnershipForm({
         className="hidden"
       />
 
-      <div style={S.pair} data-r="stack">
+      <div style={S.pair}>
         <label style={S.label}>
           <span style={S.labelText}>{c.company}</span>
           <input name="company" required placeholder={c.companyPlaceholder} style={S.field} />

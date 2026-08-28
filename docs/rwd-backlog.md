@@ -1,63 +1,62 @@
-# RWD 待辦清單
+# RWD
 
 > mockup4 **完全沒有斷點**（其 `DESIGN.md` 自列為「已知未處理」），版面是寫死的固定 grid。
-> 逐元素照抄的第一階段因此會把既有的響應式行為拿掉；**拿掉的每一處都記在這裡**，
-> 第二階段照這份清單重建。
+> 桌機版逐元素照抄 mockup4（`pnpm --filter web mockup:check` 18/18 100%），
+> **手機／平板這一層是現場設計的**，規則集中在 `apps/web/app/globals.css` 最後一段。
 
-## 為什麼不能用 Tailwind 的 `lg:` 前綴重建
+**狀態：已完成。** 18 頁 × 390／768／1280px 實測無橫向溢出，見下方「怎麼驗」。
 
-版型值現在是 inline style，**class 打不過 inline**：
+## 為什麼要用 `!important` 與屬性選取器
 
-```tsx
-<div style={S.grid} className="lg:grid-cols-[1fr_1.1fr]">   {/* ← 沒有作用 */}
+版型值是逐字照抄 mockup4 的 inline style（見 `lib/css.ts`），**class 在權重上打不過 inline**，
+`lg:` 這類前綴會完全沒有作用，所以這一段是全站唯一允許 `!important` 的地方。
+
+選取器不逐個標記，而是用 `[style*="grid-template-columns"]`：實測手動標記會漏 ——
+53 個固定 grid 漏了 6 個。改成**安全預設**（任何寫死欄數的 grid 一律收成單欄）之後，
+漏標最多是變高，不會爆版；要維持多欄的地方再用 `data-r` 明講。
+
+## 斷點與標記
+
+| 斷點 | 行為 |
+|---|---|
+| ≤1024px | 固定欄數 grid → 單欄；桌機導覽收進漢堡選單；黏著側欄不再黏 |
+| ≤780px | 人體圖的浮動 chip 收起（固定座標，縮小會互疊） |
+| ≤640px | `cols-2` → 單欄；瀑布流 → 單欄 |
+
+| `data-r` | 意思 |
+|---|---|
+| （不標） | 收成單欄。**這是預設**，多數版面用這個 |
+| `cols-2` | 卡片格：平板兩欄，手機一欄 |
+| `cols-2-phone` | 產品格：手機也維持兩欄（1:1 圖磚加兩行字，390px 下每欄約 170px 仍讀得清楚） |
+| `keep` | 不准收欄（尺寸表、產品縮圖列） |
+| `hide` | 窄螢幕隱藏（桌機導覽、Where to Buy 藥丸、語系切換） |
+| `only-mobile` | 只在窄螢幕出現（漢堡鈕） |
+| `hide-narrow` | ≤780px 隱藏（人體圖 chip） |
+| `unstick` | 取消 `position:sticky` |
+| `scroll` | 改成橫向捲動（Resources 次導覽） |
+
+## 四個需要現場設計的地方（都已處理）
+
+1. **手機導覽**：mockup4 18 頁都只有桌機那一列，沒有漢堡也沒有抽屜。
+   `components/MobileNav.tsx` 是現場設計的，沿用版型既有語彙（76px 頁首、`#DFE9EC` 細線、品牌青作用色、藥丸鈕）。
+   ⚠️ 抽屜與遮罩**必須用 portal 掛到 `<body>`**：頁首有 `backdrop-filter`，
+   而它會讓該元素成為 `position:fixed` 子孫的包含塊 —— 留在裡面時遮罩高度實測為 0。
+2. **人體圖**：熱點與 chip 是固定座標，縮小會互疊且點不準。≤780px 收起 chip，
+   改由下方的部位卡操作（功能完全相同，不少任何操作）。
+3. **側欄篩選**：240/260px 的黏著直欄改為一般區塊，堆在內容上方。
+4. **尺寸表**：**不收欄**（收了就不是表了），改成整塊橫向捲動，每欄最小 64px。
+
+## 怎麼驗
+
+```bash
+# 需要完整本機環境（docs/12 §3）：docker start sqlserver / azurite / func start
+cd apps/web && API_BASE=http://localhost:7071/api PORT=3123 node .next/standalone/server.js
+
+# 另一個終端：以 CDP 量測每頁在各寬度是否有橫向溢出
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless \
+  --remote-debugging-port=9222 --user-data-dir=/tmp/cdp about:blank &
+node tools/mockup-diff/viewport-check.mjs http://localhost:3123 "/en,/en/products,…" "390,768,1280"
 ```
 
-所以第二階段用 `globals.css` 裡一個集中的 `@media` 區塊，以 `data-r` 屬性選取，
-並且**必須**帶 `!important`。好處是全站的響應式行為集中在一個可審查的區塊裡，
-而且第一階段照抄的字串永遠不必被動到，靜態比對得以一直保持精確。
-
-```css
-@media (max-width: 900px) {
-  [data-r~='stack']  { grid-template-columns: 1fr !important; }
-  [data-r~='cols-2'] { grid-template-columns: repeat(2, 1fr) !important; }
-  [data-r~='cols-1'] { columns: 1 !important; }
-  [data-r~='hide']   { display: none !important; }
-}
-```
-
-## 清單
-
-第一階段每移除一個斷點就在此追加一行。
-
-| 檔案:行 | 移除的 class | mockup4 的固定值 | 預定的 `data-r` |
-|---|---|---|---|
-| `apps/web/components/SiteNav.tsx` | `hidden md:flex` | `display:flex`（mockup4 沒有手機版頁首） | `hide` — 但**手機需要漢堡選單**，mockup4 沒有設計，第二階段要現場設計 |
-| `apps/web/app/[locale]/page.tsx` §01 | `sm:columns-2 lg:columns-4` | `columns:4` | `cols-1`（已標） |
-| `apps/web/app/[locale]/page.tsx` §02 | `lg:grid-cols-[0.9fr_1.1fr]` | `grid-template-columns:.9fr 1.1fr` | `stack` |
-| `apps/web/app/[locale]/page.tsx` §03 | `sm:grid-cols-2 lg:grid-cols-4` | `grid-template-columns:repeat(4,1fr)` | `cols-2` → `stack` |
-| `apps/web/app/[locale]/page.tsx` §04 | `lg:grid-cols-[1.02fr_0.98fr]` | `grid-template-columns:1.02fr .98fr` | `stack` |
-| `apps/web/components/ProductGrid.tsx` | `grid-cols-2 lg:grid-cols-4` | `grid-template-columns:repeat(4,1fr)` | `cols-2`（已標） |
-| `apps/web/app/[locale]/products/page.tsx` | `sm:grid-cols-2 lg:grid-cols-3` | `grid-template-columns:repeat(3,1fr)` | `stack`（已標） |
-| `apps/web/components/CategoryHero.tsx` | `lg:grid-cols-[1.05fr_0.95fr]` | `grid-template-columns:1.05fr .95fr` | `stack`（已標） |
-| `apps/web/components/CategoryOutro.tsx` | `lg:grid-cols-3` | `grid-template-columns:repeat(3,1fr)` | `stack`（已標） |
-| `apps/web/app/[locale]/faq/page.tsx` | `lg:grid-cols-[260px_1fr]` | `grid-template-columns:260px 1fr` | `stack`（已標） |
-| `apps/web/components/SideFilter.tsx` | `lg:sticky lg:top-[100px]` | `position:sticky;top:100px` | 手機需改為橫向捲動或收合 |
-| `apps/web/app/[locale]/where-to-buy/page.tsx` | `sm:grid-cols-2 lg:grid-cols-3` | `grid-template-columns:repeat(3,1fr)` | `stack`（已標） |
-| `apps/web/components/ArticleListPage.tsx` | `lg:grid-cols-[240px_1fr]`、`sm:grid-cols-2` | `240px 1fr`、`repeat(2,1fr)` | `stack`（已標） |
-| `apps/web/components/ArticleCard.tsx` | `lg:grid-cols-[1.2fr_1fr]` | `1.2fr 1fr` | `stack`（已標） |
-| `apps/web/app/[locale]/downloads/page.tsx` | `lg:grid-cols-[240px_1fr]` | `240px 1fr` | `stack`（已標） |
-| `apps/web/components/ArticleDetailPage.tsx` | `lg:grid-cols-[minmax(0,1fr)_260px]`、`sm:grid-cols-2/3`、`lg:sticky` | `minmax(0,1fr) 260px`、`repeat(3,1fr)`、`position:sticky` | `stack` / `static`（已標） |
-| `apps/web/components/ContactForm.tsx` | `sm:grid-cols-2` | `grid-template-columns:1fr 1fr` | `stack`（已標） |
-| `apps/web/app/[locale]/applications/**` | `sm:/lg:grid-cols-*` | `repeat(3,1fr)`／`repeat(4,1fr)`／`1fr 1fr` | `stack` / `cols-2`（已標） |
-| `apps/web/app/[locale]/products/**/[slug]/page.tsx` | `lg:grid-cols-2`、`lg:grid-cols-[1fr_1.3fr]`、`sm:flex-row` | `1fr 1fr`、`1fr 1.3fr`、`display:flex` | `stack`（已標） |
-| `apps/web/components/ProductInquiry.tsx`、`PartnershipForm.tsx` | `sm:grid-cols-2` | `1fr 1fr` | `stack`（已標） |
-| `apps/web/components/BodyMap.tsx` | `lg:grid-cols-[440px_1fr]` | `440px 1fr` | `stack`（已標）——**人體圖在窄螢幕需另行設計**：熱點與 chip 是固定座標 |
-| `apps/web/app/[locale]/resources/page.tsx` | （無） | 全部用 `repeat(auto-fit,minmax(…,1fr))` | 本來就會自己收，第二階段可能不必動 |
-
-## 第二階段的已知難題
-
-1. **手機沒有導覽**：mockup4 完全沒有手機版頁首，`SiteNav` 目前是 `data-r="hide"`。
-   漢堡選單要現場設計 —— 這是全站最大的一塊缺口。
-2. **人體圖**：`BodyMap` 的熱點與 chip 是 viewBox 座標換算的百分比，直接堆疊會重疊。
-3. **側欄篩選**：`SideFilter` 是 `position:sticky` 的 240/260px 直欄，窄螢幕要改成橫向捲動或收合。
-4. **尺寸表**：`SizeChart` 最多 5 欄，窄螢幕要能橫向捲動而不是壓扁。
+判讀：`scrollW` 不得大於 `inner`（大於就是橫向溢出）；
+`hamburger` 應在 ≤1024 為 true、桌機為 false，`deskNav` 相反。

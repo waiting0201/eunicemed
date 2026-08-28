@@ -376,3 +376,93 @@
     margin-top: 10px;
   }
 }
+
+/**
+ * ── 響應式（第二階段）───────────────────────────────────────────────
+ *
+ * mockup4 **完全沒有斷點**，版面是寫死的固定 grid（見其 DESIGN.md「已知未處理」）。
+ * 這一段是全站唯一的響應式覆寫，也是唯一允許出現 `!important` 的地方。
+ *
+ * <p>
+ * **為什麼一定要 `!important`**：版型值是逐字照抄 mockup4 的 inline style
+ * （見 `lib/css.ts`），class 在權重上打不過 inline，`lg:` 這類前綴會完全沒有作用。
+ * </p>
+ *
+ * <p>
+ * **為什麼用屬性選取器而不是逐個標記**：實測手動標記會漏 —— 53 個固定 grid 漏了 6 個。
+ * 所以預設行為改成「**任何寫死欄數的 grid 一律收成單欄**」，漏標的頁面最多是變高，
+ * 不會爆版；要維持多欄的地方再用 `data-r` 明講。`auto-fit` 的 grid 本來就會自己收，排除。
+ * </p>
+ */
+@media (max-width: 1024px) {
+  /* 安全預設：固定欄數 → 單欄 */
+  [style*='grid-template-columns']:not([style*='auto-fit']):not([data-r~='keep']):not(
+      [data-r~='cols-2']
+    ):not([data-r~='cols-2-phone']) {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* 卡片格：平板維持兩欄，手機才收成一欄 */
+  [data-r~='cols-2'],
+  [data-r~='cols-2-phone'] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* 首頁 01 的瀑布流（CSS multi-column，不是 grid） */
+  [style*='columns:4'] {
+    columns: 2 !important;
+  }
+
+  /* 黏在側邊的欄位（文章側欄、篩選側欄）在窄螢幕不再黏 */
+  [style*='position:sticky'][data-r~='unstick'] {
+    position: static !important;
+  }
+}
+
+@media (max-width: 640px) {
+  /* `cols-2-phone` 不在此列：產品格是 1:1 圖磚加兩行字，
+     390px 下兩欄各約 170px 仍讀得清楚，而排成單欄會變成很長的一條。 */
+  [data-r~='cols-2'] {
+    grid-template-columns: 1fr !important;
+  }
+
+  [style*='columns:4'] {
+    columns: 1 !important;
+  }
+}
+
+/**
+ * 手機版導覽。mockup4 沒有這一塊 —— 它 18 頁都只有桌機那一列導覽 ——
+ * 所以 `MobileNav` 是現場設計的，這裡負責在兩種尺寸間切換誰出現。
+ */
+[data-r~='only-mobile'] {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  /* 桌機導覽、Where to Buy 藥丸、語系切換都收進抽屜 */
+  [data-r~='hide'] {
+    display: none !important;
+  }
+
+  [data-r~='only-mobile'] {
+    display: inline-flex !important;
+  }
+
+  /* 次導覽在窄螢幕改成橫向捲動，而不是換行成兩列 */
+  [data-r~='scroll'] {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/**
+ * 人體圖的浮動 chip 是**固定座標**（mockup4 的四組百分比）。
+ * 圖一縮小，四顆 chip 就會互相疊住而且點不準，所以窄螢幕收起來 ——
+ * 下方的部位卡有完全相同的功能，不會少掉任何操作。
+ */
+@media (max-width: 780px) {
+  [data-r~='hide-narrow'] {
+    display: none !important;
+  }
+}

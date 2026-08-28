@@ -69,7 +69,7 @@ export function ProductGallery({
       </div>
 
       {images.length > 1 && (
-        <div style={S.thumbs}>
+        <div style={S.thumbs} data-r="keep">
           {images.map((img, i) => (
             <button
               key={img.url}

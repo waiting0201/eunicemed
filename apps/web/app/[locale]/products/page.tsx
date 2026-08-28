@@ -143,7 +143,7 @@ export default async function ProductsPage({
       {/* 三大分類卡 —— 動態取自 GET /categories */}
       {categories.length > 0 && (
         <section style={S.cats}>
-          <div style={S.catGrid} data-r="stack">
+          <div style={S.catGrid} data-r="cols-2">
             {categories.map((cat) => (
               <CategoryCard key={cat.slug} category={cat} locale={locale} />
             ))}

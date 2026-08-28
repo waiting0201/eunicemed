@@ -75,7 +75,7 @@ export function CategoryOutro({
             {supportLevels!.lead && <p>{supportLevels!.lead}</p>}
           </div>
 
-          <div style={S.grid} data-r="stack">
+          <div style={S.grid} data-r="cols-2">
             {items.map((level, i) => (
               <div
                 key={level.collection?.slug ?? i}

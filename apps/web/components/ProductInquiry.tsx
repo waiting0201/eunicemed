@@ -94,7 +94,7 @@ export function ProductInquiry({
   return (
     <section id="inquiry" style={S.section}>
       <div style={S.band}>
-        <div style={S.grid} data-r="stack">
+        <div style={S.grid}>
           <div>
             <h2 style={S.title}>{title}</h2>
             <p style={S.body}>{body}</p>
@@ -122,7 +122,7 @@ export function ProductInquiry({
                 className="hidden"
               />
 
-              <div style={S.pair} data-r="stack">
+              <div style={S.pair}>
                 <label style={S.label}>
                   <span style={S.labelText}>{c.name}</span>
                   <input name="name" required placeholder={c.namePlaceholder} style={S.field} />

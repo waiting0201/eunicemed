@@ -51,7 +51,7 @@ export function SideFilter({
   const total = facets.reduce((sum, f) => sum + f.count, 0);
 
   return (
-    <aside style={S.rail}>
+    <aside style={S.rail} data-r="unstick">
       <p style={S.label}>{label}</p>
       <Row href={href()} active={!active} count={total}>
         {ALL[locale]}

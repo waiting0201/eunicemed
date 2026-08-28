@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { css } from '@/lib/css';
 import { Logo } from './Logo';
+import { MobileNav } from './MobileNav';
 import { SiteNav } from './SiteNav';
 import type { MenuNode } from '@/lib/api';
 import type { Locale } from '@/lib/locale';
@@ -74,13 +75,18 @@ export function SiteHeader({ locale, menu }: { locale: Locale; menu?: MenuNode[]
       <SiteNav locale={locale} items={items} />
 
       {buy && (
-        <Link href={`/${locale}${buy.href}`} style={S.buy} className="hover:text-white">
+        <Link
+          href={`/${locale}${buy.href}`}
+          style={S.buy}
+          className="hover:text-white"
+          data-r="hide"
+        >
           {buy.label}
         </Link>
       )}
 
       {/* 語系切換：mockup4 是「**EN** · 中」，現用語系用 ink 加粗，其餘維持次要灰 */}
-      <span style={S.locale}>
+      <span style={S.locale} data-r="hide">
         {LOCALES.map((l, i) => (
           <span key={l}>
             {/* mockup4 是「EN · 中」，分隔就是前後各一個空白的間隔號 */}
@@ -93,6 +99,9 @@ export function SiteHeader({ locale, menu }: { locale: Locale; menu?: MenuNode[]
           </span>
         ))}
       </span>
+
+      {/* mockup4 沒有手機版頁首，這一支是現場設計的（見 MobileNav） */}
+      <MobileNav locale={locale} items={items} buy={buy} />
     </header>
   );
 }
