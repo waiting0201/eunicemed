@@ -19,7 +19,8 @@
     "About": [
       "apps/web/app/[locale]/about/page.tsx",
       "apps/web/components/SectionHeading.tsx",
-      "apps/web/components/PageBand.tsx"
+      "apps/web/components/PageBand.tsx",
+      "apps/web/components/PageHero.tsx"
     ],
     "Products": [
       "apps/web/app/[locale]/products/page.tsx",
