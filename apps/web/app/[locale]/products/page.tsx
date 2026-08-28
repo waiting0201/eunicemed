@@ -7,12 +7,12 @@ import { isLocale, type Locale } from '@/lib/locale';
 import { section, type SectionCta } from '@/lib/page';
 import { FilterChips } from '@/components/FilterChips';
 import { css } from '@/lib/css';
+import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
 import { ProductGrid } from '@/components/ProductGrid';
 
 /** 樣式逐字取自 `mockup4/Products.dc.html`。 */
 const S = {
-  band: css`display:block;width:100%;height:clamp(160px,18.75vw,360px);object-fit:cover;object-position:center;`,
   cats: css`max-width:1180px;margin:0 auto;padding:clamp(56px,7vw,80px) clamp(24px,5vw,64px) 0;`,
   catGrid: css`display:grid;grid-template-columns:repeat(3,1fr);gap:24px;`,
   catCard: css`background:#FFFFFF;border:1px solid #DFE9EC;border-radius:20px;overflow:hidden;`,
@@ -132,18 +132,7 @@ export default async function ProductsPage({
 
   return (
     <>
-      {hero?.band && (
-        <img
-          src={hero.band.url}
-          srcSet={srcSetOf(hero.band)}
-          sizes="100vw"
-          alt={hero.band.alt ?? ''}
-          width={2560}
-          height={480}
-          decoding="async"
-          style={S.band}
-        />
-      )}
+      <PageBand image={hero?.band} />
 
       <PageHero
         eyebrow={hero?.eyebrow ?? c.fallbackTitle}

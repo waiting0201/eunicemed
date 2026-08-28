@@ -18,7 +18,8 @@
     ],
     "About": [
       "apps/web/app/[locale]/about/page.tsx",
-      "apps/web/components/SectionHeading.tsx"
+      "apps/web/components/SectionHeading.tsx",
+      "apps/web/components/PageBand.tsx"
     ],
     "Products": [
       "apps/web/app/[locale]/products/page.tsx",
@@ -26,7 +27,8 @@
       "apps/web/components/FilterChips.tsx",
       "apps/web/components/ProductGrid.tsx",
       "apps/web/components/ProductCard.tsx",
-      "apps/web/lib/collection.ts"
+      "apps/web/lib/collection.ts",
+      "apps/web/components/PageBand.tsx"
     ],
     "Product Category": [
       "apps/web/app/[locale]/products/[category]/page.tsx",
@@ -54,7 +56,8 @@
     "Applications": [
       "apps/web/app/[locale]/applications/page.tsx",
       "apps/web/components/BodyMap.tsx",
-      "apps/web/components/SectionHeading.tsx"
+      "apps/web/components/SectionHeading.tsx",
+      "apps/web/components/PageBand.tsx"
     ],
     "Application Detail": [
       "apps/web/app/[locale]/applications/[slug]/page.tsx",
@@ -67,7 +70,8 @@
       "apps/web/app/[locale]/partnership/page.tsx",
       "apps/web/components/PageHero.tsx",
       "apps/web/components/PartnershipForm.tsx",
-      "apps/web/components/SectionHeading.tsx"
+      "apps/web/components/SectionHeading.tsx",
+      "apps/web/components/PageBand.tsx"
     ],
     "Resources": [
       "apps/web/app/[locale]/resources/page.tsx",
@@ -79,7 +83,8 @@
       "apps/web/components/PageHero.tsx",
       "apps/web/components/ResourcesSubnav.tsx",
       "apps/web/components/SideFilter.tsx",
-      "apps/web/components/ContactCta.tsx"
+      "apps/web/components/ContactCta.tsx",
+      "apps/web/components/PageBand.tsx"
     ],
     "Insights": [
       "apps/web/app/[locale]/insights/page.tsx",
@@ -87,7 +92,8 @@
       "apps/web/components/ArticleCard.tsx",
       "apps/web/components/ResourcesSubnav.tsx",
       "apps/web/components/SideFilter.tsx",
-      "apps/web/components/Pagination.tsx"
+      "apps/web/components/Pagination.tsx",
+      "apps/web/components/PageBand.tsx"
     ],
     "Article Detail": [
       "apps/web/app/[locale]/insights/[slug]/page.tsx",
@@ -101,7 +107,8 @@
       "apps/web/components/ArticleCard.tsx",
       "apps/web/components/ResourcesSubnav.tsx",
       "apps/web/components/SideFilter.tsx",
-      "apps/web/components/Pagination.tsx"
+      "apps/web/components/Pagination.tsx",
+      "apps/web/components/PageBand.tsx"
     ],
     "News Detail": [
       "apps/web/app/[locale]/news/[slug]/page.tsx",
@@ -113,12 +120,14 @@
       "apps/web/app/[locale]/downloads/page.tsx",
       "apps/web/components/PageHero.tsx",
       "apps/web/components/ResourcesSubnav.tsx",
-      "apps/web/components/SideFilter.tsx"
+      "apps/web/components/SideFilter.tsx",
+      "apps/web/components/PageBand.tsx"
     ],
     "Where to Buy": [
       "apps/web/app/[locale]/where-to-buy/page.tsx",
       "apps/web/components/PageHero.tsx",
-      "apps/web/components/ContactCta.tsx"
+      "apps/web/components/ContactCta.tsx",
+      "apps/web/components/PageBand.tsx"
     ],
     "Contact": [
       "apps/web/app/[locale]/contact/page.tsx",
@@ -126,7 +135,8 @@
     ],
     "Privacy": [
       "apps/web/app/[locale]/privacy/page.tsx",
-      "apps/web/components/PageHero.tsx"
+      "apps/web/components/PageHero.tsx",
+      "apps/web/components/PageBand.tsx"
     ]
   },
   "_sharedExcept_comment": "共用框架的例外：檔案 → 不套用它的頁面。mockup4 的 18 頁裡只有 Contact 沒有右下角浮動聯絡鈕，實作以 pathname 條件隱藏，但靜態抽取看不出條件，所以在這裡宣告。",

@@ -23,6 +23,10 @@
     "padding:64px 0": "產品格的空狀態。mockup4 是靜態稿，永遠有貨。",
     "cursor:pointer": "mockup4 的 chip 是 <span>，要自己補游標；本站是真的 <Link>，瀏覽器本來就給。",
     "align-items:baseline": "分類頁「Showing 12 of 28 · Sort: Newest」那一列。排序控制未實作（缺後端 sort 參數，見 commit 9773625），所以整列只留筆數，沒有兩端對齊的需求。",
-    "margin:32px 0 20px": "同上，那一列的外距。"
+    "margin:32px 0 20px": "同上，那一列的外距。",
+    "list-style:disc": "Privacy 內文是 CMS 產生的 HTML，可能有清單；mockup4 的佔位法律文字剛好沒有。preflight 會清掉標記，所以要補回來。",
+    "list-style:decimal": "同上。",
+    "padding-left:20px": "同上，清單縮排。",
+    "line-height:1.2": "Privacy 是唯一一頁把 h1–h4 行高定為 1.2（其餘 17 頁 1.12）。寫在 .m4-legal 裡而不是改全域。"
   }
 }

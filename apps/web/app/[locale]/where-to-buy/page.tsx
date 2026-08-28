@@ -1,9 +1,28 @@
+import { css } from '@/lib/css';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { api, type SalesLocation } from '@/lib/api';
 import { isLocale, type Locale } from '@/lib/locale';
 import { ContactCta } from '@/components/ContactCta';
 import { PageHero } from '@/components/PageHero';
+
+/** 樣式逐字取自 `mockup4/Where to Buy.dc.html`。 */
+const S = {
+  section: css`max-width:1180px;margin:0 auto;padding:clamp(56px,7vw,80px) clamp(24px,5vw,64px);`,
+  heading: css`color:#16333B;font-weight:400;font-size:1.6rem;border-bottom:1.5px solid #DFE9EC;padding-bottom:14px;margin-bottom:28px;`,
+  grid: css`display:grid;grid-template-columns:repeat(3,1fr);gap:24px;`,
+  group: css`margin-bottom:64px;`,
+  region: css`color:#0092A8;font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;`,
+  card: css`border:1px solid #DFE9EC;border-radius:18px;padding:24px 26px;`,
+  cardName: css`color:#16333B;font-weight:570;font-size:1.1rem;`,
+  cardNameUnderRegion: css`color:#16333B;font-weight:570;font-size:1.1rem;margin-top:4px;`,
+  cardBody: css`font-size:.9rem;margin:8px 0 12px;`,
+  cardPhone: css`font-size:.9rem;color:#66787F;`,
+  cardLink: css`font-size:.9rem;color:#0092A8;font-weight:620;`,
+  /** 空狀態是本站補的：mockup4 是靜態稿，一定有據點 */
+  ctaMargin: css`margin-top:56px;`,
+  empty: css`padding:64px 0;text-align:center;color:#8AA0A6;`,
+} as const;
 
 type Params = { locale: string };
 
@@ -32,8 +51,7 @@ const COPY: Record<
     visit: 'Visit website',
     empty: 'Distributor listings are being updated. Please contact us for the nearest partner.',
     ctaTitle: 'Not in your region yet?',
-    ctaBody:
-      "Contact us and we'll point you to the nearest partner — or discuss becoming one.",
+    ctaBody: "Contact us and we'll point you to the nearest partner — or discuss becoming one.",
   },
   'zh-TW': {
     eyebrow: '銷售據點',
@@ -49,11 +67,7 @@ const COPY: Record<
   },
 };
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<Params>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
@@ -85,15 +99,13 @@ export default async function WhereToBuyPage({ params }: { params: Promise<Param
     <>
       <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />
 
-      <section className="mx-auto max-w-content px-gutter py-[clamp(56px,7vw,80px)]">
-        {isEmpty && <p className="py-10 text-center text-[#8AA0A6]">{c.empty}</p>}
+      <section style={S.section}>
+        {isEmpty && <p style={S.empty}>{c.empty}</p>}
 
         {data.domestic.length > 0 && (
           <>
-            <h2 className="border-b-[1.5px] border-hairline pb-3.5 text-[1.6rem] font-normal">
-              {c.domestic}
-            </h2>
-            <div className="mt-7 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <h2 style={S.heading}>{c.domestic}</h2>
+            <div style={{ ...S.grid, ...S.group }} data-r="stack">
               {data.domestic.map((loc) => (
                 <Card key={cardKey(loc)} loc={loc} visit={c.visit} />
               ))}
@@ -103,11 +115,9 @@ export default async function WhereToBuyPage({ params }: { params: Promise<Param
 
         {data.international.length > 0 && (
           <>
-            <h2 className="mt-16 border-b-[1.5px] border-hairline pb-3.5 text-[1.6rem] font-normal">
-              {c.international}
-            </h2>
+            <h2 style={S.heading}>{c.international}</h2>
             {data.international.map((group) => (
-              <div key={group.region || '__other'} className="mt-6">
+              <div key={group.region || '__other'}>
                 {/*
                   未填 region 的一組由 API 集中放在最後（docs/04 §4）。
                   一定要給它標題，否則它看起來像是上一個地區的延續。
@@ -116,10 +126,8 @@ export default async function WhereToBuyPage({ params }: { params: Promise<Param
                   （`RegionLabel` 是 nullable 但實際資料多為空字串），
                   `??` 接不到空字串，那組會渲染成一行空白標題。
                 */}
-                <p className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-brand-deep">
-                  {group.region?.trim() || c.otherRegions}
-                </p>
-                <div className="mt-3 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <p style={S.region}>{group.region?.trim() || c.otherRegions}</p>
+                <div style={S.grid} data-r="stack">
                   {group.items.map((loc) => (
                     <Card key={cardKey(loc)} loc={loc} visit={c.visit} />
                   ))}
@@ -129,7 +137,7 @@ export default async function WhereToBuyPage({ params }: { params: Promise<Param
           </>
         )}
 
-        <ContactCta locale={locale} title={c.ctaTitle} body={c.ctaBody} />
+        <ContactCta locale={locale} title={c.ctaTitle} body={c.ctaBody} style={S.ctaMargin} />
       </section>
     </>
   );
@@ -137,23 +145,18 @@ export default async function WhereToBuyPage({ params }: { params: Promise<Param
 
 function Card({ loc, visit }: { loc: SalesLocation; visit: string }) {
   return (
-    <div className="rounded-[18px] border border-hairline px-[26px] py-6">
-      <h3 className="text-[1.1rem] font-[570]">{loc.name}</h3>
-      {loc.address && <p className="mt-2 mb-3 text-[0.9rem]">{loc.address}</p>}
-      {loc.note && <p className="mb-3 text-[0.9rem]">{loc.note}</p>}
+    <div style={S.card}>
+      <h3 style={S.cardName}>{loc.name}</h3>
+      {loc.address && <p style={S.cardBody}>{loc.address}</p>}
+      {loc.note && <p style={S.cardBody}>{loc.note}</p>}
       {loc.phone && (
-        <p className="text-[0.9rem] text-[#66787F]">
+        <p style={S.cardPhone}>
           {/* 電話用 tel: —— 這頁在手機上的主要用途就是直接撥號 */}
           <a href={`tel:${loc.phone.replace(/\s+/g, '')}`}>{loc.phone}</a>
         </p>
       )}
       {loc.websiteUrl && (
-        <a
-          href={loc.websiteUrl}
-          target="_blank"
-          rel="noopener"
-          className="inline-block text-[0.9rem] font-[620] text-brand-deep"
-        >
+        <a href={loc.websiteUrl} target="_blank" rel="noopener" style={S.cardLink}>
           {visit} →
         </a>
       )}

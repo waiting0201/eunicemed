@@ -4,6 +4,7 @@ import { api, type MediaRef } from '@/lib/api';
 import { srcSetOf } from '@/lib/image';
 import { isLocale, type Locale } from '@/lib/locale';
 import { section } from '@/lib/page';
+import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
 import { SectionHeading } from '@/components/SectionHeading';
 import { PartnershipForm } from '@/components/PartnershipForm';
@@ -56,11 +57,7 @@ function WideShot({ image, focus }: { image: MediaRef; focus: string }) {
   );
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<Params>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
@@ -98,18 +95,7 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
 
   return (
     <>
-      {hero?.band && (
-        <img
-          src={hero.band.url}
-          srcSet={srcSetOf(hero.band)}
-          sizes="100vw"
-          alt={hero.band.alt ?? ''}
-          width={2560}
-          height={480}
-          decoding="async"
-          className="h-[clamp(160px,18.75vw,360px)] w-full object-cover"
-        />
-      )}
+      <PageBand image={hero?.band} />
 
       <PageHero
         eyebrow={hero?.eyebrow ?? FALLBACK[locale]}
@@ -220,9 +206,7 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
                   {become.formTitle && (
                     <h3 className="text-[1.6rem] font-normal">{become.formTitle}</h3>
                   )}
-                  {become.formIntro && (
-                    <p className="mt-3 max-w-[32ch]">{become.formIntro}</p>
-                  )}
+                  {become.formIntro && <p className="mt-3 max-w-[32ch]">{become.formIntro}</p>}
                 </div>
 
                 <PartnershipForm

@@ -16,7 +16,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { extract } from './extract.mjs';
+import { declarations, extract } from './extract.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
@@ -49,6 +49,35 @@ function mockupDecls(page) {
   return JSON.parse(readFileSync(join(BASELINE, `${page}.json`), 'utf8')).distinct;
 }
 
+const GLOBALS = join(ROOT, 'apps/web/app/globals.css');
+
+/**
+ * 套用在 API 產生的 HTML 上的排版（`.m4-legal`、`.m4-prose`）沒有 JSX 元素可以掛
+ * inline style，只能寫成 CSS。這裡把該頁真的用到的那些 class 的宣告撈回來，
+ * 否則它們會被誤報成 MISSING。**只撈這一頁用到的 class**，不是整份 globals.css。
+ */
+function classDecls(files) {
+  if (!existsSync(GLOBALS)) return [];
+
+  const used = new Set();
+  for (const f of files) {
+    const p = join(ROOT, f);
+    if (!existsSync(p)) continue;
+    const src = readFileSync(p, 'utf8');
+    for (const [, cls] of src.matchAll(/className="([^"]*)"/g)) {
+      for (const c of cls.split(/\s+/)) if (c.startsWith('m4-')) used.add(c);
+    }
+  }
+  if (used.size === 0) return [];
+
+  const cssText = readFileSync(GLOBALS, 'utf8');
+  const out = [];
+  for (const [, selector, body] of cssText.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    if ([...used].some((c) => selector.includes(`.${c}`))) out.push(...declarations(body));
+  }
+  return out;
+}
+
 /** 實作側：該頁的 TSX ∪ 全站共用框架（扣掉該頁不套用的那些）。 */
 function implDecls(page) {
   const except = map.sharedExcept ?? {};
@@ -60,6 +89,7 @@ function implDecls(page) {
     if (!existsSync(p)) continue;
     for (const d of extract(p).distinct) out.add(d);
   }
+  for (const d of classDecls(files)) out.add(d);
   return [...out].sort();
 }
 

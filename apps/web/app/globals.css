@@ -193,3 +193,57 @@
     transform: translateY(-3px);
   }
 }
+
+/**
+ * Privacy & Legal 的內文。API 產生的 HTML 沒有 JSX 元素可以掛 inline style，
+ * 所以這一段只能是 CSS —— 值逐字取自 `mockup4/Privacy.dc.html`。
+ *
+ * ⚠️ Privacy 是唯一一頁把 `h1–h4` 的行高定為 **1.2**（其餘 17 頁是 1.12），
+ * 所以那一條寫在這裡，而不是改全域。
+ */
+@layer components {
+  .m4-legal h1,
+  .m4-legal h2,
+  .m4-legal h3,
+  .m4-legal h4 {
+    line-height: 1.2;
+  }
+
+  /* font-size:1.05rem;margin-bottom:32px;（導引段） */
+  .m4-legal > p:first-child {
+    font-size: 1.05rem;
+    margin-bottom: 32px;
+  }
+
+  /* font-size:1.4rem;font-weight:400;margin:36px 0 12px; */
+  .m4-legal h2 {
+    font-size: 1.4rem;
+    font-weight: 400;
+    margin: 36px 0 12px;
+  }
+
+  /* margin-bottom:16px; */
+  .m4-legal p {
+    margin-bottom: 16px;
+  }
+
+  .m4-legal ul,
+  .m4-legal ol {
+    margin-bottom: 16px;
+    padding-left: 20px;
+  }
+
+  .m4-legal ul {
+    list-style: disc;
+  }
+
+  .m4-legal ol {
+    list-style: decimal;
+  }
+
+  /* color:#0092A8;font-weight:600;（mockup4 —— 靠顏色加字重區分，沒有底線） */
+  .m4-legal a {
+    color: #0092a8;
+    font-weight: 600;
+  }
+}
