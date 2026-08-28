@@ -21,6 +21,9 @@ const PATHS = {
   users: <><circle cx="9" cy="8" r="3.2" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /><path d="M16 5.5a3.2 3.2 0 0 1 0 5M17.5 20a6.4 6.4 0 0 0-2-4.6" /></>,
   panelLeft: <><path d="M3 5h18v14H3z" /><path d="M10 5v14" /></>,
   logout: <><path d="M14 4H6v16h8" /><path d="m16 8 4 4-4 4M20 12H10" /></>,
+  // 收件匣：信封的翻蓋收在盒口，與其他圖示同為 stroke-only
+  inbox: <><path d="M3 13h5l2 3h4l2-3h5" /><path d="M5 5h14l2 8v6H3v-6z" /></>,
+  chevron: <path d="m6 9 6 6 6-6" />,
   plus: <path d="M12 5v14M5 12h14" />,
   check: <path d="m5 13 4 4L19 7" />,
   back: <path d="M15 5l-7 7 7 7" />,
