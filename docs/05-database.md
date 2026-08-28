@@ -667,6 +667,9 @@ CREATE TABLE ContactSubmission (
     CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
 );
 CREATE INDEX IX_Contact_Status ON ContactSubmission(Type, Status, CreatedAt DESC);
+-- DB 端的速率限制靠這條數同一個 IP 的近期筆數（04 §9）。
+-- 行程內的 token bucket 在 Flex Consumption 上是每個實例各一份，擋不住跨實例的洗版
+CREATE INDEX IX_Contact_Ip ON ContactSubmission(IpAddress, CreatedAt);
 
 CREATE TABLE [User] (
     Id           UNIQUEIDENTIFIER NOT NULL DEFAULT NEWSEQUENTIALID() PRIMARY KEY,

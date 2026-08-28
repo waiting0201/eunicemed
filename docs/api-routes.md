@@ -312,11 +312,15 @@
 |---|---|---|---|
 | POST | `/admin/media/{id}/reprocess` | Editor+ | 以目前 preset 重新輸出 master 與 variants |
 
-### Phase 7 剩餘 — 表單（擋於 SMTP）
+### 表單收件匣（2026-08-28 實作）
+
+**不擋於 SMTP。** 送件成功的定義是入庫成功，`Smtp:Host` 未設定時跳過寄信只記 log
+（見 [15](15-cms-scope.md) §1、`Api/Services/EmailSender.cs`）。
 
 | Method | Path | 權限 | 說明 |
 |---|---|---|---|
-| POST | `/contact` | 公開 | reCAPTCHA + honeypot + 速率限制；**先入庫再寄信**，SMTP 失敗仍回 201 |
-| GET | `/admin/contact-submissions?type=&status=&page=` | 登入 | 含 Viewer |
-| PATCH | `/admin/contact-submissions/{id}` | Editor+ | 標記已處理 |
-| GET | `/admin/contact-submissions/export` | Editor+ | CSV |
+| POST | `/contact` | 公開 | honeypot（前台）+ 速率限制（10 / 10 分鐘）；**先入庫再寄信**，SMTP 失敗仍回 201。⚠️ reCAPTCHA 尚未接（版本與 site key 未拍板）|
+| GET | `/admin/contact-submissions?type=&status=&page=` | 登入 | 含 Viewer。`PagedResult` |
+| GET | `/admin/contact-submissions/export?type=&status=` | 登入 | CSV（帶 BOM）。**順序敏感：必須排在 `{id}` 之前** |
+| GET | `/admin/contact-submissions/{id}` | 登入 | 單筆詳情 |
+| PATCH | `/admin/contact-submissions/{id}` | Editor+ | 只改狀態（received / handled / spam）；內容是訪客寫的，不可編輯 |

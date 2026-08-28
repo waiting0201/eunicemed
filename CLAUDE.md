@@ -91,6 +91,7 @@
 | [docs/12-local-dev.md](docs/12-local-dev.md) | **本機環境設定與每日啟動指令**、migration 操作、常見問題、多語系參數型別檢查 | **第一次進專案時先讀這份**、環境跑不起來時 |
 | [docs/13-api-roadmap.md](docs/13-api-roadmap.md) | API 各階段的**內容與驗收方式**、架構前提、**累積的踩坑紀錄** | 接續開發時、遇到怪問題時先翻踩坑那節 |
 | [docs/14-assets.md](docs/14-assets.md) | **不進版控的素材**（`reference/`、`mockup4/`）：內容、用途、取得方式 | 新機器 clone 之後發現找不到設計稿或字型時 |
+| [docs/15-cms-scope.md](docs/15-cms-scope.md) | **後台可編輯範圍決議**：哪些內容進 CMS、哪些回程式碼，逐支 schema 的裁決與理由 | **新增或移除任何 `PageSchemas/*.json` 之前**、覺得某段文案「怎麼不能在後台改」時 |
 
 ---
 
@@ -152,6 +153,10 @@ EuniceMed/
   規則集中在 `globals.css` 最後一段（全站唯一允許 `!important` 的地方 —— class 打不過 inline）。
   作法與 `data-r` 標記的意思見 [docs/rwd-backlog.md](docs/rwd-backlog.md)；
   用 `tools/mockup-diff/viewport-check.mjs` 量測有無橫向溢出。
+- **版面文案不進 CMS**：區段標題、按鈕文字、`All news →` 這類標籤與 mockup4 綁死，
+  一律寫成該頁的 `COPY: Record<Locale, …>` 常數（英文逐字取自 mockup4）。
+  CMS 只管會換的東西 —— 圖片、引用清單、檔期文案。判準與逐支裁決見 [docs/15-cms-scope.md](docs/15-cms-scope.md)。
+  **連結一律在渲染時就地組 `/${locale}/…`**，不存進 CMS 也不存進常數表。
 - 元件庫集中於 `apps/web/components`。
 
 ### 5.2a 後台 UI（CMS `/admin`）
@@ -203,7 +208,8 @@ EuniceMed/
 
 ### 🔴 擋住開發，需優先解決
 
-- [ ] **SMTP 主機／埠／帳密，以及該信箱的每日寄送量上限（擋 Phase 7 上線）** —— 上限會回頭決定速率限制的數字
+- [ ] **SMTP 主機／埠／帳密，以及該信箱的每日寄送量上限** —— 上限會回頭決定速率限制的數字。
+      ⚠️ 2026-08-28 起**不再擋上線**：收件匣照常收件，只是不寄通知信（見 docs/15 §6）
 - [ ] **客戶 Azure SQL 的 collation？** 若為區分大小寫的 `_CS_`，slug 比對在本機與正式站行為不同，只會在上線後才發現（見 [12](docs/12-local-dev.md) §2.1）
 - [ ] **客戶 Azure SQL 的連線數上限？** 決定 `Max Pool Size` 與 Function App 的 `maximumInstanceCount` —— Flex Consumption 每個實例各有一個連線池
 - [ ] 客戶提供的 Azure SQL：是否可設 Entra 管理員以啟用 Managed Identity 連線？備份保留天數與還原程序為何？
@@ -211,7 +217,6 @@ EuniceMed/
 ### 🟡 規格缺漏，建議一支 migration 一起補
 
 - [ ] `[User]` 沒有 `FailedLoginCount` / `LockedUntil`，但 [03](docs/03-cms.md) §7 與 [07](docs/07-azure-deployment.md) §7.4 都要求登入失敗鎖定
-- [ ] `ContactSubmission` 沒有 `(IpAddress, CreatedAt)` 索引，但 [04](docs/04-api.md) §9 明講要靠它做 DB 端速率限制
 - [ ] `RefreshToken` 在 `UserId` / `TokenHash` 上沒有索引，而 refresh 是熱路徑
 - [ ] `MediaUsage` 的 592 bytes 寬叢集主鍵建議改為 `Id BIGINT IDENTITY` + 該 tuple 作非叢集唯一索引
 
@@ -251,7 +256,8 @@ EuniceMed/
 - [x] **媒體變體階梯：採階梯**（2026-08-17）。WebP 出完整階梯、原格式只出 preset 寬度那一張，每次上傳 1–5 個檔。
       階梯定義見 [docs/11-media-specs.md](docs/11-media-specs.md) §2a，機器可讀版在 `Api/Media/media-presets.json` 的 `output` 欄位。
       **連帶決定：Function App 實例需 2048MB**（512MB 會在解碼大圖時 OOM），見 [docs/07](docs/07-azure-deployment.md) §10。
-- [x] 表單送出後寄信通知 + 寫 DB：**兩者都要**。寄信走品牌方既有信箱的 SMTP（無 Azure Communication Services）；先入庫再寄信，寄信失敗不回錯。（帳密仍待補，見上方 🔴）
+- [x] 表單送出後寄信通知 + 寫 DB：**兩者都要**。寄信走品牌方既有信箱的 SMTP（無 Azure Communication Services）；先入庫再寄信，寄信失敗不回錯。
+      2026-08-28 起 **SMTP 未設定時跳過寄信但照樣入庫**，所以三支表單不再等帳密 —— 帳密到手只要設 `Smtp__Host`。
 - [x] ~~客戶 SQL 防火牆是否允許 CI 動態增刪 runner IP 規則？~~ **此題已不存在** —— migration 改為在 Function App 啟動時套用，CI 完全不碰資料庫
 - [x] 英文字型 **Myriad Variable Concept**：品牌方已提供下載點，字型檔入庫 `reference/fonts/myriad-variable-concept/`（來源與授權注意見 docs/08-design.md §4）
 - [x] 網站風格：**客戶已定案採 `mockup4/`**（Clinical Airy 淺色版，18 頁）。後台內容模型已依此重新規劃，見 docs/03、05、09。設計準則見 docs/08-design.md §5.1／§5.1a（該文件內對 `mockup/` 的引用尚未更新，另案處理）

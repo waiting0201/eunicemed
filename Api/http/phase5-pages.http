@@ -45,7 +45,7 @@ Authorization: Bearer {{at}}
 Content-Type: application/json
 
 { "locale": "en",
-  "data": { "title": "Steady growth", "items": [
+  "data": { "items": [
     { "year": "2008", "event": "Founded" },
     { "year": "THIS-YEAR-STRING-IS-DELIBERATELY-FAR-TOO-LONG-FOR-THE-FIELD", "event": "x" }
   ]}}
@@ -55,14 +55,27 @@ PUT {{host}}/admin/pages/about/sections/milestones
 Authorization: Bearer {{at}}
 Content-Type: application/json
 
-{ "locale": "en", "data": { "title": "x", "items": [{ "year": "2008", "event": "Founded" }] } }
+{ "locale": "en", "data": { "items": [{ "year": "2008", "event": "Founded" }] } }
 
 ### 2c. additionalProperties: false → 多餘欄位被擋
+###
+### 用 `band` 當那個「合法欄位」—— about.hero 收斂後只剩它（docs/15）。
+### 若這裡送已經被移除的 `title`，測試會因為錯的理由通過。
 PUT {{host}}/admin/pages/about/sections/hero
 Authorization: Bearer {{at}}
 Content-Type: application/json
 
-{ "locale": "en", "data": { "title": "About", "strayField": "should be rejected" } }
+{ "locale": "en", "data": { "band": "{mediaId}", "strayField": "should be rejected" } }
+
+### 2d. 讀取邊界會剪掉 schema 已不存在的欄位（docs/15 §4.1）
+###
+### 把 2e 拿到的區段內容**原樣送回**應該是 200 —— 修好之前，一支收斂過的 schema
+### 會讓編輯者每次儲存都撞上 2c 的 400，而錯誤指向他畫面上根本看不到的欄位。
+GET {{host}}/admin/pages/home
+Authorization: Bearer {{at}}
+
+> 驗收：`featuredProducts` 只有 `promo`、`bodyPartBand` 只有 `background`，
+> 不再出現 `title` / `allLink` / `lead` / `cta` / `tiles` 這些已移除的欄位。
 
 ###############################################################################
 # 3. 正常儲存（把 {mediaId} 換成 GET /admin/media 取得的 id）
@@ -77,7 +90,6 @@ Content-Type: application/json
   "syncInvariantFields": true,
   "data": {
     "background": "{mediaId}",
-    "title": "Steady growth. Deep roots.",
     "items": [
       { "year": "2008", "event": "Comfort Plus founded in New Taipei City." },
       { "year": "2015", "event": "ISO 13485 certification achieved." },
@@ -89,11 +101,9 @@ PUT {{host}}/admin/pages/about/sections/certificates
 Authorization: Bearer {{at}}
 Content-Type: application/json
 
+### 收斂後只剩引用清單 —— 標題／導言／CTA 已改為前端常數（docs/15 §3）
 { "locale": "en",
   "data": {
-    "title": "Certified, audited, trusted",
-    "lead": "Independently verified at every stage.",
-    "cta": { "label": "Download certificates", "url": "/en/downloads", "external": false },
     "items": [{ "certification": "iso-13485" }, { "certification": "ce" }, { "certification": "mit" }]
   }}
 
@@ -111,7 +121,11 @@ Content-Type: application/json
 GET {{host}}/admin/pages/about
 Authorization: Bearer {{at}}
 
-> 驗收：certificates 的 zh-TW 應有 `cta.url` 與 `items`，但 `title` 為空。
+> 驗收：以 **milestones** 看 —— zh-TW 應有 `background` 與各項的 `year`（都是 invariant），
+> 但 `event` 為空（文字不同步）。
+>
+> ⚠️ 不要拿 certificates 當這個示範：它收斂後**全部欄位都是 invariant**，
+> 兩種行為只看得到一種。
 
 ###############################################################################
 # 5. 公開端點的回應契約（docs/04 §4）
@@ -266,7 +280,6 @@ Content-Type: application/json
 {
   "locale": "en",
   "data": {
-    "title": "M",
     "imageWide": "REPLACE_WITH_A_SQUARE_MEDIA_ID",
     "points": [{ "title": "a", "body": "b" }, { "title": "c", "body": "d" }, { "title": "e", "body": "f" }]
   },
@@ -281,7 +294,6 @@ Content-Type: application/json
 {
   "locale": "en",
   "data": {
-    "title": "Manufacturing & quality excellence",
     "imageSquare": "REPLACE_WITH_A_SQUARE_MEDIA_ID",
     "points": [
       { "title": "Precision fit", "body": "Premium Lycra for lasting compression efficacy." },

@@ -6,18 +6,22 @@
 > [docs/api-routes.md](docs/api-routes.md) 是**路由契約**（與 `Api/Routing/AppRouter.cs` 逐條對應）。
 > 三份不要互相抄，各司其職。
 
-**最後更新**：2026-08-19
+**最後更新**：2026-08-28
 
 ---
 
 ## 一句話現況
 
-後端 API 與前端已串通，媒體管線可運作：分類與子分類兩頁能顯示真實產品圖與響應式 srcSet、雙語切換正確。
-內容模組（文章／FAQ／下載／據點／應用方案）的**公開端點已全數完成並實測**，含伺服器端 TOC 推導與排程發布。
-**Phase 4 與 Phase 6 已全數完成**：所有內容模組的後台 CRUD 皆已實作並實測 ——
-產品、分類骨架、文章（含排程發布、活動面板、圖庫）、應用方案（含人體圖座標驗證）、FAQ、下載、據點。
-產品詳情的 `images` / `bodyParts` 也補齊了。**API 只剩 Phase 7 的表單／設定／選單／轉址／sitemap**。
-**後台介面與部署尚未開始**。整體約完成 **58%**。
+**全站已在 Azure 上運作**（見 §六之二），前台 18 頁、`/admin` 後台、API 與 Azure SQL 皆已上線。
+API 的 Phase 0–7 全數完成，**表單收件匣已於 2026-08-28 補上並不再擋於 SMTP** ——
+送件成功的定義是入庫成功，SMTP 未設定時跳過寄信只記 log，三支前台表單因此恢復運作。
+
+同日完成**後台範圍收斂**（[docs/15](docs/15-cms-scope.md)）：頁面區段 25 → 19 支，
+版面文案回到前端常數，側欄依「多久會動一次」重分三群。
+連帶把 About / Resources / Products / Partnership / Privacy 五頁**線上原本空白的內容**補齊
+—— 那五頁的區段從來沒人填過，先前只渲染出一個標題。
+
+剩下的是內容工作（17 個子分類落地頁文案、認證文案）與上線收尾（自訂網域、監控告警）。
 
 ---
 
@@ -37,11 +41,11 @@
 
 | 層 | 狀態 | 說明 |
 |---|---|---|
-| 規格文件 | ✅ | 14 份，見 [CLAUDE.md](CLAUDE.md) §3 |
-| 資料模型 | 🟡 98% | 54 張表完成 53 張（只剩 `ContactSubmission`）|
-| API | 🟡 97% | 已實作 **141** 條路由（新增標籤 CRUD 4 條、PDF 登記 1 條、頁面區段語系刪除）。Phase 0–7 除**表單**外全數完成 —— `POST /contact` 與收件匣擋於 SMTP 帳密 |
-| 前台 `apps/web` | 🟡 | 18 頁全數切版可運作，**版型已逐元素照抄 mockup4**（`mockup:check` 18/18 100%，見 §四）；手機／平板已完成並實測；三支表單的送出端點擋於 SMTP |
-| 後台 `apps/admin` | 🟡 | 全部畫面可運作（列表＋編輯＋富文字）；只剩相關產品拖曳與表單收件匣 |
+| 規格文件 | ✅ | 15 份，見 [CLAUDE.md](CLAUDE.md) §3 |
+| 資料模型 | ✅ | 54 張表全數完成（`ContactSubmission` 於 2026-08-28 補上，含 `IX_Contact_Ip`）|
+| API | ✅ | `AppRouter` 共 **146** 條分派（2026-08-28 新增 contact 4 條；`PUT or PATCH` 合併寫的算一條）。Phase 0–7 全數完成。⚠️ reCAPTCHA 未接（版本與 site key 未拍板）|
+| 前台 `apps/web` | ✅ | 18 頁全數可運作，**版型已逐元素照抄 mockup4**（`mockup:check` 18/18 100%，見 §四）；手機／平板已完成並實測；三支表單已恢復送出 |
+| 後台 `apps/admin` | 🟡 | 全部畫面可運作（含表單收件匣）；側欄已依維護頻率分三群。只剩產品的相關產品拖曳 |
 | 基礎設施 `infra/` | ✅ | 已部署至 `EuniceMedUS`（West US 2）：Storage／Function App／SWA 共 13 個資源 |
 | CI/CD `.github/` | 🟡 | infra 與 web 兩支已實際部署成功；api 部署成功但健康檢查失敗（等 SQL 連線字串）|
 
@@ -85,7 +89,10 @@
 
 ## 三、API 端點
 
-已實作 **133** 條。完整契約見 [docs/api-routes.md](docs/api-routes.md)。
+`AppRouter` 共 **146** 條分派（`PUT or PATCH` 合併寫的算一條）。完整契約見 [docs/api-routes.md](docs/api-routes.md)。
+
+> ⚠️ 這份表與 `docs/api-routes.md` 的列數本來就有落差（那份是契約、以方法拆開列），
+> 兩邊的**逐條一致性**尚未做過完整核對，另案處理。
 
 ### 系統與驗證
 
@@ -117,7 +124,7 @@
 | `sales-locations` | ✅ | 伺服器端分組；未填 region 者集中於最後一組 |
 | 頁面區段 `pages/{key}` | ✅ | `sections{}` + `refs`、media 已解析、未翻譯區段自動省略 |
 | `menus` / `settings` / `sitemap` / `redirects` | ✅ | sitemap 的語系判定共用 `IsRenderable`，不會宣告空白頁 |
-| `POST /contact` | 🔴 | 擋於 SMTP 帳密 |
+| `POST /contact` | ✅ | 蜜罐＋速率限制＋必填；先入庫再寄信，SMTP 未設定就跳過寄信。⚠️ reCAPTCHA 未接 |
 
 ### 後台
 
@@ -136,7 +143,7 @@
 | 應用方案 `admin/applications` | ✅ | 人體圖座標形狀驗證、產品關聯內嵌 |
 | FAQ／下載／據點 | ✅ | 寫入為 Editor+（無草稿工作流，存檔即生效） |
 | 選單／轉址／設定 | ✅ | 選單整棵樹取代、轉址路徑正規化、設定 Admin only |
-| 表單收件匣 | 🔴 | 擋於 SMTP 帳密 |
+| 表單收件匣 | ✅ | 列表（篩選＋分頁）／詳情／標記狀態／CSV 匯出；未處理筆數併進 `/admin/summary` |
 
 ---
 
@@ -151,22 +158,22 @@ facet 篩選、standalone 產物 66MB／250MB。
 
 | 頁面 | 路由 | API 是否就緒 |
 |---|---|---|
-| Home | `/[locale]` | ✅ **已切版可運作**（6 個 schema 已建立；Hero 文案改為前端寫死不進 CMS，見 [docs/09](docs/09-page-blocks.md) §2；輪播為純 CSS 無 client JS）<br>🔴 **zh-TW 區段文案全缺 → 中文首頁是空白的**，上線前必補 |
-| About | `/[locale]/about` | ✅ **已切版可運作**（6 個區段全部接上 `GET /pages/about`）|
-| Products | `/[locale]/products` | ✅ **已切版可運作**（hero／cta 兩個 schema + 動態分類卡與產品格）|
+| Home | `/[locale]` | ✅ **可運作**（4 個 schema；hero／01 標題／02／03／05 的文案為前端常數，見 [docs/15](docs/15-cms-scope.md)；輪播為純 CSS 無 client JS）|
+| About | `/[locale]/about` | ✅ **可運作**（5 個 schema；文案為前端常數）<br>2026-08-28 前線上只有一個 h1 + 五段 `null` —— 區段從沒人填過 |
+| Products | `/[locale]/products` | ✅ **可運作**（hero／cta 只剩圖片 + 動態分類卡與產品格）|
 | Product Category | `/[locale]/products/{category}` | ✅ **已切版可運作** |
 | Sub-category | `/[locale]/products/{category}/{sub}` | ✅ **已切版可運作** |
-| Product Detail | `/[locale]/products/{category}/{sub}/{slug}` | ✅ **已切版可運作**（§08 詢價面板已切，送出擋於 `POST /contact`）|
+| Product Detail | `/[locale]/products/{category}/{sub}/{slug}` | ✅ **可運作**（§08 詢價面板送出已恢復）|
 | Applications／Detail | `/[locale]/applications[/{slug}]` | ✅ **已切版可運作**（含人體圖 SVG 互動）|
-| Partnership | `/[locale]/partnership` | ✅ **已切版可運作**（§03 洽詢表單已切，送出擋於 `POST /contact`）|
-| Resources | `/[locale]/resources` | ✅ **已切版可運作**（含 `ref:Article` / `ref:Download` 解析）|
+| Partnership | `/[locale]/partnership` | ✅ **可運作**（§03 洽詢表單送出已恢復；hero 文案改為前端常數）|
+| Resources | `/[locale]/resources` | ✅ **可運作**（含 `ref:Article` / `ref:Download` 解析）<br>2026-08-28 前線上是**完全空白**的 —— 五個區段都沒填，其中三個已定案改為前端常數 |
 | FAQ | `/[locale]/faq` | ✅ **已切版可運作**（分類篩選 + 原生 details 手風琴）|
 | Insights／Article Detail | `/[locale]/insights[/{slug}]` | ✅ **已切版可運作**（含伺服器端 TOC）|
 | News／News Detail | `/[locale]/news[/{slug}]` | ✅ **已切版可運作**（含活動面板、圖庫、prev/next）|
 | Downloads | `/[locale]/downloads` | ✅ **已切版可運作**（類型篩選）|
 | Where to Buy | `/[locale]/where-to-buy` | ✅ **已切版可運作**（伺服器端分組）|
-| Contact | `/[locale]/contact` | ✅ **已切版可運作**；🔴 送出擋於 Phase 7 的 `POST /contact`（SMTP 帳密未提供）|
-| Privacy | `/[locale]/privacy` | ✅ **已切版可運作**（Legal 淨化 profile）|
+| Contact | `/[locale]/contact` | ✅ **可運作**，送出已恢復（2026-08-28）|
+| Privacy | `/[locale]/privacy` | ✅ **可運作**（Legal 淨化 profile）<br>2026-08-28 前線上是**完全空白**的；條文仍留在 CMS，頁首文案改為前端常數 |
 
 **2026-08-28 逐元素照抄**（分支 `feat/mockup4-verbatim`，尚未合併）：
 先前兩輪校正是把 mockup4 的 inline style **翻譯**成 Tailwind arbitrary value，翻譯就會漂移 ——
@@ -193,7 +200,8 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 
 ## 五、後台介面
 
-`apps/admin` **尚未建立**。
+`apps/admin` 已建立並上線（`/admin`）。**側欄依維護頻率分三群**（日常／內容／進階，
+進階預設摺疊），判準見 [docs/15](docs/15-cms-scope.md) §4.4。
 
 ⚠️ **動工前必須先啟動 `frontend-design` skill** —— 後台沒有 mockup、沒有設計稿，
 是要現場設計的。約束見 [docs/03-cms.md](docs/03-cms.md) §8.1。技術選型：Tailwind CSS + shadcn/ui。
@@ -206,7 +214,7 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 |---|---|
 | 登入 | ✅ 可運作（含 refresh token 單次使用的併發處理）|
 | Dashboard | — 刻意不做，改由側欄儀表取代 |
-| 頁面內容（18 頁動態表單） | ✅ 可運作 —— 表單由 `GET /admin/page-schema/{key}` 動態生成<br>已涵蓋 25 個區段、165 個欄位，10 種 `x-fieldType` 全支援；richtext 走 TipTap（lazy chunk）|
+| 頁面內容 | ✅ 可運作 —— 表單由 `GET /admin/page-schema/{key}` 動態生成<br>**19 個區段、6 個 pageKey**（2026-08-28 收斂，見 [docs/15](docs/15-cms-scope.md)）；10 種 `x-fieldType` 全支援；richtext 走 TipTap（lazy chunk）<br>其餘 12 頁在此畫面是空的 —— **那是定案不是壞掉**，那些頁的版面文案寫死在前端 |
 | 產品列表 | ✅ 可運作（搜尋／狀態篩選／分頁／完整度儀表）|
 | 產品編輯 | 🟡 可運作（雙語分頁、三個 repeater、圖庫＋主圖、使用情境照、部位／認證多選、尺寸表編輯器、發布／取消發布、`rowVersion` 併發、移除語系）<br>缺：相關產品拖曳|
 | 分類 / 子分類 | ✅ 可運作（分類與子分類同一張表、雙語＋SEO、卡片圖／頁首大圖、子分類狀態、`rowVersion` 併發、移除語系）<br>不提供新增／刪除 —— 那等於改全站 URL 結構 |
@@ -225,7 +233,7 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 | 轉址 | ✅ 可運作（含自我轉址與重複來源的錯誤提示）|
 | 設定 | ✅ 可運作（區分「需翻譯」與「所有語系共用」兩種鍵）|
 | 使用者 | ✅ 可運作（角色、停用、重設密碼、解鎖、刪除）|
-| 表單收件匣 | 🔴 擋於 Phase 7 的 SMTP |
+| 表單收件匣 | ✅ 可運作（依類型／狀態篩選、分頁、詳情對話框、標記已處理／垃圾、CSV 匯出）<br>不掛完整度儀表 —— 來信沒有翻譯這個維度；側欄改用未處理筆數徽章 |
 
 ---
 
@@ -296,12 +304,15 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 
 | # | 事項 | 擋住 |
 |---|---|---|
-| 1 | SMTP 主機／帳密／每日寄送上限 | Phase 7 上線 |
+| 1 | SMTP 主機／帳密／每日寄送上限 | **只擋通知信，不擋收件** —— 2026-08-28 起表單照常入庫（見 [docs/15](docs/15-cms-scope.md) §1）|
 | 2 | ~~collation~~（已確認 `_CI_`，無問題）；**連線數上限**與**能否設 Entra 管理員**仍待確認 | 部署調校與改用 Managed Identity |
 | 3 | 認證文案（5 筆的 SubLabel 與說明目前是佔位） | About 頁與產品頁上線 |
 | 4 | 17 個子分類落地頁的敘述文案 | 子分類頁發布（缺文案者不應發布，會是薄內容頁） |
-| ~~5~~ | ~~首頁 7 個區段的 zh-TW 文案~~ | **已解除**（2026-08-19 譯自英文版並上線）|
+| ~~5~~ | ~~首頁區段的 zh-TW 文案~~ | **已解除**（2026-08-19 譯自英文版並上線；2026-08-28 收斂後只剩 3 支 schema 需要內容）|
 | ~~6~~ | ~~149 筆產品的 zh-TW 翻譯~~ | **已解除**（2026-08-19，125 個品名 + 285 句 feature，品牌詞與型號保留英文）<br>⚠️ **譯文未經客戶審閱**，其中 features 屬醫療器材療效宣稱，正式對外前建議由客戶或法務確認 |
+
+| 7 | **2026-08-28 新譯的 zh-TW 版面文案**（About / Resources / Products / Partnership / Privacy 五頁，約 90 條）| ⚠️ 與 149 筆產品譯文同樣**未經客戶審閱**。英文逐字取自 mockup4，中文是新譯的 —— 五頁在此之前 DB 是空的，沒有既有中文可沿用 |
+| 8 | **reCAPTCHA 版本與 site key** | `POST /contact` 目前只有蜜罐＋速率限制 |
 
 > **已解除**：媒體變體階梯（2026-08-17 定案採階梯，見 [docs/11](docs/11-media-specs.md) §2a）—— Phase 3 可開工。
 
