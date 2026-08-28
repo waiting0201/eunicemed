@@ -282,8 +282,8 @@ number · date · bool · enum[...] · ref:Entity · repeatable{...}(min–max)
 | sectionKey | 區段 | 來源 | 欄位 |
 |---|---|---|---|
 | `hero` | 頁首 | 區段 | `band` media(`page-band`)、`eyebrow` text、`title` text、`lead` text |
-| `oemOdm` | **01** OEM / ODM services | 區段 | `title` text、`body` richtext、`chips` repeatable(2–6){ `label` text }、`image` media(`wide-16x9`) |
-| `distributor` | **02** Distributor services | 區段 | `title` text、`body` richtext、`image` media(`section-bg`) |
+| `distributor` | **01** Distributor services | 區段 | `title` text、`body` richtext、`image` media(`section-bg`) |
+| `oemOdm` | **02** OEM / ODM services | 區段 | `title` text、`body` richtext、`chips` repeatable(2–6){ `label` text }、`image` media(`wide-16x9`) |
 | `becomePartner` | **03** How to become a partner | 區段 | `title` text、`steps` repeatable(3–6){ `title` text、`body` text }、`formTitle` text、`formIntro` text（「within two working days」）、`partnershipTypes` repeatable{ `key` enum(oem\|odm\|distributor)、`label` text }、`submitLabel` text |
 
 表單送出走 `POST /contact` type=`partnership`，欄位：Company、Country、Email、Partnership type、Requirement。

@@ -134,10 +134,38 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
         lead={hero?.lead}
       />
 
-      {/* 01 OEM / ODM */}
-      {oem && (
+      {/* 01 經銷服務 */}
+      {distributor && (
         <section style={S.section}>
           <div style={S.stack}>
+            <div style={S.copy}>
+              <SectionHeading
+                index={next()}
+                title={distributor.title ?? ''}
+                titleClassName={PART_H2}
+                titleStyle={S.h2}
+              />
+              {distributor.body && (
+                <div
+                  className="m4-prose"
+                  style={S.lead}
+                  dangerouslySetInnerHTML={{ __html: distributor.body }}
+                />
+              )}
+            </div>
+            {distributor.image ? (
+              <WideShot image={distributor.image} focus={S.focus25} />
+            ) : (
+              <div style={S.shot} />
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* 02 OEM / ODM —— mockup4 的淺底帶（原為經銷服務），圖在文字下方 */}
+      {oem && (
+        <section style={S.tinted}>
+          <div style={{ ...S.tintedInner, ...S.stack }}>
             <div style={S.copy}>
               <SectionHeading
                 index={next()}
@@ -164,34 +192,6 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
               )}
             </div>
             {oem.image ? <WideShot image={oem.image} focus={S.focus30} /> : <div style={S.shot} />}
-          </div>
-        </section>
-      )}
-
-      {/* 02 經銷服務 —— mockup4 是淺底帶，圖在文字下方 */}
-      {distributor && (
-        <section style={S.tinted}>
-          <div style={{ ...S.tintedInner, ...S.stack }}>
-            <div style={S.copy}>
-              <SectionHeading
-                index={next()}
-                title={distributor.title ?? ''}
-                titleClassName={PART_H2}
-                titleStyle={S.h2}
-              />
-              {distributor.body && (
-                <div
-                  className="m4-prose"
-                  style={S.lead}
-                  dangerouslySetInnerHTML={{ __html: distributor.body }}
-                />
-              )}
-            </div>
-            {distributor.image ? (
-              <WideShot image={distributor.image} focus={S.focus25} />
-            ) : (
-              <div style={S.shot} />
-            )}
           </div>
         </section>
       )}
