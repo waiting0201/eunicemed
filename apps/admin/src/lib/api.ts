@@ -266,6 +266,45 @@ export const api = {
       body: JSON.stringify({ isEnabled }),
     }),
 
+  // ── 表單收件匣 ─────────────────────────────────────────────────────────
+  //
+  // 唯一「內容不是我們寫的」模組：來信只能讀與標記狀態，沒有建立也沒有編輯。
+
+  contactSubmissions: (params: Record<string, string | undefined>) => {
+    const q = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) if (v) q.set(k, v);
+    return request<Paged<ContactListItem>>(`/admin/contact-submissions?${q}`);
+  },
+
+  contactSubmission: (id: string) => request<ContactDetail>(`/admin/contact-submissions/${id}`),
+
+  /**
+   * CSV 匯出。**不能做成 `<a href>`** —— 那個請求帶不了 Authorization header，
+   * 端點會回 401。所以自己抓、自己觸發下載。
+   * 回的是 CSV 而不是 ApiResponse 信封，因此不走 {@link request}。
+   */
+  exportContactSubmissions: async (params: Record<string, string | undefined>, retry = true): Promise<Blob> => {
+    const q = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) if (v) q.set(k, v);
+
+    const token = auth.access;
+    const res = await fetch(`${BASE}/admin/contact-submissions/export?${q}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+
+    if (res.status === 401 && retry && (await tryRefresh()))
+      return api.exportContactSubmissions(params, false);
+
+    if (!res.ok) throw new ApiError(res.status, `匯出失敗（${res.status}）`);
+    return res.blob();
+  },
+
+  markContactSubmission: (id: string, status: ContactStatus) =>
+    request<ContactDetail>(`/admin/contact-submissions/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    }),
+
   articles: (params: Record<string, string | undefined>) => {
     const q = new URLSearchParams();
     for (const [k, v] of Object.entries(params)) if (v) q.set(k, v);
@@ -955,4 +994,31 @@ export type AdminApplication = {
   rowVersion: string | null;
   createdAt: string;
   updatedAt: string;
+};
+
+// ── 表單收件匣 ───────────────────────────────────────────────────────────
+
+export type ContactType = 'general' | 'product' | 'partnership';
+export type ContactStatus = 'received' | 'handled' | 'spam';
+
+export type ContactListItem = {
+  id: string;
+  type: ContactType;
+  status: ContactStatus;
+  name: string;
+  email: string;
+  company: string | null;
+  subject: string | null;
+  productSku: string | null;
+  locale: string | null;
+  createdAt: string;
+};
+
+export type ContactDetail = ContactListItem & {
+  phone: string | null;
+  country: string | null;
+  partnershipType: string | null;
+  productId: string | null;
+  message: string;
+  ipAddress: string | null;
 };

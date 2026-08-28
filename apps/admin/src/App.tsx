@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router';
 import { Shell } from './components/Shell';
 import { Login } from './routes/Login';
+import { ContactSubmissions } from './routes/ContactSubmissions';
 import { Products } from './routes/Products';
 import { ProductEdit } from './routes/ProductEdit';
 import { Articles } from './routes/Articles';
@@ -38,6 +39,7 @@ export function App() {
 
         <Route element={<RequireAuth />}>
           <Route element={<Shell />}>
+            <Route path="/contact-submissions" element={<ContactSubmissions />} />
             <Route path="/products" element={<Products />} />
             <Route path="/products/:id" element={<ProductEdit />} />
             <Route path="/pages" element={<Pages />} />
