@@ -35,6 +35,23 @@ export function collectionColor(slug: string | undefined): CSSProperties {
 
 const FALLBACK_COLOR = css`color:#0092A8;`;
 
+/**
+ * 系列的**填色**（Pantone 原值）。DESIGN.md 講得很清楚：
+ * 「填色（chip、色帶）維持 Pantone 原值」，只有當成小級數文字時才壓深。
+ * 徽章、色帶用這一組，**不是**上面那組文字色。
+ */
+export const COLLECTION_FILL: Record<string, CSSProperties> = {
+  care: css`background:#A8AD3C;`,
+  protect: css`background:#5B7F95;`,
+  advance: css`background:#7A4D6F;`,
+};
+
+export function collectionFill(slug: string | undefined): CSSProperties {
+  return (slug && COLLECTION_FILL[slug]) || FALLBACK_FILL;
+}
+
+const FALLBACK_FILL = css`background:#00B5CD;`;
+
 export const COLLECTION_BG: Record<string, string> = {
   care: 'bg-care',
   protect: 'bg-protect',

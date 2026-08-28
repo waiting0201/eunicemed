@@ -1,3 +1,5 @@
+import { css } from '@/lib/css';
+
 /**
  * 頁首標題塊：eyebrow + h1 + lead，置中。
  * mockup4 的 FAQ / Downloads / Where to Buy / Applications 都是同一組，
@@ -6,6 +8,14 @@
  * 版位照 mockup4：`padding: clamp(32px,4vw,48px) clamp(24px,5vw,64px) 0`，
  * 內層 760px 置中。**下方沒有留白** —— 由接在後面的區段自己給。
  */
+const S = {
+  section: css`max-width:1180px;margin:0 auto;padding:clamp(32px,4vw,48px) clamp(24px,5vw,64px) 0;`,
+  inner: css`max-width:760px;margin:0 auto;text-align:center;`,
+  eyebrow: css`color:#0092A8;font-weight:680;letter-spacing:.16em;text-transform:uppercase;font-size:.78rem;`,
+  title: css`font-weight:400;font-size:clamp(2rem,3.6vw,2.8rem);letter-spacing:-.02em;margin:10px 0 0;`,
+  lead: css`margin-top:14px;font-size:1.1rem;`,
+} as const;
+
 export function PageHero({
   eyebrow,
   title,
@@ -16,13 +26,11 @@ export function PageHero({
   lead?: string;
 }) {
   return (
-    <section className="mx-auto max-w-content px-gutter pt-[clamp(32px,4vw,48px)]">
-      <div className="mx-auto max-w-[760px] text-center">
-        <p className="text-[0.78rem] font-[680] uppercase tracking-[0.16em] text-brand-deep">
-          {eyebrow}
-        </p>
-        <h1 className="mt-2.5 text-[clamp(2rem,3.6vw,2.8rem)] font-normal">{title}</h1>
-        {lead && <p className="mt-3.5 text-[1.1rem]">{lead}</p>}
+    <section style={S.section}>
+      <div style={S.inner}>
+        <p style={S.eyebrow}>{eyebrow}</p>
+        <h1 style={S.title}>{title}</h1>
+        {lead && <p style={S.lead}>{lead}</p>}
       </div>
     </section>
   );

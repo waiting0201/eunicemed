@@ -1,4 +1,11 @@
 import Link from 'next/link';
+import { css } from '@/lib/css';
+
+/** 樣式逐字取自 mockup4 的麵包屑（產品分類／詳情頁）。 */
+const S = {
+  nav: css`max-width:1180px;margin:0 auto;padding:18px clamp(24px,5vw,64px);font-size:.85rem;color:#66787F;font-weight:500;`,
+  sep: css`margin:0 8px;color:#B7C4C8;`,
+} as const;
 
 /**
  * 麵包屑。mockup4 的分類／子分類／產品詳情／應用方案詳情四種頁面共用同一條：
@@ -12,14 +19,15 @@ export function Breadcrumb({
   current: string;
 }) {
   return (
-    <nav className="mx-auto max-w-content px-gutter py-[18px] text-[0.85rem] font-medium text-[#66787F]">
+    <nav style={S.nav}>
       {trail.map((crumb) => (
         <span key={crumb.href}>
           <Link href={crumb.href}>{crumb.label}</Link>
-          <span className="mx-2 text-[#B7C4C8]">/</span>
+          <span style={S.sep}>/</span>
         </span>
       ))}
-      <span className="text-ink">{current}</span>
+      {/* mockup4 的最後一節沒有自己的樣式，直接繼承容器的 #66787F */}
+      <span>{current}</span>
     </nav>
   );
 }

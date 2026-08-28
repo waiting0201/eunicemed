@@ -1,4 +1,13 @@
 import Link from 'next/link';
+import { css } from '@/lib/css';
+
+/** 樣式逐字取自 mockup4 的 resources 次導覽（Resources／FAQ／Insights／Downloads／News 共用）。 */
+const S = {
+  bar: css`background:#F0F6F8;padding:0 clamp(24px,5vw,64px);`,
+  inner: css`max-width:1180px;margin:0 auto;display:flex;gap:28px;font-size:.92rem;font-weight:500;`,
+  active: css`color:#16333B;padding:16px 0;border-bottom:2px solid #00B5CD;`,
+  idle: css`color:#44565D;padding:16px 0;border-bottom:2px solid transparent;`,
+} as const;
 import type { Locale } from '@/lib/locale';
 
 /**
@@ -26,19 +35,15 @@ const ITEMS: Record<Locale, { href: string; label: string }[]> = {
 
 export function ResourcesSubnav({ locale, active }: { locale: Locale; active: string }) {
   return (
-    <div className="bg-tint-deep px-gutter">
-      <nav className="mx-auto flex max-w-content gap-7 overflow-x-auto text-[0.92rem] font-medium">
+    <div style={S.bar}>
+      <nav style={S.inner} data-r="scroll">
         {ITEMS[locale].map((item) => (
           <Link
             key={item.href}
             href={`/${locale}${item.href}`}
             aria-current={item.href === active ? 'page' : undefined}
             /* 現在頁是 ink 字 + 品牌青底線，不是青字加粗（mockup4） */
-            className={`whitespace-nowrap border-b-2 py-4 ${
-              item.href === active
-                ? 'border-brand text-ink'
-                : 'border-transparent text-body'
-            }`}
+            style={item.href === active ? S.active : S.idle}
           >
             {item.label}
           </Link>

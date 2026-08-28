@@ -1,4 +1,12 @@
 import Link from 'next/link';
+import { css } from '@/lib/css';
+
+/** 樣式逐字取自 mockup4 的分頁（Insights／News）。 */
+const S = {
+  row: css`display:flex;justify-content:center;gap:8px;margin-top:52px;`,
+  current: css`width:40px;height:40px;border-radius:10px;background:#16333B;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;`,
+  other: css`width:40px;height:40px;border-radius:10px;border:1px solid #DFE9EC;color:#44565D;display:flex;align-items:center;justify-content:center;font-weight:500;`,
+} as const;
 
 /**
  * 分頁器。版型照 mockup4 Insights 頁尾：40×40 的方鈕、10px 圓角，
@@ -34,17 +42,14 @@ export function Pagination({
   };
 
   return (
-    <div className="mt-13 flex justify-center gap-2">
+    <div style={S.row}>
       {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
         <Link
           key={n}
           href={href(n)}
           aria-current={n === page ? 'page' : undefined}
-          className={`flex h-10 w-10 items-center justify-center rounded-[10px] ${
-            n === page
-              ? 'bg-ink font-semibold text-white hover:text-white'
-              : 'border border-hairline font-medium text-body'
-          }`}
+          style={n === page ? S.current : S.other}
+          className={n === page ? 'hover:text-white' : undefined}
         >
           {n}
         </Link>
