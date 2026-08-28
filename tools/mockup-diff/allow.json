@@ -42,6 +42,8 @@
     "scroll-margin-top:100px": "側欄目錄跳到 h2 時要避開黏在頂部的頁首（76px）。mockup4 的目錄連結是 href=\"#\"，不會真的跳。",
     "margin:0": "mockup4 兩篇範例文章的 <ul> 上距不一致：Article Detail 是 margin:16px 0 0（接在段落後），News Detail 是 margin:0（緊接標題）。`.m4-prose` 只能有一組，取有間距的那個 —— CMS 的內文多半是段落後接清單。",
     "width:42px": "認證標章圖。mockup4 的 ISO 卡是內嵌 SVG，尺寸寫在 width/height 屬性上（42×42）；本站是編輯者上傳的圖檔，要用 CSS 配 object-fit:contain 才不會變形。",
+    "max-width:100%": "產品頁的認證標章圖。mockup4 的標章是 96px 方框裡的文字（ISO 13485／CE／Oeko-Tex），沒有圖檔；本站是編輯者上傳的圖，長寬比不一，要 contain 進固定方框才不會變形或被裁掉。",
+    "max-height:100%": "同上，認證標章圖的高度上限。",
     "border-top:1px solid rgba(255,255,255,0.1)": "mockup4 的 Resources.dc.html 頁尾細線沒跟上深→淺轉換（其餘 17 頁是 #2C3E44）。採多數值，見同一份檔案裡 border-top:1px solid #2c3e44 那一條。",
     "fill:#00b5cd": "人體圖熱點的填色。mockup4 用 JS style 物件寫 `fill`，本站寫成 SVG 的 presentation attribute（`fill=\"#00B5CD\"`），對 SVG 兩者等價。",
     "fill:#fff": "同上，熱點白心。",

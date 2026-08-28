@@ -42,6 +42,15 @@ const S = {
 
   // 3 USE CASES
   useGrid: css`display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;`,
+  /**
+   * 適用時機的情境照。mockup4 這一格是 4:3 的佔位斜紋，沒有真的 <img>，
+   * 所以圖框沿用同一頁主圖那組（`position:relative` + `overflow:hidden` + `#F0F6F8` 底 + cover）。
+   *
+   * ⚠️ 這裡原本套的是尺寸表那塊 1:1 的 `diagramFrame` —— 上傳的是 4:3（preset `photo-4x3`），
+   * 塞進 1:1 又 `object-fit:contain`，照片上下會多出兩條 #E9F8FA 色帶。
+   */
+  useCaseFrame: css`position:relative;aspect-ratio:4/3;border-radius:22px;overflow:hidden;background:#F0F6F8;`,
+  useCaseImg: css`display:block;width:100%;height:100%;object-fit:cover;`,
   useRow: css`display:flex;gap:14px;padding:14px 0;border-bottom:1px solid #DFE9EC;`,
   useRowLast: css`display:flex;gap:14px;padding:14px 0;`,
   useNo: css`color:#0092A8;font-weight:700;`,
@@ -55,15 +64,32 @@ const S = {
   specRow: css`display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #DFE9EC;`,
   specKey: css`color:#44565D;`,
   specValue: css`color:#16333B;font-weight:500;`,
-  sizeWrap: css`display:flex;align-items:center;gap:28px;flex-wrap:wrap;`,
+  sizeWrap: css`display:flex;align-items:flex-start;gap:28px;flex-wrap:wrap;`,
   sizeTable: css`flex:1;min-width:280px;`,
   sizeGrid: css`display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:#EDF4F6;border:1px solid #DFE9EC;border-radius:14px;overflow:hidden;`,
   sizeHead: css`background:#F0F6F8;padding:14px;text-align:center;color:#0092A8;font-weight:620;`,
   sizeCell: css`background:#F0F6F8;padding:14px;text-align:center;color:#4B5B61;font-size:.9rem;`,
   sizeNote: css`color:#66787F;font-size:.82rem;margin-top:12px;`,
   diagram: css`flex:none;width:152px;`,
-  diagramFrame: css`aspect-ratio:1/1;border-radius:22px;background:#E9F8FA;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;`,
-  diagramImg: css`display:block;max-width:100%;max-height:100%;object-fit:contain;`,
+  /**
+   * 量測部位圖：直接落在區塊底色上，**沒有 `diagramFrame` 那塊 #E9F8FA 底板**。
+   *
+   * <p>
+   * 底板原本是為 88×86 的小圖示做的容器 —— 那個尺寸不給個框會讀成載入失敗。
+   * 換成直立人形之後三件事同時反過來了：解剖圖本來就讀得出是插圖不需要容器；
+   * 固定 `aspect-ratio:1/2` 的框跟畫板的 1:2.008 對不齊，上下會留白邊；
+   * 而框的 18px padding 在 152px 寬裡就吃掉 24%，圖只剩 116px 寬。
+   * </p>
+   *
+   * <p>
+   * `height:auto` 讓高度由圖自己的比例決定（不預設 1:2）；`max-height` 是防呆 ——
+   * 萬一之後換上更瘦長的稿子，152px 寬會算出 450px 以上的高度，整個區塊會被它撐開。
+   * </p>
+   */
+  measureImg: css`display:block;width:100%;height:auto;max-height:340px;object-fit:contain;`,
+  /** 認證標章圖。mockup4 的標章是 96px 方框裡的文字，本站是上傳的圖檔且形狀不一，
+      要 contain 才不會變形；見 `tools/mockup-diff/allow.json`。 */
+  certLogo: css`display:block;max-width:100%;max-height:100%;object-fit:contain;`,
   diagramCaption: css`color:#66787F;font-size:.78rem;text-align:center;margin-top:10px;`,
 
   // 5 CERTS + 6 DOWNLOADS
@@ -243,19 +269,21 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
         <section style={S.plain}>
           <div style={S.useGrid}>
             {p.useCaseImage ? (
-              <img
-                src={p.useCaseImage.url}
-                srcSet={srcSetOf(p.useCaseImage)}
-                sizes="(max-width: 1024px) 100vw, 560px"
-                alt={p.useCaseImage.alt ?? p.name}
-                loading="lazy"
-                decoding="async"
-                width={1200}
-                height={900}
-                style={{ ...S.diagramFrame, ...S.diagramImg }}
-              />
+              <div style={S.useCaseFrame}>
+                <img
+                  src={p.useCaseImage.url}
+                  srcSet={srcSetOf(p.useCaseImage)}
+                  sizes="(max-width: 1024px) 100vw, 560px"
+                  alt={p.useCaseImage.alt ?? p.name}
+                  loading="lazy"
+                  decoding="async"
+                  width={1200}
+                  height={900}
+                  style={S.useCaseImg}
+                />
+              </div>
             ) : (
-              <div style={S.diagramFrame} />
+              <div style={S.useCaseFrame} />
             )}
 
             <div>
@@ -308,29 +336,28 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
                       <SizeChart chart={p.sizeChart} />
                     </div>
 
-                    {/* 量測部位線稿：後台逐產品上傳（400×400 透明底 PNG/SVG），沒掛圖就整欄不出現
-                        （表格自動吃滿寬度，不留破圖佔位框）。housing 沿用 Features icon 同一套
-                        teal-tint 底（bg-[#E9F8FA]），讓線稿讀作「品牌插圖」而不是載入失敗；
-                        圖本身無文字、跨語系共用，下方的「測量位置」短標籤才是可翻譯的說明文字。 */}
+                    {/* 量測部位線稿：後台逐產品上傳（400×800 直式透明底 PNG/SVG），沒掛圖就整欄不出現
+                        （表格自動吃滿寬度，不留破圖佔位框）。圖本身無文字、跨語系共用，
+                        下方的「量測部位」短標籤才是可翻譯的說明文字。
+
+                        **為什麼是 152px**：這一欄能給的寬度是「1.3fr 欄（約 567px）− 28px gap
+                        − 表格的最小寬度」。尺寸表不收欄、每欄最小 64px，六欄（列名 + S/M/L/XL/XXL）
+                        就是 384px —— 剩 155px。再寬一點，表格自己就開始橫捲了。 */}
                     {p.sizeChartDiagram && (
-                      <div style={S.diagram}>
-                        <div style={S.diagramFrame}>
-                          <img
-                            src={p.sizeChartDiagram.url}
-                            srcSet={srcSetOf(p.sizeChartDiagram)}
-                            sizes="152px"
-                            alt={
-                              p.sizeChartDiagram.alt ?? c.measureDiagram(p.sizeChart.measureLabel)
-                            }
-                            loading="lazy"
-                            decoding="async"
-                            width={400}
-                            height={400}
-                            style={S.diagramImg}
-                          />
-                        </div>
-                        <p style={S.diagramCaption}>{c.whereToMeasure}</p>
-                      </div>
+                      <figure data-r="figure" style={S.diagram}>
+                        <img
+                          src={p.sizeChartDiagram.url}
+                          srcSet={srcSetOf(p.sizeChartDiagram)}
+                          sizes="152px"
+                          alt={p.sizeChartDiagram.alt ?? c.measureDiagram(p.sizeChart.measureLabel)}
+                          loading="lazy"
+                          decoding="async"
+                          width={400}
+                          height={800}
+                          style={S.measureImg}
+                        />
+                        <figcaption style={S.diagramCaption}>{c.whereToMeasure}</figcaption>
+                      </figure>
                     )}
                   </div>
                 </div>
@@ -356,7 +383,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
                           alt={cert.logo.alt ?? cert.mark}
                           loading="lazy"
                           decoding="async"
-                          style={S.diagramImg}
+                          style={S.certLogo}
                         />
                       ) : (
                         cert.mark

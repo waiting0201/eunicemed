@@ -65,7 +65,7 @@ public sealed class MediaHandler(
         await blobs.EnsureContainersAsync(req.HttpContext.RequestAborted);
 
         // SVG 不走點陣管線：它是 XML，要清洗而不是重新編碼。
-        // 只有 logo-mark preset 接受 SVG（docs/11 §2）。
+        // 只有 logo-mark 與 measure-diagram preset 接受 SVG（docs/11 §2）。
         if (Path.GetExtension(file.FileName).Equals(".svg", StringComparison.OrdinalIgnoreCase))
             return await UploadSvgAsync(req, file, preset, altText);
 
@@ -150,7 +150,7 @@ public sealed class MediaHandler(
     {
         if (!preset.Formats.Contains("svg", StringComparer.OrdinalIgnoreCase))
             throw AppException.UnsupportedMediaType(
-                $"欄位 '{preset.Key}' 不接受 SVG。目前只有 logo-mark 接受。");
+                $"欄位 '{preset.Key}' 不接受 SVG。目前只有 logo-mark 與 measure-diagram 接受。");
 
         using var reader = new StreamReader(file.OpenReadStream());
         var raw = await reader.ReadToEndAsync(req.HttpContext.RequestAborted);

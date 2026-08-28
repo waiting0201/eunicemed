@@ -342,12 +342,12 @@
     {
       "key": "measure-diagram",
       "label": {
-        "en": "Measurement diagram (1:1)",
-        "zh-TW": "量測部位圖（1:1）"
+        "en": "Measurement diagram (1:2)",
+        "zh-TW": "量測部位圖（1:2）"
       },
-      "aspect": "1:1",
+      "aspect": "1:2",
       "width": 400,
-      "height": 400,
+      "height": 800,
       "maxBytes": 81920,
       "formats": [
         "png",
@@ -355,8 +355,8 @@
         "webp"
       ],
       "note": {
-        "en": "Line drawing beside the product size chart, showing where to measure (transparent PNG or SVG)",
-        "zh-TW": "產品尺寸表旁的量測部位線稿（PNG 透明底或 SVG）"
+        "en": "Standing-figure line drawing beside the product size chart, showing where to measure (transparent PNG or SVG)",
+        "zh-TW": "產品尺寸表旁的量測部位線稿，直式人形（PNG 透明底或 SVG）"
       },
       "output": {
         "webp": [
