@@ -5,7 +5,71 @@ import { api, type ApplicationDetail } from '@/lib/api';
 import { srcSetOf } from '@/lib/image';
 import { isLocale, type Locale } from '@/lib/locale';
 import { ProductCard } from '@/components/ProductCard';
-import { SectionHeading } from '@/components/SectionHeading';
+import { css } from '@/lib/css';
+import { collectionColor, collectionRule } from '@/lib/collection';
+import { NUMERAL, SectionHeading } from '@/components/SectionHeading';
+
+/** 樣式逐字取自 `mockup4/Application Detail.dc.html`。 */
+const S = {
+  breadcrumb: css`max-width:1180px;margin:0 auto;padding:18px clamp(24px,5vw,64px);font-size:.85rem;color:#66787F;font-weight:500;`,
+  sep: css`margin:0 8px;color:#B7C4C8;`,
+
+  intro: css`max-width:1180px;margin:0 auto;padding:0 clamp(24px,5vw,64px) clamp(48px,6vw,72px);`,
+  introGrid: css`display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(32px,4vw,56px);align-items:center;`,
+  eyebrow: css`color:#0092A8;font-weight:680;letter-spacing:.16em;text-transform:uppercase;font-size:.78rem;`,
+  title: css`font-weight:400;font-size:clamp(2rem,3.6vw,2.8rem);letter-spacing:-.02em;margin:10px 0 0;`,
+  lead: css`margin-top:14px;font-size:1.1rem;`,
+  stats: css`display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;`,
+  stat: css`display:inline-flex;align-items:center;gap:8px;background:#F5FAFB;border:1px solid #DFE9EC;border-radius:999px;padding:7px 16px;font-size:.85rem;font-weight:500;`,
+  statValue: css`color:#16333B;`,
+  actions: css`display:flex;gap:14px;flex-wrap:wrap;margin-top:26px;`,
+  primary: css`background:#00B5CD;color:#fff;font-weight:620;padding:12px 28px;border-radius:999px;box-shadow:0 8px 22px rgba(0,150,170,.28);`,
+  secondary: css`border:1px solid #DFE9EC;background:#FFFFFF;font-weight:620;padding:12px 28px;border-radius:999px;`,
+  portrait: css`position:relative;aspect-ratio:4/5;border-radius:22px;overflow:hidden;background:#F0F6F8;`,
+  portraitImg: css`display:block;width:100%;height:100%;object-fit:cover;`,
+
+  tinted: css`background:#F5FAFB;padding:clamp(56px,7vw,80px) 0;`,
+  tintedInner: css`max-width:1180px;margin:0 auto;padding:0 clamp(24px,5vw,64px);`,
+  plain: css`max-width:1180px;margin:0 auto;padding:clamp(56px,7vw,80px) clamp(24px,5vw,64px);`,
+  h2: css`font-weight:400;font-size:clamp(1.8rem,3.4vw,2.3rem);margin:8px 0 32px;`,
+  h2Tight: css`font-weight:400;font-size:clamp(1.8rem,3.4vw,2.3rem);margin:8px 0 24px;`,
+
+  cards4: css`display:grid;grid-template-columns:repeat(4,1fr);gap:24px;`,
+  cards3: css`display:grid;grid-template-columns:repeat(3,1fr);gap:24px;`,
+  concern: css`background:#FFFFFF;border:1px solid #DFE9EC;border-radius:20px;padding:26px 24px;`,
+  concernTitle: css`font-weight:570;font-size:1.08rem;`,
+  concernBody: css`font-size:.9rem;margin-top:6px;`,
+  level: css`border:1px solid #DFE9EC;border-radius:20px;background:#FFFFFF;padding:30px 28px;`,
+  levelTitle: css`font-weight:620;font-size:1.2rem;`,
+  levelBody: css`font-size:.94rem;margin-top:8px;`,
+  levelNote: css`font-size:.86rem;color:#66787F;margin-top:14px;`,
+  levelLink: css`display:inline-block;margin-top:16px;color:#0092A8;font-weight:620;font-size:.92rem;`,
+
+  head: css`display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:16px;margin-bottom:32px;`,
+  headTitle: css`font-weight:400;font-size:clamp(1.6rem,3vw,2.1rem);`,
+  headLink: css`color:#0092A8;font-weight:620;`,
+
+  howGrid: css`display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,4vw,64px);align-items:start;`,
+  step: css`display:flex;gap:18px;padding:20px 0;border-top:1px solid #DFE9EC;`,
+  stepLast: css`display:flex;gap:18px;padding:20px 0;border-top:1px solid #DFE9EC;border-bottom:1px solid #DFE9EC;`,
+  stepNo: css`color:#0092A8;font-weight:700;font-size:.9rem;min-width:28px;`,
+  stepTitle: css`font-weight:570;font-size:1.05rem;`,
+  stepBody: css`font-size:.92rem;margin-top:4px;`,
+  howLink: css`display:inline-block;margin-top:22px;color:#0092A8;font-weight:620;`,
+  fitting: css`position:relative;aspect-ratio:16/10;border-radius:22px;overflow:hidden;background:#F0F6F8;`,
+  fittingImg: css`display:block;width:100%;height:100%;object-fit:cover;`,
+  disclaimer: css`margin-top:28px;font-size:.85rem;color:#66787F;background:#F5FAFB;border:1px solid #DFE9EC;border-radius:16px;padding:18px 22px;`,
+
+  relatedTitle: css`font-weight:400;font-size:clamp(1.6rem,3vw,2.1rem);margin-bottom:28px;`,
+  relatedCard: css`display:block;background:#FFFFFF;border:1px solid #DFE9EC;border-radius:20px;padding:24px 22px;`,
+  relatedName: css`display:flex;justify-content:space-between;align-items:baseline;font-weight:570;font-size:1.08rem;`,
+  relatedCount: css`color:#0092A8;font-weight:700;font-size:.8rem;`,
+  relatedBody: css`font-size:.88rem;margin-top:4px;`,
+
+  cta: css`max-width:1180px;margin:0 auto;padding:clamp(48px,6vw,72px) clamp(24px,5vw,64px);display:flex;flex-wrap:wrap;gap:28px;justify-content:space-between;align-items:center;`,
+  ctaCopy: css`max-width:600px;`,
+  ctaBody: css`margin-top:10px;`,
+} as const;
 
 type Params = { locale: string; slug: string };
 
@@ -75,11 +139,7 @@ const COPY: Record<
   },
 };
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<Params>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { locale, slug } = await params;
   if (!isLocale(locale)) return {};
 
@@ -99,11 +159,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function ApplicationDetailPage({
-  params,
-}: {
-  params: Promise<Params>;
-}) {
+export default async function ApplicationDetailPage({ params }: { params: Promise<Params> }) {
   const { locale, slug } = await params;
   if (!isLocale(locale)) notFound();
 
@@ -118,48 +174,43 @@ export default async function ApplicationDetailPage({
 
   return (
     <>
-      <nav className="mx-auto max-w-content px-gutter py-4 text-[0.85rem] font-medium text-[#66787f]">
+      <nav style={S.breadcrumb}>
         <Link href={`/${locale}/applications`}>{c.applications}</Link>
-        <span className="mx-2 text-[#b7c4c8]">/</span>
-        <span className="text-ink">{a.name}</span>
+        <span style={S.sep}>/</span>
+        {/* mockup4 的最後一節沒有自己的樣式，直接繼承容器的 #66787F */}
+        <span>{a.name}</span>
       </nav>
 
       {/* 01 導言 */}
-      <section className="mx-auto max-w-content px-gutter pb-[clamp(48px,6vw,72px)]">
-        <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
+      <section style={S.intro}>
+        <div style={S.introGrid} data-r="stack">
           <div>
-            <p className="text-[0.78rem] font-[680] uppercase tracking-[0.16em] text-brand-deep">
-              {kind}
-            </p>
-            <h1 className="mt-2.5 text-[clamp(2rem,3.6vw,2.8rem)] font-normal">{a.name}</h1>
-            {a.lead && <p className="mt-3.5 text-[1.1rem]">{a.lead}</p>}
+            <p style={S.eyebrow}>{kind}</p>
+            <h1 style={S.title}>{a.name}</h1>
+            {a.lead && <p style={S.lead}>{a.lead}</p>}
 
             {a.stats && a.stats.length > 0 && (
-              <div className="mt-6 flex flex-wrap gap-3">
+              <div style={S.stats}>
                 {a.stats.map((s, i) => (
-                  <span
-                    key={s.label ?? i}
-                    className="rounded-full border border-hairline bg-tint-deep px-4 py-2 text-[0.9rem]"
-                  >
-                    <b className="text-ink">{s.value}</b> {s.label}
+                  <span key={s.label ?? i} style={S.stat}>
+                    <b style={S.statValue}>{s.value}</b> {s.label}
                   </span>
                 ))}
               </div>
             )}
 
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div style={S.actions}>
               {a.recommendedProducts.length > 0 && (
                 <a
                   href="#products"
-                  className="rounded-full bg-brand px-7 py-3 font-semibold text-white shadow-[0_10px_30px_rgba(0,181,205,.32)] transition hover:bg-brand-deep hover:text-white"
+                  style={S.primary}
+                  className="hover:text-white"
+                  data-hover="lift-2-white"
                 >
                   {c.seeSolutions}
                 </a>
               )}
-              <Link
-                href={`/${locale}/contact`}
-                className="rounded-full border-[1.5px] border-[rgba(0,146,168,.4)] px-6 py-[11px] font-semibold text-brand-deep"
-              >
+              <Link href={`/${locale}/contact`} style={S.secondary}>
                 {c.ask}
               </Link>
             </div>
@@ -174,16 +225,16 @@ export default async function ApplicationDetailPage({
               width={1000}
               height={1250}
               decoding="async"
-              className="aspect-[4/5] w-full rounded-[22px] object-cover"
+              style={{ ...S.portrait, ...S.portraitImg }}
             />
           ) : (
-            <div className="aspect-[4/5] rounded-[22px] bg-tint-deep" />
+            <div style={S.portrait} />
           )}
         </div>
 
         {a.body && (
           <div
-            className="mt-10 max-w-[68ch] [&_a]:text-brand-deep [&_li]:mt-1 [&_p]:mt-4 [&_ul]:list-disc [&_ul]:pl-5"
+            className="m4-prose"
             // API 已在寫入時以白名單淨化（Services/HtmlSanitizers.cs）。
             // 前端不再淨化一次 —— 兩套規則會互相漂移，安全邊界只留伺服器端一道。
             dangerouslySetInnerHTML={{ __html: a.body }}
@@ -193,17 +244,19 @@ export default async function ApplicationDetailPage({
 
       {/* 02 常見困擾 */}
       {a.concerns && a.concerns.length > 0 && (
-        <section className="bg-tint py-[clamp(56px,7vw,80px)]">
-          <div className="mx-auto max-w-content px-gutter">
-            <SectionHeading index={next()} title={c.concerns} className="mb-8" />
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <section style={S.tinted}>
+          <div style={S.tintedInner}>
+            <SectionHeading
+              index={next()}
+              title={c.concerns}
+              numeralStyle={NUMERAL.muted}
+              titleStyle={S.h2}
+            />
+            <div style={S.cards4} data-r="cols-2">
               {a.concerns.map((x, i) => (
-                <div
-                  key={x.title ?? i}
-                  className="rounded-[16px] border border-hairline bg-white p-5"
-                >
-                  {x.title && <h3 className="text-[1.05rem] font-semibold">{x.title}</h3>}
-                  {x.body && <p className="mt-1.5 text-[0.9rem]">{x.body}</p>}
+                <div key={x.title ?? i} style={S.concern}>
+                  {x.title && <h3 style={S.concernTitle}>{x.title}</h3>}
+                  {x.body && <p style={S.concernBody}>{x.body}</p>}
                 </div>
               ))}
             </div>
@@ -213,34 +266,33 @@ export default async function ApplicationDetailPage({
 
       {/* 03 支撐強度 */}
       {a.supportLevels && a.supportLevels.length > 0 && (
-        <section className="mx-auto max-w-content px-gutter py-[clamp(56px,7vw,80px)]">
-          <SectionHeading index={next()} title={c.supportLevels} className="mb-8" />
-          <div className="grid gap-6 lg:grid-cols-3">
+        <section style={S.plain}>
+          <SectionHeading
+            index={next()}
+            title={c.supportLevels}
+            numeralStyle={NUMERAL.muted}
+            titleStyle={S.h2}
+          />
+          <div style={S.cards3} data-r="stack">
             {a.supportLevels.map((lv, i) => (
               <div
                 key={lv.collection?.slug ?? i}
-                className="rounded-[18px] border border-hairline p-6"
+                style={{ ...S.level, ...collectionRule(lv.collection?.slug) }}
               >
                 {lv.collection && (
-                  <h3
-                    className="text-[1.2rem] font-semibold"
-                    style={{ color: COLLECTION_TONE[lv.collection.slug] ?? 'var(--color-brand-deep)' }}
-                  >
+                  <h3 style={{ ...S.levelTitle, ...collectionColor(lv.collection.slug) }}>
                     {lv.collection.name}
                   </h3>
                 )}
-                {lv.body && <p className="mt-2">{lv.body}</p>}
+                {lv.body && <p style={S.levelBody}>{lv.body}</p>}
                 {lv.bestFor && (
-                  <p className="mt-3 text-[0.9rem] text-grey">
+                  <p style={S.levelNote}>
                     {c.bestFor}
                     {lv.bestFor}
                   </p>
                 )}
                 {lv.linkUrl && lv.collection && (
-                  <Link
-                    href={lv.linkUrl}
-                    className="mt-4 inline-block font-semibold text-brand-deep"
-                  >
+                  <Link href={lv.linkUrl} style={S.levelLink}>
                     {c.view(lv.collection.name)}
                   </Link>
                 )}
@@ -252,20 +304,17 @@ export default async function ApplicationDetailPage({
 
       {/* 04 推薦產品 */}
       {a.recommendedProducts.length > 0 && (
-        <section id="products" className="bg-tint py-[clamp(56px,7vw,80px)]">
-          <div className="mx-auto max-w-content px-gutter">
-            <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <section id="products" style={S.tinted}>
+          <div style={S.tintedInner}>
+            <div style={S.head}>
               <SectionHeading index={next()} title={c.recommended(a.name)} />
               {a.type !== 'special-care' && (
-                <Link
-                  href={`/${locale}/products?bodyPart=${a.slug}`}
-                  className="font-semibold text-brand-deep"
-                >
+                <Link href={`/${locale}/products?bodyPart=${a.slug}`} style={S.headLink}>
                   {c.allProducts(productTotal(a), a.name)}
                 </Link>
               )}
             </div>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div style={S.cards4} data-r="cols-2">
               {a.recommendedProducts.map((p) => (
                 <ProductCard key={p.slug} item={p} />
               ))}
@@ -276,28 +325,25 @@ export default async function ApplicationDetailPage({
 
       {/* 05 如何選擇 */}
       {a.howTo && a.howTo.length > 0 && (
-        <section className="mx-auto max-w-content px-gutter py-[clamp(56px,7vw,80px)]">
-          <div className="grid items-center gap-14 lg:grid-cols-2">
+        <section style={S.plain}>
+          <div style={S.howGrid} data-r="stack">
             <div>
-              <SectionHeading index={next()} title={c.howTo} className="mb-4" />
+              <SectionHeading
+                index={next()}
+                title={c.howTo}
+                numeralStyle={NUMERAL.muted}
+                titleStyle={S.h2Tight}
+              />
               {a.howTo.map((h, i) => (
-                <div
-                  key={h.title ?? i}
-                  className="flex gap-3.5 border-b border-hairline py-3.5 last:border-0"
-                >
-                  <span className="font-bold text-brand-deep">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
+                <div key={h.title ?? i} style={i === a.howTo!.length - 1 ? S.stepLast : S.step}>
+                  <span style={S.stepNo}>{String(i + 1).padStart(2, '0')}</span>
                   <div>
-                    {h.title && <h3 className="text-[1.05rem] font-semibold">{h.title}</h3>}
-                    {h.body && <p className="text-[0.92rem]">{h.body}</p>}
+                    {h.title && <h3 style={S.stepTitle}>{h.title}</h3>}
+                    {h.body && <p style={S.stepBody}>{h.body}</p>}
                   </div>
                 </div>
               ))}
-              <Link
-                href={`/${locale}/faq`}
-                className="mt-5 inline-block font-semibold text-brand-deep"
-              >
+              <Link href={`/${locale}/faq`} style={S.howLink}>
                 {c.moreFaq}
               </Link>
             </div>
@@ -312,10 +358,10 @@ export default async function ApplicationDetailPage({
                 decoding="async"
                 width={1200}
                 height={750}
-                className="aspect-[16/10] w-full rounded-[22px] object-cover"
+                style={{ ...S.fitting, ...S.fittingImg }}
               />
             ) : (
-              <div className="aspect-[16/10] rounded-[22px] bg-tint-deep" />
+              <div style={S.fitting} />
             )}
           </div>
         </section>
@@ -324,29 +370,21 @@ export default async function ApplicationDetailPage({
       {/* 醫療免責。**刻意放在區段之外**：它一開始寫在「如何選擇」裡，
           結果該區沒內容時整段免責跟著消失 —— 中文頁就完全看不到。
           這是法務要求的固定文字，未填時用模板預設（docs/09 §應用方案）。 */}
-      <section className="mx-auto max-w-content px-gutter pb-4">
-        <p className="text-[0.85rem] text-grey">
-          {a.disclaimer ?? DEFAULT_DISCLAIMER[locale]}
-        </p>
+      <section style={S.plain}>
+        <p style={S.disclaimer}>{a.disclaimer ?? DEFAULT_DISCLAIMER[locale]}</p>
       </section>
 
       {/* 06 相關應用方案 */}
       {a.related.length > 0 && (
-        <section className="bg-tint py-[clamp(56px,7vw,80px)]">
-          <div className="mx-auto max-w-content px-gutter">
-            <h2 className="mb-7 text-[clamp(1.6rem,3vw,2.1rem)] font-normal">{c.related}</h2>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <section style={S.tinted}>
+          <div style={S.tintedInner}>
+            <h2 style={S.relatedTitle}>{c.related}</h2>
+            <div style={S.cards4} data-r="cols-2">
               {a.related.map((r) => (
-                <Link
-                  key={r.slug}
-                  href={r.url}
-                  className="block rounded-[20px] border border-hairline bg-white px-[22px] py-6 transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(10,60,72,.10)]"
-                >
-                  <h3 className="flex items-baseline justify-between gap-2 text-[1.08rem] font-[570]">
+                <Link key={r.slug} href={r.url} style={S.relatedCard} data-hover="lift-shadow">
+                  <h3 style={S.relatedName}>
                     {r.name}
-                    <small className="text-[0.8rem] font-bold text-brand-deep">
-                      {r.productCount}
-                    </small>
+                    <small style={S.relatedCount}>{r.productCount}</small>
                   </h3>
                 </Link>
               ))}
@@ -356,22 +394,21 @@ export default async function ApplicationDetailPage({
       )}
 
       {/* 7 收尾 CTA */}
-      <section className="mx-auto flex max-w-content flex-wrap items-center justify-between gap-7 px-gutter py-[clamp(48px,6vw,72px)]">
-        <div className="max-w-[600px]">
-          <h2 className="text-[clamp(1.6rem,3vw,2.1rem)] font-normal">{c.ctaTitle}</h2>
-          <p className="mt-2.5">{c.ctaBody}</p>
+      <section style={S.cta}>
+        <div style={S.ctaCopy}>
+          <h2 style={S.headTitle}>{c.ctaTitle}</h2>
+          <p style={S.ctaBody}>{c.ctaBody}</p>
         </div>
-        <div className="flex flex-wrap gap-3.5">
+        <div style={S.actions}>
           <Link
             href={`/${locale}/where-to-buy`}
-            className="rounded-full bg-brand px-7 py-3 font-[620] text-white shadow-[0_8px_22px_rgba(0,150,170,.28)] hover:text-white"
+            style={S.primary}
+            className="hover:text-white"
+            data-hover="lift-2-white"
           >
             {c.ctaPrimary}
           </Link>
-          <Link
-            href={`/${locale}/contact`}
-            className="rounded-full border border-hairline bg-white px-7 py-3 font-[620]"
-          >
+          <Link href={`/${locale}/contact`} style={S.secondary}>
             {c.ctaSecondary}
           </Link>
         </div>
@@ -381,16 +418,9 @@ export default async function ApplicationDetailPage({
 }
 
 /** 系列專色（docs/08 §2）。與 CollectionBadge 同一組，但這裡吃的是文字色。 */
-const COLLECTION_TONE: Record<string, string> = {
-  care: 'var(--color-care)',
-  protect: 'var(--color-protect)',
-  advance: 'var(--color-advance)',
-};
-
 const DEFAULT_DISCLAIMER: Record<Locale, string> = {
   en: 'This page is general product information, not medical advice. For persistent pain, injury or post-operative care, consult a qualified healthcare professional.',
-  'zh-TW':
-    '本頁為一般產品資訊，非醫療建議。持續疼痛、受傷或術後照護請諮詢合格醫療專業人員。',
+  'zh-TW': '本頁為一般產品資訊，非醫療建議。持續疼痛、受傷或術後照護請諮詢合格醫療專業人員。',
 };
 
 /**
