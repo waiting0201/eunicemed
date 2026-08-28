@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "postbuild": "node scripts/pack-standalone.mjs && node scripts/check-size.mjs",
-    "start:standalone": "node .next/standalone/server.js"
+    "start:standalone": "node .next/standalone/server.js",
+    "mockup:check": "node ../../tools/mockup-diff/check.mjs"
   },
   "dependencies": {
     "next": "15.5.23",
