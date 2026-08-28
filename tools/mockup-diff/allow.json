@@ -35,6 +35,7 @@
     "text-align:left": "同上，<button> 預設置中。",
     "list-style:none": "FAQ 用原生 <details>，要拿掉預設的三角標記；mockup4 是 div + onClick，本來就沒有標記。",
     "display:none": "同上，Safari 的 ::-webkit-details-marker。",
-    "transform:rotate(45deg)": "mockup4 用 JS 算出 `rotate(${isOpen ? 45 : 0}deg)`；本站用原生 <details>，展開角度寫在 globals.css 的 `.m4-faq[open]`，值相同。"
+    "transform:rotate(45deg)": "mockup4 用 JS 算出 `rotate(${isOpen ? 45 : 0}deg)`；本站用原生 <details>，展開角度寫在 globals.css 的 `.m4-faq[open]`，值相同。",
+    "color:#b3261e": "表單送出失敗的錯誤訊息。mockup4 的表單不會送出，所以沒有錯誤狀態；此色為 Material 的 error 色，與品牌青、墨色都拉得開。"
   }
 }
