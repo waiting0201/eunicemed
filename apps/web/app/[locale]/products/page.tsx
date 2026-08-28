@@ -44,19 +44,18 @@ const S = {
 type Params = { locale: string };
 type Search = { category?: string; collection?: string; bodyPart?: string };
 
-type HeroSection = { band?: MediaRef; eyebrow?: string; title?: string; lead?: string };
-type CtaSection = {
-  background?: MediaRef;
-  title?: string;
-  body?: string;
-  primaryCta?: SectionCta;
-  secondaryCta?: SectionCta;
-};
+type HeroSection = { band?: MediaRef };
+type CtaSection = { background?: MediaRef };
 
+/**
+ * 版面文案 —— 頁首與頁尾 CTA 帶**刻意寫死，不走 CMS**（決議見 docs/15-cms-scope.md）。
+ * 英文逐字取自 `mockup4/Products.dc.html`；篩選列的標籤本來就在這裡。
+ */
 const COPY: Record<
   Locale,
   {
-    fallbackTitle: string;
+    hero: { eyebrow: string; title: string; lead: string };
+    cta: { title: string; body: string; primary: string; secondary: string };
     category: string;
     collection: string;
     bodyPart: string;
@@ -64,14 +63,38 @@ const COPY: Record<
   }
 > = {
   en: {
-    fallbackTitle: 'Products',
+    hero: {
+      eyebrow: 'Products',
+      title: 'Three ways to support motion',
+      lead:
+        'Specialists in smart support: compression stockings, orthopedic supports and ' +
+        'silicone footcare — every product graded Care · Protect · Advance.',
+    },
+    cta: {
+      title: 'Not sure which support you need?',
+      body: 'Explore by body part on our interactive map, or ask our team for a recommendation.',
+      primary: 'Find by body part',
+      secondary: 'Contact us',
+    },
     category: 'Category',
     collection: 'Collection',
     bodyPart: 'Body part',
     count: (n) => `${n} product${n === 1 ? '' : 's'}`,
   },
   'zh-TW': {
-    fallbackTitle: '產品',
+    hero: {
+      eyebrow: '產品',
+      title: '支撐動作的三種方式',
+      lead:
+        '我們專注於智慧支撐：醫療彈性襪、矯型護具與矽膠足部照護 —— ' +
+        '每一件產品都標示 Care · Protect · Advance 強度。',
+    },
+    cta: {
+      title: '不確定自己需要哪一種支撐？',
+      body: '在互動人體圖上依部位探索，或直接詢問我們的團隊。',
+      primary: '依部位尋找',
+      secondary: '聯絡我們',
+    },
     category: '分類',
     collection: '系列',
     bodyPart: '適用部位',
@@ -83,14 +106,11 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
-  const page = await api.page(locale, 'products');
-  const hero = page ? section<HeroSection>(page, 'hero') : null;
-
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
 
   return {
-    title: hero?.title ?? COPY[locale].fallbackTitle,
-    description: hero?.lead,
+    title: COPY[locale].hero.title,
+    description: COPY[locale].hero.lead,
     alternates: {
       canonical: `${siteUrl}/${locale}/products`,
       languages: { en: `${siteUrl}/en/products`, 'zh-TW': `${siteUrl}/zh-TW/products` },
@@ -135,9 +155,9 @@ export default async function ProductsPage({
       <PageBand image={hero?.band} />
 
       <PageHero
-        eyebrow={hero?.eyebrow ?? c.fallbackTitle}
-        title={hero?.title ?? c.fallbackTitle}
-        lead={hero?.lead}
+        eyebrow={c.hero.eyebrow}
+        title={c.hero.title}
+        lead={c.hero.lead}
       />
 
       {/* 三大分類卡 —— 動態取自 GET /categories */}
@@ -195,10 +215,9 @@ export default async function ProductsPage({
         </div>
       </section>
 
-      {/* 頁尾 CTA 帶 */}
-      {cta && (
-        <section style={S.cta}>
-          {cta.background ? (
+      {/* 頁尾 CTA 帶 —— 文案是常數，CMS 只管背景圖，所以整段無條件渲染 */}
+      <section style={S.cta}>
+          {cta?.background ? (
             <>
               <img
                 src={cta.background.url}
@@ -218,15 +237,17 @@ export default async function ProductsPage({
           )}
 
           <div style={S.ctaInner}>
-            {cta.title && <h2 style={S.ctaTitle}>{cta.title}</h2>}
-            {cta.body && <p style={S.ctaLead}>{cta.body}</p>}
+            <h2 style={S.ctaTitle}>{c.cta.title}</h2>
+            <p style={S.ctaLead}>{c.cta.body}</p>
             <div style={S.ctaRow}>
-              {cta.primaryCta?.url && <CtaLink cta={cta.primaryCta} primary />}
-              {cta.secondaryCta?.url && <CtaLink cta={cta.secondaryCta} />}
+              <CtaLink
+                cta={{ label: c.cta.primary, url: `/${locale}/applications` }}
+                primary
+              />
+              <CtaLink cta={{ label: c.cta.secondary, url: `/${locale}/contact` }} />
             </div>
           </div>
         </section>
-      )}
     </>
   );
 }

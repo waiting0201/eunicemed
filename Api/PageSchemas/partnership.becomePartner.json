@@ -79,11 +79,6 @@
           }
         }
       }
-    },
-    "submitLabel": {
-      "type": "string",
-      "maxLength": 60,
-      "x-fieldType": "text"
     }
   },
   "description": "表單送出走 POST /contact type=partnership（Phase 7）；此區段只維護文案與選項。"

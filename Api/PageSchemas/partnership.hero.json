@@ -1,33 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Partnership · 頁首",
+  "description": "eyebrow／標題／導言與版型綁死，寫在前端（docs/15）。這裡只留 16:3 的頁首圖帶。",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "title"
-  ],
   "properties": {
     "band": {
-      "type": "string",
-      "format": "uuid",
-      "x-fieldType": "media",
-      "x-mediaPreset": "page-band",
-      "x-localeInvariant": true
-    },
-    "eyebrow": {
-      "type": "string",
-      "maxLength": 120,
-      "x-fieldType": "text"
-    },
-    "title": {
-      "type": "string",
-      "maxLength": 200,
-      "x-fieldType": "text"
-    },
-    "lead": {
-      "type": "string",
-      "maxLength": 400,
-      "x-fieldType": "text"
+      "type": "string", "format": "uuid",
+      "x-fieldType": "media", "x-mediaPreset": "page-band", "x-localeInvariant": true
     }
   }
 }

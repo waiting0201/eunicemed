@@ -17,26 +17,26 @@ const S = {
 
 type Params = { locale: string };
 
-type HeroSection = { band?: MediaRef; eyebrow?: string; title?: string };
+type HeroSection = { band?: MediaRef };
 type ContentSection = { lastUpdated?: string; body?: string };
 
 // 標點也是語系的一部分：英文用半形冒號 + 空格，中文用全形冒號。
 // 硬寫「：」會讓英文頁出現中文標點（docs/08 §5.2 的語言純度不只是字，也包含排印）。
-const COPY: Record<Locale, { title: string; lastUpdated: string }> = {
-  en: { title: 'Privacy & Legal', lastUpdated: 'Last updated: ' },
-  'zh-TW': { title: '隱私權與法律聲明', lastUpdated: '最後更新：' },
+// 頁首的 eyebrow 與 h1 在 mockup4 是兩個不同的字串（`Privacy & Legal` / `Privacy policy`），
+// 先前兩處共用同一個值。條文本身留在 CMS —— 法務文件必須能改，而且不該等發版。
+const COPY: Record<Locale, { eyebrow: string; title: string; lastUpdated: string }> = {
+  en: { eyebrow: 'Privacy & Legal', title: 'Privacy policy', lastUpdated: 'Last updated: ' },
+  'zh-TW': { eyebrow: '隱私權與法律聲明', title: '隱私權政策', lastUpdated: '最後更新：' },
 };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
-  const page = await api.page(locale, 'privacy');
-  const hero = page ? section<HeroSection>(page, 'hero') : null;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
 
   return {
-    title: hero?.title ?? COPY[locale].title,
+    title: COPY[locale].title,
     alternates: {
       canonical: `${siteUrl}/${locale}/privacy`,
       languages: { en: `${siteUrl}/en/privacy`, 'zh-TW': `${siteUrl}/zh-TW/privacy` },
@@ -61,7 +61,7 @@ export default async function PrivacyPage({ params }: { params: Promise<Params> 
     <>
       <PageBand image={hero?.band} />
 
-      <PageHero eyebrow={hero?.eyebrow ?? c.title} title={hero?.title ?? c.title} />
+      <PageHero eyebrow={c.eyebrow} title={c.title} />
 
       {/* mockup4 這頁的量體是 820px（不是全站的 1180px）—— 法務條文要窄一點才讀得下去 */}
       <section style={S.body}>

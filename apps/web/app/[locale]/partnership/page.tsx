@@ -45,7 +45,7 @@ const S = {
 
 type Params = { locale: string };
 
-type HeroSection = { band?: MediaRef; eyebrow?: string; title?: string; lead?: string };
+type HeroSection = { band?: MediaRef };
 type OemOdmSection = {
   title?: string;
   body?: string;
@@ -59,12 +59,31 @@ type BecomePartnerSection = {
   formTitle?: string;
   formIntro?: string;
   partnershipTypes?: { key?: string; label?: string }[];
-  submitLabel?: string;
 };
 
-const FALLBACK: Record<Locale, string> = { en: 'Partnership', 'zh-TW': '合作夥伴' };
+/**
+ * 版面文案 —— 頁首**刻意寫死，不走 CMS**（決議見 docs/15-cms-scope.md）。
+ * 英文逐字取自 `mockup4/Partnership.dc.html`。
+ */
+const COPY: Record<Locale, { eyebrow: string; title: string; lead: string }> = {
+  en: {
+    eyebrow: 'Partnership',
+    title: 'A team you can truly count on',
+    lead:
+      'From OEM/ODM development to distribution support — partner with a Taiwanese ' +
+      'manufacturer built on precision, service and trust.',
+  },
+  'zh-TW': {
+    eyebrow: '合作夥伴',
+    title: '真正值得信賴的團隊',
+    lead:
+      '從 OEM/ODM 開發到經銷支援 —— ' +
+      '與一家以精準、服務與信任為本的台灣製造商合作。',
+  },
+};
 
-const SUBMIT: Record<Locale, string> = { en: 'Send inquiry', 'zh-TW': '送出洽詢' };
+/** mockup4 的送出鈕逐字是 `Submit inquiry`。 */
+const SUBMIT: Record<Locale, string> = { en: 'Submit inquiry', 'zh-TW': '送出洽詢' };
 
 /** 這頁的區段標題比預設大一階（mockup4：clamp(1.8rem,3.4vw,2.4rem)）。 */
 const PART_H2 = 'text-[clamp(1.8rem,3.4vw,2.4rem)]';
@@ -92,13 +111,11 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
-  const page = await api.page(locale, 'partnership');
-  const hero = page ? section<HeroSection>(page, 'hero') : null;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
 
   return {
-    title: hero?.title ?? FALLBACK[locale],
-    description: hero?.lead,
+    title: COPY[locale].title,
+    description: COPY[locale].lead,
     alternates: {
       canonical: `${siteUrl}/${locale}/partnership`,
       languages: {
@@ -129,9 +146,9 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
       <PageBand image={hero?.band} />
 
       <PageHero
-        eyebrow={hero?.eyebrow ?? FALLBACK[locale]}
-        title={hero?.title ?? FALLBACK[locale]}
-        lead={hero?.lead}
+        eyebrow={COPY[locale].eyebrow}
+        title={COPY[locale].title}
+        lead={COPY[locale].lead}
       />
 
       {/* 01 經銷服務 */}
@@ -235,7 +252,7 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
                 <PartnershipForm
                   locale={locale}
                   types={become.partnershipTypes ?? []}
-                  submitLabel={become.submitLabel ?? SUBMIT[locale]}
+                  submitLabel={SUBMIT[locale]}
                 />
               </div>
             </div>
