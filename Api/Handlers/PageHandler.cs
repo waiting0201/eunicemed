@@ -122,7 +122,16 @@ public sealed class PageHandler(
         return new OkObjectResult(ApiResponse.Ok(new { key, sections = result }));
     }
 
-    /// <summary>GET /admin/pages/{key} —— 全區段 × 全語系（後台編輯用，media 回原始 mediaId）。</summary>
+    /// <summary>
+    /// GET /admin/pages/{key} —— 全區段 × 全語系（後台編輯用，media 回原始 mediaId）。
+    ///
+    /// <para>
+    /// **schema 檔已消失的區段不回傳。** 同步器只把它們停用不硬刪（內容留著，
+    /// 版面改回來時還在），但後台的表單是由 schema 生成的 —— 回傳一個沒有 schema 的
+    /// 區段只會讓編輯者看到一個「找不到 schema」的死分頁。公開端點同樣以
+    /// <see cref="PageSchemaRegistry.TryGet"/> 過濾，兩邊一致。
+    /// </para>
+    /// </summary>
     public async Task<IActionResult> AdminGetAsync(string key)
     {
         var page = await db.Set<Page>()
@@ -130,7 +139,9 @@ public sealed class PageHandler(
             .FirstOrDefaultAsync(p => p.Key == key)
             ?? throw AppException.NotFound("Page");
 
-        var sections = page.Sections.OrderBy(s => s.SortOrder).Select(s => new
+        var sections = page.Sections
+            .Where(s => registry.TryGet(key, s.SectionKey, out _))
+            .OrderBy(s => s.SortOrder).Select(s => new
         {
             sectionKey = s.SectionKey,
             isEnabled  = s.IsEnabled,

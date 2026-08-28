@@ -24,12 +24,6 @@ SECTIONS = {
                     'link': {'label': '', 'url': '/zh-TW/products'}}],
         'intervalSeconds': 6,
     },
-    'heroIntro': {
-        # 品牌標語維持英文 —— 它是品牌符號（CLAUDE.md §5.1）
-        'eyebrow': 'Not Just a Motion',
-        'title': 'Support Feels Personal.',
-        'lead': '在 EuniceMed，我們相信「動」的真義不只是移動 —— 而是讓生活品質更好。',
-    },
     'featuredProducts': {
         'title': '精選產品',
         'allLink': {'label': '所有產品 →', 'url': '/zh-TW/products'},

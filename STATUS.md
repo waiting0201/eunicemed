@@ -151,7 +151,7 @@ facet 篩選、standalone 產物 66MB／250MB。
 
 | 頁面 | 路由 | API 是否就緒 |
 |---|---|---|
-| Home | `/[locale]` | ✅ **已切版可運作**（7 個 schema 已建立；輪播為純 CSS 無 client JS）<br>🔴 **zh-TW 區段文案全缺 → 中文首頁是空白的**，上線前必補 |
+| Home | `/[locale]` | ✅ **已切版可運作**（6 個 schema 已建立；Hero 文案改為前端寫死不進 CMS，見 [docs/09](docs/09-page-blocks.md) §2；輪播為純 CSS 無 client JS）<br>🔴 **zh-TW 區段文案全缺 → 中文首頁是空白的**，上線前必補 |
 | About | `/[locale]/about` | ✅ **已切版可運作**（6 個區段全部接上 `GET /pages/about`）|
 | Products | `/[locale]/products` | ✅ **已切版可運作**（hero／cta 兩個 schema + 動態分類卡與產品格）|
 | Product Category | `/[locale]/products/{category}` | ✅ **已切版可運作** |
@@ -206,7 +206,7 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 |---|---|
 | 登入 | ✅ 可運作（含 refresh token 單次使用的併發處理）|
 | Dashboard | — 刻意不做，改由側欄儀表取代 |
-| 頁面內容（18 頁動態表單） | ✅ 可運作 —— 表單由 `GET /admin/page-schema/{key}` 動態生成<br>已涵蓋 26 個區段、168 個欄位，10 種 `x-fieldType` 全支援；richtext 走 TipTap（lazy chunk）|
+| 頁面內容（18 頁動態表單） | ✅ 可運作 —— 表單由 `GET /admin/page-schema/{key}` 動態生成<br>已涵蓋 25 個區段、165 個欄位，10 種 `x-fieldType` 全支援；richtext 走 TipTap（lazy chunk）|
 | 產品列表 | ✅ 可運作（搜尋／狀態篩選／分頁／完整度儀表）|
 | 產品編輯 | 🟡 可運作（雙語分頁、三個 repeater、圖庫＋主圖、使用情境照、部位／認證多選、尺寸表編輯器、發布／取消發布、`rowVersion` 併發、移除語系）<br>缺：相關產品拖曳|
 | 分類 / 子分類 | ✅ 可運作（分類與子分類同一張表、雙語＋SEO、卡片圖／頁首大圖、子分類狀態、`rowVersion` 併發、移除語系）<br>不提供新增／刪除 —— 那等於改全站 URL 結構 |
@@ -286,7 +286,7 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 
 ---
 
-> **內容現況（2026-08-19）**：英文與中文皆為 149 產品 / 10 消息 / 8 Insights / 3 下載 / 5 首頁區段。
+> **內容現況（2026-08-19）**：英文與中文皆為 149 產品 / 10 消息 / 8 Insights / 3 下載 / 5 首頁區段（Hero 文案已於 2026-08-28 移出 CMS）。
 > 其中 **Insights 的 zh-TW 放的是英文原文**（語言純度的刻意例外，見 [08](docs/08-design.md) §2），
 > 產品與消息的中文為機器翻譯**未經客戶審閱**。
 

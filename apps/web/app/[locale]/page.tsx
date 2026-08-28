@@ -102,7 +102,6 @@ type HeroSliderSection = {
   slides?: { image?: MediaRef; alt?: string }[];
   intervalSeconds?: number;
 };
-type HeroIntroSection = { eyebrow?: string; title?: string; lead?: string };
 type FeaturedSection = {
   title?: string;
   promo?: { eyebrow?: string; title?: string; link?: SectionCta };
@@ -129,23 +128,46 @@ type TestimonialSection = {
 };
 type LatestNewsSection = { title?: string; allLink?: SectionCta };
 
-const FALLBACK: Record<Locale, string> = {
-  en: 'EuniceMed — Not Just a Motion',
-  'zh-TW': 'EuniceMed — Not Just a Motion',
+/**
+ * HERO 文案 —— **刻意寫死，不走 CMS**。
+ *
+ * <p>
+ * 這段原本是 `home.heroIntro` 區段。拿掉的理由是它不是會被編輯的內容：
+ * 三行字（品牌標語、主標、宣言）等同品牌識別，動它要動的是 mockup4 而不是後台。
+ * 留在 CMS 只會讓它有機會被改到與版型不一致 —— 事實上上線後就發生過一次。
+ * </p>
+ *
+ * <p>
+ * 英文逐字取自 `mockup4/Home.dc.html` 的 HERO COPY 段。
+ * `**…**` 是高亮標記，由 {@link Highlight} 轉成品牌青。
+ * 品牌標語與主標維持英文（品牌符號，CLAUDE.md §5.1），
+ * 非品牌符號的 `Made in Taiwan` 才翻譯。
+ * </p>
+ */
+const HERO_COPY: Record<Locale, { eyebrow: string; title: string; lead: string }> = {
+  en: {
+    eyebrow: 'Not Just a Motion · Made in Taiwan',
+    title: 'Support Feels **Personal**.',
+    lead:
+      'We believe the true spirit of motion is about more than just movement — ' +
+      "it's about enhancing your quality of life.",
+  },
+  'zh-TW': {
+    eyebrow: 'Not Just a Motion · 台灣製造',
+    title: 'Support Feels **Personal**.',
+    lead: '我們相信「動」的真義不只是移動 —— 而是讓生活品質更好。',
+  },
 };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
-  const page = await api.page(locale, 'home');
-  const intro = page ? section<HeroIntroSection>(page, 'heroIntro') : null;
-
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
 
   return {
-    title: intro?.title ? plain(intro.title) : FALLBACK[locale],
-    description: intro?.lead,
+    title: plain(HERO_COPY[locale].title),
+    description: HERO_COPY[locale].lead,
     alternates: {
       canonical: `${siteUrl}/${locale}`,
       languages: { en: `${siteUrl}/en`, 'zh-TW': `${siteUrl}/zh-TW` },
@@ -168,7 +190,6 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
   if (!page) notFound();
 
   const slider = section<HeroSliderSection>(page, 'heroSlider');
-  const intro = section<HeroIntroSection>(page, 'heroIntro');
   const featuredCopy = section<FeaturedSection>(page, 'featuredProducts');
   const band = section<BodyPartBandSection>(page, 'bodyPartBand');
   const why = section<WhyPartnerSection>(page, 'whyPartner');
@@ -186,17 +207,13 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
 
       {/* HERO COPY —— 只有上方留白：下方的留白由「01 精選產品」自己的 padding 給
           （mockup4 的 `padding: … 0`），兩段各自負責的話會疊成兩倍 */}
-      {intro && (
-        <section style={S.intro}>
-          {intro.eyebrow && <p style={S.introEyebrow}>{intro.eyebrow}</p>}
-          {intro.title && (
-            <h1 style={S.introTitle}>
-              <Highlight text={intro.title} />
-            </h1>
-          )}
-          {intro.lead && <p style={S.introLead}>{intro.lead}</p>}
-        </section>
-      )}
+      <section style={S.intro}>
+        <p style={S.introEyebrow}>{HERO_COPY[locale].eyebrow}</p>
+        <h1 style={S.introTitle}>
+          <Highlight text={HERO_COPY[locale].title} />
+        </h1>
+        <p style={S.introLead}>{HERO_COPY[locale].lead}</p>
+      </section>
 
       {/* 01 精選產品 —— Pinterest 式瀑布流 */}
       {featuredCopy && featured.items.length > 0 && (

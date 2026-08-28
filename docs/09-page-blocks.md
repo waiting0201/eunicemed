@@ -79,7 +79,6 @@ number · date · bool · enum[...] · ref:Entity · repeatable{...}(min–max)
 | sectionKey | 區段 | 來源 | 欄位 |
 |---|---|---|---|
 | `heroSlider` | Hero 輪播 | 區段 | `slides` repeatable(1–5){ `image` media(`hero-slide`)、`alt` text、`link` link? }；`intervalSeconds` number（預設 6） |
-| `heroIntro` | Hero 文案 | 區段 | `eyebrow` text（`Not Just a Motion · Made in Taiwan`）、`title` text（含一段高亮字，以 `**…**` 標記）、`lead` text |
 | `featuredProducts` | **01** Hero products | 區段 + 動態 | 區段：`title` text、`promo`{ `eyebrow` text、`title` text、`link` link }（全型錄漸層帶）<br>動態：`GET /products?featured=true&pageSize=8`，依 `FeaturedSortOrder`；**Pinterest 式 masonry：等寬 4 欄、卡片高度不一、往下堆疊**，版位比例依序輪替 `1:1 / 4:5 / 5:4`，全部用產品主圖（`ProductImage` 的 `IsPrimary`，preset `square`）；卡片文案取 `ProductTranslation.FeaturedBlurb` |
 | `bodyPartBand` | **02** Find support by body part | 區段 | `background` media(`section-bg`)、`title` text、`lead` text、`cta` link、`tiles` repeatable(4){ `icon` enum、`title` text、`subtitle` text、`link` link } |
 | `whyPartner` | **03** A team your business can truly count on | 區段 | `title` text、`items` repeatable(4){ `title` text、`body` text }、`cta` link |
@@ -89,6 +88,13 @@ number · date · bool · enum[...] · ref:Entity · repeatable{...}(min–max)
 **注意**
 
 - mockup4 的 hero **沒有 CTA 按鈕**（前版文件所寫「雙 CTA → Find Products / Where to Buy」已不適用）。
+- **【2026-08-28 定案】Hero 文案（原 `heroIntro`）改為前端寫死，不再是區段。**
+  三行字（eyebrow `Not Just a Motion · Made in Taiwan`、主標 `Support Feels **Personal**.`、宣言）
+  等同品牌識別而非會被編輯的內容，要動它是動 mockup4；留在 CMS 只是多一個與版型走鐘的機會
+  （上線後已發生過一次：內容被填成舊站文案）。現在的位置在
+  `apps/web/app/[locale]/page.tsx` 的 `HERO_COPY`，英文逐字取自 mockup4。
+  `Api/PageSchemas/home.heroIntro.json` 已刪除 —— 同步器會把既有的區段列停用（內容保留），
+  公開端點與後台都以 schema registry 過濾，所以兩邊都不再出現。
 - `heroSlider` 為 CSS 自動輪播 + 圓點指示；`prefers-reduced-motion` 時停在第一張。
 - 首頁精選為**自動取用 `IsFeatured`**，後台不逐格挑產品；要換版位順序改 `Product.FeaturedSortOrder`。
 - **【2026-08-14 定案】01 區為 Pinterest 式瀑布流（masonry）**：**等寬 4 欄、卡片高度不一、由上往下堆疊**，下方為整排橫跨的全型錄漸層帶。取消原本的直式塔位（1:2 700×1400）與 2×2 大卡。理由：同一產品原需備妥 1:2／1:1／3:4 三種圖，精選產品每次輪替都得補圖，後台實務上難以維持。現在**八格共用同一張 1:1 產品主圖**。詳見 [11-media-specs.md](11-media-specs.md) §3。
@@ -416,7 +422,6 @@ number · date · bool · enum[...] · ref:Entity · repeatable{...}(min–max)
 ```
 api/EuniceMed.Core/PageSchemas/
 ├── home.heroSlider.json
-├── home.heroIntro.json
 ├── home.featuredProducts.json
 ├── ...
 └── privacy.content.json

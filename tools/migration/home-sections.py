@@ -24,13 +24,6 @@ def call(method, path, body=None):
 # ── 內容 ────────────────────────────────────────────────────────────
 # 來源標註：[舊站] = www.eunicemed.com 首頁逐字；[PDF] = docs/10 §1 的 Company Profile
 SECTIONS = {
-    'heroIntro': {
-        'eyebrow': 'Not Just a Motion',                      # [舊站] 品牌標語
-        'title': 'Support Feels Personal.',                   # [PDF] 主標語
-        # [舊站] 首頁品牌宣言逐字
-        'lead': ('At EuniceMed, we believe the true spirit of motion is about more than '
-                 'just movement — it’s about enhancing your quality of life.'),
-    },
     'featuredProducts': {
         'title': 'Hero products',
         'allLink': {'label': 'All products →', 'url': '/en/products'},
