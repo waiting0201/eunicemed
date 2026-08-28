@@ -1,3 +1,4 @@
+import { css } from '@/lib/css';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { api } from '@/lib/api';
@@ -6,6 +7,19 @@ import { ContactCta } from '@/components/ContactCta';
 import { PageHero } from '@/components/PageHero';
 import { ResourcesSubnav } from '@/components/ResourcesSubnav';
 import { SideFilter } from '@/components/SideFilter';
+
+/** 樣式逐字取自 `mockup4/FAQ.dc.html`。展開狀態與答案排版在 globals.css。 */
+const S = {
+  section: css`max-width:1180px;margin:0 auto;padding:clamp(48px,6vw,72px) clamp(24px,5vw,64px);`,
+  grid: css`display:grid;grid-template-columns:260px 1fr;gap:clamp(32px,4vw,56px);align-items:start;`,
+  item: css`border-bottom:1px solid #DFE9EC;`,
+  summary: css`display:flex;justify-content:space-between;align-items:center;gap:20px;cursor:pointer;padding:20px 4px;`,
+  question: css`color:#16333B;font-weight:570;font-size:1.08rem;`,
+  icon: css`color:#0092A8;font-size:1.5rem;font-weight:300;line-height:1;transition:transform .3s cubic-bezier(.34,1.56,.64,1);flex:0 0 auto;`,
+  answer: css`overflow:hidden;min-height:0;padding:0 4px 20px;max-width:72ch;`,
+  /** 空狀態是本站補的（mockup4 是靜態稿） */
+  empty: css`padding:64px 0;text-align:center;color:#8AA0A6;`,
+} as const;
 
 type Params = { locale: string };
 type Search = { category?: string };
@@ -42,11 +56,7 @@ const COPY: Record<
   },
 };
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<Params>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
@@ -82,8 +92,8 @@ export default async function FaqPage({
       <ResourcesSubnav locale={locale} active="/faq" />
       <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />
 
-      <section className="mx-auto max-w-content px-gutter py-[clamp(48px,6vw,72px)]">
-        <div className="grid items-start gap-[clamp(32px,4vw,56px)] lg:grid-cols-[260px_1fr]">
+      <section style={S.section}>
+        <div style={S.grid}>
           <SideFilter
             label={c.categories}
             param="category"
@@ -95,26 +105,24 @@ export default async function FaqPage({
 
           <div>
             {result.items.length === 0 ? (
-              <p className="py-16 text-center text-[#8AA0A6]">{c.empty}</p>
+              <p style={S.empty}>{c.empty}</p>
             ) : (
               result.items.map((faq) => (
-                <details key={faq.id} className="group border-b border-hairline">
+                <details key={faq.id} className="m4-faq" style={S.item}>
                   {/*
                     用原生 <details> 而不是 useState 的手風琴：
                     這頁不需要任何 client JS，且鍵盤操作與無障礙語意瀏覽器已經給了。
                     marker:hidden 是為了拿掉預設三角形，改用右側的 +/−。
                   */}
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-5 px-1 py-5 marker:hidden [&::-webkit-details-marker]:hidden">
-                    <h3 className="text-[1.08rem] font-[570] text-ink">{faq.question}</h3>
-                    <span
-                      aria-hidden
-                      className="shrink-0 text-xl leading-none text-brand-deep transition group-open:rotate-45"
-                    >
+                  <summary style={S.summary}>
+                    <h3 style={S.question}>{faq.question}</h3>
+                    <span aria-hidden className="m4-faq-icon" style={S.icon}>
                       +
                     </span>
                   </summary>
                   <div
-                    className="max-w-[72ch] px-1 pb-5 [&_a]:text-brand-deep [&_li]:mt-1 [&_p]:mt-2 [&_ul]:list-disc [&_ul]:pl-5"
+                    className="m4-answer"
+                    style={S.answer}
                     // 已在寫入時以白名單淨化，前端不再淨化一次（見產品詳情頁的說明）
                     dangerouslySetInnerHTML={{ __html: faq.answer }}
                   />

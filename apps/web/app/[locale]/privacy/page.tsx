@@ -1,11 +1,19 @@
+import { css } from '@/lib/css';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { api, type MediaRef } from '@/lib/api';
 import { formatDate } from '@/lib/date';
-import { srcSetOf } from '@/lib/image';
 import { isLocale, type Locale } from '@/lib/locale';
 import { section } from '@/lib/page';
+import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
+
+/** 樣式逐字取自 `mockup4/Privacy.dc.html`。內文排版在 globals.css 的 `.m4-legal`。 */
+const S = {
+  body: css`max-width:820px;margin:0 auto;padding:clamp(48px,6vw,72px) clamp(24px,5vw,64px);`,
+  /** 「最後更新」那一行是本站補的：mockup4 把日期寫死在頁首 lead 裡 */
+  updated: css`font-size:.88rem;color:#66787F;`,
+} as const;
 
 type Params = { locale: string };
 
@@ -19,11 +27,7 @@ const COPY: Record<Locale, { title: string; lastUpdated: string }> = {
   'zh-TW': { title: '隱私權與法律聲明', lastUpdated: '最後更新：' },
 };
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<Params>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
@@ -55,26 +59,15 @@ export default async function PrivacyPage({ params }: { params: Promise<Params> 
 
   return (
     <>
-      {hero?.band && (
-        <img
-          src={hero.band.url}
-          srcSet={srcSetOf(hero.band)}
-          sizes="100vw"
-          alt={hero.band.alt ?? ''}
-          width={2560}
-          height={480}
-          decoding="async"
-          className="h-[clamp(160px,18.75vw,360px)] w-full object-cover"
-        />
-      )}
+      <PageBand image={hero?.band} />
 
       <PageHero eyebrow={hero?.eyebrow ?? c.title} title={hero?.title ?? c.title} />
 
       {/* mockup4 這頁的量體是 820px（不是全站的 1180px）—— 法務條文要窄一點才讀得下去 */}
-      <section className="mx-auto max-w-[820px] px-gutter py-[clamp(48px,6vw,72px)]">
+      <section style={S.body}>
         <div>
           {content?.lastUpdated && (
-            <p className="text-[0.88rem] text-[#66787F]">
+            <p style={S.updated}>
               {c.lastUpdated}
               {formatDate(content.lastUpdated, locale)}
             </p>
@@ -84,7 +77,7 @@ export default async function PrivacyPage({ params }: { params: Promise<Params> 
             <div
               // Legal profile 允許 h2/h3（Services/HtmlSanitizers.cs）——
               // 法務條文靠編號小節閱讀，這是與一般區段 richtext 的差別。
-              className="mt-6 [&_a]:text-brand-deep [&_a]:underline [&_h2]:mt-9 [&_h2]:mb-3 [&_h2]:text-[1.4rem] [&_h2]:font-normal [&_h3]:mt-6 [&_h3]:text-[1.15rem] [&_h3]:font-[570] [&_li]:mt-1.5 [&_ol]:mt-4 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mt-4 [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:pl-5"
+              className="m4-legal"
               dangerouslySetInnerHTML={{ __html: content.body }}
             />
           )}

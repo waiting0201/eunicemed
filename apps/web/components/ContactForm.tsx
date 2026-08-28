@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
+import { css } from '@/lib/css';
 import { submitContact, type ContactState } from '@/app/[locale]/contact/actions';
 import type { Locale } from '@/lib/locale';
 
@@ -60,9 +61,26 @@ const COPY: Record<
   },
 };
 
-const FIELD =
-  'w-full rounded-xl border border-hairline bg-white px-[13px] py-[11px] text-[0.95rem] text-ink';
-const LABEL = 'mb-1.5 block text-[0.82rem] font-[620] text-ink';
+/**
+ * 樣式逐字取自 `mockup4/Contact.dc.html` 的表單卡。
+ * mockup4 的 `<select>` 另外指定 `background:#fff` —— 深色系統主題下瀏覽器
+ * 會給下拉選單暗底，不寫死就會出現深底深字。
+ */
+const S = {
+  card: css`position:relative;background:#FFFFFF;border-radius:18px;padding:30px;`,
+  heading: css`color:#16333B;font-weight:400;font-size:1.4rem;margin-bottom:18px;`,
+  pair: css`display:grid;grid-template-columns:1fr 1fr;gap:14px;`,
+  label: css`display:block;`,
+  labelLater: css`display:block;margin-top:14px;`,
+  labelText: css`display:block;font-size:.82rem;font-weight:620;color:#16333B;margin-bottom:6px;`,
+  field: css`width:100%;border:1px solid #DFE9EC;border-radius:12px;padding:11px 13px;font-size:.95rem;color:#16333B;`,
+  select: css`width:100%;border:1px solid #DFE9EC;border-radius:12px;padding:11px 13px;font-size:.95rem;color:#16333B;background:#fff;`,
+  textarea: css`width:100%;border:1px solid #DFE9EC;border-radius:12px;padding:11px 13px;font-size:.95rem;color:#16333B;resize:vertical;`,
+  submit: css`margin-top:16px;background:#00B5CD;color:#fff;border:none;font-family:inherit;font-weight:620;font-size:.95rem;padding:13px 30px;border-radius:999px;cursor:pointer;box-shadow:0 8px 22px rgba(0,150,170,.28);`,
+  /** 錯誤訊息是本站補的：mockup4 的表單不會送出 */
+  error: css`margin-top:12px;font-size:.9rem;color:#B3261E;`,
+  status: css`font-size:.95rem;`,
+} as const;
 
 export function ContactForm({ locale }: { locale: Locale }) {
   const c = COPY[locale];
@@ -72,9 +90,9 @@ export function ContactForm({ locale }: { locale: Locale }) {
 
   if (state.status === 'ok') {
     return (
-      <div className="relative rounded-[18px] bg-white p-[30px]">
-        <h2 className="mb-[18px] text-[1.4rem] font-normal">{c.heading}</h2>
-        <p role="status" className="text-[0.95rem]">
+      <div style={S.card}>
+        <h2 style={S.heading}>{c.heading}</h2>
+        <p role="status" style={S.status}>
           {c.thanks}
         </p>
       </div>
@@ -82,7 +100,7 @@ export function ContactForm({ locale }: { locale: Locale }) {
   }
 
   return (
-    <form action={action} className="relative rounded-[18px] bg-white p-[30px]">
+    <form action={action} style={S.card}>
       <input type="hidden" name="locale" value={locale} />
       {/* 蜜罐 —— 對讀屏也隱藏，只有機器人會填 */}
       <input
@@ -94,56 +112,52 @@ export function ContactForm({ locale }: { locale: Locale }) {
         className="hidden"
       />
 
-      <h2 className="mb-[18px] text-[1.4rem] font-normal">{c.heading}</h2>
+      <h2 style={S.heading}>{c.heading}</h2>
 
-      <div className="grid gap-[14px] sm:grid-cols-2">
-        <label className="block">
-          <span className={LABEL}>{c.name}</span>
-          <input name="name" required placeholder={c.namePlaceholder} className={FIELD} />
+      <div style={S.pair}>
+        <label style={S.label}>
+          <span style={S.labelText}>{c.name}</span>
+          <input name="name" required placeholder={c.namePlaceholder} style={S.field} />
         </label>
-        <label className="block">
-          <span className={LABEL}>{c.email}</span>
+        <label style={S.label}>
+          <span style={S.labelText}>{c.email}</span>
           <input
             name="email"
             type="email"
             required
             placeholder={c.emailPlaceholder}
-            className={FIELD}
+            style={S.field}
           />
         </label>
       </div>
 
-      <label className="mt-[14px] block">
-        <span className={LABEL}>{c.subject}</span>
-        <select name="subject" className={FIELD}>
+      <label style={S.labelLater}>
+        <span style={S.labelText}>{c.subject}</span>
+        <select name="subject" style={S.select}>
           {c.subjects.map((s) => (
             <option key={s}>{s}</option>
           ))}
         </select>
       </label>
 
-      <label className="mt-[14px] block">
-        <span className={LABEL}>{c.message}</span>
+      <label style={S.labelLater}>
+        <span style={S.labelText}>{c.message}</span>
         <textarea
           name="message"
           rows={4}
           required
           placeholder={c.messagePlaceholder}
-          className={`${FIELD} resize-y`}
+          style={S.textarea}
         />
       </label>
 
       {state.status === 'error' && (
-        <p role="alert" className="mt-3 text-[0.9rem] text-[#B3261E]">
+        <p role="alert" style={S.error}>
           {state.message}
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="mt-4 rounded-full bg-brand px-[30px] py-[13px] text-[0.95rem] font-[620] text-white shadow-[0_8px_22px_rgba(0,150,170,.28)] disabled:opacity-60"
-      >
+      <button type="submit" disabled={pending} style={S.submit} className="disabled:opacity-60">
         {pending ? c.sending : c.send}
       </button>
     </form>

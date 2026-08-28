@@ -141,7 +141,18 @@ EuniceMed/
 - Next.js 須設 **`output: 'standalone'`**（SWA Free 有 250MB 應用大小上限）。
 - 路由**一律帶語系前綴**：`/[locale]/...`（如 `/en/products`、`/zh-TW/products`）；根路徑 `/` 重導至預設語系。
 - 圖片一律用 `next/image`；外部媒體網域（Blob/CDN）需列入 `next.config` 白名單。
-- 樣式：Tailwind CSS + 設計 token；元件庫集中於 `apps/web/components`。
+- **公開站的版型樣式一律以 `css`…`` 樣板逐字照抄 `mockup4/`**（見 `apps/web/lib/css.ts`）。
+  mockup4 沒有 stylesheet，18 頁共 1,837 個 inline `style`、全站只有 5 個 class ——
+  所謂「照著切」就是把那些字串原封搬進 `style={{…}}`，讓 review 能逐字比對。
+  用 `pnpm --filter web mockup:check` 驗證（目前 18 頁全數 100%、零自創宣告）。
+  刻意的偏離一律寫進 `tools/mockup-diff/allow.json` 並附理由。
+- Tailwind 保留給 inline style 表達不了的東西：hover／pseudo-class、`@keyframes`、
+  以及套用在 API 產生的 HTML 上的排版（`globals.css` 的 `.m4-*`）。
+- **響應式**：mockup4 沒有任何斷點，所以手機／平板這一層是**現場設計**的，
+  規則集中在 `globals.css` 最後一段（全站唯一允許 `!important` 的地方 —— class 打不過 inline）。
+  作法與 `data-r` 標記的意思見 [docs/rwd-backlog.md](docs/rwd-backlog.md)；
+  用 `tools/mockup-diff/viewport-check.mjs` 量測有無橫向溢出。
+- 元件庫集中於 `apps/web/components`。
 
 ### 5.2a 後台 UI（CMS `/admin`）
 - **樣式一律 Tailwind CSS**，與公開站共用同一份設定與品牌 token。UI 元件用 **shadcn/ui**（Tailwind 基底）。**不使用 Ant Design 或任何自帶設計系統的元件庫** —— 理由見 [docs/03-cms.md](docs/03-cms.md) §8。

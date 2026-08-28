@@ -1,6 +1,21 @@
 import type { CategoryDetail } from '@/lib/api';
 import type { Locale } from '@/lib/locale';
+import { css } from '@/lib/css';
 import { SIZES, srcSetOf } from '@/lib/image';
+
+/** 樣式逐字取自 mockup4 分類頁的 §1 CATEGORY INTRO。 */
+const S = {
+  section: css`max-width:1180px;margin:0 auto;padding:0 clamp(24px,5vw,64px) clamp(40px,5vw,56px);`,
+  grid: css`display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(32px,4vw,56px);align-items:center;`,
+  eyebrow: css`color:#0092A8;font-weight:680;letter-spacing:.16em;text-transform:uppercase;font-size:.78rem;`,
+  title: css`font-weight:400;font-size:clamp(2rem,3.6vw,2.8rem);letter-spacing:-.02em;margin:10px 0 0;`,
+  lead: css`margin-top:14px;font-size:1.1rem;`,
+  stats: css`display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;`,
+  stat: css`display:inline-flex;align-items:center;gap:8px;background:#F5FAFB;border:1px solid #DFE9EC;border-radius:999px;padding:7px 16px;font-size:.85rem;font-weight:500;`,
+  statValue: css`color:#16333B;`,
+  media: css`position:relative;aspect-ratio:16/10;border-radius:22px;overflow:hidden;background:#F0F6F8;`,
+  img: css`display:block;width:100%;height:100%;object-fit:cover;`,
+} as const;
 
 const EYEBROW: Record<Locale, { category: string; subCategory: string }> = {
   en: { category: 'Category', subCategory: 'Sub-category' },
@@ -28,26 +43,23 @@ export function CategoryHero({
   kind: 'category' | 'subCategory';
 }) {
   return (
-    <section className="mx-auto max-w-content px-gutter pb-[clamp(40px,5vw,56px)]">
-      <div className="grid items-center gap-[clamp(32px,4vw,56px)] lg:grid-cols-[1.05fr_0.95fr]">
+    <section style={S.section}>
+      <div style={S.grid}>
         <div>
-          <p className="text-[0.78rem] font-[680] uppercase tracking-[0.16em] text-brand-deep">
+          <p style={S.eyebrow}>
             {kind === 'category' ? EYEBROW[locale].category : EYEBROW[locale].subCategory}
           </p>
 
-          <h1 className="mt-2.5 text-[clamp(2rem,3.6vw,2.8rem)] font-normal">{data.name}</h1>
+          <h1 style={S.title}>{data.name}</h1>
 
-          {data.description && <p className="mt-3.5 text-[1.1rem]">{data.description}</p>}
+          {data.description && <p style={S.lead}>{data.description}</p>}
 
           {data.stats && data.stats.length > 0 && (
             /* mockup4 把統計做成細框藥丸，數字才是 ink 色 */
-            <div className="mt-[22px] flex flex-wrap gap-2.5">
+            <div style={S.stats}>
               {data.stats.map((s, i) => (
-                <span
-                  key={i}
-                  className="inline-flex items-center gap-2 rounded-full border border-hairline bg-tint px-4 py-[7px] text-[0.85rem] font-medium"
-                >
-                  {s.value && <b className="text-ink">{s.value}</b>}
+                <span key={i} style={S.stat}>
+                  {s.value && <b style={S.statValue}>{s.value}</b>}
                   {s.label}
                 </span>
               ))}
@@ -55,7 +67,7 @@ export function CategoryHero({
           )}
         </div>
 
-        <div className="aspect-[16/10] overflow-hidden rounded-[22px] bg-tint-deep">
+        <div style={S.media}>
           {data.heroImage ? (
             <img
               src={data.heroImage.url}
@@ -64,13 +76,9 @@ export function CategoryHero({
               alt={data.heroImage.alt ?? data.name}
               width={1200}
               height={750}
-              className="h-full w-full object-cover"
+              style={S.img}
             />
-          ) : (
-            <div className="flex h-full items-center justify-center text-xs text-[#8AA0A6]">
-              16:10 · 1200×750
-            </div>
-          )}
+          ) : null}
         </div>
       </div>
     </section>

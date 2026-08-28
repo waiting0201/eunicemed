@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react';
+import { css } from '@/lib/css';
 import Link from 'next/link';
 import type { SectionCta } from '@/lib/page';
 
@@ -7,40 +9,37 @@ import type { SectionCta } from '@/lib/page';
  *
  * 沒有 `url` 就不渲染：那表示編輯者只填了標籤，點下去會是死連結。
  */
-const STYLES = {
-  primary:
-    'inline-block rounded-full bg-brand px-7 py-3 font-semibold text-white shadow-[0_10px_30px_rgba(0,181,205,.32)] transition hover:bg-brand-deep hover:text-white',
-  outline:
-    'inline-block rounded-full border-[1.5px] border-[rgba(0,146,168,.4)] px-6 py-[11px] font-semibold text-brand-deep',
-  onDark:
-    'inline-block rounded-full bg-white px-7 py-3 font-semibold text-brand-deep transition hover:bg-white/90',
-  text: 'font-semibold text-brand-deep',
-} as const;
+/**
+ * 連結本身的樣式由呼叫端給（`style`），因為 mockup4 每一處的按鈕尺寸都不同 ——
+ * 這裡只保留「純文字連結」這一種，它在全站是同一組值。
+ */
+const TEXT = css`color:#0092A8;font-weight:620;`;
 
 export function SectionCtaLink({
   cta,
-  variant = 'primary',
+  variant = 'text',
   label,
-  className = '',
+  style,
 }: {
   cta: SectionCta | undefined;
-  variant?: keyof typeof STYLES;
+  variant?: 'text' | 'button';
   /** 覆寫標籤（例如卡片用 `ctaLabel` 而非 `link.label`）*/
   label?: string;
-  className?: string;
+  /** 逐處不同的按鈕樣式，由呼叫端以 css`…` 給 */
+  style?: CSSProperties;
 }) {
   if (!cta?.url) return null;
 
   const raw = label ?? cta.label ?? cta.url;
   const text = variant === 'text' ? withArrow(raw) : raw;
-  const cls = `${STYLES[variant]} ${className}`.trim();
+  const resolved = { ...(variant === 'text' ? TEXT : null), ...style };
 
   return cta.external ? (
-    <a href={cta.url} target="_blank" rel="noopener" className={cls}>
+    <a href={cta.url} target="_blank" rel="noopener" style={resolved}>
       {text}
     </a>
   ) : (
-    <Link href={cta.url} className={cls}>
+    <Link href={cta.url} style={resolved}>
       {text}
     </Link>
   );
@@ -50,4 +49,3 @@ export function SectionCtaLink({
 function withArrow(label: string): string {
   return /[→>›»]\s*$/.test(label) ? label : `${label} →`;
 }
-

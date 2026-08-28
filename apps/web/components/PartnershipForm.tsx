@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
+import { css } from '@/lib/css';
 import { submitContact, type ContactState } from '@/app/[locale]/contact/actions';
 import type { Locale } from '@/lib/locale';
 
@@ -52,9 +53,24 @@ const COPY: Record<
   },
 };
 
-const FIELD =
-  'w-full rounded-xl border border-hairline bg-white px-[13px] py-[11px] text-[0.95rem] text-ink';
-const LABEL = 'mb-1.5 block text-[0.82rem] font-[620] text-ink';
+/**
+ * 樣式逐字取自 `mockup4/Partnership.dc.html` §03 的表單卡。
+ * 與 Contact 的差別只有卡片內距（28px vs 30px）與欄位是四格兩列。
+ */
+const S = {
+  card: css`background:#FFFFFF;border-radius:18px;padding:28px;`,
+  pair: css`display:grid;grid-template-columns:1fr 1fr;gap:14px;`,
+  label: css`display:block;`,
+  labelLater: css`display:block;margin-top:14px;`,
+  labelText: css`display:block;font-size:.82rem;font-weight:620;color:#16333B;margin-bottom:6px;`,
+  field: css`width:100%;border:1px solid #DFE9EC;border-radius:12px;padding:11px 13px;font-size:.95rem;color:#16333B;`,
+  select: css`width:100%;border:1px solid #DFE9EC;border-radius:12px;padding:11px 13px;font-size:.95rem;color:#16333B;background:#fff;`,
+  textarea: css`width:100%;border:1px solid #DFE9EC;border-radius:12px;padding:11px 13px;font-size:.95rem;color:#16333B;resize:vertical;`,
+  submit: css`margin-top:16px;background:#00B5CD;color:#fff;border:none;font-family:inherit;font-weight:620;font-size:.95rem;padding:13px 30px;border-radius:999px;cursor:pointer;box-shadow:0 8px 22px rgba(0,150,170,.28);`,
+  /** 錯誤訊息是本站補的：mockup4 的表單不會送出 */
+  error: css`margin-top:12px;font-size:.9rem;color:#B3261E;`,
+  status: css`font-size:.95rem;`,
+} as const;
 
 export function PartnershipForm({
   locale,
@@ -72,8 +88,8 @@ export function PartnershipForm({
 
   if (state.status === 'ok') {
     return (
-      <div className="rounded-[18px] bg-white p-7">
-        <p role="status" className="text-[0.95rem]">
+      <div style={S.card}>
+        <p role="status" style={S.status}>
           {c.thanks}
         </p>
       </div>
@@ -81,7 +97,7 @@ export function PartnershipForm({
   }
 
   return (
-    <form action={action} className="rounded-[18px] bg-white p-7">
+    <form action={action} style={S.card}>
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="type" value="partnership" />
       {/* 蜜罐 —— 對讀屏也隱藏，只有機器人會填 */}
@@ -94,33 +110,22 @@ export function PartnershipForm({
         className="hidden"
       />
 
-      <div className="grid gap-[14px] sm:grid-cols-2">
-        <label className="block">
-          <span className={LABEL}>{c.company}</span>
-          <input
-            name="company"
-            required
-            placeholder={c.companyPlaceholder}
-            className={FIELD}
-          />
+      <div style={S.pair}>
+        <label style={S.label}>
+          <span style={S.labelText}>{c.company}</span>
+          <input name="company" required placeholder={c.companyPlaceholder} style={S.field} />
         </label>
-        <label className="block">
-          <span className={LABEL}>{c.country}</span>
-          <input name="country" placeholder={c.countryPlaceholder} className={FIELD} />
+        <label style={S.label}>
+          <span style={S.labelText}>{c.country}</span>
+          <input name="country" placeholder={c.countryPlaceholder} style={S.field} />
         </label>
-        <label className="block">
-          <span className={LABEL}>{c.email}</span>
-          <input
-            name="email"
-            type="email"
-            required
-            placeholder="you@company.com"
-            className={FIELD}
-          />
+        <label style={S.label}>
+          <span style={S.labelText}>{c.email}</span>
+          <input name="email" type="email" required placeholder="you@company.com" style={S.field} />
         </label>
-        <label className="block">
-          <span className={LABEL}>{c.type}</span>
-          <select name="partnershipType" className={FIELD}>
+        <label style={S.label}>
+          <span style={S.labelText}>{c.type}</span>
+          <select name="partnershipType" style={S.select}>
             {types.map((t, i) => (
               <option key={t.key ?? i} value={t.key ?? t.label}>
                 {t.label}
@@ -130,28 +135,24 @@ export function PartnershipForm({
         </label>
       </div>
 
-      <label className="mt-[14px] block">
-        <span className={LABEL}>{c.message}</span>
+      <label style={S.labelLater}>
+        <span style={S.labelText}>{c.message}</span>
         <textarea
           name="message"
           rows={4}
           required
           placeholder={c.messagePlaceholder}
-          className={`${FIELD} resize-y`}
+          style={S.textarea}
         />
       </label>
 
       {state.status === 'error' && (
-        <p role="alert" className="mt-3 text-[0.9rem] text-[#B3261E]">
+        <p role="alert" style={S.error}>
           {state.message}
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="mt-4 rounded-full bg-brand px-[30px] py-[13px] text-[0.95rem] font-[620] text-white shadow-[0_8px_22px_rgba(0,150,170,.28)] disabled:opacity-60"
-      >
+      <button type="submit" disabled={pending} style={S.submit} className="disabled:opacity-60">
         {pending ? c.sending : submitLabel}
       </button>
     </form>

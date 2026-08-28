@@ -117,3 +117,352 @@
     }
   }
 }
+
+/**
+ * ── 以下是 inline style 表達不了、因此必須留在 CSS 的部分 ────────────────
+ *
+ * mockup4 的版型值一律以 `css`…`` 樣板逐字寫在元件裡（見 lib/css.ts）。
+ * 但 `@keyframes`、pseudo-class、以及套用在 CMS 產生的 HTML 上的規則，
+ * inline style 摸不到，只能放這裡 —— 值同樣逐字取自 mockup4。
+ */
+
+/* 逐字取自 mockup4 各頁的 <style> 區塊 */
+@keyframes ripple {
+  0% {
+    transform: scale(0.5);
+    opacity: 0.5;
+  }
+  70% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes chipFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+/**
+ * mockup4 用自訂屬性 `style-hover="…"` 表達 hover（`support.js:397` 會把
+ * `style-*` 編成 pseudo-class 規則）。全站 35 處、**只有 5 種值**，
+ * 這裡一一對應，元素上寫 `data-hover="…"` 套用。
+ *
+ * ⚠️ 註解裡的字串就是 mockup4 的原文，改動前先比對。
+ */
+@layer components {
+  [data-hover] {
+    transition:
+      transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.25s ease,
+      border-color 0.2s ease;
+  }
+
+  /* style-hover="transform:translateY(-4px);box-shadow:0 18px 40px rgba(10,60,72,.10);" ×16 */
+  [data-hover='lift-shadow']:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 40px rgba(10, 60, 72, 0.1);
+  }
+
+  /* style-hover="transform:translateY(-4px);" ×8 */
+  [data-hover='lift-4']:hover {
+    transform: translateY(-4px);
+  }
+
+  /* style-hover="transform:translateY(-2px);color:#fff;" ×6 */
+  [data-hover='lift-2-white']:hover {
+    transform: translateY(-2px);
+    color: #fff;
+  }
+
+  /* style-hover="border-color:rgba(0,146,168,.4);" ×4 */
+  [data-hover='edge']:hover {
+    border-color: rgba(0, 146, 168, 0.4);
+  }
+
+  /* style-hover="transform:translateY(-3px);" ×1（首頁全型錄卡） */
+  [data-hover='lift-3']:hover {
+    transform: translateY(-3px);
+  }
+}
+
+/**
+ * Privacy & Legal 的內文。API 產生的 HTML 沒有 JSX 元素可以掛 inline style，
+ * 所以這一段只能是 CSS —— 值逐字取自 `mockup4/Privacy.dc.html`。
+ *
+ * ⚠️ Privacy 是唯一一頁把 `h1–h4` 的行高定為 **1.2**（其餘 17 頁是 1.12），
+ * 所以那一條寫在這裡，而不是改全域。
+ */
+@layer components {
+  .m4-legal h1,
+  .m4-legal h2,
+  .m4-legal h3,
+  .m4-legal h4 {
+    line-height: 1.2;
+  }
+
+  /* font-size:1.05rem;margin-bottom:32px;（導引段） */
+  .m4-legal > p:first-child {
+    font-size: 1.05rem;
+    margin-bottom: 32px;
+  }
+
+  /* font-size:1.4rem;font-weight:400;margin:36px 0 12px; */
+  .m4-legal h2 {
+    font-size: 1.4rem;
+    font-weight: 400;
+    margin: 36px 0 12px;
+  }
+
+  /* margin-bottom:16px; */
+  .m4-legal p {
+    margin-bottom: 16px;
+  }
+
+  .m4-legal ul,
+  .m4-legal ol {
+    margin-bottom: 16px;
+    padding-left: 20px;
+  }
+
+  .m4-legal ul {
+    list-style: disc;
+  }
+
+  .m4-legal ol {
+    list-style: decimal;
+  }
+
+  /* color:#0092A8;font-weight:600;（mockup4 —— 靠顏色加字重區分，沒有底線） */
+  .m4-legal a {
+    color: #0092a8;
+    font-weight: 600;
+  }
+}
+
+/**
+ * FAQ 手風琴。用原生 `<details>`，所以「展開時 + 轉成 ×」只能靠 CSS 的
+ * `[open]` 選取器 —— inline style 表達不了。
+ * 旋轉角度與緩動逐字取自 `mockup4/FAQ.dc.html` 的 `iconStyle`。
+ */
+@layer components {
+  .m4-faq > summary {
+    list-style: none;
+  }
+
+  .m4-faq > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .m4-faq[open] .m4-faq-icon {
+    transform: rotate(45deg);
+  }
+
+  /* FAQ 答案是 CMS 產生的 HTML，沒有 JSX 元素可掛 inline style */
+  .m4-answer p {
+    margin-top: 8px;
+  }
+
+  .m4-answer ul {
+    list-style: disc;
+    padding-left: 20px;
+  }
+
+  .m4-answer li {
+    margin-top: 4px;
+  }
+
+  .m4-answer a {
+    color: #0092a8;
+  }
+}
+
+/**
+ * 文章內文。API 產生的 HTML 沒有 JSX 元素可以掛 inline style，只能是 CSS。
+ * 值逐字取自 `mockup4/Article Detail.dc.html` 的 ARTICLE BODY。
+ */
+@layer components {
+  /* p:first-child 是導引段：font-size:1.18rem;color:#16333B;line-height:1.6; */
+  .m4-prose > p:first-child {
+    font-size: 1.18rem;
+    color: #16333b;
+    line-height: 1.6;
+  }
+
+  /* font-size:1.55rem;font-weight:520;margin:38px 0 12px; */
+  .m4-prose h2 {
+    font-size: 1.55rem;
+    font-weight: 520;
+    margin: 38px 0 12px;
+    scroll-margin-top: 100px;
+  }
+
+  .m4-prose h3 {
+    font-size: 1.2rem;
+    font-weight: 570;
+    margin: 28px 0 8px;
+  }
+
+  .m4-prose p {
+    margin-top: 14px;
+  }
+
+  /* margin:16px 0 0;padding-left:22px; */
+  .m4-prose ul,
+  .m4-prose ol {
+    margin: 16px 0 0;
+    padding-left: 22px;
+  }
+
+  .m4-prose ul {
+    list-style: disc;
+  }
+
+  .m4-prose ol {
+    list-style: decimal;
+  }
+
+  /* margin-bottom:8px; */
+  .m4-prose li {
+    margin-bottom: 8px;
+  }
+
+  .m4-prose b,
+  .m4-prose strong {
+    color: #16333b;
+  }
+
+  .m4-prose a {
+    color: #0092a8;
+    font-weight: 600;
+  }
+
+  /* border-left:3px solid #00B5CD;background:#F5FAFB;border-radius:0 16px 16px 0;padding:22px 26px;margin:30px 0; */
+  .m4-prose blockquote {
+    border-left: 3px solid #00b5cd;
+    background: #f5fafb;
+    border-radius: 0 16px 16px 0;
+    padding: 22px 26px;
+    margin: 30px 0;
+    color: #16333b;
+    font-size: 1.1rem;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+
+  /* margin:34px 0; */
+  .m4-prose figure {
+    margin: 34px 0;
+  }
+
+  .m4-prose img {
+    display: block;
+    width: 100%;
+    border-radius: 20px;
+  }
+
+  /* font-size:.85rem;color:#66787F;margin-top:10px; */
+  .m4-prose figcaption {
+    font-size: 0.85rem;
+    color: #66787f;
+    margin-top: 10px;
+  }
+}
+
+/**
+ * ── 響應式（第二階段）───────────────────────────────────────────────
+ *
+ * mockup4 **完全沒有斷點**，版面是寫死的固定 grid（見其 DESIGN.md「已知未處理」）。
+ * 這一段是全站唯一的響應式覆寫，也是唯一允許出現 `!important` 的地方。
+ *
+ * <p>
+ * **為什麼一定要 `!important`**：版型值是逐字照抄 mockup4 的 inline style
+ * （見 `lib/css.ts`），class 在權重上打不過 inline，`lg:` 這類前綴會完全沒有作用。
+ * </p>
+ *
+ * <p>
+ * **為什麼用屬性選取器而不是逐個標記**：實測手動標記會漏 —— 53 個固定 grid 漏了 6 個。
+ * 所以預設行為改成「**任何寫死欄數的 grid 一律收成單欄**」，漏標的頁面最多是變高，
+ * 不會爆版；要維持多欄的地方再用 `data-r` 明講。`auto-fit` 的 grid 本來就會自己收，排除。
+ * </p>
+ */
+@media (max-width: 1024px) {
+  /* 安全預設：固定欄數 → 單欄 */
+  [style*='grid-template-columns']:not([style*='auto-fit']):not([data-r~='keep']):not(
+      [data-r~='cols-2']
+    ):not([data-r~='cols-2-phone']) {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* 卡片格：平板維持兩欄，手機才收成一欄 */
+  [data-r~='cols-2'],
+  [data-r~='cols-2-phone'] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* 首頁 01 的瀑布流（CSS multi-column，不是 grid） */
+  [style*='columns:4'] {
+    columns: 2 !important;
+  }
+
+  /* 黏在側邊的欄位（文章側欄、篩選側欄）在窄螢幕不再黏 */
+  [style*='position:sticky'][data-r~='unstick'] {
+    position: static !important;
+  }
+}
+
+@media (max-width: 640px) {
+  /* `cols-2-phone` 不在此列：產品格是 1:1 圖磚加兩行字，
+     390px 下兩欄各約 170px 仍讀得清楚，而排成單欄會變成很長的一條。 */
+  [data-r~='cols-2'] {
+    grid-template-columns: 1fr !important;
+  }
+
+  [style*='columns:4'] {
+    columns: 1 !important;
+  }
+}
+
+/**
+ * 手機版導覽。mockup4 沒有這一塊 —— 它 18 頁都只有桌機那一列導覽 ——
+ * 所以 `MobileNav` 是現場設計的，這裡負責在兩種尺寸間切換誰出現。
+ */
+[data-r~='only-mobile'] {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  /* 桌機導覽、Where to Buy 藥丸、語系切換都收進抽屜 */
+  [data-r~='hide'] {
+    display: none !important;
+  }
+
+  [data-r~='only-mobile'] {
+    display: inline-flex !important;
+  }
+
+  /* 次導覽在窄螢幕改成橫向捲動，而不是換行成兩列 */
+  [data-r~='scroll'] {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/**
+ * 人體圖的浮動 chip 是**固定座標**（mockup4 的四組百分比）。
+ * 圖一縮小，四顆 chip 就會互相疊住而且點不準，所以窄螢幕收起來 ——
+ * 下方的部位卡有完全相同的功能，不會少掉任何操作。
+ */
+@media (max-width: 780px) {
+  [data-r~='hide-narrow'] {
+    display: none !important;
+  }
+}

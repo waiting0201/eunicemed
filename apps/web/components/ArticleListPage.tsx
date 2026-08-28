@@ -4,7 +4,17 @@ import { ArticleCard } from './ArticleCard';
 import { PageHero } from './PageHero';
 import { ResourcesSubnav } from './ResourcesSubnav';
 import { SideFilter } from './SideFilter';
+import { css } from '@/lib/css';
 import { Pagination } from './Pagination';
+
+/** 樣式逐字取自 mockup4 的 News／Insights 列表。 */
+const S = {
+  section: css`max-width:1180px;margin:0 auto;padding:clamp(48px,6vw,72px) clamp(24px,5vw,64px);`,
+  grid: css`display:grid;grid-template-columns:240px 1fr;gap:clamp(32px,4vw,56px);align-items:start;`,
+  cards: css`display:grid;grid-template-columns:repeat(2,1fr);gap:28px;`,
+  /** 空狀態是本站補的（mockup4 是靜態稿） */
+  empty: css`padding:64px 0;text-align:center;color:#8AA0A6;`,
+} as const;
 
 /**
  * News 與 Insights 的列表版型。兩頁在 mockup4 只差三件事：
@@ -41,8 +51,8 @@ export function ArticleListPage({
       <ResourcesSubnav locale={locale} active={`/${kind}`} />
       <PageHero eyebrow={copy.eyebrow} title={copy.title} lead={copy.lead} />
 
-      <section className="mx-auto max-w-content px-gutter py-[clamp(48px,6vw,72px)]">
-        <div className="grid items-start gap-[clamp(32px,4vw,56px)] lg:grid-cols-[240px_1fr]">
+      <section style={S.section}>
+        <div style={S.grid}>
           <SideFilter
             label={CATEGORIES[locale]}
             param="category"
@@ -54,15 +64,15 @@ export function ArticleListPage({
 
           <div>
             {result.items.length === 0 ? (
-              <p className="py-16 text-center text-[#8AA0A6]">{copy.empty}</p>
+              <p style={S.empty}>{copy.empty}</p>
             ) : (
               <>
                 {featured && (
-                  <div className="mb-14">
+                  <div>
                     <ArticleCard item={featured} locale={locale} kind={kind} featured />
                   </div>
                 )}
-                <div className="grid gap-7 sm:grid-cols-2">
+                <div style={S.cards} data-r="cols-2">
                   {rest.map((item) => (
                     <ArticleCard key={item.slug} item={item} locale={locale} kind={kind} />
                   ))}

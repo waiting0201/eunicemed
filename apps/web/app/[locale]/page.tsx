@@ -6,9 +6,95 @@ import { formatDate } from '@/lib/date';
 import { srcSetOf } from '@/lib/image';
 import { isLocale, type Locale } from '@/lib/locale';
 import { section, type SectionCta } from '@/lib/page';
-import { COLLECTION_TEXT } from '@/lib/collection';
+import { collectionColor } from '@/lib/collection';
+import { css } from '@/lib/css';
 import { HeroSlider } from '@/components/HeroSlider';
-import { RuledSectionHeading, SectionHeading } from '@/components/SectionHeading';
+import { NUMERAL, RuledSectionHeading, SectionHeading } from '@/components/SectionHeading';
+
+/**
+ * 樣式逐字取自 `mockup4/Home.dc.html`。
+ * ⚠️ 每個字串都要與該檔的 `style="…"` 逐字相同 —— 改動前先改 mockup4。
+ */
+const S = {
+  // HERO COPY
+  intro: css`max-width:1180px;margin:0 auto;padding:clamp(40px,5vw,64px) clamp(24px,5vw,64px) 0;text-align:center;`,
+  introEyebrow: css`color:#0092A8;font-weight:680;letter-spacing:.2em;text-transform:uppercase;font-size:clamp(.7rem,.9vw,.82rem);`,
+  introTitle: css`font-weight:400;line-height:1.12;letter-spacing:-.02em;font-size:clamp(2rem,3.8vw,3.4rem);margin:14px 0 0;`,
+  introHighlight: css`color:#0092A8;`,
+  introLead: css`font-size:clamp(.95rem,1.3vw,1.15rem);max-width:52ch;margin:18px auto 0;`,
+
+  // 01 HERO PRODUCTS
+  s01: css`max-width:1180px;margin:0 auto;padding:clamp(64px,8vw,96px) clamp(24px,5vw,64px);`,
+  s01Head: css`margin-bottom:36px;`,
+  masonry: css`columns:4;column-gap:24px;`,
+  card: css`display:block;break-inside:avoid;-webkit-column-break-inside:avoid;page-break-inside:avoid;margin:0 0 24px;background:#FFFFFF;border:1px solid #DFE9EC;border-radius:20px;overflow:hidden;`,
+  cardMedia: css`position:relative;border-radius:18px;overflow:hidden;background:#F0F6F8;`,
+  cardImg: css`display:block;width:100%;height:100%;object-fit:cover;`,
+  cardBody: css`padding:16px 18px 20px;`,
+  cardEyebrow: css`font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;`,
+  cardName: css`color:#16333B;font-weight:570;font-size:1.08rem;margin:4px 0 2px;`,
+  cardBlurb: css`font-size:.86rem;`,
+  promo: css`display:flex;align-items:center;justify-content:space-between;gap:28px;margin-top:36px;border-radius:20px;background:linear-gradient(120deg,#00B5CD,#007D95);padding:30px 36px;`,
+  promoLeft: css`display:flex;align-items:center;gap:26px;`,
+  promoSvg: css`width:78px;opacity:.85;flex:none;`,
+  promoEyebrow: css`color:rgba(255,255,255,.85);font-size:.85rem;font-weight:620;letter-spacing:.12em;text-transform:uppercase;`,
+  promoTitle: css`color:#fff;font-weight:500;font-size:1.5rem;margin-top:6px;`,
+  promoArrow: css`color:#fff;font-weight:620;font-size:1.4rem;flex:none;`,
+
+  // 02 APPLICATIONS
+  s02: css`position:relative;overflow:hidden;color:#fff;padding:clamp(72px,9vw,120px) 0;margin-top:clamp(48px,6vw,80px);`,
+  s02Img: css`position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;`,
+  s02Fallback: css`position:absolute;inset:0;background:#14262C;`,
+  s02Scrim: css`position:absolute;inset:0;background:linear-gradient(90deg,rgba(9,36,45,.74) 0%,rgba(9,36,45,.5) 52%,rgba(9,36,45,.14) 100%);`,
+  s02Inner: css`position:relative;max-width:1180px;margin:0 auto;padding:0 clamp(24px,5vw,64px);display:grid;grid-template-columns:.9fr 1.1fr;gap:56px;align-items:center;`,
+  s02Title: css`color:#fff;font-weight:400;font-size:clamp(2rem,4vw,2.6rem);line-height:1.08;margin:8px 0 18px;`,
+  s02Lead: css`color:rgba(255,255,255,.78);max-width:44ch;font-size:1.05rem;`,
+  s02Cta: css`display:inline-block;margin-top:28px;border:1.5px solid rgba(255,255,255,.55);color:#fff;font-weight:620;padding:12px 28px;border-radius:999px;`,
+  tiles: css`display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.14);border-radius:20px;overflow:hidden;`,
+  tile: css`background:rgba(6,26,34,.72);backdrop-filter:blur(6px);padding:30px 28px;`,
+  tileTitle: css`color:#fff;font-weight:570;font-size:1.15rem;margin:14px 0 4px;`,
+  tileSub: css`color:rgba(255,255,255,.66);font-size:.88rem;`,
+
+  // 03 WHY PARTNER
+  s03: css`max-width:1180px;margin:0 auto;padding:clamp(64px,8vw,96px) clamp(24px,5vw,64px);`,
+  s03Title: css`color:#16333B;font-weight:400;font-size:clamp(2rem,4vw,2.6rem);max-width:20ch;margin:8px 0 44px;`,
+  s03Grid: css`display:grid;grid-template-columns:repeat(4,1fr);gap:32px;`,
+  s03Item: css`border-top:2px solid #00B5CD;padding-top:20px;`,
+  s03ItemTitle: css`color:#16333B;font-weight:570;font-size:1.2rem;margin-bottom:8px;`,
+  s03ItemBody: css`font-size:.92rem;`,
+  s03Cta: css`display:inline-block;margin-top:44px;background:#16333B;color:#fff;font-weight:620;padding:13px 30px;border-radius:999px;`,
+
+  // 04 TESTIMONIAL
+  s04: css`background:#F5FAFB;padding:clamp(64px,8vw,96px) 0;`,
+  s04Inner: css`max-width:1180px;margin:0 auto;padding:0 clamp(24px,5vw,64px);display:grid;grid-template-columns:1.02fr .98fr;gap:clamp(40px,6vw,72px);align-items:center;`,
+  s04Title: css`color:#16333B;font-weight:400;font-size:clamp(2rem,4vw,2.6rem);line-height:1.08;margin:8px 0 0;`,
+  s04Marks: css`display:block;margin:36px 0 20px;`,
+  s04Quote: css`color:#16333B;font-weight:440;font-stretch:108%;font-size:clamp(1.5rem,2.5vw,2.05rem);line-height:1.3;letter-spacing:-.01em;max-width:20ch;`,
+  s04Attr: css`margin-top:16px;font-size:.9rem;color:#44565D;font-weight:600;`,
+  s04AttrRegion: css`color:#66787F;font-weight:500;`,
+  s04Mini: css`margin-top:38px;border-top:1px solid #DFE9EC;`,
+  s04MiniRow: css`display:flex;align-items:baseline;justify-content:space-between;gap:20px;padding:16px 0;border-bottom:1px solid #DFE9EC;`,
+  s04MiniQuote: css`color:#16333B;font-weight:530;font-size:.98rem;`,
+  s04MiniSource: css`color:#66787F;font-size:.75rem;font-weight:650;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;`,
+  s04Media: css`position:relative;`,
+  s04Frame: css`position:relative;aspect-ratio:16/10;border-radius:24px;overflow:hidden;box-shadow:0 30px 60px rgba(10,60,72,.16);background:#F0F6F8;display:flex;align-items:center;justify-content:center;`,
+  s04PosterImg: css`display:block;width:100%;height:100%;object-fit:cover;`,
+  s04PlayWrap: css`position:relative;display:flex;align-items:center;justify-content:center;width:64px;height:64px;`,
+  s04Ripple: css`position:absolute;inset:0;border-radius:50%;background:rgba(0,181,205,.4);animation:ripple 2.8s ease-out infinite;`,
+  s04Play: css`position:relative;display:flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:50%;background:#00B5CD;color:#fff;box-shadow:0 14px 30px rgba(10,60,72,.16);`,
+  s04PlayIcon: css`margin-left:3px;`,
+  s04Chip: css`position:absolute;bottom:28px;left:-22px;display:inline-flex;align-items:center;gap:9px;background:rgba(6,26,34,.85);backdrop-filter:blur(6px);border:1px solid #DFE9EC;border-radius:999px;padding:9px 16px;font-size:.82rem;font-weight:620;color:#fff;box-shadow:0 10px 26px rgba(10,60,72,.14);animation:chipFloat 6s ease-in-out infinite;`,
+  s04ChipDot: css`width:9px;height:9px;border-radius:50%;background:#0092A8;box-shadow:0 0 0 4px rgba(0,181,205,.18);`,
+
+  // 05 LATEST NEWS
+  s05: css`max-width:1180px;margin:0 auto;padding:clamp(64px,8vw,96px) clamp(24px,5vw,64px);`,
+  s05Head: css`margin-bottom:12px;`,
+  s05All: css`color:#0092A8;font-weight:620;`,
+  row: css`display:flex;align-items:center;gap:24px;padding:24px 0;border-bottom:1px solid #DFE9EC;`,
+  rowDate: css`color:#66787F;font-size:.85rem;width:90px;flex:0 0 auto;`,
+  rowTitle: css`color:#16333B;font-weight:570;font-size:1.3rem;flex:1;`,
+  rowRead: css`color:#0092A8;font-weight:620;`,
+} as const;
 
 type Params = { locale: string };
 
@@ -48,11 +134,7 @@ const FALLBACK: Record<Locale, string> = {
   'zh-TW': 'EuniceMed — Not Just a Motion',
 };
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<Params>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
@@ -105,42 +187,30 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
       {/* HERO COPY —— 只有上方留白：下方的留白由「01 精選產品」自己的 padding 給
           （mockup4 的 `padding: … 0`），兩段各自負責的話會疊成兩倍 */}
       {intro && (
-        <section className="mx-auto max-w-content px-gutter pt-[clamp(40px,5vw,64px)] text-center">
-          {intro.eyebrow && (
-            <p className="text-[clamp(0.7rem,0.9vw,0.82rem)] font-[680] uppercase tracking-[0.2em] text-brand-deep">
-              {intro.eyebrow}
-            </p>
-          )}
+        <section style={S.intro}>
+          {intro.eyebrow && <p style={S.introEyebrow}>{intro.eyebrow}</p>}
           {intro.title && (
-            <h1 className="mt-[14px] text-[clamp(2rem,3.8vw,3.4rem)] font-normal leading-[1.12] tracking-[-0.02em]">
+            <h1 style={S.introTitle}>
               <Highlight text={intro.title} />
             </h1>
           )}
-          {intro.lead && (
-            <p className="mx-auto mt-[18px] max-w-[52ch] text-[clamp(0.95rem,1.3vw,1.15rem)]">
-              {intro.lead}
-            </p>
-          )}
+          {intro.lead && <p style={S.introLead}>{intro.lead}</p>}
         </section>
       )}
 
       {/* 01 精選產品 —— Pinterest 式瀑布流 */}
       {featuredCopy && featured.items.length > 0 && (
-        <section className="mx-auto max-w-content px-gutter py-[clamp(64px,8vw,96px)]">
-          <RuledSectionHeading index={next()} title={featuredCopy.title ?? ''} className="mb-9" />
+        <section style={S.s01}>
+          <RuledSectionHeading index={next()} title={featuredCopy.title ?? ''} style={S.s01Head} />
 
           <FeaturedMasonry items={featured.items} />
 
           {featuredCopy.promo && (
-            <div className="mt-9 flex flex-wrap items-center justify-between gap-7 rounded-[20px] bg-[linear-gradient(120deg,#00b5cd,#007d95)] px-9 py-[30px] text-white">
-              <div className="flex items-center gap-[26px]">
+            <PromoBand promo={featuredCopy.promo}>
+              <div style={S.promoLeft}>
                 {/* 動線標記：三條同心的「起身」曲線，取自 mockup4。
                     純裝飾，不進無障礙樹。 */}
-                <svg
-                  viewBox="0 0 190 140"
-                  aria-hidden="true"
-                  className="w-[78px] flex-none opacity-85"
-                >
+                <svg viewBox="0 0 190 140" aria-hidden="true" style={S.promoSvg}>
                   <g fill="none" stroke="#fff" strokeWidth="9">
                     <path d="M 40 140 V 75 Q 40 40 75 40 H 190" />
                     <path d="M 62 140 V 97 Q 62 62 97 62 H 190" />
@@ -150,28 +220,22 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
 
                 <div>
                   {featuredCopy.promo.eyebrow && (
-                    <p className="text-[0.85rem] font-[620] uppercase tracking-[0.12em] text-white/85">
-                      {featuredCopy.promo.eyebrow}
-                    </p>
+                    <p style={S.promoEyebrow}>{featuredCopy.promo.eyebrow}</p>
                   )}
                   {featuredCopy.promo.title && (
-                    <p className="mt-1.5 text-[1.5rem] font-medium">
-                      {featuredCopy.promo.title}
-                    </p>
+                    <h3 style={S.promoTitle}>{featuredCopy.promo.title}</h3>
                   )}
                 </div>
               </div>
-              {featuredCopy.promo.link?.url && (
-                <PromoArrow cta={featuredCopy.promo.link} />
-              )}
-            </div>
+              <span style={S.promoArrow}>&rarr;</span>
+            </PromoBand>
           )}
         </section>
       )}
 
       {/* 02 依部位找支撐 */}
       {band && (
-        <section className="relative mt-[clamp(48px,6vw,80px)] overflow-hidden py-[clamp(72px,9vw,120px)]">
+        <section style={S.s02}>
           {band.background && (
             <>
               <img
@@ -181,33 +245,26 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
                 alt=""
                 loading="lazy"
                 decoding="async"
-                className="absolute inset-0 h-full w-full object-cover"
+                style={S.s02Img}
               />
               {/* 由左至右的深青遮罩：左側文字讀得到、右側照片保持乾淨（DESIGN.md） */}
-              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,36,45,.74)_0%,rgba(9,36,45,.5)_52%,rgba(9,36,45,.14)_100%)]" />
+              <div style={S.s02Scrim} />
             </>
           )}
-          {!band.background && <div className="absolute inset-0 bg-[#12333c]" />}
+          {/* 編輯者沒放背景圖時的底色。mockup4 一定有圖，這裡取全站唯一的深色面 */}
+          {!band.background && <div style={S.s02Fallback} />}
 
-          <div className="relative mx-auto grid max-w-content items-center gap-14 px-gutter lg:grid-cols-[0.9fr_1.1fr]">
+          <div style={S.s02Inner}>
             <div>
-              <span className="text-[1.1rem] font-medium text-[#7FE0EC]">
-                {String(next()).padStart(2, '0')}
-              </span>
-              {band.title && (
-                <h2 className="mt-2 mb-[18px] text-[clamp(2rem,4vw,2.6rem)] font-normal leading-[1.08] text-white">
-                  {band.title}
-                </h2>
-              )}
-              {band.lead && (
-                <p className="max-w-[44ch] text-[1.05rem] text-white/[.78]">{band.lead}</p>
-              )}
+              <span style={NUMERAL.onPhoto}>{String(next()).padStart(2, '0')}</span>
+              {band.title && <h2 style={S.s02Title}>{band.title}</h2>}
+              {band.lead && <p style={S.s02Lead}>{band.lead}</p>}
               {band.cta?.url && <CtaLink cta={band.cta} variant="onDarkOutline" />}
             </div>
 
             {/* 四格是**一塊**面板：1px 的格線由容器底色透出來，不是各自獨立的卡片 */}
             {band.tiles && band.tiles.length > 0 && (
-              <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[20px] border border-white/[.14] bg-white/[.14]">
+              <div style={S.tiles} data-r="cols-2">
                 {band.tiles.map((tile, i) => (
                   <TileLink key={tile.title ?? i} tile={tile} />
                 ))}
@@ -219,22 +276,15 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
 
       {/* 03 合作優勢 */}
       {why && (
-        <section className="mx-auto max-w-content px-gutter py-[clamp(64px,8vw,96px)]">
-          <SectionHeading
-            index={next()}
-            title={why.title ?? ''}
-            titleClassName="max-w-[20ch] text-[clamp(2rem,4vw,2.6rem)]"
-            className="mb-11"
-          />
+        <section style={S.s03}>
+          <SectionHeading index={next()} title={why.title ?? ''} titleStyle={S.s03Title} />
           {/* 每欄頂上一條 2px 品牌青（mockup4） */}
           {why.items && why.items.length > 0 && (
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div style={S.s03Grid} data-r="cols-2">
               {why.items.map((item, i) => (
-                <div key={item.title ?? i} className="border-t-2 border-brand pt-5">
-                  {item.title && (
-                    <h3 className="mb-2 text-[1.2rem] font-[570]">{item.title}</h3>
-                  )}
-                  {item.body && <p className="text-[0.92rem]">{item.body}</p>}
+                <div key={item.title ?? i} style={S.s03Item}>
+                  {item.title && <h3 style={S.s03ItemTitle}>{item.title}</h3>}
+                  {item.body && <p style={S.s03ItemBody}>{item.body}</p>}
                 </div>
               ))}
             </div>
@@ -245,65 +295,49 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
 
       {/* 04 客戶見證 */}
       {testimonial && (
-        <section className="bg-tint py-[clamp(64px,8vw,96px)]">
-          <div className="mx-auto grid max-w-content items-center gap-[clamp(40px,6vw,72px)] px-gutter lg:grid-cols-[1.02fr_0.98fr]">
+        <section style={S.s04}>
+          <div style={S.s04Inner}>
             <div>
               <SectionHeading
                 index={next()}
                 title={testimonial.title ?? ''}
-                accent
-                titleClassName="text-[clamp(2rem,4vw,2.6rem)] leading-[1.08]"
+                numeralStyle={NUMERAL.accent}
+                titleStyle={S.s04Title}
               />
 
               {/* 起引號記號，純裝飾 */}
-              <svg viewBox="0 0 92 62" width="56" aria-hidden className="my-9 block">
+              <svg viewBox="0 0 92 62" width="56" aria-hidden style={S.s04Marks}>
                 <g fill="none" stroke="#0092A8" strokeWidth="11" strokeLinecap="round">
                   <path d="M33 9 Q13 9 13 31 V53" />
                   <path d="M80 9 Q60 9 60 31 V53" />
                 </g>
               </svg>
 
-              {testimonial.quote && (
-                <blockquote className="max-w-[20ch] text-[clamp(1.5rem,2.5vw,2.05rem)] leading-[1.3] font-[440] tracking-[-0.01em] text-ink">
-                  {testimonial.quote}
-                </blockquote>
-              )}
+              {testimonial.quote && <blockquote style={S.s04Quote}>{testimonial.quote}</blockquote>}
               {testimonial.attribution?.name && (
-                <p className="mt-4 text-[0.9rem] font-semibold">
+                <p style={S.s04Attr}>
                   {testimonial.attribution.name}
                   {testimonial.attribution.region && (
-                    <span className="font-medium text-[#66787F]">
-                      {' '}
-                      · {testimonial.attribution.region}
-                    </span>
+                    <span style={S.s04AttrRegion}> · {testimonial.attribution.region}</span>
                   )}
                 </p>
               )}
 
               {/* 短引言是一張細線清單，不是卡片（mockup4） */}
               {testimonial.miniQuotes && testimonial.miniQuotes.length > 0 && (
-                <div className="mt-10 border-t border-hairline">
+                <div style={S.s04Mini}>
                   {testimonial.miniQuotes.map((m, i) => (
-                    <div
-                      key={m.source ?? i}
-                      className="flex items-baseline justify-between gap-5 border-b border-hairline py-4"
-                    >
-                      {m.quote && (
-                        <p className="text-[0.98rem] font-[530] text-ink">{m.quote}</p>
-                      )}
-                      {m.source && (
-                        <span className="text-[0.75rem] font-[650] tracking-[0.1em] whitespace-nowrap text-[#66787F] uppercase">
-                          {m.source}
-                        </span>
-                      )}
+                    <div key={m.source ?? i} style={S.s04MiniRow}>
+                      {m.quote && <p style={S.s04MiniQuote}>{m.quote}</p>}
+                      {m.source && <span style={S.s04MiniSource}>{m.source}</span>}
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            <div className="relative">
-              <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[24px] bg-tint-deep shadow-[0_30px_60px_rgba(10,60,72,.16)]">
+            <div style={S.s04Media}>
+              <div style={S.s04Frame}>
                 {testimonial.video?.poster && (
                   <img
                     src={testimonial.video.poster.url}
@@ -314,21 +348,32 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
                     decoding="async"
                     width={800}
                     height={500}
-                    className="h-full w-full object-cover"
+                    style={S.s04PosterImg}
                   />
                 )}
-                {/* 播放鈕。影片來源未定（CLAUDE.md §7），先只放記號不接播放器 */}
-                <span className="absolute top-1/2 left-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-brand text-white shadow-[0_14px_30px_rgba(10,60,72,.16)]">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden className="ml-[3px]">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
+                {/* 播放鈕。影片來源未定（CLAUDE.md §7），先只放記號不接播放器。
+                    外圈是 mockup4 的漣漪環，`prefers-reduced-motion` 時由 globals.css 關掉 */}
+                <span style={S.s04PlayWrap}>
+                  <span style={S.s04Ripple} aria-hidden />
+                  <span style={S.s04Play}>
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden
+                      style={S.s04PlayIcon}
+                    >
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </span>
                 </span>
               </div>
 
               {/* 浮出左緣的深色標籤（mockup4：`left:-22px`） */}
               {testimonial.floatingChip && (
-                <span className="absolute bottom-7 -left-[22px] inline-flex items-center gap-2.5 rounded-full border border-hairline bg-[rgba(6,26,34,.85)] px-4 py-2.5 text-[0.82rem] font-[620] text-white shadow-[0_10px_26px_rgba(10,60,72,.14)] backdrop-blur-[6px]">
-                  <span className="h-2.5 w-2.5 rounded-full bg-brand-deep shadow-[0_0_0_4px_rgba(0,181,205,.18)]" />
+                <span style={{ ...S.s04Chip, WebkitBackdropFilter: 'blur(6px)' }}>
+                  <span style={S.s04ChipDot} />
                   {testimonial.floatingChip}
                 </span>
               )}
@@ -339,14 +384,12 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
 
       {/* 05 最新消息 */}
       {latestCopy && news.items.length > 0 && (
-        <section className="mx-auto max-w-content px-gutter py-[clamp(64px,8vw,96px)]">
+        <section style={S.s05}>
           <RuledSectionHeading
             index={next()}
             title={latestCopy.title ?? ''}
-            action={
-              latestCopy.allLink?.url && <CtaLink cta={latestCopy.allLink} variant="text" />
-            }
-            className="mb-3"
+            action={latestCopy.allLink?.url && <CtaLink cta={latestCopy.allLink} variant="text" />}
+            style={S.s05Head}
           />
           {news.items.slice(0, 3).map((item) => (
             <NewsRow key={item.slug} item={item} locale={locale} />
@@ -366,18 +409,14 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
  * 閱讀順序是逐欄由上而下，DOM 順序即 `FeaturedSortOrder`，爬蟲與螢幕閱讀器拿到的順序正確。
  * </p>
  */
-const RATIOS = ['aspect-square', 'aspect-[4/5]', 'aspect-[5/4]'] as const;
+const RATIOS = [css`aspect-ratio:1/1;`, css`aspect-ratio:4/5;`, css`aspect-ratio:5/4;`] as const;
 
 function FeaturedMasonry({ items }: { items: ProductListItem[] }) {
   return (
-    <div className="gap-6 sm:columns-2 lg:columns-4">
+    <div style={S.masonry}>
       {items.map((p, i) => (
-        <Link
-          key={p.slug}
-          href={p.url}
-          className="group mb-6 block break-inside-avoid overflow-hidden rounded-[20px] border border-hairline bg-white transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(10,60,72,.10)]"
-        >
-          <div className={`${RATIOS[i % RATIOS.length]} overflow-hidden rounded-[18px] bg-tint-deep`}>
+        <Link key={p.slug} href={p.url} style={S.card} data-hover="lift-4">
+          <div style={{ ...S.cardMedia, ...RATIOS[i % RATIOS.length] }}>
             {p.image && (
               <img
                 src={p.image.url}
@@ -388,23 +427,18 @@ function FeaturedMasonry({ items }: { items: ProductListItem[] }) {
                 decoding="async"
                 width={1200}
                 height={1200}
-                className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                style={S.cardImg}
               />
             )}
           </div>
-          <div className="px-[18px] pb-5 pt-4">
+          <div style={S.cardBody}>
             {p.collection && (
-              <span
-                className={`text-[0.72rem] font-bold uppercase tracking-[0.1em] ${
-                  // 未知 slug 退回品牌青，不要讓沒見過的系列變成看不見的文字
-                  COLLECTION_TEXT[p.collection.slug] ?? 'text-brand-deep'
-                }`}
-              >
+              <span style={{ ...S.cardEyebrow, ...collectionColor(p.collection.slug) }}>
                 {p.collection.name}
               </span>
             )}
-            <h3 className="mt-1 text-[1.08rem] font-[570]">{p.name}</h3>
-            {p.featuredBlurb && <p className="mt-0.5 text-[0.86rem]">{p.featuredBlurb}</p>}
+            <h3 style={S.cardName}>{p.name}</h3>
+            {p.featuredBlurb && <p style={S.cardBlurb}>{p.featuredBlurb}</p>}
           </div>
         </Link>
       ))}
@@ -415,17 +449,12 @@ function FeaturedMasonry({ items }: { items: ProductListItem[] }) {
 /** 首頁 §05 的一列：固定寬度的日期、佔滿剩餘寬度的標題、右端的 Read →（mockup4）。 */
 function NewsRow({ item, locale }: { item: ArticleListItem; locale: Locale }) {
   return (
-    <Link
-      href={item.url}
-      className="flex items-center gap-6 border-b border-hairline py-6"
-    >
-      <span className="w-[90px] flex-none text-[0.85rem] text-[#66787F]">
+    <Link href={item.url} style={S.row}>
+      <span style={S.rowDate}>
         {item.publishedAt ? formatDate(item.publishedAt, locale).slice(0, 9) : ''}
       </span>
-      <h3 className="flex-1 text-[1.3rem] font-[570]">{item.title}</h3>
-      <span className="flex-none font-[620] text-brand-deep">
-        {locale === 'en' ? 'Read →' : '閱讀 →'}
-      </span>
+      <h3 style={S.rowTitle}>{item.title}</h3>
+      <span style={S.rowRead}>{locale === 'en' ? 'Read →' : '閱讀 →'}</span>
     </Link>
   );
 }
@@ -434,23 +463,20 @@ function TileLink({ tile }: { tile: NonNullable<BodyPartBandSection['tiles']>[nu
   const inner = (
     <>
       <TileIcon name={tile.icon} />
-      {tile.title && (
-        <h3 className="mt-3.5 mb-1 text-[1.15rem] font-[570] text-white">{tile.title}</h3>
-      )}
-      {tile.subtitle && <p className="text-[0.88rem] text-white/[.66]">{tile.subtitle}</p>}
+      {tile.title && <h3 style={S.tileTitle}>{tile.title}</h3>}
+      {tile.subtitle && <p style={S.tileSub}>{tile.subtitle}</p>}
     </>
   );
 
   // 沒有自己的圓角與外框：格線是容器透出來的 1px gap（mockup4）
-  const className =
-    'bg-[rgba(6,26,34,.72)] px-7 py-[30px] backdrop-blur-[6px] transition hover:bg-[rgba(6,26,34,.86)]';
+  const style = { ...S.tile, WebkitBackdropFilter: 'blur(6px)' };
 
   return tile.link?.url ? (
-    <Link href={tile.link.url} className={className}>
+    <Link href={tile.link.url} style={style}>
       {inner}
     </Link>
   ) : (
-    <div className={className}>{inner}</div>
+    <div style={style}>{inner}</div>
   );
 }
 
@@ -459,19 +485,33 @@ function TileLink({ tile }: { tile: NonNullable<BodyPartBandSection['tiles']>[nu
  * **新增一個值必須同時在這裡補圖形**，否則格子會沒有圖示。
  */
 /**
- * 全型錄卡右端的箭頭。mockup4 是一個 1.4rem 的白色 `→` 字符，
- * 不是白色圓鈕 —— 那張卡整塊就是連結，再放一顆按鈕會是兩個點擊目標。
+ * 全型錄卡。**整張卡就是連結**（mockup4 的 `<a>`），右端的 `→` 只是卡內的字符 ——
+ * 先前把箭頭做成獨立連結，等於同一張卡有兩個點擊目標與兩個 tab stop。
  */
-function PromoArrow({ cta }: { cta: SectionCta }) {
-  const arrow = <span className="flex-none text-[1.4rem] font-[620] text-white">→</span>;
+function PromoBand({
+  promo,
+  children,
+}: {
+  promo: NonNullable<FeaturedSection['promo']>;
+  children: React.ReactNode;
+}) {
+  const cta = promo.link;
+  if (!cta?.url) return <div style={S.promo}>{children}</div>;
 
   return cta.external ? (
-    <a href={cta.url} target="_blank" rel="noopener" aria-label={cta.label ?? undefined}>
-      {arrow}
+    <a
+      href={cta.url}
+      target="_blank"
+      rel="noopener"
+      aria-label={cta.label ?? undefined}
+      style={S.promo}
+      data-hover="lift-3"
+    >
+      {children}
     </a>
   ) : (
-    <Link href={cta.url!} aria-label={cta.label ?? undefined}>
-      {arrow}
+    <Link href={cta.url} aria-label={cta.label ?? undefined} style={S.promo} data-hover="lift-3">
+      {children}
     </Link>
   );
 }
@@ -562,7 +602,7 @@ function Highlight({ text }: { text: string }) {
     <>
       {parts.map((part, i) =>
         i % 2 === 1 ? (
-          <span key={i} className="text-brand-deep">
+          <span key={i} style={S.introHighlight}>
             {part}
           </span>
         ) : (

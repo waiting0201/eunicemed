@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import { css } from '@/lib/css';
 import { Logo } from './Logo';
+import { MobileNav } from './MobileNav';
 import { SiteNav } from './SiteNav';
 import type { MenuNode } from '@/lib/api';
 import type { Locale } from '@/lib/locale';
@@ -22,6 +24,19 @@ import { LOCALES, LOCALE_SHORT_LABELS } from '@/lib/locale';
  *
  * 品牌名 EuniceMed 是品牌符號，兩種語系都不翻譯。
  */
+
+/**
+ * 樣式逐字取自 mockup4 的頁首 —— 18 頁完全相同，只有目前頁的連結多一組色。
+ * ⚠️ 字串要與 mockup4 的 `style="…"` 逐字相同，改動前先改 mockup4。
+ */
+const S = {
+  header: css`position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:28px;height:76px;padding:0 clamp(24px,5vw,64px);background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid #DFE9EC;`,
+  brand: css`display:inline-flex;align-items:center;line-height:0;`,
+  buy: css`background:#00B5CD;color:#fff;font-weight:620;font-size:.9rem;padding:9px 22px;border-radius:999px;`,
+  locale: css`color:#7A8B90;font-size:.9rem;border-left:1px solid #DFE9EC;padding-left:18px;`,
+  localeCurrent: css`color:#16333B;`,
+} as const;
+
 const WHERE_TO_BUY = '/where-to-buy';
 
 const FALLBACK: Record<Locale, { href: string; label: string }[]> = {
@@ -45,16 +60,15 @@ const FALLBACK: Record<Locale, { href: string; label: string }[]> = {
 
 export function SiteHeader({ locale, menu }: { locale: Locale; menu?: MenuNode[] }) {
   const all =
-    menu && menu.length > 0
-      ? menu.map((m) => ({ href: m.url, label: m.label }))
-      : FALLBACK[locale];
+    menu && menu.length > 0 ? menu.map((m) => ({ href: m.url, label: m.label })) : FALLBACK[locale];
 
   const buy = all.find((item) => item.href === WHERE_TO_BUY);
   const items = all.filter((item) => item.href !== WHERE_TO_BUY);
 
+  // Safari 需要 -webkit- 前綴；mockup4 只在 Chromium 跑過所以沒寫（見 allow.json）
   return (
-    <header className="sticky top-0 z-50 flex h-[76px] items-center gap-7 border-b border-hairline bg-white/90 px-gutter backdrop-blur-[10px]">
-      <Link href={`/${locale}`}>
+    <header style={{ ...S.header, WebkitBackdropFilter: 'blur(10px)' }}>
+      <Link href={`/${locale}`} style={S.brand}>
         <Logo />
       </Link>
 
@@ -63,25 +77,31 @@ export function SiteHeader({ locale, menu }: { locale: Locale; menu?: MenuNode[]
       {buy && (
         <Link
           href={`/${locale}${buy.href}`}
-          className="ml-auto shrink-0 rounded-full bg-brand px-[22px] py-[9px] text-[0.9rem] font-[620] text-white hover:text-white md:ml-0"
+          style={S.buy}
+          className="hover:text-white"
+          data-r="hide"
         >
           {buy.label}
         </Link>
       )}
 
       {/* 語系切換：mockup4 是「**EN** · 中」，現用語系用 ink 加粗，其餘維持次要灰 */}
-      <span className="shrink-0 border-l border-hairline pl-[18px] text-[0.9rem] text-[#7A8B90]">
+      <span style={S.locale} data-r="hide">
         {LOCALES.map((l, i) => (
           <span key={l}>
-            {i > 0 && <span className="px-1">·</span>}
+            {/* mockup4 是「EN · 中」，分隔就是前後各一個空白的間隔號 */}
+            {i > 0 && ' · '}
             {l === locale ? (
-              <b className="font-bold text-ink">{LOCALE_SHORT_LABELS[l]}</b>
+              <b style={S.localeCurrent}>{LOCALE_SHORT_LABELS[l]}</b>
             ) : (
               <Link href={`/${l}`}>{LOCALE_SHORT_LABELS[l]}</Link>
             )}
           </span>
         ))}
       </span>
+
+      {/* mockup4 沒有手機版頁首，這一支是現場設計的（見 MobileNav） */}
+      <MobileNav locale={locale} items={items} buy={buy} />
     </header>
   );
 }

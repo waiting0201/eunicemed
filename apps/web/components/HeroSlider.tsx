@@ -1,4 +1,5 @@
 import type { MediaRef } from '@/lib/api';
+import { css } from '@/lib/css';
 import { srcSetOf } from '@/lib/image';
 
 /**
@@ -17,6 +18,20 @@ import { srcSetOf } from '@/lib/image';
  * 而第一張的靜態 opacity 是 1、其餘為 0，所以自然停在第一張。
  * </p>
  */
+
+/** 樣式逐字取自 `mockup4/Home.dc.html` 的 HERO SLIDER。 */
+const S = {
+  section: css`position:relative;overflow:hidden;height:clamp(380px,37.5vw,960px);`,
+  slide: css`position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;`,
+  dots: css`position:absolute;left:50%;transform:translateX(-50%);bottom:18px;display:flex;gap:8px;z-index:2;`,
+  /**
+   * ⚠️ 圓點是 **26×4px 的藥丸**加一圈 1px 環形陰影，不是小圓點；
+   * 作用中為品牌青 `#00B5CD`，其餘為 `rgba(255,255,255,.6)`（由 keyframes 切換）。
+   */
+  dot: css`width:26px;height:4px;border-radius:999px;box-shadow:0 0 0 1px rgba(10,40,50,.22);`,
+  dotIdle: css`background:rgba(255,255,255,.6);`,
+  slideHidden: css`opacity:0;`,
+} as const;
 export function HeroSlider({
   slides,
   intervalSeconds = 6,
@@ -24,24 +39,19 @@ export function HeroSlider({
   slides: { image?: MediaRef; alt?: string }[];
   intervalSeconds?: number;
 }) {
-  const withImage = slides.filter(
-    (s): s is { image: MediaRef; alt?: string } => Boolean(s.image),
-  );
+  const withImage = slides.filter((s): s is { image: MediaRef; alt?: string } => Boolean(s.image));
   if (withImage.length === 0) return null;
 
   const n = withImage.length;
   const animated = n > 1;
   const total = n * intervalSeconds;
-  const css = animated ? keyframesFor(n) : '';
+  const keyframes = animated ? keyframesFor(n) : '';
 
+  // 8:3 但有上下界：37.5vw 就是 8:3，clamp 讓它在窄螢幕不會縮成一條
+  // （aspect-[8/3] 在手機上只剩 140px 高）、在超寬螢幕不會佔滿整個視窗
   return (
-    <section
-      // 8:3 但有上下界：37.5vw 就是 8:3，clamp 讓它在窄螢幕不會縮成一條
-      // （aspect-[8/3] 在手機上只剩 140px 高）、在超寬螢幕不會佔滿整個視窗。
-      // 值取自 mockup4 的 `height:clamp(380px,37.5vw,960px)`。
-      className="relative h-[clamp(380px,37.5vw,960px)] w-full overflow-hidden bg-tint-deep"
-    >
-      {animated && <style>{css}</style>}
+    <section style={S.section}>
+      {animated && <style>{keyframes}</style>}
 
       {withImage.map((slide, i) => (
         <img
@@ -55,21 +65,25 @@ export function HeroSlider({
           decoding="async"
           width={2560}
           height={960}
-          style={animated ? { animation: `em-slide-${n}-${i} ${total}s linear infinite` } : undefined}
-          className={`absolute inset-0 h-full w-full object-cover ${
-            animated && i > 0 ? 'opacity-0' : ''
-          }`}
+          style={{
+            ...S.slide,
+            ...(animated ? { animation: `em-slide-${n}-${i} ${total}s linear infinite` } : null),
+            ...(animated && i > 0 ? S.slideHidden : null),
+          }}
         />
       ))}
 
       {animated && (
-        <div className="absolute bottom-5 left-1/2 flex -translate-x-1/2 gap-2">
+        <div style={S.dots}>
           {withImage.map((slide, i) => (
             <span
               key={slide.image.url}
               aria-hidden
-              style={{ animation: `em-dot-${n}-${i} ${total}s linear infinite` }}
-              className="h-2 w-2 rounded-full bg-white/50"
+              style={{
+                ...S.dot,
+                ...(i > 0 ? S.dotIdle : null),
+                animation: `em-dot-${n}-${i} ${total}s linear infinite`,
+              }}
             />
           ))}
         </div>
@@ -98,11 +112,13 @@ function keyframesFor(n: number): string {
         : `@keyframes em-slide-${n}-${i}{0%,${p(start)}{opacity:0}${p(start + fade)},${p(end - fade)}{opacity:1}${p(end)},100%{opacity:0}}`,
     );
 
-    // 圓點不做淡出，切換即可
+    // 圓點不做淡出，切換即可。作用中是品牌青，其餘半透明白 —— 值取自 mockup4 的 heroDot
+    const ON = '#00B5CD';
+    const OFF = 'rgba(255,255,255,.6)';
     blocks.push(
       i === 0
-        ? `@keyframes em-dot-${n}-0{0%,${p(end)}{background-color:rgb(255 255 255/.95)}${p(end + 0.01)},100%{background-color:rgb(255 255 255/.5)}}`
-        : `@keyframes em-dot-${n}-${i}{0%,${p(start)}{background-color:rgb(255 255 255/.5)}${p(start + 0.01)},${p(end)}{background-color:rgb(255 255 255/.95)}${p(end + 0.01)},100%{background-color:rgb(255 255 255/.5)}}`,
+        ? `@keyframes em-dot-${n}-0{0%,${p(end)}{background:${ON}}${p(end + 0.01)},100%{background:${OFF}}}`
+        : `@keyframes em-dot-${n}-${i}{0%,${p(start)}{background:${OFF}}${p(start + 0.01)},${p(end)}{background:${ON}}${p(end + 0.01)},100%{background:${OFF}}}`,
     );
   }
 

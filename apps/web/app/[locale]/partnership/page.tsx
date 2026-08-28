@@ -1,12 +1,47 @@
+import type { CSSProperties } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { api, type MediaRef } from '@/lib/api';
 import { srcSetOf } from '@/lib/image';
 import { isLocale, type Locale } from '@/lib/locale';
 import { section } from '@/lib/page';
+import { css } from '@/lib/css';
+import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
 import { SectionHeading } from '@/components/SectionHeading';
 import { PartnershipForm } from '@/components/PartnershipForm';
+
+/** 樣式逐字取自 `mockup4/Partnership.dc.html`。 */
+const S = {
+  section: css`max-width:1180px;margin:0 auto;padding:clamp(56px,7vw,80px) clamp(24px,5vw,64px);`,
+  tinted: css`background:#F5FAFB;padding:clamp(56px,7vw,80px) 0;`,
+  tintedInner: css`max-width:1180px;margin:0 auto;padding:0 clamp(24px,5vw,64px);`,
+  stack: css`display:flex;flex-direction:column;gap:40px;`,
+  copy: css`max-width:720px;`,
+  h2: css`color:#16333B;font-weight:400;font-size:clamp(1.8rem,3.4vw,2.4rem);margin:8px 0 18px;`,
+  lead: css`font-size:1.05rem;margin-bottom:20px;`,
+  leadTight: css`font-size:1.05rem;margin-bottom:16px;`,
+  chips: css`display:grid;grid-template-columns:1fr 1fr;gap:14px;`,
+  chip: css`border-top:2px solid #00B5CD;padding-top:12px;`,
+  chipTitle: css`color:#16333B;font-weight:570;font-size:1.02rem;`,
+  shot: css`aspect-ratio:21/9;border-radius:22px;overflow:hidden;box-shadow:0 30px 60px rgba(10,60,72,.16);`,
+  /** 兩張 21:9 照片的裁切焦點不同（mockup4） */
+  focus30: css`object-position:center 30%;`,
+  focus25: css`object-position:center 25%;`,
+  shotImg: css`display:block;width:100%;height:100%;object-fit:cover;`,
+
+  // 03
+  stepsTitle: css`color:#16333B;font-weight:400;font-size:clamp(1.8rem,3.4vw,2.4rem);margin:8px 0 40px;`,
+  steps: css`display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-bottom:52px;`,
+  step: css`border-top:1px solid #DFE9EC;padding-top:18px;`,
+  stepNo: css`color:#0092A8;font-weight:680;font-size:1.4rem;`,
+  stepTitle: css`color:#16333B;font-weight:570;font-size:1.08rem;margin:6px 0 4px;`,
+  stepBody: css`font-size:.9rem;`,
+  panel: css`background:#F0F6F8;border-radius:26px;padding:clamp(32px,4vw,48px);`,
+  panelGrid: css`display:grid;grid-template-columns:.9fr 1.1fr;gap:48px;align-items:start;`,
+  panelTitle: css`color:#16333B;font-weight:400;font-size:1.6rem;`,
+  panelIntro: css`color:#44565D;margin-top:12px;max-width:32ch;`,
+} as const;
 
 type Params = { locale: string };
 
@@ -31,15 +66,13 @@ const FALLBACK: Record<Locale, string> = { en: 'Partnership', 'zh-TW': '合作�
 
 const SUBMIT: Record<Locale, string> = { en: 'Send inquiry', 'zh-TW': '送出洽詢' };
 
-const PROSE = '[&_a]:text-brand-deep [&_li]:mt-1 [&_p]:mt-4 [&_ul]:list-disc [&_ul]:pl-5';
-
 /** 這頁的區段標題比預設大一階（mockup4：clamp(1.8rem,3.4vw,2.4rem)）。 */
 const PART_H2 = 'text-[clamp(1.8rem,3.4vw,2.4rem)]';
 
 /** §01 / §02 共用的 21:9 大圖，圓角 22px 加一層柔和落影（mockup4）。 */
-function WideShot({ image, focus }: { image: MediaRef; focus: string }) {
+function WideShot({ image, focus }: { image: MediaRef; focus: CSSProperties }) {
   return (
-    <div className="aspect-[21/9] overflow-hidden rounded-[22px] shadow-[0_30px_60px_rgba(10,60,72,.16)]">
+    <div style={S.shot}>
       <img
         src={image.url}
         srcSet={srcSetOf(image)}
@@ -49,18 +82,13 @@ function WideShot({ image, focus }: { image: MediaRef; focus: string }) {
         decoding="async"
         width={2100}
         height={900}
-        className="h-full w-full object-cover"
-        style={{ objectPosition: focus }}
+        style={{ ...S.shotImg, ...focus }}
       />
     </div>
   );
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<Params>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
@@ -98,18 +126,7 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
 
   return (
     <>
-      {hero?.band && (
-        <img
-          src={hero.band.url}
-          srcSet={srcSetOf(hero.band)}
-          sizes="100vw"
-          alt={hero.band.alt ?? ''}
-          width={2560}
-          height={480}
-          decoding="async"
-          className="h-[clamp(160px,18.75vw,360px)] w-full object-cover"
-        />
-      )}
+      <PageBand image={hero?.band} />
 
       <PageHero
         eyebrow={hero?.eyebrow ?? FALLBACK[locale]}
@@ -119,63 +136,61 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
 
       {/* 01 OEM / ODM */}
       {oem && (
-        <section className="mx-auto max-w-content px-gutter py-[clamp(56px,7vw,80px)]">
-          <div className="flex flex-col gap-10">
-            <div className="max-w-[720px]">
+        <section style={S.section}>
+          <div style={S.stack}>
+            <div style={S.copy}>
               <SectionHeading
                 index={next()}
                 title={oem.title ?? ''}
                 titleClassName={PART_H2}
-                className="mb-[18px]"
+                titleStyle={S.h2}
               />
               {oem.body && (
                 <div
-                  className={`text-[1.05rem] ${PROSE}`}
+                  className="m4-prose"
+                  style={S.lead}
                   dangerouslySetInnerHTML={{ __html: oem.body }}
                 />
               )}
               {/* 服務項目：每格頂上一條 2px 品牌青（mockup4），不是藥丸 chips */}
               {oem.chips && oem.chips.length > 0 && (
-                <div className="mt-5 grid gap-3.5 sm:grid-cols-2">
+                <div style={S.chips} data-r="cols-2">
                   {oem.chips.map((chip, i) => (
-                    <div key={chip.label ?? i} className="border-t-2 border-brand pt-3">
-                      <h3 className="text-[1.02rem] font-[570]">{chip.label}</h3>
+                    <div key={chip.label ?? i} style={S.chip}>
+                      <h3 style={S.chipTitle}>{chip.label}</h3>
                     </div>
                   ))}
                 </div>
               )}
             </div>
-            {oem.image ? (
-              <WideShot image={oem.image} focus="center 30%" />
-            ) : (
-              <div className="aspect-[21/9] rounded-[22px] bg-tint-deep" />
-            )}
+            {oem.image ? <WideShot image={oem.image} focus={S.focus30} /> : <div style={S.shot} />}
           </div>
         </section>
       )}
 
       {/* 02 經銷服務 —— mockup4 是淺底帶，圖在文字下方 */}
       {distributor && (
-        <section className="bg-tint py-[clamp(56px,7vw,80px)]">
-          <div className="mx-auto flex max-w-content flex-col gap-10 px-gutter">
-            <div className="max-w-[720px]">
+        <section style={S.tinted}>
+          <div style={{ ...S.tintedInner, ...S.stack }}>
+            <div style={S.copy}>
               <SectionHeading
                 index={next()}
                 title={distributor.title ?? ''}
                 titleClassName={PART_H2}
-                className="mb-[18px]"
+                titleStyle={S.h2}
               />
               {distributor.body && (
                 <div
-                  className={`text-[1.05rem] ${PROSE}`}
+                  className="m4-prose"
+                  style={S.lead}
                   dangerouslySetInnerHTML={{ __html: distributor.body }}
                 />
               )}
             </div>
             {distributor.image ? (
-              <WideShot image={distributor.image} focus="center 25%" />
+              <WideShot image={distributor.image} focus={S.focus25} />
             ) : (
-              <div className="aspect-[21/9] rounded-[22px] bg-tint-deep" />
+              <div style={S.shot} />
             )}
           </div>
         </section>
@@ -183,26 +198,22 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
 
       {/* 03 成為夥伴 */}
       {become && (
-        <section id="inquiry" className="mx-auto max-w-content px-gutter py-[clamp(56px,7vw,80px)]">
+        <section id="inquiry" style={S.section}>
           <SectionHeading
             index={next()}
             title={become.title ?? ''}
             titleClassName={PART_H2}
-            className="mb-10"
+            titleStyle={S.stepsTitle}
           />
 
           {/* 四個步驟：頂上一條細線、序號用品牌青（mockup4），不是卡片 */}
           {become.steps && become.steps.length > 0 && (
-            <div className="mb-13 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div style={S.steps} data-r="cols-2">
               {become.steps.map((step, i) => (
-                <div key={step.title ?? i} className="border-t border-hairline pt-[18px]">
-                  <div className="text-[1.4rem] font-[680] text-brand-deep">
-                    {String(i + 1).padStart(2, '0')}
-                  </div>
-                  {step.title && (
-                    <h3 className="mt-1.5 mb-1 text-[1.08rem] font-[570]">{step.title}</h3>
-                  )}
-                  {step.body && <p className="text-[0.9rem]">{step.body}</p>}
+                <div key={step.title ?? i} style={S.step}>
+                  <div style={S.stepNo}>{String(i + 1).padStart(2, '0')}</div>
+                  {step.title && <h3 style={S.stepTitle}>{step.title}</h3>}
+                  {step.body && <p style={S.stepBody}>{step.body}</p>}
                 </div>
               ))}
             </div>
@@ -214,15 +225,11 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
             上線前送出會顯示失敗訊息，不會靜默吞掉。
           */}
           {(become.formTitle || become.formIntro) && (
-            <div className="rounded-[26px] bg-tint-deep p-[clamp(32px,4vw,48px)]">
-              <div className="grid items-start gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+            <div style={S.panel}>
+              <div style={S.panelGrid}>
                 <div>
-                  {become.formTitle && (
-                    <h3 className="text-[1.6rem] font-normal">{become.formTitle}</h3>
-                  )}
-                  {become.formIntro && (
-                    <p className="mt-3 max-w-[32ch]">{become.formIntro}</p>
-                  )}
+                  {become.formTitle && <h3 style={S.panelTitle}>{become.formTitle}</h3>}
+                  {become.formIntro && <p style={S.panelIntro}>{become.formIntro}</p>}
                 </div>
 
                 <PartnershipForm

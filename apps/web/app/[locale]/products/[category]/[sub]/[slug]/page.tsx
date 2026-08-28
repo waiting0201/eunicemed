@@ -8,8 +8,82 @@ import { CollectionBadge } from '@/components/CollectionBadge';
 import { ProductCard } from '@/components/ProductCard';
 import { ProductInquiry } from '@/components/ProductInquiry';
 import { ProductGallery } from '@/components/ProductGallery';
-import { SectionHeading } from '@/components/SectionHeading';
+import { css } from '@/lib/css';
+import { NUMERAL, SectionHeading } from '@/components/SectionHeading';
 import { SizeChart } from '@/components/SizeChart';
+
+/** 樣式逐字取自 `mockup4/Product Detail.dc.html`。 */
+const S = {
+  breadcrumb: css`max-width:1180px;margin:0 auto;padding:18px clamp(24px,5vw,64px);font-size:.85rem;color:#66787F;font-weight:500;`,
+  sep: css`margin:0 8px;color:#B7C4C8;`,
+
+  // 1 GALLERY + SUMMARY
+  top: css`max-width:1180px;margin:0 auto;padding:8px clamp(24px,5vw,64px) clamp(56px,7vw,80px);`,
+  topGrid: css`display:grid;grid-template-columns:1fr 1fr;gap:48px;`,
+  title: css`color:#16333B;font-weight:400;font-size:clamp(2rem,3.6vw,2.7rem);margin:14px 0 4px;`,
+  sku: css`color:#66787F;font-weight:500;`,
+  summary: css`font-size:1.08rem;margin:18px 0 24px;`,
+  chips: css`display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px;`,
+  chip: css`background:#F0F6F8;border:1px solid #DFE9EC;border-radius:999px;font-size:.82rem;font-weight:500;padding:6px 14px;`,
+  buy: css`display:inline-block;background:#00B5CD;color:#fff;font-weight:620;padding:14px 32px;border-radius:999px;box-shadow:0 10px 30px rgba(0,181,205,.32);`,
+  ask: css`display:inline-block;margin-left:12px;border:1.5px solid rgba(0,146,168,.4);color:#0092A8;font-weight:620;padding:13px 30px;border-radius:999px;`,
+
+  // 2 FEATURES
+  tinted: css`background:#F5FAFB;padding:clamp(56px,7vw,80px) 0;`,
+  tintedInner: css`max-width:1180px;margin:0 auto;padding:0 clamp(24px,5vw,64px);`,
+  plain: css`max-width:1180px;margin:0 auto;padding:clamp(56px,7vw,80px) clamp(24px,5vw,64px);`,
+  h2: css`color:#16333B;font-weight:400;font-size:clamp(1.8rem,3.4vw,2.3rem);margin:8px 0 36px;`,
+  h2Tight: css`color:#16333B;font-weight:400;font-size:clamp(1.8rem,3.4vw,2.3rem);margin:8px 0 20px;`,
+  h2Specs: css`color:#16333B;font-weight:400;font-size:clamp(1.8rem,3.4vw,2.3rem);margin:8px 0 32px;`,
+  cards4: css`display:grid;grid-template-columns:repeat(4,1fr);gap:24px;`,
+  featureIcon: css`width:52px;height:52px;border-radius:14px;background:#E9F8FA;display:flex;align-items:center;justify-content:center;color:#0092A8;margin-bottom:14px;`,
+  featureTitle: css`color:#16333B;font-weight:570;font-size:1.08rem;`,
+  featureBody: css`font-size:.92rem;`,
+
+  // 3 USE CASES
+  useGrid: css`display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;`,
+  useRow: css`display:flex;gap:14px;padding:14px 0;border-bottom:1px solid #DFE9EC;`,
+  useRowLast: css`display:flex;gap:14px;padding:14px 0;`,
+  useNo: css`color:#0092A8;font-weight:700;`,
+  useTitle: css`color:#16333B;font-weight:570;font-size:1.05rem;`,
+  useBody: css`font-size:.9rem;`,
+
+  // 4 SPECS & SIZES
+  specsBand: css`background:#F5FAFB;color:#44565D;padding:clamp(56px,7vw,80px) 0;`,
+  specsGrid: css`display:grid;grid-template-columns:1fr 1.3fr;gap:48px;`,
+  specsLabel: css`color:#0092A8;font-weight:570;font-size:1rem;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;`,
+  specRow: css`display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #DFE9EC;`,
+  specKey: css`color:#44565D;`,
+  specValue: css`color:#16333B;font-weight:500;`,
+  sizeWrap: css`display:flex;align-items:center;gap:28px;flex-wrap:wrap;`,
+  sizeTable: css`flex:1;min-width:280px;`,
+  sizeGrid: css`display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:#EDF4F6;border:1px solid #DFE9EC;border-radius:14px;overflow:hidden;`,
+  sizeHead: css`background:#F0F6F8;padding:14px;text-align:center;color:#0092A8;font-weight:620;`,
+  sizeCell: css`background:#F0F6F8;padding:14px;text-align:center;color:#4B5B61;font-size:.9rem;`,
+  sizeNote: css`color:#66787F;font-size:.82rem;margin-top:12px;`,
+  diagram: css`flex:none;width:152px;`,
+  diagramFrame: css`aspect-ratio:1/1;border-radius:22px;background:#E9F8FA;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;`,
+  diagramImg: css`display:block;max-width:100%;max-height:100%;object-fit:contain;`,
+  diagramCaption: css`color:#66787F;font-size:.78rem;text-align:center;margin-top:10px;`,
+
+  // 5 CERTS + 6 DOWNLOADS
+  certsGrid: css`display:grid;grid-template-columns:1fr 1fr;gap:56px;`,
+  h3: css`color:#16333B;font-weight:400;font-size:clamp(1.6rem,3vw,2rem);margin:8px 0 22px;`,
+  certs: css`display:flex;gap:14px;flex-wrap:wrap;`,
+  cert: css`width:96px;height:96px;border:1px solid #DFE9EC;border-radius:16px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:620;color:#16333B;font-size:.85rem;`,
+  download: css`display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border:1px solid #DFE9EC;border-radius:14px;margin-bottom:12px;`,
+  downloadName: css`font-weight:500;color:#16333B;`,
+  downloadCta: css`color:#0092A8;font-weight:620;`,
+
+  // 7 RELATED
+  relatedName: css`color:#16333B;font-weight:570;font-size:1.05rem;margin-top:3px;`,
+
+  // 8 INQUIRY
+  inquiry: css`background:linear-gradient(135deg,#00B5CD 0%,#009DB6 55%,#0092A8 100%);border-radius:26px;padding:clamp(36px,5vw,56px);color:#fff;`,
+  inquiryGrid: css`display:grid;grid-template-columns:1fr 1.2fr;gap:48px;align-items:center;`,
+  inquiryTitle: css`color:#fff;font-weight:400;font-size:clamp(1.8rem,3.4vw,2.3rem);`,
+  inquiryBody: css`color:rgba(255,255,255,.88);margin-top:14px;max-width:36ch;`,
+} as const;
 
 type Params = { locale: string; category: string; sub: string; slug: string };
 
@@ -73,11 +147,7 @@ const COPY: Record<
   },
 };
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<Params>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { locale, category, sub, slug } = await params;
   if (!isLocale(locale)) return {};
 
@@ -122,32 +192,24 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
       <Breadcrumb locale={locale} product={p} productsLabel={c.products} />
 
       {/* 01 圖庫 + 摘要 */}
-      <section className="mx-auto max-w-content px-gutter pt-2 pb-[clamp(56px,7vw,80px)]">
-        <div className="grid gap-12 lg:grid-cols-2">
+      <section style={S.top}>
+        <div style={S.topGrid}>
           <ProductGallery images={p.images} productName={p.name} locale={locale} />
 
           <div>
             {p.collection && <CollectionBadge collection={p.collection} />}
-            <h1 className="mb-1 mt-3.5 text-[clamp(2rem,3.6vw,2.7rem)] font-normal">
-              {p.name}
-            </h1>
-            {p.sku && <p className="font-medium text-grey">{p.sku}</p>}
-            {p.summary && <p className="my-5 text-[1.08rem]">{p.summary}</p>}
+            <h1 style={S.title}>{p.name}</h1>
+            {p.sku && <p style={S.sku}>{p.sku}</p>}
+            {p.summary && <p style={S.summary}>{p.summary}</p>}
 
             <Chips product={p} />
 
-            <div className="mt-7 flex flex-wrap gap-3">
-              <a
-                href="#inquiry"
-                className="rounded-full bg-brand px-8 py-3.5 font-semibold text-white shadow-[0_10px_30px_rgba(0,181,205,.32)] transition hover:bg-brand-deep hover:text-white"
-              >
+            <div>
+              <a href="#inquiry" style={S.buy} className="hover:text-white">
                 {c.quote}
               </a>
               {(p.specs?.length || p.sizeChart) && (
-                <a
-                  href="#specs"
-                  className="rounded-full border-[1.5px] border-[rgba(0,146,168,.4)] px-7 py-3 font-semibold text-brand-deep"
-                >
+                <a href="#specs" style={S.ask}>
                   {c.viewSpecs}
                 </a>
               )}
@@ -158,17 +220,17 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
 
       {/* 02 特色 */}
       {p.features && p.features.length > 0 && (
-        <section className="bg-tint py-[clamp(56px,7vw,80px)]">
-          <div className="mx-auto max-w-content px-gutter">
-            <SectionHeading index={next()} title={c.features} className="mb-9" />
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <section style={S.tinted}>
+          <div style={S.tintedInner}>
+            <SectionHeading index={next()} title={c.features} titleStyle={S.h2} />
+            <div style={S.cards4} data-r="cols-2">
               {p.features.map((f, i) => (
                 <div key={f.title ?? i}>
-                  <div className="mb-3.5 flex h-13 w-13 items-center justify-center rounded-[14px] bg-[#e9f8fa] p-3.5 text-brand-deep">
+                  <div style={S.featureIcon}>
                     <FeatureIcon />
                   </div>
-                  {f.title && <h3 className="text-[1.08rem] font-semibold">{f.title}</h3>}
-                  {f.body && <p className="mt-1 text-sm">{f.body}</p>}
+                  {f.title && <h3 style={S.featureTitle}>{f.title}</h3>}
+                  {f.body && <p style={S.featureBody}>{f.body}</p>}
                 </div>
               ))}
             </div>
@@ -178,8 +240,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
 
       {/* 03 適用時機 */}
       {p.useCases && p.useCases.length > 0 && (
-        <section className="mx-auto max-w-content px-gutter py-[clamp(56px,7vw,80px)]">
-          <div className="grid items-center gap-14 lg:grid-cols-2">
+        <section style={S.plain}>
+          <div style={S.useGrid}>
             {p.useCaseImage ? (
               <img
                 src={p.useCaseImage.url}
@@ -190,25 +252,23 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
                 decoding="async"
                 width={1200}
                 height={900}
-                className="aspect-[4/3] w-full rounded-[22px] object-cover"
+                style={{ ...S.diagramFrame, ...S.diagramImg }}
               />
             ) : (
-              <div className="aspect-[4/3] rounded-[22px] bg-tint-deep" />
+              <div style={S.diagramFrame} />
             )}
 
             <div>
-              <SectionHeading index={next()} title={c.useCases} className="mb-4" />
+              <SectionHeading index={next()} title={c.useCases} titleStyle={S.h2Tight} />
               {p.useCases.map((u, i) => (
                 <div
                   key={u.title ?? i}
-                  className="flex gap-3.5 border-b border-hairline py-3.5 last:border-0"
+                  style={i === (p.useCases?.length ?? 0) - 1 ? S.useRowLast : S.useRow}
                 >
-                  <span className="font-bold text-brand-deep">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
+                  <span style={S.useNo}>{String(i + 1).padStart(2, '0')}</span>
                   <div>
-                    {u.title && <h3 className="text-[1.05rem] font-semibold">{u.title}</h3>}
-                    {u.body && <p className="text-[0.92rem]">{u.body}</p>}
+                    {u.title && <h3 style={S.useTitle}>{u.title}</h3>}
+                    {u.body && <p style={S.useBody}>{u.body}</p>}
                   </div>
                 </div>
               ))}
@@ -219,20 +279,22 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
 
       {/* 04 規格與尺寸 */}
       {(p.specs?.length || p.sizeChart) && (
-        <section id="specs" className="bg-tint py-[clamp(56px,7vw,80px)]">
-          <div className="mx-auto max-w-content px-gutter">
-            <SectionHeading index={next()} title={c.specsAndSizes} accent className="mb-9" />
-            <div className="grid gap-12 lg:grid-cols-[1fr_1.3fr]">
+        <section id="specs" style={S.specsBand}>
+          <div style={S.tintedInner}>
+            <SectionHeading
+              index={next()}
+              title={c.specsAndSizes}
+              numeralStyle={NUMERAL.accent}
+              titleStyle={S.h2Specs}
+            />
+            <div style={S.specsGrid}>
               {p.specs && p.specs.length > 0 && (
                 <div>
                   <SubHeading>{c.specs}</SubHeading>
                   {p.specs.map((s, i) => (
-                    <div
-                      key={s.label ?? i}
-                      className="flex justify-between gap-4 border-b border-hairline py-3"
-                    >
-                      <span>{s.label}</span>
-                      <span className="font-medium text-ink">{s.value}</span>
+                    <div key={s.label ?? i} style={S.specRow}>
+                      <span style={S.specKey}>{s.label}</span>
+                      <span style={S.specValue}>{s.value}</span>
                     </div>
                   ))}
                 </div>
@@ -241,14 +303,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
               {p.sizeChart && (
                 <div>
                   <SubHeading>{c.sizeChart(p.sizeChart.measureLabel)}</SubHeading>
-                  <div
-                    className={
-                      p.sizeChartDiagram
-                        ? 'flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-7'
-                        : undefined
-                    }
-                  >
-                    <div className="w-full min-w-0 flex-1">
+                  <div style={p.sizeChartDiagram ? S.sizeWrap : undefined}>
+                    <div style={S.sizeTable}>
                       <SizeChart chart={p.sizeChart} />
                     </div>
 
@@ -257,26 +313,23 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
                         teal-tint 底（bg-[#E9F8FA]），讓線稿讀作「品牌插圖」而不是載入失敗；
                         圖本身無文字、跨語系共用，下方的「測量位置」短標籤才是可翻譯的說明文字。 */}
                     {p.sizeChartDiagram && (
-                      <div className="w-[152px] flex-none">
-                        <div className="flex aspect-square items-center justify-center rounded-[22px] bg-[#E9F8FA] p-[18px]">
+                      <div style={S.diagram}>
+                        <div style={S.diagramFrame}>
                           <img
                             src={p.sizeChartDiagram.url}
                             srcSet={srcSetOf(p.sizeChartDiagram)}
                             sizes="152px"
                             alt={
-                              p.sizeChartDiagram.alt ??
-                              c.measureDiagram(p.sizeChart.measureLabel)
+                              p.sizeChartDiagram.alt ?? c.measureDiagram(p.sizeChart.measureLabel)
                             }
                             loading="lazy"
                             decoding="async"
                             width={400}
                             height={400}
-                            className="block max-h-full max-w-full object-contain"
+                            style={S.diagramImg}
                           />
                         </div>
-                        <p className="mt-2.5 text-center text-[0.78rem] text-grey">
-                          {c.whereToMeasure}
-                        </p>
+                        <p style={S.diagramCaption}>{c.whereToMeasure}</p>
                       </div>
                     )}
                   </div>
@@ -289,25 +342,21 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
 
       {/* 05 認證 + 06 下載 */}
       {(p.certifications.length > 0 || p.downloads.length > 0) && (
-        <section className="mx-auto max-w-content px-gutter py-[clamp(56px,7vw,80px)]">
-          <div className="grid gap-14 lg:grid-cols-2">
+        <section style={S.plain}>
+          <div style={S.certsGrid}>
             {p.certifications.length > 0 && (
               <div>
-                <SectionHeading index={next()} title={c.certifications} className="mb-5" />
-                <div className="flex flex-wrap gap-3.5">
+                <SectionHeading index={next()} title={c.certifications} titleStyle={S.h3} />
+                <div style={S.certs}>
                   {p.certifications.map((cert) => (
-                    <div
-                      key={cert.slug}
-                      title={cert.subLabel ?? undefined}
-                      className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border border-hairline p-2 text-center text-[0.85rem] font-semibold text-ink"
-                    >
+                    <div key={cert.slug} title={cert.subLabel ?? undefined} style={S.cert}>
                       {cert.logo ? (
                         <img
                           src={cert.logo.url}
                           alt={cert.logo.alt ?? cert.mark}
                           loading="lazy"
                           decoding="async"
-                          className="max-h-full max-w-full object-contain"
+                          style={S.diagramImg}
                         />
                       ) : (
                         cert.mark
@@ -320,7 +369,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
 
             {p.downloads.length > 0 && (
               <div>
-                <SectionHeading index={next()} title={c.downloads} className="mb-5" />
+                <SectionHeading index={next()} title={c.downloads} titleStyle={S.h3} />
                 {p.downloads.map((d) => (
                   <a
                     key={d.id}
@@ -329,15 +378,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
                     // 用 target 讓瀏覽器自己決定開啟或下載
                     target="_blank"
                     rel="noopener"
-                    className="mb-3 flex items-center justify-between gap-4 rounded-[14px] border border-hairline px-4.5 py-4 transition hover:border-brand-bright"
+                    style={S.download}
+                    data-hover="edge"
                   >
                     <span>
-                      <span className="block font-medium text-ink">{d.title}</span>
-                      <span className="text-[0.8rem] text-grey">
-                        {c.fileMeta(d)}
-                      </span>
+                      <span style={S.downloadName}>{d.title}</span>
+                      <span style={S.sizeNote}>{c.fileMeta(d)}</span>
                     </span>
-                    <span className="font-semibold text-brand-deep">↓</span>
+                    <span style={S.downloadCta}>↓</span>
                   </a>
                 ))}
               </div>
@@ -348,10 +396,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
 
       {/* 07 相關產品 */}
       {p.relatedProducts.length > 0 && (
-        <section className="bg-tint py-[clamp(56px,7vw,80px)]">
-          <div className="mx-auto max-w-content px-gutter">
-            <SectionHeading index={next()} title={c.related} className="mb-8" />
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <section style={S.tinted}>
+          <div style={S.tintedInner}>
+            <SectionHeading index={next()} title={c.related} titleStyle={S.h2Specs} />
+            <div style={S.cards4} data-r="cols-2">
               {p.relatedProducts.map((r) => (
                 <ProductCard
                   key={r.slug}
@@ -375,7 +423,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
       )}
 
       {/* 08 詢價 —— 送件走 `POST /contact`（type=product，帶型號快照）。
-          **該端點尚未實作**（擋於 SMTP 帳密），上線前送出會顯示失敗訊息。 */}
+       **該端點尚未實作**（擋於 SMTP 帳密），上線前送出會顯示失敗訊息。 */}
       <ProductInquiry
         locale={locale}
         title={c.inquiryTitle}
@@ -412,14 +460,15 @@ function Breadcrumb({
   ].filter(Boolean) as { href: string; label: string }[];
 
   return (
-    <nav className="mx-auto max-w-content px-gutter py-4 text-[0.85rem] font-medium text-[#66787f]">
+    <nav style={S.breadcrumb}>
       {crumbs.map((crumb) => (
         <span key={crumb.href}>
           <Link href={crumb.href}>{crumb.label}</Link>
-          <span className="mx-2 text-[#b7c4c8]">/</span>
+          <span style={S.sep}>/</span>
         </span>
       ))}
-      <span className="text-ink">{product.name}</span>
+      {/* mockup4 的最後一節沒有自己的樣式，直接繼承容器的 #66787F */}
+      <span>{product.name}</span>
     </nav>
   );
 }
@@ -433,12 +482,9 @@ function Chips({ product }: { product: ProductDetail }) {
   if (chips.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-2.5">
+    <div style={S.chips}>
       {chips.map((chip) => (
-        <span
-          key={chip}
-          className="rounded-full border border-hairline bg-tint-deep px-3.5 py-1.5 text-[0.82rem] font-medium"
-        >
+        <span key={chip} style={S.chip}>
           {chip}
         </span>
       ))}
@@ -447,11 +493,7 @@ function Chips({ product }: { product: ProductDetail }) {
 }
 
 function SubHeading({ children }: { children: React.ReactNode }) {
-  return (
-    <h3 className="mb-3.5 text-base font-semibold uppercase tracking-[0.06em] text-brand-deep">
-      {children}
-    </h3>
-  );
+  return <h3 style={S.specsLabel}>{children}</h3>;
 }
 
 function FeatureIcon() {
