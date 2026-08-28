@@ -31,3 +31,4 @@
 
 | 檔案:行 | 移除的 class | mockup4 的固定值 | 預定的 `data-r` |
 |---|---|---|---|
+| `apps/web/components/SiteNav.tsx` | `hidden md:flex` | `display:flex`（mockup4 沒有手機版頁首） | `hide` — 但**手機需要漢堡選單**，mockup4 沒有設計，第二階段要現場設計 |

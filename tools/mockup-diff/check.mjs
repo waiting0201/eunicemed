@@ -49,9 +49,11 @@ function mockupDecls(page) {
   return JSON.parse(readFileSync(join(BASELINE, `${page}.json`), 'utf8')).distinct;
 }
 
-/** 實作側：該頁的 TSX ∪ 全站共用框架。 */
+/** 實作側：該頁的 TSX ∪ 全站共用框架（扣掉該頁不套用的那些）。 */
 function implDecls(page) {
-  const files = [...map.pages[page], ...map.shared];
+  const except = map.sharedExcept ?? {};
+  const shared = map.shared.filter((f) => !(except[f] ?? []).includes(page));
+  const files = [...map.pages[page], ...shared];
   const out = new Set();
   for (const f of files) {
     const p = join(ROOT, f);

@@ -15,7 +15,10 @@
       "apps/web/components/SectionHeading.tsx",
       "apps/web/components/SectionCtaLink.tsx"
     ],
-    "About": ["apps/web/app/[locale]/about/page.tsx", "apps/web/components/SectionHeading.tsx"],
+    "About": [
+      "apps/web/app/[locale]/about/page.tsx",
+      "apps/web/components/SectionHeading.tsx"
+    ],
     "Products": [
       "apps/web/app/[locale]/products/page.tsx",
       "apps/web/components/PageHero.tsx",
@@ -115,6 +118,15 @@
       "apps/web/app/[locale]/contact/page.tsx",
       "apps/web/components/ContactForm.tsx"
     ],
-    "Privacy": ["apps/web/app/[locale]/privacy/page.tsx", "apps/web/components/PageHero.tsx"]
+    "Privacy": [
+      "apps/web/app/[locale]/privacy/page.tsx",
+      "apps/web/components/PageHero.tsx"
+    ]
+  },
+  "_sharedExcept_comment": "共用框架的例外：檔案 → 不套用它的頁面。mockup4 的 18 頁裡只有 Contact 沒有右下角浮動聯絡鈕，實作以 pathname 條件隱藏，但靜態抽取看不出條件，所以在這裡宣告。",
+  "sharedExcept": {
+    "apps/web/components/FloatingContact.tsx": [
+      "Contact"
+    ]
   }
 }

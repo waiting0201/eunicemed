@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { css } from '@/lib/css';
 
 /**
  * 品牌標誌。**用品牌方提供的正式圖檔**，不再以標記復刻。
@@ -31,6 +32,11 @@ import Image from 'next/image';
  * 換圖時兩邊都要換。
  * </p>
  */
+/** 逐字取自 mockup4 的 `<img>`：頁首頁尾都是同一組。 */
+const S = {
+  img: css`display:block;height:42px;width:auto;`,
+} as const;
+
 const SRC = {
   light: '/brand/eunicemed-logo.png',
   dark: '/brand/eunicemed-logo-on-dark.png',
@@ -43,8 +49,8 @@ export function Logo({ onDark = false }: { onDark?: boolean }) {
       alt="EuniceMed"
       width={480}
       height={189}
-      /* 高度鎖 42px、寬度自動 —— 與 mockup4 的鎖定樣式同尺寸，且不會壓到原比例 */
-      className="block h-[42px] w-auto"
+      /* 高度鎖 42px、寬度自動 —— 逐字照 mockup4，且不會壓到原比例 */
+      style={S.img}
     />
   );
 }

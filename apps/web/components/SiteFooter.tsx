@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { css } from '@/lib/css';
 import { Logo } from './Logo';
 import type { MenuNode, Settings } from '@/lib/api';
 import type { Locale } from '@/lib/locale';
@@ -18,6 +19,19 @@ import type { Locale } from '@/lib/locale';
  * 它們在 Contact 頁。這裡只留 `settings` 參數不再輸出，避免頁尾與版型不符。
  * </p>
  */
+/**
+ * 樣式逐字取自 mockup4 的頁尾 —— 全站唯一的深色面，18 頁完全相同。
+ * ⚠️ 字串要與 mockup4 的 `style="…"` 逐字相同，改動前先改 mockup4。
+ */
+const S = {
+  footer: css`background:#14262C;color:#9FAFB5;padding:56px clamp(24px,5vw,64px) 36px;font-size:.92rem;`,
+  inner: css`max-width:1180px;margin:0 auto;`,
+  top: css`display:flex;flex-wrap:wrap;gap:40px;justify-content:space-between;align-items:center;`,
+  brand: css`display:inline-flex;align-items:center;line-height:0;`,
+  nav: css`display:flex;gap:26px;flex-wrap:wrap;font-weight:500;`,
+  rule: css`border-top:1px solid #2C3E44;margin-top:36px;padding-top:22px;font-size:.8rem;color:#74868C;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;`,
+} as const;
+
 const COPY: Record<Locale, { rights: string; company: string }> = {
   en: {
     rights: 'All rights reserved.',
@@ -55,9 +69,7 @@ export function SiteFooter({
 }) {
   const c = COPY[locale];
   const items =
-    menu && menu.length > 0
-      ? menu.map((m) => ({ href: m.url, label: m.label }))
-      : FALLBACK[locale];
+    menu && menu.length > 0 ? menu.map((m) => ({ href: m.url, label: m.label })) : FALLBACK[locale];
 
   const linkedIn =
     typeof settings?.['social.linkedin'] === 'string'
@@ -65,14 +77,14 @@ export function SiteFooter({
       : null;
 
   return (
-    <footer className="bg-[#14262C] px-gutter pt-14 pb-9 text-[0.92rem] text-[#9FAFB5]">
-      <div className="mx-auto max-w-content">
-        <div className="flex flex-wrap items-center justify-between gap-10">
-          <Link href={`/${locale}`}>
+    <footer style={S.footer}>
+      <div style={S.inner}>
+        <div style={S.top}>
+          <Link href={`/${locale}`} style={S.brand}>
             <Logo onDark />
           </Link>
 
-          <nav className="flex flex-wrap gap-[26px] font-medium">
+          <nav style={S.nav}>
             {items.map((item) => (
               <Link key={item.href} href={`/${locale}${item.href}`}>
                 {item.label}
@@ -87,7 +99,7 @@ export function SiteFooter({
           </nav>
         </div>
 
-        <div className="mt-9 flex flex-wrap justify-between gap-3 border-t border-[#2C3E44] pt-[22px] text-[0.8rem] text-[#74868C]">
+        <div style={S.rule}>
           <span>
             © {new Date().getFullYear()} {c.company}. {c.rights}
           </span>

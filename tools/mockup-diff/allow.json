@@ -1,1 +1,8 @@
-{"_comment":"刻意偏離 mockup4 的宣告。每一條都要寫理由 —— 這份檔案就是全站「明知故犯」的完整紀錄。key 是正規化後的宣告，value 是理由。","allow":{}}
+{
+  "_comment": "刻意偏離 mockup4 的宣告。每一條都要寫理由 —— 這份檔案就是全站「明知故犯」的完整紀錄。key 是正規化後的宣告，value 是理由。",
+  "allow": {
+    "-webkit-backdrop-filter:blur(10px)": "頁首毛玻璃在 Safari ≤17.4 需要 vendor prefix。mockup4 只在 Chromium 跑過所以沒寫。",
+    "display:flex;min-height:100vh;flex-direction:column": "body 的黏底頁尾。mockup4 每頁內容都夠長所以看不出需要，但本站有內容短的語系版本。",
+    "border-top:1px solid #2c3e44": "mockup4 的 Resources.dc.html 這一條沒跟上深→淺轉換，仍是 rgba(255,255,255,.1)；另外 17 頁都是 #2C3E44。採多數值，視為 mockup4 自身的疏漏。"
+  }
+}
