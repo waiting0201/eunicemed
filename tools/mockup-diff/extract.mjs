@@ -94,12 +94,31 @@ function fromScript(src) {
   if (!script) return [];
 
   const out = [];
-  // 看起來像 CSS 宣告串的字串常數：以 `屬性:` 開頭且含分號
+  // (a) 看起來像 CSS 宣告串的字串常數：以 `屬性:` 開頭且含分號
   for (const [, quoted] of script[1].matchAll(/["'`]((?:[a-z-]+:[^"'`]*;\s*)+)["'`]/g)) {
     out.push(...declarations(quoted));
   }
+
+  // (b) JS 物件形式的樣式（Applications 的熱點與 chip 都是這樣寫的）：
+  //     `transformBox: "fill-box"` → `transform-box:fill-box`
+  for (const [, prop, value] of script[1].matchAll(
+    /\b([a-z][a-zA-Z]{2,})\s*:\s*["'`]([^"'`]+)["'`]/g,
+  )) {
+    const kebab = prop.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase());
+    if (!CSS_PROPS.has(kebab)) continue;
+    out.push(...declarations(`${kebab}:${value};`));
+  }
+
   return out;
 }
+
+/** JS 物件裡哪些 key 才算樣式 —— 只認 mockup4 實際用到的那些，避免把資料欄位當成 CSS。 */
+const CSS_PROPS = new Set([
+  'fill', 'opacity', 'stroke', 'stroke-width', 'transform', 'transform-origin', 'transform-box',
+  'transition', 'position', 'display', 'align-items', 'gap', 'background', 'backdrop-filter',
+  'border', 'border-color', 'border-radius', 'padding', 'font-size', 'font-weight', 'color',
+  'box-shadow', 'white-space', 'cursor', 'top', 'left', 'right', 'bottom', 'text-align',
+]);
 
 /**
  * mockup4 的 `style-hover` 在實作端是 `globals.css` 的 `[data-hover="…"]` 規則

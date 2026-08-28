@@ -4,8 +4,26 @@ import { notFound } from 'next/navigation';
 import { api } from '@/lib/api';
 import { srcSetOf } from '@/lib/image';
 import { isLocale, type Locale } from '@/lib/locale';
+import { css } from '@/lib/css';
 import { BodyMap } from '@/components/BodyMap';
+import { PageHero } from '@/components/PageHero';
 import { SectionHeading } from '@/components/SectionHeading';
+
+/** 樣式逐字取自 `mockup4/Applications.dc.html`。 */
+const S = {
+  map: css`max-width:1180px;margin:0 auto;padding:clamp(56px,7vw,80px) clamp(24px,5vw,64px);`,
+  h2: css`color:#16333B;font-weight:400;font-size:clamp(1.8rem,3.4vw,2.3rem);margin:8px 0 40px;`,
+  special: css`background:#F5FAFB;padding:clamp(56px,7vw,80px) 0;`,
+  specialInner: css`max-width:1180px;margin:0 auto;padding:0 clamp(24px,5vw,64px);`,
+  specialH2: css`color:#16333B;font-weight:400;font-size:clamp(1.8rem,3.4vw,2.3rem);margin:8px 0 32px;`,
+  grid: css`display:grid;grid-template-columns:repeat(3,1fr);gap:24px;`,
+  card: css`background:#FFFFFF;border:1px solid #DFE9EC;border-radius:20px;overflow:hidden;`,
+  cardMedia: css`position:relative;aspect-ratio:16/10;overflow:hidden;background:#F0F6F8;`,
+  cardImg: css`display:block;width:100%;height:100%;object-fit:cover;`,
+  cardBody: css`padding:20px 22px 24px;`,
+  cardTitle: css`color:#16333B;font-weight:570;font-size:1.15rem;`,
+  cardLead: css`font-size:.9rem;margin-top:4px;`,
+} as const;
 
 type Params = { locale: string };
 
@@ -29,11 +47,7 @@ const COPY: Record<
   },
 };
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<Params>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
@@ -66,35 +80,23 @@ export default async function ApplicationsPage({ params }: { params: Promise<Par
 
   return (
     <>
-      <section className="mx-auto max-w-content px-gutter pt-[clamp(32px,4vw,48px)]">
-        <div className="mx-auto max-w-[760px] text-center">
-          <p className="text-[0.78rem] font-[680] uppercase tracking-[0.16em] text-brand-deep">
-            {c.eyebrow}
-          </p>
-          <h1 className="mt-2.5 text-[clamp(2rem,3.6vw,2.8rem)] font-normal">{c.title}</h1>
-          <p className="mt-3.5 text-[1.1rem]">{c.lead}</p>
-        </div>
-      </section>
+      <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />
 
       {spots.length > 0 && (
-        <section className="mx-auto max-w-content px-gutter py-[clamp(56px,7vw,80px)]">
-          <SectionHeading index={next()} title={c.byBodyPart} className="mb-10" />
+        <section style={S.map}>
+          <SectionHeading index={next()} title={c.byBodyPart} titleStyle={S.h2} />
           <BodyMap spots={spots} locale={locale} />
         </section>
       )}
 
       {special.length > 0 && (
-        <section className="bg-tint py-[clamp(56px,7vw,80px)]">
-          <div className="mx-auto max-w-content px-gutter">
-            <SectionHeading index={next()} title={c.bySpecial} className="mb-8" />
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <section style={S.special}>
+          <div style={S.specialInner}>
+            <SectionHeading index={next()} title={c.bySpecial} titleStyle={S.specialH2} />
+            <div style={S.grid} data-r="stack">
               {special.map((a) => (
-                <Link
-                  key={a.slug}
-                  href={a.url}
-                  className="group overflow-hidden rounded-[20px] border border-hairline bg-white transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(10,60,72,.10)]"
-                >
-                  <div className="aspect-[16/10] overflow-hidden bg-tint-deep">
+                <Link key={a.slug} href={a.url} style={S.card} data-hover="lift-shadow">
+                  <div style={S.cardMedia}>
                     {a.image && (
                       <img
                         src={a.image.url}
@@ -105,13 +107,13 @@ export default async function ApplicationsPage({ params }: { params: Promise<Par
                         decoding="async"
                         width={800}
                         height={500}
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                        style={S.cardImg}
                       />
                     )}
                   </div>
-                  <div className="px-[22px] pt-5 pb-6">
-                    <h3 className="text-[1.15rem] font-[570]">{a.name}</h3>
-                    {a.lead && <p className="mt-1 text-[0.9rem]">{a.lead}</p>}
+                  <div style={S.cardBody}>
+                    <h3 style={S.cardTitle}>{a.name}</h3>
+                    {a.lead && <p style={S.cardLead}>{a.lead}</p>}
                   </div>
                 </Link>
               ))}

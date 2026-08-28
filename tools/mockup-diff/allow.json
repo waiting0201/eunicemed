@@ -42,6 +42,22 @@
     "scroll-margin-top:100px": "側欄目錄跳到 h2 時要避開黏在頂部的頁首（76px）。mockup4 的目錄連結是 href=\"#\"，不會真的跳。",
     "margin:0": "mockup4 兩篇範例文章的 <ul> 上距不一致：Article Detail 是 margin:16px 0 0（接在段落後），News Detail 是 margin:0（緊接標題）。`.m4-prose` 只能有一組，取有間距的那個 —— CMS 的內文多半是段落後接清單。",
     "width:42px": "認證標章圖。mockup4 的 ISO 卡是內嵌 SVG，尺寸寫在 width/height 屬性上（42×42）；本站是編輯者上傳的圖檔，要用 CSS 配 object-fit:contain 才不會變形。",
-    "border-top:1px solid rgba(255,255,255,0.1)": "mockup4 的 Resources.dc.html 頁尾細線沒跟上深→淺轉換（其餘 17 頁是 #2C3E44）。採多數值，見同一份檔案裡 border-top:1px solid #2c3e44 那一條。"
+    "border-top:1px solid rgba(255,255,255,0.1)": "mockup4 的 Resources.dc.html 頁尾細線沒跟上深→淺轉換（其餘 17 頁是 #2C3E44）。採多數值，見同一份檔案裡 border-top:1px solid #2c3e44 那一條。",
+    "fill:#00b5cd": "人體圖熱點的填色。mockup4 用 JS style 物件寫 `fill`，本站寫成 SVG 的 presentation attribute（`fill=\"#00B5CD\"`），對 SVG 兩者等價。",
+    "fill:#fff": "同上，熱點白心。",
+    "top:32%": "人體圖 chip 的位置。mockup4 寫死四組座標；本站的座標由後台逐個應用方案維護（docs/09 人體圖互動規格），在 render 時換算成百分比。",
+    "top:66%": "同上。",
+    "top:84%": "同上。",
+    "top:93%": "同上。",
+    "right:1%": "同上。",
+    "right:4%": "同上。",
+    "right:6%": "同上。",
+    "left:2%": "同上。",
+    "transform:translateY(-3px) scale(1.06)": "選中的 chip 上浮。本站的 chip 以座標置中，所以實際值是 `translate(-50%,-50%) translateY(-3px) scale(1.06)` —— 位移量相同，多的是置中補償。",
+    "opacity:0.55": "熱點外環的未選中透明度。mockup4 寫成三元式 `on(s) ? 0.9 : 0.55`，抽取器讀不到條件式裡的值。",
+    "opacity:0.9": "同上，選中。",
+    "transform:scale(1)": "同上，外環／白心的未選中比例。",
+    "transform:scale(1.45)": "同上，外環選中放大。",
+    "transform:scale(1.2)": "同上，白心選中放大。"
   }
 }

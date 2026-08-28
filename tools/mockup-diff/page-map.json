@@ -58,7 +58,8 @@
       "apps/web/app/[locale]/applications/page.tsx",
       "apps/web/components/BodyMap.tsx",
       "apps/web/components/SectionHeading.tsx",
-      "apps/web/components/PageBand.tsx"
+      "apps/web/components/PageBand.tsx",
+      "apps/web/components/PageHero.tsx"
     ],
     "Application Detail": [
       "apps/web/app/[locale]/applications/[slug]/page.tsx",
