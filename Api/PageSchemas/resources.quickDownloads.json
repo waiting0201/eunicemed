@@ -1,40 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Resources · Most requested documents",
+  "description": "Download 沒有 slug，ref 的識別字串是 Id（uuid）。",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "title"
-  ],
   "properties": {
-    "title": {
-      "type": "string",
-      "maxLength": 120,
-      "x-fieldType": "text"
-    },
-    "allLink": {
-      "type": "object",
-      "additionalProperties": false,
-      "x-fieldType": "link",
-      "properties": {
-        "label": {
-          "type": "string",
-          "maxLength": 60,
-          "x-fieldType": "text"
-        },
-        "url": {
-          "type": "string",
-          "maxLength": 400,
-          "x-fieldType": "text",
-          "x-localeInvariant": true
-        },
-        "external": {
-          "type": "boolean",
-          "x-fieldType": "bool",
-          "x-localeInvariant": true
-        }
-      }
-    },
     "items": {
       "type": "array",
       "minItems": 0,
@@ -58,6 +28,5 @@
         }
       }
     }
-  },
-  "description": "Download 沒有 slug，ref 的識別字串是 Id（uuid）。"
+  }
 }

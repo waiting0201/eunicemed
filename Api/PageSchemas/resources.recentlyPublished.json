@@ -1,41 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Resources · Recently published",
+  "description": "mode=auto 時忽略 items，由模板取最新 3 筆（News + Insights 混合）。",
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "title",
     "mode"
   ],
   "properties": {
-    "title": {
-      "type": "string",
-      "maxLength": 120,
-      "x-fieldType": "text"
-    },
-    "allLink": {
-      "type": "object",
-      "additionalProperties": false,
-      "x-fieldType": "link",
-      "properties": {
-        "label": {
-          "type": "string",
-          "maxLength": 60,
-          "x-fieldType": "text"
-        },
-        "url": {
-          "type": "string",
-          "maxLength": 400,
-          "x-fieldType": "text",
-          "x-localeInvariant": true
-        },
-        "external": {
-          "type": "boolean",
-          "x-fieldType": "bool",
-          "x-localeInvariant": true
-        }
-      }
-    },
     "mode": {
       "type": "string",
       "enum": [
@@ -69,6 +41,5 @@
         }
       }
     }
-  },
-  "description": "mode=auto 時忽略 items，由模板取最新 3 筆（News + Insights 混合）。"
+  }
 }

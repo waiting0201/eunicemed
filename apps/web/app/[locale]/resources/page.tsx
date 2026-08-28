@@ -9,7 +9,6 @@ import {
   type ArticleRefEntry,
   type DownloadRefEntry,
   type PageContent,
-  type SectionCta,
 } from '@/lib/page';
 import { css } from '@/lib/css';
 import { ResourcesSubnav } from '@/components/ResourcesSubnav';
@@ -67,42 +66,167 @@ const S = {
 
 type Params = { locale: string };
 
-type HeroSection = { eyebrow?: string; title?: string; lead?: string };
-type HubCardsSection = {
-  items?: { icon?: string; title?: string; body?: string; ctaLabel?: string; link?: SectionCta }[];
-};
 type RecentlyPublishedSection = {
-  title?: string;
-  allLink?: SectionCta;
   /** 'auto' | 'manual' */
   mode?: string;
   items?: { article?: string }[];
 };
-type QuickDownloadsSection = {
-  title?: string;
-  allLink?: SectionCta;
-  items?: { download?: string }[];
-};
-type CtaPanelsSection = {
-  items?: { title?: string; body?: string; ctaLabel?: string; link?: SectionCta }[];
-};
+type QuickDownloadsSection = { items?: { download?: string }[] };
 
-const COPY: Record<Locale, { title: string }> = {
-  en: { title: 'Resources' },
-  'zh-TW': { title: '資源中心' },
+/** 四大入口卡與兩塊底部 CTA 的一格。`href` 不含語系前綴。 */
+type Panel = { icon?: string; title: string; body: string; ctaLabel: string; href: string };
+
+/**
+ * 版面文案 —— **刻意寫死，不走 CMS**（決議見 docs/15-cms-scope.md）。
+ *
+ * <p>
+ * 這一頁原本有五個區段，其中三個（頁首、四大入口卡、兩塊底部 CTA）根本是導覽：
+ * 卡片對應的就是 Resources 次導覽那五個項目，而次導覽本來就明訂不可編輯
+ * （docs/09 §0.2）。同一組連結沒有道理一份寫死、一份開放編輯。
+ * </p>
+ *
+ * <p>
+ * 留在 CMS 的是兩份策展清單：最新發布要不要手動指定、熱門下載放哪幾份。
+ * </p>
+ *
+ * <p>英文逐字取自 `mockup4/Resources.dc.html`。</p>
+ */
+const COPY: Record<
+  Locale,
+  {
+    meta: { title: string };
+    hero: { eyebrow: string; title: string; lead: string };
+    hubs: Panel[];
+    recent: { title: string; allLink: string; allHref: string };
+    quick: { title: string; allLink: string; allHref: string };
+    panels: Panel[];
+  }
+> = {
+  en: {
+    meta: { title: 'Resources' },
+    hero: {
+      eyebrow: 'Resources',
+      title: 'Everything you need, **in one place**',
+      lead:
+        'Answers, documents and stories — for clinicians, distributors and ' +
+        'the people who wear our products every day.',
+    },
+    hubs: [
+      {
+        icon: 'faq',
+        title: 'FAQ',
+        body: 'Sizing, washing, warranty and how to pick the right level of support.',
+        ctaLabel: 'Browse questions →',
+        href: '/faq',
+      },
+      {
+        icon: 'insights',
+        title: 'Insights',
+        body:
+          'Articles on vein health, compression therapy and choosing the right ' +
+          'orthopedic support.',
+        ctaLabel: 'Read articles →',
+        href: '/insights',
+      },
+      {
+        icon: 'downloads',
+        title: 'Downloads',
+        body: 'Catalogues, certification documents and product manuals, ready as PDF.',
+        ctaLabel: 'Get documents →',
+        href: '/downloads',
+      },
+      {
+        icon: 'news',
+        title: 'Latest News',
+        body: 'Trade fairs, new launches and company announcements from EuniceMed.',
+        ctaLabel: "See what's new →",
+        href: '/news',
+      },
+    ],
+    recent: { title: 'Recently published', allLink: 'All insights →', allHref: '/insights' },
+    quick: { title: 'Most requested documents', allLink: 'All downloads →', allHref: '/downloads' },
+    panels: [
+      {
+        title: "Still can't find it?",
+        body:
+          'Our team answers technical, sizing and regulatory questions ' +
+          'within one working day.',
+        ctaLabel: 'Contact us',
+        href: '/contact',
+      },
+      {
+        title: 'Looking to distribute?',
+        body: 'OEM / ODM services, distributor support and partner enquiries — all in one place.',
+        ctaLabel: 'Partnership',
+        href: '/partnership',
+      },
+    ],
+  },
+  'zh-TW': {
+    meta: { title: '資源中心' },
+    hero: {
+      eyebrow: '資源中心',
+      title: '你需要的一切，**都在這裡**',
+      lead: '解答、文件與故事 —— 為臨床人員、經銷夥伴，以及每天穿戴我們產品的人而備。',
+    },
+    hubs: [
+      {
+        icon: 'faq',
+        title: '常見問題',
+        body: '尺寸、清洗、保固，以及如何選擇合適的支撐強度。',
+        ctaLabel: '瀏覽問題 →',
+        href: '/faq',
+      },
+      {
+        icon: 'insights',
+        title: '專欄',
+        body: '關於靜脈健康、壓力治療，以及如何挑選矯型護具的文章。',
+        ctaLabel: '閱讀文章 →',
+        href: '/insights',
+      },
+      {
+        icon: 'downloads',
+        title: '下載',
+        body: '型錄、認證文件與產品手冊，皆為 PDF。',
+        ctaLabel: '取得文件 →',
+        href: '/downloads',
+      },
+      {
+        icon: 'news',
+        title: '最新消息',
+        body: 'EuniceMed 的展會、新品發表與公司公告。',
+        ctaLabel: '看看有什麼新消息 →',
+        href: '/news',
+      },
+    ],
+    recent: { title: '最新發布', allLink: '所有專欄 →', allHref: '/insights' },
+    quick: { title: '最常被索取的文件', allLink: '所有下載 →', allHref: '/downloads' },
+    panels: [
+      {
+        title: '還是找不到嗎？',
+        body: '技術、尺寸與法規相關的問題，我們的團隊會在一個工作天內回覆。',
+        ctaLabel: '聯絡我們',
+        href: '/contact',
+      },
+      {
+        title: '想成為經銷夥伴？',
+        body: 'OEM / ODM 服務、經銷支援與合作洽詢 —— 全都在這裡。',
+        ctaLabel: '合作夥伴',
+        href: '/partnership',
+      },
+    ],
+  },
 };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
-  const page = await api.page(locale, 'resources');
-  const hero = page ? section<HeroSection>(page, 'hero') : null;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
 
   return {
-    title: hero?.title ?? COPY[locale].title,
-    description: hero?.lead,
+    title: COPY[locale].meta.title,
+    description: COPY[locale].hero.lead,
     alternates: {
       canonical: `${siteUrl}/${locale}/resources`,
       languages: { en: `${siteUrl}/en/resources`, 'zh-TW': `${siteUrl}/zh-TW/resources` },
@@ -127,10 +251,10 @@ export default async function ResourcesPage({ params }: { params: Promise<Params
     ? await Promise.all([api.articles(locale, 'news'), api.articles(locale, 'insights')])
     : [null, null];
 
-  const hero = section<HeroSection>(page, 'hero');
-  const hub = section<HubCardsSection>(page, 'hubCards');
-  const quick = section<QuickDownloadsSection>(page, 'quickDownloads');
-  const panels = section<CtaPanelsSection>(page, 'ctaPanels');
+  const copy = COPY[locale];
+  // 收斂後只剩 invariant 的引用清單，缺該語系的列時整段不回 ——
+  // 所以 gate 在「有沒有檔案」而不是「有沒有區段物件」（docs/15）
+  const quickItems = section<QuickDownloadsSection>(page, 'quickDownloads')?.items ?? [];
 
   const recentItems = auto
     ? mixLatest([...(news?.items ?? []), ...(insights?.items ?? [])], 3)
@@ -144,32 +268,34 @@ export default async function ResourcesPage({ params }: { params: Promise<Params
           這頁的標題比通用 PageHero 大一階，所以不共用那支元件。 */}
       <section style={S.hero}>
         <div style={S.heroInner}>
-          <p style={S.heroEyebrow}>{hero?.eyebrow ?? COPY[locale].title}</p>
+          <p style={S.heroEyebrow}>{copy.hero.eyebrow}</p>
           {/* mockup4 把標題後半加粗到 640；沿用首頁的 `**…**` 標記慣例（docs/09 §2） */}
           <h1 style={S.heroTitle}>
-            <Emphasis text={hero?.title ?? COPY[locale].title} />
+            <Emphasis text={copy.hero.title} />
           </h1>
-          {hero?.lead && <p style={S.heroLead}>{hero.lead}</p>}
+          <p style={S.heroLead}>{copy.hero.lead}</p>
         </div>
       </section>
 
-      {/* 四大入口卡 */}
-      {hub?.items && hub.items.length > 0 && (
-        <section style={S.hubs}>
-          <div style={S.hubGrid}>
-            {hub.items.map((item, i) => (
-              <HubCard key={item.title ?? i} item={item} />
-            ))}
-          </div>
-        </section>
-      )}
+      {/* 四大入口卡 —— 就是 Resources 次導覽的四個去處，所以與它一樣寫死 */}
+      <section style={S.hubs}>
+        <div style={S.hubGrid}>
+          {copy.hubs.map((item) => (
+            <HubCard key={item.href} item={item} locale={locale} />
+          ))}
+        </div>
+      </section>
 
       {/* 最新發布 */}
-      {recent && recentItems.length > 0 && (
+      {recentItems.length > 0 && (
         <section style={S.strip}>
           <div style={S.stripHead}>
-            <h2 style={S.stripTitle}>{recent.title}</h2>
-            <SectionCtaLink cta={recent.allLink} variant="text" style={S.stripAll} />
+            <h2 style={S.stripTitle}>{copy.recent.title}</h2>
+            <SectionCtaLink
+              cta={{ label: copy.recent.allLink, url: `/${locale}${copy.recent.allHref}` }}
+              variant="text"
+              style={S.stripAll}
+            />
           </div>
           <div style={S.stripGrid}>
             {recentItems.map((item) => (
@@ -209,44 +335,50 @@ export default async function ResourcesPage({ params }: { params: Promise<Params
       )}
 
       {/* 熱門下載 —— 由 ref:Download 指定，refs 查不到的就略過 */}
-      {quick && <QuickDownloads section={quick} refs={page.refs.downloads} />}
+      <QuickDownloads
+        items={quickItems}
+        refs={page.refs.downloads}
+        copy={copy.quick}
+        locale={locale}
+      />
 
       {/* 兩塊底部 CTA */}
-      {panels?.items && panels.items.length > 0 && (
-        <section style={S.cta}>
-          <div style={S.ctaGrid}>
-            {panels.items.map((panel, i) => {
-              // 第一塊是青色漸層面板配白字，其餘是白底細框（mockup4）
-              const solid = i === 0;
-              return (
-                <div key={panel.title ?? i} style={solid ? S.ctaSolid : S.ctaOutline}>
-                  {panel.title && (
-                    <h2 style={solid ? S.ctaTitleSolid : S.ctaTitle}>{panel.title}</h2>
-                  )}
-                  {panel.body && <p style={solid ? S.ctaBodySolid : S.ctaBody}>{panel.body}</p>}
-                  <SectionCtaLink
-                    cta={panel.link}
-                    label={panel.ctaLabel}
-                    style={solid ? S.ctaButtonSolid : S.ctaButton}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
+      <section style={S.cta}>
+        <div style={S.ctaGrid}>
+          {copy.panels.map((panel, i) => {
+            // 第一塊是青色漸層面板配白字，其餘是白底細框（mockup4）
+            const solid = i === 0;
+            return (
+              <div key={panel.href} style={solid ? S.ctaSolid : S.ctaOutline}>
+                <h2 style={solid ? S.ctaTitleSolid : S.ctaTitle}>{panel.title}</h2>
+                <p style={solid ? S.ctaBodySolid : S.ctaBody}>{panel.body}</p>
+                <SectionCtaLink
+                  cta={{ url: `/${locale}${panel.href}` }}
+                  label={panel.ctaLabel}
+                  variant="button"
+                  style={solid ? S.ctaButtonSolid : S.ctaButton}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </section>
     </>
   );
 }
 
 function QuickDownloads({
-  section: s,
+  items,
   refs,
+  copy,
+  locale,
 }: {
-  section: QuickDownloadsSection;
+  items: NonNullable<QuickDownloadsSection['items']>;
   refs: Record<string, DownloadRefEntry>;
+  copy: { title: string; allLink: string; allHref: string };
+  locale: Locale;
 }) {
-  const files = (s.items ?? [])
+  const files = items
     .map((item) => (item.download ? refs[item.download] : undefined))
     .filter((d): d is DownloadRefEntry => Boolean(d?.url));
 
@@ -257,8 +389,12 @@ function QuickDownloads({
     <section style={S.quick}>
       <div style={S.quickInner}>
         <div style={S.stripHead}>
-          <h2 style={S.stripTitle}>{s.title}</h2>
-          <SectionCtaLink cta={s.allLink} variant="text" style={S.stripAll} />
+          <h2 style={S.stripTitle}>{copy.title}</h2>
+          <SectionCtaLink
+            cta={{ label: copy.allLink, url: `/${locale}${copy.allHref}` }}
+            variant="text"
+            style={S.stripAll}
+          />
         </div>
         <div style={S.quickGrid}>
           {files.map((d) => (
@@ -278,14 +414,19 @@ function QuickDownloads({
   );
 }
 
-function HubCard({ item }: { item: NonNullable<HubCardsSection['items']>[number] }) {
+function HubCard({ item, locale }: { item: Panel; locale: Locale }) {
   return (
     /* 卡片等高：內文 flex-1 把 CTA 壓到底（mockup4 的 `flex:1`） */
     <div style={S.hub}>
       <HubIcon name={item.icon} />
-      {item.title && <h3 style={S.hubTitle}>{item.title}</h3>}
-      {item.body && <p style={S.hubBody}>{item.body}</p>}
-      <SectionCtaLink cta={item.link} label={item.ctaLabel} variant="text" style={S.hubCta} />
+      <h3 style={S.hubTitle}>{item.title}</h3>
+      <p style={S.hubBody}>{item.body}</p>
+      <SectionCtaLink
+        cta={{ url: `/${locale}${item.href}` }}
+        label={item.ctaLabel}
+        variant="text"
+        style={S.hubCta}
+      />
     </div>
   );
 }
