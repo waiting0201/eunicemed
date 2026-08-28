@@ -284,3 +284,95 @@
     color: #0092a8;
   }
 }
+
+/**
+ * 文章內文。API 產生的 HTML 沒有 JSX 元素可以掛 inline style，只能是 CSS。
+ * 值逐字取自 `mockup4/Article Detail.dc.html` 的 ARTICLE BODY。
+ */
+@layer components {
+  /* p:first-child 是導引段：font-size:1.18rem;color:#16333B;line-height:1.6; */
+  .m4-prose > p:first-child {
+    font-size: 1.18rem;
+    color: #16333b;
+    line-height: 1.6;
+  }
+
+  /* font-size:1.55rem;font-weight:520;margin:38px 0 12px; */
+  .m4-prose h2 {
+    font-size: 1.55rem;
+    font-weight: 520;
+    margin: 38px 0 12px;
+    scroll-margin-top: 100px;
+  }
+
+  .m4-prose h3 {
+    font-size: 1.2rem;
+    font-weight: 570;
+    margin: 28px 0 8px;
+  }
+
+  .m4-prose p {
+    margin-top: 14px;
+  }
+
+  /* margin:16px 0 0;padding-left:22px; */
+  .m4-prose ul,
+  .m4-prose ol {
+    margin: 16px 0 0;
+    padding-left: 22px;
+  }
+
+  .m4-prose ul {
+    list-style: disc;
+  }
+
+  .m4-prose ol {
+    list-style: decimal;
+  }
+
+  /* margin-bottom:8px; */
+  .m4-prose li {
+    margin-bottom: 8px;
+  }
+
+  .m4-prose b,
+  .m4-prose strong {
+    color: #16333b;
+  }
+
+  .m4-prose a {
+    color: #0092a8;
+    font-weight: 600;
+  }
+
+  /* border-left:3px solid #00B5CD;background:#F5FAFB;border-radius:0 16px 16px 0;padding:22px 26px;margin:30px 0; */
+  .m4-prose blockquote {
+    border-left: 3px solid #00b5cd;
+    background: #f5fafb;
+    border-radius: 0 16px 16px 0;
+    padding: 22px 26px;
+    margin: 30px 0;
+    color: #16333b;
+    font-size: 1.1rem;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+
+  /* margin:34px 0; */
+  .m4-prose figure {
+    margin: 34px 0;
+  }
+
+  .m4-prose img {
+    display: block;
+    width: 100%;
+    border-radius: 20px;
+  }
+
+  /* font-size:.85rem;color:#66787F;margin-top:10px; */
+  .m4-prose figcaption {
+    font-size: 0.85rem;
+    color: #66787f;
+    margin-top: 10px;
+  }
+}

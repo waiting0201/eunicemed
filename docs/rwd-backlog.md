@@ -46,3 +46,5 @@
 | `apps/web/components/ArticleListPage.tsx` | `lg:grid-cols-[240px_1fr]`、`sm:grid-cols-2` | `240px 1fr`、`repeat(2,1fr)` | `stack`（已標） |
 | `apps/web/components/ArticleCard.tsx` | `lg:grid-cols-[1.2fr_1fr]` | `1.2fr 1fr` | `stack`（已標） |
 | `apps/web/app/[locale]/downloads/page.tsx` | `lg:grid-cols-[240px_1fr]` | `240px 1fr` | `stack`（已標） |
+| `apps/web/components/ArticleDetailPage.tsx` | `lg:grid-cols-[minmax(0,1fr)_260px]`、`sm:grid-cols-2/3`、`lg:sticky` | `minmax(0,1fr) 260px`、`repeat(3,1fr)`、`position:sticky` | `stack` / `static`（已標） |
+| `apps/web/components/ContactForm.tsx` | `sm:grid-cols-2` | `grid-template-columns:1fr 1fr` | `stack`（已標） |

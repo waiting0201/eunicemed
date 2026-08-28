@@ -100,7 +100,8 @@
       "apps/web/app/[locale]/insights/[slug]/page.tsx",
       "apps/web/components/ArticleDetailPage.tsx",
       "apps/web/components/ShareLinks.tsx",
-      "apps/web/components/ArticleCard.tsx"
+      "apps/web/components/ArticleCard.tsx",
+      "apps/web/components/ResourcesSubnav.tsx"
     ],
     "News": [
       "apps/web/app/[locale]/news/page.tsx",
@@ -116,7 +117,8 @@
       "apps/web/app/[locale]/news/[slug]/page.tsx",
       "apps/web/components/ArticleDetailPage.tsx",
       "apps/web/components/ShareLinks.tsx",
-      "apps/web/components/ArticleCard.tsx"
+      "apps/web/components/ArticleCard.tsx",
+      "apps/web/components/ResourcesSubnav.tsx"
     ],
     "Downloads": [
       "apps/web/app/[locale]/downloads/page.tsx",

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { css } from '@/lib/css';
 import type { ArticleDetail } from '@/lib/api';
 import { srcSetOf } from '@/lib/image';
 import type { Locale } from '@/lib/locale';
@@ -72,20 +73,70 @@ const COPY: Record<
   },
 };
 
-/** 內文的排版。richtext 由 API 淨化過，標籤集固定（docs/09 §9.2），這裡只負責樣式。 */
-const PROSE = [
-  '[&_p]:mt-4',
-  // 第一段是導引段：比內文大一階且用 ink（mockup4）
-  '[&>p:first-child]:mt-0 [&>p:first-child]:text-[1.18rem] [&>p:first-child]:leading-[1.6] [&>p:first-child]:text-ink',
-  '[&_h2]:mt-[38px] [&_h2]:mb-3 [&_h2]:text-[1.55rem] [&_h2]:font-[520] [&_h2]:scroll-mt-24',
-  '[&_h3]:mt-7 [&_h3]:text-[1.2rem] [&_h3]:font-[570]',
-  '[&_ul]:mt-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mt-4 [&_ol]:list-decimal [&_ol]:pl-5',
-  '[&_li]:mt-1.5',
-  '[&_a]:text-brand-deep [&_a]:underline',
-  // 引言：左側 3px 品牌青、淺底、右側圓角（mockup4），不是斜體
-  '[&_blockquote]:my-[30px] [&_blockquote]:rounded-r-2xl [&_blockquote]:border-l-[3px] [&_blockquote]:border-brand [&_blockquote]:bg-tint [&_blockquote]:px-[26px] [&_blockquote]:py-[22px] [&_blockquote]:text-[1.1rem] [&_blockquote]:font-medium [&_blockquote]:text-ink [&_blockquote]:leading-[1.5]',
-  '[&_figure]:mt-6 [&_img]:rounded-[14px] [&_figcaption]:mt-2 [&_figcaption]:text-[0.85rem] [&_figcaption]:text-grey',
-].join(' ');
+/**
+ * 樣式逐字取自 `mockup4/Article Detail.dc.html`。
+ * 內文（`.m4-prose`）在 globals.css —— richtext 由 API 產生，沒有 JSX 元素可掛 inline style。
+ */
+const S = {
+  breadcrumb: css`max-width:1180px;margin:0 auto;padding:18px clamp(24px,5vw,64px);font-size:.85rem;color:#66787F;font-weight:500;`,
+  sep: css`margin:0 8px;color:#B7C4C8;`,
+  header: css`max-width:1180px;margin:0 auto;padding:clamp(16px,2vw,24px) clamp(24px,5vw,64px) 0;`,
+  headerInner: css`max-width:820px;margin:0 auto;text-align:center;`,
+  eyebrow: css`color:#0092A8;font-weight:700;font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;`,
+  title: css`font-weight:400;font-size:clamp(2rem,3.8vw,3rem);letter-spacing:-.02em;margin:12px 0 0;`,
+  standfirst: css`margin-top:16px;font-size:1.15rem;`,
+  meta: css`display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:20px;font-size:.85rem;color:#66787F;`,
+  metaSep: css`color:#B7C4C8;`,
+
+  coverWrap: css`max-width:1180px;margin:0 auto;padding:clamp(28px,3.5vw,44px) clamp(24px,5vw,64px) 0;`,
+  cover: css`position:relative;aspect-ratio:16/9;border-radius:24px;overflow:hidden;background:#F0F6F8;`,
+  coverImg: css`display:block;width:100%;height:100%;object-fit:cover;`,
+
+  body: css`max-width:1180px;margin:0 auto;padding:clamp(40px,5vw,64px) clamp(24px,5vw,64px);`,
+  bodyGrid: css`display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:clamp(40px,5vw,72px);align-items:start;`,
+  article: css`font-size:1.06rem;min-width:0;`,
+  disclaimer: css`border:1px solid #DFE9EC;border-radius:18px;padding:20px 24px;margin-top:34px;font-size:.88rem;color:#66787F;`,
+  tags: css`display:flex;flex-wrap:wrap;gap:10px;margin-top:32px;`,
+  tag: css`background:#F5FAFB;border:1px solid #DFE9EC;border-radius:999px;padding:6px 15px;font-size:.82rem;font-weight:500;`,
+
+  rail: css`position:sticky;top:100px;display:flex;flex-direction:column;gap:24px;`,
+  railLabel: css`color:#8AA0A6;font-weight:620;letter-spacing:.14em;text-transform:uppercase;font-size:.72rem;padding-bottom:10px;`,
+  toc: css`display:flex;flex-direction:column;gap:2px;font-size:.92rem;`,
+  tocItem: css`border-left:3px solid #DFE9EC;padding:8px 14px;line-height:1.4;`,
+  tocItemActive: css`border-left:3px solid #00B5CD;color:#0092A8;font-weight:620;padding:8px 14px;line-height:1.4;`,
+  promo: css`background:#F5FAFB;border:1px solid #DFE9EC;border-radius:20px;padding:24px 22px;`,
+  promoTitle: css`font-weight:570;font-size:1.05rem;`,
+  promoBody: css`font-size:.9rem;margin-top:6px;`,
+  promoLink: css`display:inline-block;margin-top:14px;color:#0092A8;font-weight:620;font-size:.92rem;`,
+
+  /** News Detail 的分類是**藥丸**，Insights 是純大寫字（兩頁不同） */
+  newsEyebrow: css`display:inline-block;background:#E9F8FA;color:#0092A8;font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;padding:5px 14px;border-radius:999px;`,
+  newsTitle: css`font-weight:400;font-size:clamp(2rem,3.8vw,3rem);letter-spacing:-.02em;margin:14px 0 0;`,
+  newsDate: css`margin-top:18px;font-size:.85rem;color:#66787F;`,
+
+  gallery: css`display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:34px;`,
+  galleryItem: css`position:relative;aspect-ratio:4/3;border-radius:16px;overflow:hidden;background:#F0F6F8;`,
+  galleryImg: css`display:block;width:100%;height:100%;object-fit:cover;`,
+
+  facts: css`border:1px solid #DFE9EC;border-radius:20px;background:#F5FAFB;padding:26px 28px;margin-top:34px;`,
+  factsTitle: css`font-weight:620;font-size:1.05rem;margin-bottom:14px;`,
+  factsGrid: css`display:grid;grid-template-columns:120px 1fr;gap:10px 18px;font-size:.95rem;`,
+  factsKey: css`color:#66787F;`,
+  factsValue: css`color:#16333B;`,
+  factsCta: css`display:inline-block;margin-top:20px;background:#00B5CD;color:#fff;font-weight:620;padding:11px 26px;border-radius:999px;box-shadow:0 8px 22px rgba(0,150,170,.28);`,
+
+  prevNext: css`display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:48px;border-top:1px solid #DFE9EC;padding-top:28px;`,
+  prevNextRight: css`text-align:right;`,
+  prevNextLabel: css`font-size:.8rem;color:#66787F;`,
+  prevNextTitle: css`font-weight:570;font-size:1.05rem;margin-top:6px;`,
+
+  related: css`background:#F5FAFB;padding:clamp(56px,7vw,80px) 0;`,
+  relatedInner: css`max-width:1180px;margin:0 auto;padding:0 clamp(24px,5vw,64px);`,
+  relatedHead: css`display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:28px;`,
+  relatedTitle: css`color:#16333B;font-weight:400;font-size:clamp(1.6rem,3vw,2.1rem);`,
+  relatedAll: css`color:#0092A8;font-weight:620;`,
+  relatedGrid: css`display:grid;grid-template-columns:repeat(3,1fr);gap:28px;`,
+} as const;
 
 export function ArticleDetailPage({
   article,
@@ -105,35 +156,34 @@ export function ArticleDetailPage({
     <>
       <ResourcesSubnav locale={locale} active={`/${kind}`} />
 
-      <nav className="mx-auto max-w-content px-gutter py-4 text-[0.85rem] font-medium text-[#66787f]">
+      <nav style={S.breadcrumb}>
         <Link href={`/${locale}/${kind}`}>{listLabel}</Link>
         {a.category && (
           <>
-            <span className="mx-2 text-[#b7c4c8]">/</span>
-            <Link href={`/${locale}/${kind}?category=${a.category.slug}`}>
-              {a.category.name}
-            </Link>
+            <span style={S.sep}>/</span>
+            <Link href={`/${locale}/${kind}?category=${a.category.slug}`}>{a.category.name}</Link>
           </>
         )}
-        <span className="mx-2 text-[#b7c4c8]">/</span>
-        <span className="text-ink">{a.title}</span>
+        <span style={S.sep}>/</span>
+        {/* mockup4 的最後一節沒有自己的樣式，直接繼承容器的 #66787F */}
+        <span>{a.title}</span>
       </nav>
 
-      {/* 標題區 —— 量體 820px（比一般頁窄），分類是純色字而不是藥丸 */}
-      <header className="mx-auto max-w-content px-gutter pt-[clamp(16px,2vw,24px)]">
-        <div className="mx-auto max-w-[820px] text-center">
+      {/*
+        標題區 —— 量體 820px（比一般頁窄）。
+        **兩頁的分類長得不一樣**：Insights 是純大寫青字，News 是淺青底的藥丸，
+        連帶 h1 的上距也不同（12px vs 14px）。
+      */}
+      <header style={S.header}>
+        <div style={S.headerInner}>
           {a.category && (
-            <span className="text-[0.74rem] font-bold tracking-[0.14em] text-brand-deep uppercase">
-              {a.category.name}
-            </span>
+            <span style={kind === 'news' ? S.newsEyebrow : S.eyebrow}>{a.category.name}</span>
           )}
-          <h1 className="mt-3 text-[clamp(2rem,3.8vw,3rem)] font-normal">{a.title}</h1>
+          <h1 style={kind === 'news' ? S.newsTitle : S.title}>{a.title}</h1>
           {/* standfirst 是編輯者另寫的導言；沒寫就用摘要，兩者都沒有才不顯示 */}
-          {(a.standfirst ?? a.excerpt) && (
-            <p className="mt-4 text-[1.15rem]">{a.standfirst ?? a.excerpt}</p>
-          )}
+          {(a.standfirst ?? a.excerpt) && <p style={S.standfirst}>{a.standfirst ?? a.excerpt}</p>}
 
-          <div className="mt-5 flex flex-wrap justify-center gap-2.5 text-[0.85rem] text-[#66787F]">
+          <div style={S.meta}>
             {[
               a.publishedAt ? formatDate(a.publishedAt, locale) : null,
               a.author ? `${c.by} ${a.author}` : null,
@@ -142,7 +192,7 @@ export function ArticleDetailPage({
               .filter((x): x is string => Boolean(x))
               .map((part, i) => (
                 <span key={part} className="contents">
-                  {i > 0 && <span className="text-[#B7C4C8]">·</span>}
+                  {i > 0 && <span style={S.metaSep}>·</span>}
                   <span>{part}</span>
                 </span>
               ))}
@@ -151,7 +201,7 @@ export function ArticleDetailPage({
       </header>
 
       {a.cover && (
-        <div className="mx-auto max-w-content px-gutter pt-[clamp(28px,3.5vw,44px)]">
+        <div style={S.coverWrap}>
           <img
             src={a.cover.url}
             srcSet={srcSetOf(a.cover)}
@@ -160,18 +210,18 @@ export function ArticleDetailPage({
             width={1600}
             height={900}
             decoding="async"
-            className="aspect-[16/9] w-full rounded-[24px] object-cover"
+            style={{ ...S.cover, ...S.coverImg }}
           />
         </div>
       )}
 
       {/* 內文 + 側欄 */}
-      <section className="mx-auto max-w-content px-gutter py-[clamp(40px,5vw,64px)]">
-        <div className="grid items-start gap-[clamp(40px,5vw,72px)] lg:grid-cols-[minmax(0,1fr)_260px]">
-          <article className="min-w-0 text-[1.06rem]">
+      <section style={S.body}>
+        <div style={S.bodyGrid} data-r="stack">
+          <article style={S.article}>
             {a.body && (
               <div
-                className={PROSE}
+                className="m4-prose"
                 // 已在寫入時以白名單淨化（Article profile），且 H2 的 anchor id
                 // 由伺服器回填 —— 側欄 TOC 就是靠那些 id 跳的，前端不可以再動 HTML。
                 dangerouslySetInnerHTML={{ __html: a.body }}
@@ -181,7 +231,7 @@ export function ArticleDetailPage({
             {a.event && <EventPanel event={a.event} locale={locale} copy={c} />}
 
             {a.gallery.length > 0 && (
-              <div className="mt-10 grid gap-4 sm:grid-cols-3">
+              <div style={S.gallery} data-r="stack">
                 {a.gallery.map((img) => (
                   <img
                     key={img.url}
@@ -193,42 +243,33 @@ export function ArticleDetailPage({
                     decoding="async"
                     width={800}
                     height={600}
-                    className="aspect-[4/3] w-full rounded-[14px] object-cover"
+                    style={{ ...S.galleryItem, ...S.galleryImg }}
                   />
                 ))}
               </div>
             )}
 
             {a.disclaimer && (
-              <div
-                className="mt-10 text-[0.85rem] text-grey [&_p]:mt-2"
-                dangerouslySetInnerHTML={{ __html: a.disclaimer }}
-              />
+              <div style={S.disclaimer} dangerouslySetInnerHTML={{ __html: a.disclaimer }} />
             )}
 
             {(a.prev || a.next) && (
-              <div className="mt-12 grid gap-4 border-t border-hairline pt-8 sm:grid-cols-2">
+              <div style={S.prevNext} data-r="stack">
                 {a.prev ? <NavCard item={a.prev} label={c.prev} /> : <span />}
                 {a.next && <NavCard item={a.next} label={c.next} align="right" />}
               </div>
             )}
           </article>
 
-          <aside className="space-y-8 lg:sticky lg:top-24 lg:self-start">
+          <aside style={S.rail} data-r="static">
             {a.toc.length > 0 && (
               <div>
-                <p className="pb-2.5 text-[0.72rem] font-[620] tracking-[0.14em] text-[#8AA0A6] uppercase">
-                  {c.onThisPage}
-                </p>
+                <p style={S.railLabel}>{c.onThisPage}</p>
                 {/* 每一項左側一條色條；目前段落在 mockup4 是品牌青，
                     但捲動位置要 client JS 才知道，所以這裡一律用細線色。 */}
-                <nav className="flex flex-col gap-0.5 text-[0.92rem]">
+                <nav style={S.toc}>
                   {a.toc.map((t) => (
-                    <a
-                      key={t.id}
-                      href={`#${t.id}`}
-                      className="border-l-[3px] border-hairline px-3.5 py-2 leading-[1.4] hover:border-brand hover:text-brand-deep"
-                    >
+                    <a key={t.id} href={`#${t.id}`} style={S.tocItem}>
                       {t.text}
                     </a>
                   ))}
@@ -239,12 +280,9 @@ export function ArticleDetailPage({
             <ShareLinks title={a.title} locale={locale} />
 
             {a.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
+              <div style={S.tags}>
                 {a.tags.map((tag) => (
-                  <span
-                    key={tag.slug}
-                    className="rounded-full border border-hairline px-3 py-1 text-[0.8rem]"
-                  >
+                  <span key={tag.slug} style={S.tag}>
                     {tag.name}
                   </span>
                 ))}
@@ -255,17 +293,15 @@ export function ArticleDetailPage({
       </section>
 
       {a.related.length > 0 && (
-        <section className="bg-tint py-[clamp(56px,7vw,80px)]">
-          <div className="mx-auto max-w-content px-gutter">
-            <div className="mb-7 flex flex-wrap items-baseline justify-between gap-4">
-              <h2 className="text-[clamp(1.6rem,3vw,2.1rem)] font-normal">
-                {kind === 'news' ? c.relatedNews : c.relatedInsights}
-              </h2>
-              <Link href={`/${locale}/${kind}`} className="font-[620] text-brand-deep">
+        <section style={S.related}>
+          <div style={S.relatedInner}>
+            <div style={S.relatedHead}>
+              <h2 style={S.relatedTitle}>{kind === 'news' ? c.relatedNews : c.relatedInsights}</h2>
+              <Link href={`/${locale}/${kind}`} style={S.relatedAll}>
                 {kind === 'news' ? c.allNews : c.allInsights} →
               </Link>
             </div>
-            <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
+            <div style={S.relatedGrid} data-r="stack">
               {a.related.map((r) => (
                 <ArticleCard
                   key={r.slug}
@@ -321,23 +357,20 @@ function EventPanel({
   if (rows.length === 0 && !event.ctaUrl) return null;
 
   return (
-    <div className="mt-10 rounded-[18px] border border-hairline bg-tint p-6">
-      <h3 className="text-[1.1rem] font-semibold">{copy.eventDetails}</h3>
-      <dl className="mt-4 grid gap-x-6 gap-y-2 sm:grid-cols-[max-content_1fr]">
+    <div style={S.facts}>
+      <h3 style={S.factsTitle}>{copy.eventDetails}</h3>
+      <dl style={S.factsGrid}>
         {rows.map(([label, value]) => (
           <div key={label} className="contents">
-            <dt className="text-[0.88rem] text-grey">{label}</dt>
-            <dd className="text-[0.95rem] text-ink">
+            <dt style={S.factsKey}>{label}</dt>
+            <dd style={S.factsValue}>
               {label === copy.contact ? <a href={`mailto:${value}`}>{value}</a> : value}
             </dd>
           </div>
         ))}
       </dl>
       {event.ctaUrl && (
-        <a
-          href={event.ctaUrl}
-          className="mt-5 inline-block rounded-full bg-brand px-6 py-2.5 font-semibold text-white transition hover:bg-brand-deep hover:text-white"
-        >
+        <a href={event.ctaUrl} style={S.factsCta} className="hover:text-white">
           {event.ctaLabel ?? copy.requestMeeting}
         </a>
       )}
@@ -355,14 +388,9 @@ function NavCard({
   align?: 'left' | 'right';
 }) {
   return (
-    <Link
-      href={item.url}
-      className={`rounded-[14px] border border-hairline p-5 transition hover:border-brand-bright ${
-        align === 'right' ? 'sm:text-right' : ''
-      }`}
-    >
-      <p className="text-[0.82rem] text-grey">{label}</p>
-      <h3 className="mt-1 text-[1.02rem] font-semibold">{item.title}</h3>
+    <Link href={item.url} style={align === 'right' ? S.prevNextRight : undefined}>
+      <p style={S.prevNextLabel}>{label}</p>
+      <h3 style={S.prevNextTitle}>{item.title}</h3>
     </Link>
   );
 }
