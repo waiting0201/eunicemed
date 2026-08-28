@@ -93,7 +93,8 @@
       "apps/web/components/ResourcesSubnav.tsx",
       "apps/web/components/SideFilter.tsx",
       "apps/web/components/Pagination.tsx",
-      "apps/web/components/PageBand.tsx"
+      "apps/web/components/PageBand.tsx",
+      "apps/web/components/PageHero.tsx"
     ],
     "Article Detail": [
       "apps/web/app/[locale]/insights/[slug]/page.tsx",
@@ -108,7 +109,8 @@
       "apps/web/components/ResourcesSubnav.tsx",
       "apps/web/components/SideFilter.tsx",
       "apps/web/components/Pagination.tsx",
-      "apps/web/components/PageBand.tsx"
+      "apps/web/components/PageBand.tsx",
+      "apps/web/components/PageHero.tsx"
     ],
     "News Detail": [
       "apps/web/app/[locale]/news/[slug]/page.tsx",

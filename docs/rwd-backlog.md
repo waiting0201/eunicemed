@@ -43,3 +43,6 @@
 | `apps/web/app/[locale]/faq/page.tsx` | `lg:grid-cols-[260px_1fr]` | `grid-template-columns:260px 1fr` | `stack`（已標） |
 | `apps/web/components/SideFilter.tsx` | `lg:sticky lg:top-[100px]` | `position:sticky;top:100px` | 手機需改為橫向捲動或收合 |
 | `apps/web/app/[locale]/where-to-buy/page.tsx` | `sm:grid-cols-2 lg:grid-cols-3` | `grid-template-columns:repeat(3,1fr)` | `stack`（已標） |
+| `apps/web/components/ArticleListPage.tsx` | `lg:grid-cols-[240px_1fr]`、`sm:grid-cols-2` | `240px 1fr`、`repeat(2,1fr)` | `stack`（已標） |
+| `apps/web/components/ArticleCard.tsx` | `lg:grid-cols-[1.2fr_1fr]` | `1.2fr 1fr` | `stack`（已標） |
+| `apps/web/app/[locale]/downloads/page.tsx` | `lg:grid-cols-[240px_1fr]` | `240px 1fr` | `stack`（已標） |

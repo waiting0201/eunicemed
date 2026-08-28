@@ -1,4 +1,33 @@
+import type { CSSProperties } from 'react';
 import Link from 'next/link';
+import { css } from '@/lib/css';
+
+/**
+ * 樣式逐字取自 mockup4 的 News／Insights 卡。
+ * 兩頁的卡**不是同一張**：News 是日期＋標題、圓角 18px、文字上距 14px；
+ * Insights 是分類 eyebrow＋標題＋摘要、文字上距 16px。
+ */
+const S = {
+  featured: css`display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center;margin-bottom:56px;`,
+  featuredCover: css`position:relative;aspect-ratio:16/10;border-radius:22px;overflow:hidden;background:#F0F6F8;`,
+  featuredDate: css`font-size:.85rem;color:#66787F;`,
+  featuredTitle: css`color:#16333B;font-weight:400;font-size:clamp(1.6rem,3vw,2.1rem);margin:8px 0 12px;`,
+  featuredExcerpt: css`font-size:1rem;`,
+  featuredMore: css`display:inline-block;margin-top:16px;color:#0092A8;font-weight:620;`,
+
+  card: css`display:block;`,
+  cover: css`position:relative;aspect-ratio:16/10;border-radius:18px;overflow:hidden;background:#F0F6F8;`,
+  img: css`display:block;width:100%;height:100%;object-fit:cover;`,
+
+  newsBody: css`margin-top:14px;`,
+  newsDate: css`font-size:.8rem;color:#66787F;`,
+  newsTitle: css`color:#16333B;font-weight:570;font-size:1.18rem;margin-top:4px;`,
+
+  insightBody: css`margin-top:16px;`,
+  insightEyebrow: css`color:#0092A8;font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;`,
+  insightTitle: css`color:#16333B;font-weight:570;font-size:1.22rem;margin:6px 0;`,
+  insightExcerpt: css`font-size:.92rem;`,
+} as const;
 import type { ArticleListItem } from '@/lib/api';
 import { srcSetOf } from '@/lib/image';
 import type { Locale } from '@/lib/locale';
@@ -21,15 +50,15 @@ const READ_MORE: Record<Locale, string> = { en: 'Read more', 'zh-TW': '閱讀更
 
 function Cover({
   item,
-  className,
+  style,
   sizes,
 }: {
   item: ArticleListItem;
-  className: string;
+  style: CSSProperties;
   sizes: string;
 }) {
   return (
-    <div className={`relative overflow-hidden bg-tint-deep ${className}`}>
+    <div style={style}>
       {item.cover && (
         <img
           src={item.cover.url}
@@ -40,7 +69,7 @@ function Cover({
           decoding="async"
           width={800}
           height={500}
-          className="block h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+          style={S.img}
         />
       )}
     </div>
@@ -61,60 +90,37 @@ export function ArticleCard({
   // News 列表的頭條：圖文並置，1.2fr / 1fr
   if (featured) {
     return (
-      <Link
-        href={item.url}
-        className="group grid items-center gap-10 lg:grid-cols-[1.2fr_1fr]"
-      >
-        <Cover
-          item={item}
-          className="aspect-[16/10] rounded-[22px]"
-          sizes="(max-width: 1024px) 100vw, 620px"
-        />
+      <Link href={item.url} style={S.featured} data-r="stack">
+        <Cover item={item} style={S.featuredCover} sizes="(max-width: 1024px) 100vw, 620px" />
         <div>
-          {item.publishedAt && (
-            <p className="text-[0.85rem] text-[#66787F]">
-              {formatDate(item.publishedAt, locale)}
-            </p>
-          )}
-          <h2 className="mt-2 mb-3 text-[clamp(1.6rem,3vw,2.1rem)] font-normal">
-            {item.title}
-          </h2>
-          {item.excerpt && <p className="text-base">{item.excerpt}</p>}
-          <span className="mt-4 inline-block font-[620] text-brand-deep">
-            {READ_MORE[locale]} →
-          </span>
+          {item.publishedAt && <p style={S.featuredDate}>{formatDate(item.publishedAt, locale)}</p>}
+          <h2 style={S.featuredTitle}>{item.title}</h2>
+          {item.excerpt && <p style={S.featuredExcerpt}>{item.excerpt}</p>}
+          <span style={S.featuredMore}>{READ_MORE[locale]} →</span>
         </div>
       </Link>
     );
   }
 
   return (
-    <Link href={item.url} className="group block">
-      <Cover
-        item={item}
-        className="aspect-[16/10] rounded-[18px]"
-        sizes="(max-width: 640px) 100vw, 420px"
-      />
+    <Link href={item.url} style={S.card}>
+      <Cover item={item} style={S.cover} sizes="(max-width: 640px) 100vw, 420px" />
 
       {kind === 'news' ? (
-        <div className="mt-3.5">
-          {item.publishedAt && (
-            <p className="text-[0.8rem] text-[#66787F]">
-              {formatDate(item.publishedAt, locale)}
-            </p>
-          )}
-          <h3 className="mt-1 text-[1.18rem] font-[570]">{item.title}</h3>
+        <div style={S.newsBody}>
+          {item.publishedAt && <p style={S.newsDate}>{formatDate(item.publishedAt, locale)}</p>}
+          <h3 style={S.newsTitle}>{item.title}</h3>
         </div>
       ) : (
-        <div className="mt-4">
-          {item.category && (
-            <span className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-brand-deep">
-              {item.category.name}
-            </span>
-          )}
-          <h3 className="my-1.5 text-[1.22rem] font-[570]">{item.title}</h3>
+        <div style={S.insightBody}>
+          {item.category && <span style={S.insightEyebrow}>{item.category.name}</span>}
+          <h3 style={S.insightTitle}>{item.title}</h3>
           {/* mockup4 的摘要是 2–3 行；夾住才不會讓同一排卡片高度散開 */}
-          {item.excerpt && <p className="line-clamp-3 text-[0.92rem]">{item.excerpt}</p>}
+          {item.excerpt && (
+            <p style={S.insightExcerpt} className="line-clamp-3">
+              {item.excerpt}
+            </p>
+          )}
         </div>
       )}
     </Link>
