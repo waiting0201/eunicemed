@@ -13,6 +13,13 @@
     "top:10px": "規格標註殘留：佔位圖裡包住「8:3」字樣的 <span>，父層是等寬字說明，正式站用真圖所以整組不存在。",
     "left:12px": "同上。",
     "background:#a8ad3c": "mockup4 唯一一顆系列徽章剛好是 Protect，所以只出現 #5B7F95。Care 的填色依 DESIGN.md「填色維持 Pantone 原值」推得；同色在分類頁是 border-top:4px solid #A8AD3C。",
-    "background:#7a4d6f": "同上，Advance。"
+    "background:#7a4d6f": "同上，Advance。",
+    "width:1px": "mockup4 的篩選列是「分類 | 系列」兩組擠在一行，中間用 1×22px 的 #EDF4F6 細線分隔。本站有三個維度（分類／系列／部位）且每個 chip 帶 facet 數，擠成一行會嚴重換行，所以改成三列各自帶標籤。",
+    "height:22px": "同上，篩選列分隔線。",
+    "background:#edf4f6": "同上，篩選列分隔線的顏色。",
+    "margin:0 6px": "同上，篩選列分隔線的左右間距。",
+    "margin-left:6px": "chip 上的 facet 數字。mockup4 是靜態稿沒有數量，本站的篩選是真的會篩，數量對使用者有意義。",
+    "opacity:0.6": "同上，facet 數字的透明度。",
+    "margin-top:24px": "產品筆數說明與產品格的上距。mockup4 沒有筆數那一行（靜態稿），格子直接接在篩選列的 margin-bottom:36px 之後。"
   }
 }

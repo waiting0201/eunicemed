@@ -1,4 +1,14 @@
 import Link from 'next/link';
+import { css } from '@/lib/css';
+
+/** 樣式逐字取自 mockup4 的篩選 chips 列。 */
+const S = {
+  row: css`display:flex;flex-wrap:wrap;gap:12px;align-items:center;`,
+  label: css`font-weight:620;color:#16333B;margin-right:8px;`,
+  chipActive: css`color:#fff;font-weight:600;font-size:.85rem;padding:7px 16px;border-radius:999px;`,
+  chipIdle: css`background:#FFFFFF;border:1px solid #DFE9EC;color:#44565D;font-weight:500;font-size:.85rem;padding:7px 16px;border-radius:999px;`,
+  count: css`margin-left:6px;font-size:.75rem;opacity:.6;`,
+} as const;
 import type { FacetCount } from '@/lib/api';
 import type { Locale } from '@/lib/locale';
 
@@ -52,8 +62,8 @@ export function FilterChips({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <span className="mr-2 shrink-0 font-[620] text-ink">{label}</span>
+    <div style={S.row}>
+      <span style={S.label}>{label}</span>
 
       <Chip href={href()} active={!active} tone={tone}>
         {ALL[locale]}
@@ -62,7 +72,7 @@ export function FilterChips({
       {facets.map((f) => (
         <Chip key={f.slug} href={href(f.slug)} active={active === f.slug} tone={tone}>
           {f.label}
-          <span className="ml-1.5 text-[0.75rem] opacity-60">{f.count}</span>
+          <span style={S.count}>{f.count}</span>
         </Chip>
       ))}
     </div>
@@ -71,9 +81,10 @@ export function FilterChips({
 
 export type Tone = 'ink' | 'brand';
 
-const ACTIVE: Record<Tone, string> = {
-  ink: 'bg-ink',
-  brand: 'bg-brand shadow-[0_6px_16px_rgba(0,150,170,.24)]',
+/** 作用中 chip 的底色。mockup4 的產品格用 ink，分類頁的次要列用品牌青。 */
+const ACTIVE: Record<Tone, React.CSSProperties> = {
+  ink: css`background:#16333B;`,
+  brand: css`background:#00B5CD;box-shadow:0 6px 16px rgba(0,150,170,.24);`,
 };
 
 function Chip({
@@ -91,11 +102,9 @@ function Chip({
     <Link
       href={href}
       aria-current={active ? 'true' : undefined}
-      className={`rounded-full px-4 py-[7px] text-[0.85rem] ${
-        active
-          ? `font-semibold text-white hover:text-white ${ACTIVE[tone]}`
-          : 'border border-hairline bg-white font-medium text-body hover:border-brand'
-      }`}
+      style={active ? { ...S.chipActive, ...ACTIVE[tone] } : S.chipIdle}
+      className={active ? 'hover:text-white' : undefined}
+      data-hover={active ? undefined : 'edge'}
     >
       {children}
     </Link>
@@ -125,24 +134,17 @@ export function LinkChips({
   if (items.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <span className="mr-2 shrink-0 font-[620] text-ink">{label}</span>
+    <div style={S.row}>
+      <span style={S.label}>{label}</span>
 
       <Chip href={allHref} active={!activeHref} tone={tone}>
         {allLabel}
       </Chip>
 
       {items.map((item) => (
-        <Chip
-          key={item.href}
-          href={item.href}
-          active={activeHref === item.href}
-          tone={tone}
-        >
+        <Chip key={item.href} href={item.href} active={activeHref === item.href} tone={tone}>
           {item.label}
-          {typeof item.count === 'number' && (
-            <span className="ml-1.5 text-[0.75rem] opacity-60">{item.count}</span>
-          )}
+          {typeof item.count === 'number' && <span style={S.count}>{item.count}</span>}
         </Chip>
       ))}
     </div>

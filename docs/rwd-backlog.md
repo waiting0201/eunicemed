@@ -36,3 +36,5 @@
 | `apps/web/app/[locale]/page.tsx` §02 | `lg:grid-cols-[0.9fr_1.1fr]` | `grid-template-columns:.9fr 1.1fr` | `stack` |
 | `apps/web/app/[locale]/page.tsx` §03 | `sm:grid-cols-2 lg:grid-cols-4` | `grid-template-columns:repeat(4,1fr)` | `cols-2` → `stack` |
 | `apps/web/app/[locale]/page.tsx` §04 | `lg:grid-cols-[1.02fr_0.98fr]` | `grid-template-columns:1.02fr .98fr` | `stack` |
+| `apps/web/components/ProductGrid.tsx` | `grid-cols-2 lg:grid-cols-4` | `grid-template-columns:repeat(4,1fr)` | `cols-2`（已標） |
+| `apps/web/app/[locale]/products/page.tsx` | `sm:grid-cols-2 lg:grid-cols-3` | `grid-template-columns:repeat(3,1fr)` | `stack`（已標） |

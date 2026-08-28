@@ -6,8 +6,40 @@ import { srcSetOf } from '@/lib/image';
 import { isLocale, type Locale } from '@/lib/locale';
 import { section, type SectionCta } from '@/lib/page';
 import { FilterChips } from '@/components/FilterChips';
+import { css } from '@/lib/css';
 import { PageHero } from '@/components/PageHero';
 import { ProductGrid } from '@/components/ProductGrid';
+
+/** 樣式逐字取自 `mockup4/Products.dc.html`。 */
+const S = {
+  band: css`display:block;width:100%;height:clamp(160px,18.75vw,360px);object-fit:cover;object-position:center;`,
+  cats: css`max-width:1180px;margin:0 auto;padding:clamp(56px,7vw,80px) clamp(24px,5vw,64px) 0;`,
+  catGrid: css`display:grid;grid-template-columns:repeat(3,1fr);gap:24px;`,
+  catCard: css`background:#FFFFFF;border:1px solid #DFE9EC;border-radius:20px;overflow:hidden;`,
+  catMedia: css`position:relative;aspect-ratio:1/1;border-radius:18px;overflow:hidden;background:#F0F6F8;`,
+  catImg: css`display:block;width:100%;height:100%;object-fit:cover;`,
+  catBody: css`padding:20px 22px 24px;`,
+  catName: css`color:#16333B;font-weight:570;font-size:1.15rem;`,
+  catDesc: css`font-size:.9rem;margin-top:4px;`,
+
+  grid: css`background:#F5FAFB;padding:clamp(56px,7vw,80px) 0;margin-top:clamp(56px,7vw,80px);`,
+  gridInner: css`max-width:1180px;margin:0 auto;padding:0 clamp(24px,5vw,64px);`,
+  // mockup4 只有一列篩選；本站有三個維度（分類／系列／部位），列距沿用同一個 12px
+  filters: css`display:flex;flex-direction:column;gap:12px;margin-bottom:36px;`,
+  count: css`margin-top:24px;font-size:.85rem;color:#66787F;`,
+  gridWrap: css`margin-top:24px;`,
+
+  cta: css`position:relative;overflow:hidden;color:#fff;padding:clamp(72px,9vw,110px) 0;`,
+  ctaImg: css`position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;`,
+  ctaFallback: css`position:absolute;inset:0;background:#14262C;`,
+  ctaScrim: css`position:absolute;inset:0;background:linear-gradient(90deg,rgba(9,36,45,.74) 0%,rgba(9,36,45,.5) 52%,rgba(9,36,45,.14) 100%);`,
+  ctaInner: css`position:relative;max-width:1180px;margin:0 auto;padding:0 clamp(24px,5vw,64px);text-align:center;`,
+  ctaTitle: css`color:#fff;font-weight:400;font-size:clamp(1.8rem,3.4vw,2.4rem);`,
+  ctaLead: css`color:rgba(255,255,255,.82);max-width:52ch;margin:14px auto 0;font-size:1.05rem;`,
+  ctaRow: css`display:flex;gap:12px;justify-content:center;margin-top:30px;flex-wrap:wrap;`,
+  ctaPrimary: css`display:inline-block;background:#00B5CD;color:#fff;font-weight:620;padding:13px 30px;border-radius:999px;`,
+  ctaOutline: css`display:inline-block;border:1.5px solid rgba(255,255,255,.55);color:#fff;font-weight:620;padding:12px 28px;border-radius:999px;`,
+} as const;
 
 type Params = { locale: string };
 type Search = { category?: string; collection?: string; bodyPart?: string };
@@ -23,7 +55,13 @@ type CtaSection = {
 
 const COPY: Record<
   Locale,
-  { fallbackTitle: string; category: string; collection: string; bodyPart: string; count: (n: number) => string }
+  {
+    fallbackTitle: string;
+    category: string;
+    collection: string;
+    bodyPart: string;
+    count: (n: number) => string;
+  }
 > = {
   en: {
     fallbackTitle: 'Products',
@@ -41,11 +79,7 @@ const COPY: Record<
   },
 };
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<Params>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
@@ -107,7 +141,7 @@ export default async function ProductsPage({
           width={2560}
           height={480}
           decoding="async"
-          className="h-[clamp(160px,18.75vw,360px)] w-full object-cover"
+          style={S.band}
         />
       )}
 
@@ -119,8 +153,8 @@ export default async function ProductsPage({
 
       {/* 三大分類卡 —— 動態取自 GET /categories */}
       {categories.length > 0 && (
-        <section className="mx-auto max-w-content px-gutter pt-[clamp(56px,7vw,80px)]">
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <section style={S.cats}>
+          <div style={S.catGrid} data-r="stack">
             {categories.map((cat) => (
               <CategoryCard key={cat.slug} category={cat} locale={locale} />
             ))}
@@ -129,12 +163,9 @@ export default async function ProductsPage({
       )}
 
       {/* 篩選 + 產品格 */}
-      <section
-        id="grid"
-        className="mt-[clamp(56px,7vw,80px)] bg-tint py-[clamp(56px,7vw,80px)]"
-      >
-        <div className="mx-auto max-w-content px-gutter">
-          <div className="space-y-3">
+      <section id="grid" style={S.grid}>
+        <div style={S.gridInner}>
+          <div style={S.filters}>
             <FilterChips
               label={c.category}
               param="category"
@@ -167,9 +198,9 @@ export default async function ProductsPage({
             />
           </div>
 
-          <p className="mt-6 text-[0.85rem] text-[#66787F]">{c.count(result.totalCount)}</p>
+          <p style={S.count}>{c.count(result.totalCount)}</p>
 
-          <div className="mt-6">
+          <div style={S.gridWrap}>
             <ProductGrid items={result.items} locale={locale} />
           </div>
         </div>
@@ -177,7 +208,7 @@ export default async function ProductsPage({
 
       {/* 頁尾 CTA 帶 */}
       {cta && (
-        <section className="relative overflow-hidden py-[clamp(72px,9vw,110px)]">
+        <section style={S.cta}>
           {cta.background ? (
             <>
               <img
@@ -187,27 +218,20 @@ export default async function ProductsPage({
                 alt=""
                 loading="lazy"
                 decoding="async"
-                className="absolute inset-0 h-full w-full object-cover"
+                style={S.ctaImg}
               />
               {/* 由左至右的深青遮罩：左側文字讀得到、右側照片保持乾淨（DESIGN.md） */}
-              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,36,45,.74)_0%,rgba(9,36,45,.5)_52%,rgba(9,36,45,.14)_100%)]" />
+              <div style={S.ctaScrim} />
             </>
           ) : (
-            <div className="absolute inset-0 bg-[#12333c]" />
+            /* 編輯者沒放背景圖時的底色。mockup4 一定有圖，這裡取全站唯一的深色面 */
+            <div style={S.ctaFallback} />
           )}
 
-          <div className="relative mx-auto max-w-content px-gutter text-center">
-            {cta.title && (
-              <h2 className="mx-auto max-w-[24ch] text-[clamp(1.8rem,3.4vw,2.4rem)] font-normal text-white">
-                {cta.title}
-              </h2>
-            )}
-            {cta.body && (
-              <p className="mx-auto mt-3.5 max-w-[52ch] text-[1.05rem] text-white/[.82]">
-                {cta.body}
-              </p>
-            )}
-            <div className="mt-[30px] flex flex-wrap justify-center gap-3">
+          <div style={S.ctaInner}>
+            {cta.title && <h2 style={S.ctaTitle}>{cta.title}</h2>}
+            {cta.body && <p style={S.ctaLead}>{cta.body}</p>}
+            <div style={S.ctaRow}>
               {cta.primaryCta?.url && <CtaLink cta={cta.primaryCta} primary />}
               {cta.secondaryCta?.url && <CtaLink cta={cta.secondaryCta} />}
             </div>
@@ -222,19 +246,10 @@ export default async function ProductsPage({
  * 分類卡。圖與文都在 `Category` 實體上（docs/09 §4.1），不是區段內容 ——
  * 所以改分類名稱只要改一個地方，總覽頁與分類頁會一起變。
  */
-function CategoryCard({
-  category,
-  locale,
-}: {
-  category: CategoryDetail;
-  locale: Locale;
-}) {
+function CategoryCard({ category, locale }: { category: CategoryDetail; locale: Locale }) {
   return (
-    <Link
-      href={`/${locale}/products/${category.slug}`}
-      className="group overflow-hidden rounded-[20px] border border-hairline bg-white transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(10,60,72,.10)]"
-    >
-      <div className="aspect-square overflow-hidden bg-tint-deep">
+    <Link href={`/${locale}/products/${category.slug}`} style={S.catCard} data-hover="lift-shadow">
+      <div style={S.catMedia}>
         {category.heroImage && (
           <img
             src={category.heroImage.url}
@@ -245,31 +260,29 @@ function CategoryCard({
             decoding="async"
             width={1200}
             height={1200}
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+            style={S.catImg}
           />
         )}
       </div>
-      <div className="px-[22px] pt-5 pb-6">
-        <h3 className="text-[1.15rem] font-[570]">{category.name}</h3>
-        {category.description && <p className="mt-1 text-[0.9rem]">{category.description}</p>}
+      <div style={S.catBody}>
+        <h3 style={S.catName}>{category.name}</h3>
+        {category.description && <p style={S.catDesc}>{category.description}</p>}
       </div>
     </Link>
   );
 }
 
 function CtaLink({ cta, primary = false }: { cta: SectionCta; primary?: boolean }) {
-  const className = primary
-    ? 'inline-block rounded-full bg-brand px-[30px] py-[13px] font-[620] text-white hover:text-white'
-    : 'inline-block rounded-full border-[1.5px] border-white/55 px-7 py-3 font-[620] text-white hover:text-white';
+  const style = primary ? S.ctaPrimary : S.ctaOutline;
 
   const label = cta.label ?? cta.url!;
 
   return cta.external ? (
-    <a href={cta.url} target="_blank" rel="noopener" className={className}>
+    <a href={cta.url} target="_blank" rel="noopener" style={style} className="hover:text-white">
       {label}
     </a>
   ) : (
-    <Link href={cta.url!} className={className}>
+    <Link href={cta.url!} style={style} className="hover:text-white">
       {label}
     </Link>
   );
