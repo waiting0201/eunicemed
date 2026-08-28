@@ -60,6 +60,11 @@ public sealed class PageHandler(
 
             var data = JsonNode.Parse(tr.DataJson) as JsonObject ?? [];
 
+            // 先剪掉 schema 已經沒有的欄位，再判斷有沒有內容 —— 否則一個只剩
+            // 舊欄位的區段會走 IsRenderable 的 `data.Count > 0` 那條 fallback
+            // 被誤判成「有內容」，然後把已經搬回程式碼的文案又渲染一次。
+            SectionWalker.PruneUnknown(schema.Raw, data);
+
             // 列存在不等於有內容。跨語系同步會為尚未翻譯的語系補建只含
             // 圖片／連結的列（見 SyncInvariant），那種列不該公開渲染。
             // 用 schema 的 required 當判準 —— 不需要額外狀態，也不會與 schema 脫節。
@@ -140,16 +145,17 @@ public sealed class PageHandler(
             ?? throw AppException.NotFound("Page");
 
         var sections = page.Sections
-            .Where(s => registry.TryGet(key, s.SectionKey, out _))
-            .OrderBy(s => s.SortOrder).Select(s => new
+            .Select(s => (Section: s, Schema: registry.TryGet(key, s.SectionKey, out var sc) ? sc : null))
+            .Where(x => x.Schema is not null)
+            .OrderBy(x => x.Section.SortOrder).Select(x => new
         {
-            sectionKey = s.SectionKey,
-            isEnabled  = s.IsEnabled,
-            rowVersion = s.RowVer is null ? null : Convert.ToBase64String(s.RowVer),
-            s.UpdatedAt,
-            translations = s.Translations.ToDictionary(
+            sectionKey = x.Section.SectionKey,
+            isEnabled  = x.Section.IsEnabled,
+            rowVersion = x.Section.RowVer is null ? null : Convert.ToBase64String(x.Section.RowVer),
+            x.Section.UpdatedAt,
+            translations = x.Section.Translations.ToDictionary(
                 t => t.Locale,
-                t => JsonNode.Parse(t.DataJson)),
+                t => PruneForForm(x.Schema!, t.DataJson)),
         }).ToArray();
 
         return new OkObjectResult(ApiResponse.Ok(new { key = page.Key, sections }));
@@ -370,6 +376,23 @@ public sealed class PageHandler(
     /// sitemap 會宣告一堆點進去是空白的網址。
     /// </para>
     /// </summary>
+    /// <summary>
+    /// 後台表單載入前先剪掉 schema 已經沒有的欄位。
+    ///
+    /// <para>
+    /// <c>SchemaForm</c> 是 <c>onChange({ ...value, [name]: v })</c> —— <c>value</c> 就是這裡回去的
+    /// 東西。不剪的話，一支 schema 收斂之後，編輯者改任何一格都會把看不見的舊欄位
+    /// 原封送回，撞上 <c>additionalProperties:false</c> 變成 400，而錯誤指向畫面上
+    /// 根本不存在的欄位。剪過之後儲存還會順手把 DB 那一列洗乾淨。
+    /// </para>
+    /// </summary>
+    private static JsonNode? PruneForForm(SectionSchema schema, string dataJson)
+    {
+        var node = JsonNode.Parse(dataJson);
+        SectionWalker.PruneUnknown(schema.Raw, node);
+        return node;
+    }
+
     internal static bool IsRenderable(SectionSchema schema, JsonObject data)
     {
         if (schema.Raw["required"] is not JsonArray required) return data.Count > 0;

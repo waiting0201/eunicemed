@@ -143,6 +143,44 @@ public static class SectionWalker
         return paths;
     }
 
+    /// <summary>
+    /// 就地刪掉 schema 已經沒有的欄位。
+    ///
+    /// <para>
+    /// 收斂一支 schema 時，DB 裡既有的 <c>DataJson</c> 不會跟著變 —— 同步器只比對檔名，
+    /// 看不到欄位。於是後台把整包舊資料載進表單、編輯者改一格、
+    /// <c>SchemaForm</c> 的 spread 把看不見的欄位原封送回，
+    /// 而每一支 schema 都是 <c>additionalProperties:false</c> —— 儲存 400，
+    /// 錯誤還指向畫面上根本不存在的欄位。
+    /// </para>
+    ///
+    /// <para>
+    /// 所以在**讀取邊界**修剪，寫入端維持嚴格（多餘欄位仍然 400，那是防呆不是雜訊）。
+    /// 後台載到的是乾淨資料，下次儲存就順手把那一列洗乾淨。
+    /// </para>
+    ///
+    /// <para>
+    /// ⚠️ 這支的遞迴方向與 <see cref="WalkCore"/> 相反 —— 它以 **data** 為主，
+    /// 因為要找的正是「schema 裡沒有」的鍵，schema 驅動的走訪永遠看不到它們。
+    /// </para>
+    /// </summary>
+    public static void PruneUnknown(JsonNode? schemaNode, JsonNode? data)
+    {
+        if (schemaNode is null || data is null) return;
+
+        if (data is JsonObject obj && schemaNode["properties"] is JsonObject props)
+        {
+            foreach (var name in obj.Select(kv => kv.Key).ToArray())
+                if (!props.ContainsKey(name)) obj.Remove(name);
+
+            foreach (var (name, child) in props)
+                if (obj.TryGetPropertyValue(name, out var childData)) PruneUnknown(child, childData);
+        }
+
+        if (data is JsonArray arr && schemaNode["items"] is { } itemSchema)
+            foreach (var item in arr) PruneUnknown(itemSchema, item);
+    }
+
     // ── 遞迴核心 ───────────────────────────────────────────────────────────
 
     private static void Walk(
