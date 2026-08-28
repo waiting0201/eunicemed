@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "About · 04 Manufacturing & quality excellence",
+  "description": "區段標題與版型綁死，寫在前端（docs/15）。這裡是兩張廠區照與品質重點。",
   "type": "object",
   "additionalProperties": false,
-  "required": ["title", "points"],
+  "required": ["points"],
   "properties": {
-    "title": { "type": "string", "maxLength": 120, "x-fieldType": "text" },
     "imageWide": {
       "type": "string", "format": "uuid",
       "x-fieldType": "media", "x-mediaPreset": "wide-16x9", "x-localeInvariant": true

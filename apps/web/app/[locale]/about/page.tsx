@@ -34,6 +34,8 @@ const S = {
   // 03 CORE VALUES
   s03: css`max-width:1180px;margin:0 auto;padding:clamp(64px,8vw,96px) clamp(24px,5vw,64px) 0;`,
   s03Title: css`color:#16333B;font-weight:400;font-size:clamp(1.9rem,3.6vw,2.5rem);margin:8px 0 12px;`,
+  // 「personal」的品牌青。文字用 #0092A8 而不是 #00B5CD —— 後者壓白底只有約 2.9:1（DESIGN.md）
+  s03Accent: css`color:#0092A8;`,
   s03Lead: css`max-width:60ch;`,
   s03Grid: css`display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:36px;`,
   s03Card: css`border:1px solid #DFE9EC;border-radius:20px;padding:28px 26px;`,
@@ -82,45 +84,141 @@ type Params = { locale: string };
  * 所以每一塊都是 `s && (...)`，且區段序號在渲染時才發 —— 與產品詳情頁同一套做法。
  * </p>
  */
-type HeroSection = { band?: MediaRef; eyebrow?: string; title?: string; lead?: string };
+type HeroSection = { band?: MediaRef };
 type StorySection = { title?: string; body?: string; portrait?: MediaRef };
 type MilestonesSection = {
   background?: MediaRef;
-  title?: string;
   items?: { year?: string; event?: string }[];
 };
-type ValuesSection = { title?: string; lead?: string; items?: { title?: string; body?: string }[] };
 type ManufacturingSection = {
-  title?: string;
   imageWide?: MediaRef;
   imageSquare?: MediaRef;
   points?: { title?: string; body?: string }[];
 };
-type CertificatesSection = {
-  title?: string;
-  lead?: string;
-  cta?: SectionCta;
-  items?: { certification?: string }[];
-};
+type CertificatesSection = { items?: { certification?: string }[] };
 
-const FALLBACK: Record<Locale, { eyebrow: string; title: string }> = {
-  en: { eyebrow: 'About EuniceMed', title: 'About' },
-  'zh-TW': { eyebrow: '關於 EuniceMed', title: '關於我們' },
+/**
+ * 版面文案 —— **刻意寫死，不走 CMS**（決議見 docs/15-cms-scope.md）。
+ *
+ * <p>
+ * 頁首、三段區段標題與核心價值整段都是版型的一部分：改它要動的是 mockup4。
+ * 留在 CMS 的是真的會換的東西 —— 品牌故事的內文、里程碑年份、廠區照、
+ * 掛哪幾張認證。
+ * </p>
+ *
+ * <p>
+ * 英文逐字取自 `mockup4/About.dc.html`。`meta.title` 與 h1 分開：
+ * h1 是 mockup4 的兩行標語，`<title>` 要的是能在搜尋結果與分頁上辨識的頁名。
+ * </p>
+ */
+const COPY: Record<
+  Locale,
+  {
+    meta: { title: string };
+    hero: { eyebrow: string; title: [string, string]; lead: string };
+    milestones: string;
+    values: { title: string; accent: string; lead: string; items: { title: string; body: string }[] };
+    manufacturing: string;
+    certificates: { title: string; lead: string; cta: string };
+  }
+> = {
+  en: {
+    meta: { title: 'About' },
+    hero: {
+      eyebrow: 'About EuniceMed',
+      title: ['Understood.', 'In good hands.'],
+      lead:
+        'We deliver clinically trusted, comfort-first medical supports — with the ' +
+        'flexibility, service and precision your patients and business deserve.',
+    },
+    milestones: 'Steady growth. Deep roots.',
+    values: {
+      title: 'Support feels ',
+      accent: 'personal',
+      lead:
+        'Everything we do is underpinned by three commitments — ' +
+        'and you can feel them in the details.',
+      items: [
+        {
+          title: 'Excellence',
+          body:
+            'Every product begins with a clear goal: real comfort and performance, without ' +
+            "compromise. Excellence isn't just what we make — it's how we work.",
+        },
+        {
+          title: 'Care',
+          body:
+            'Comfort-first design that supports movement rather than limiting it — ' +
+            'because reassurance matters as much as function.',
+        },
+        {
+          title: 'Partnership',
+          body:
+            'A dependable, service-first specialist — expert hands, caring hearts and ' +
+            'lasting partnerships with professionals and distributors worldwide.',
+        },
+      ],
+    },
+    manufacturing: 'Manufacturing & quality excellence',
+    certificates: {
+      title: 'Certified, audited, trusted',
+      lead:
+        'Every EuniceMed product line is manufactured under an ISO 13485 quality system ' +
+        'and independently certified for its market.',
+      cta: 'Download certificates →',
+    },
+  },
+  'zh-TW': {
+    meta: { title: '關於我們' },
+    hero: {
+      eyebrow: '關於 EuniceMed',
+      title: ['懂你的需要。', '交給我們，安心。'],
+      lead:
+        '我們提供臨床信賴、以舒適為先的醫療支撐產品 —— ' +
+        '並以您的病患與事業應得的彈性、服務與精準度交付。',
+    },
+    milestones: '穩健成長，扎根深遠。',
+    values: {
+      title: '支撐，是很',
+      accent: '個人的事',
+      lead: '我們所做的一切都以三項承諾為本 —— 而你能在細節裡感受到它們。',
+      items: [
+        {
+          title: '卓越',
+          body:
+            '每一件產品都始於一個明確的目標：真實的舒適與效能，不打折扣。' +
+            '卓越不只是我們做出來的東西，更是我們做事的方式。',
+        },
+        {
+          title: '關懷',
+          body: '以舒適為先的設計，支撐動作而不是限制它 —— 因為安心與功能同樣重要。',
+        },
+        {
+          title: '夥伴關係',
+          body:
+            '可靠、以服務為先的專業夥伴 —— 專業的雙手、關懷的心，' +
+            '以及與全球醫療專業人員和經銷商的長期合作。',
+        },
+      ],
+    },
+    manufacturing: '製造與品質實力',
+    certificates: {
+      title: '通過認證，定期稽核，值得信賴',
+      lead: '每一條 EuniceMed 產品線都在 ISO 13485 品質系統下生產，並依各市場取得獨立認證。',
+      cta: '下載認證文件 →',
+    },
+  },
 };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
-  const page = await api.page(locale, 'about');
-  const hero = page ? section<HeroSection>(page, 'hero') : null;
-
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
-  const title = hero?.title ?? FALLBACK[locale].title;
 
   return {
-    title,
-    description: hero?.lead,
+    title: COPY[locale].meta.title,
+    description: COPY[locale].hero.lead,
     alternates: {
       canonical: `${siteUrl}/${locale}/about`,
       languages: { en: `${siteUrl}/en/about`, 'zh-TW': `${siteUrl}/zh-TW/about` },
@@ -136,12 +234,14 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
   // 整頁沒有任何該語系內容時回 404，而不是渲染一個空殼 —— 語言純度
   if (!page) notFound();
 
+  const copy = COPY[locale];
   const hero = section<HeroSection>(page, 'hero');
   const story = section<StorySection>(page, 'story');
   const milestones = section<MilestonesSection>(page, 'milestones');
-  const values = section<ValuesSection>(page, 'values');
   const manufacturing = section<ManufacturingSection>(page, 'manufacturing');
-  const certificates = section<CertificatesSection>(page, 'certificates');
+  // 收斂後只剩 invariant 的引用清單，缺該語系的列時整段不回 ——
+  // 所以 gate 在「有沒有標章」而不是「有沒有區段物件」（docs/15）
+  const certItems = section<CertificatesSection>(page, 'certificates')?.items ?? [];
 
   let n = 0;
   const next = () => ++n;
@@ -151,9 +251,15 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
       <PageBand image={hero?.band} />
 
       <PageHero
-        eyebrow={hero?.eyebrow ?? FALLBACK[locale].eyebrow}
-        title={hero?.title ?? FALLBACK[locale].title}
-        lead={hero?.lead}
+        eyebrow={copy.hero.eyebrow}
+        title={
+          <>
+            {copy.hero.title[0]}
+            <br />
+            {copy.hero.title[1]}
+          </>
+        }
+        lead={copy.hero.lead}
       />
 
       {/* 01 品牌故事 */}
@@ -208,7 +314,7 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
 
           <div style={S.s02Inner}>
             <span style={NUMERAL.onPhoto}>{String(next()).padStart(2, '0')}</span>
-            {milestones.title && <h2 style={S.s02Title}>{milestones.title}</h2>}
+            <h2 style={S.s02Title}>{copy.milestones}</h2>
 
             {milestones.items && milestones.items.length > 0 && (
               <div style={S.s02Grid} data-r="cols-2">
@@ -225,33 +331,31 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
       )}
 
       {/* 03 核心價值 —— 只有上留白，下方由 04 的 padding 接手（mockup4 的 `… 0`） */}
-      {values && (
-        <section style={S.s03}>
-          <SectionHeading index={next()} title={values.title ?? ''} titleStyle={S.s03Title} />
-          {values.lead && <p style={S.s03Lead}>{values.lead}</p>}
+      <section style={S.s03}>
+        <div>
+          <span style={NUMERAL.default}>{String(next()).padStart(2, '0')}</span>
+          <h2 style={S.s03Title}>
+            {copy.values.title}
+            <span style={S.s03Accent}>{copy.values.accent}</span>
+          </h2>
+        </div>
+        <p style={S.s03Lead}>{copy.values.lead}</p>
 
-          {values.items && values.items.length > 0 && (
-            <div style={S.s03Grid} data-r="cols-2">
-              {values.items.map((v, i) => (
-                <div key={v.title ?? i} style={S.s03Card}>
-                  {v.title && <h3 style={S.s03CardTitle}>{v.title}</h3>}
-                  {v.body && <p style={S.s03CardBody}>{v.body}</p>}
-                </div>
-              ))}
+        <div style={S.s03Grid} data-r="cols-2">
+          {copy.values.items.map((v) => (
+            <div key={v.title} style={S.s03Card}>
+              <h3 style={S.s03CardTitle}>{v.title}</h3>
+              <p style={S.s03CardBody}>{v.body}</p>
             </div>
-          )}
-        </section>
-      )}
+          ))}
+        </div>
+      </section>
 
       {/* 04 製造與品質 */}
       {manufacturing && (
         <section style={S.s04}>
           <div>
-            <SectionHeading
-              index={next()}
-              title={manufacturing.title ?? ''}
-              titleStyle={S.s04Title}
-            />
+            <SectionHeading index={next()} title={copy.manufacturing} titleStyle={S.s04Title} />
 
             {(manufacturing.imageWide || manufacturing.imageSquare) && (
               <div style={S.s04Shots}>
@@ -300,29 +404,27 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
       )}
 
       {/* 05 認證 */}
-      {certificates && (
+      {certItems.length > 0 && (
         <section style={S.s05}>
           <div style={S.s05Inner}>
             <div style={S.s05Grid}>
               <div>
-                <SectionHeading index={next()} title={certificates.title ?? ''} titleStyle={S.h2} />
-                {certificates.lead && <p style={S.s05Lead}>{certificates.lead}</p>}
-                {certificates.cta?.url && certificates.cta.label && <Cta cta={certificates.cta} />}
+                <SectionHeading index={next()} title={copy.certificates.title} titleStyle={S.h2} />
+                <p style={S.s05Lead}>{copy.certificates.lead}</p>
+                <Cta cta={{ label: copy.certificates.cta, url: `/${locale}/downloads` }} />
               </div>
 
-              {certificates.items && certificates.items.length > 0 && (
-                <div style={S.s05Cards} data-r="cols-2">
-                  {certificates.items.map((item, i) => (
-                    <CertCard
-                      key={item.certification ?? i}
-                      slug={item.certification}
-                      refs={page.refs.certifications}
-                      /* mockup4 把第一張做成橫跨兩欄的青色漸層卡 */
-                      hero={i === 0}
-                    />
-                  ))}
-                </div>
-              )}
+              <div style={S.s05Cards} data-r="cols-2">
+                {certItems.map((item, i) => (
+                  <CertCard
+                    key={item.certification ?? i}
+                    slug={item.certification}
+                    refs={page.refs.certifications}
+                    /* mockup4 把第一張做成橫跨兩欄的青色漸層卡 */
+                    hero={i === 0}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </section>

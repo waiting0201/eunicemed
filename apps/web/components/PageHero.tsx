@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import { css } from '@/lib/css';
 
 /**
@@ -22,7 +24,8 @@ export function PageHero({
   lead,
 }: {
   eyebrow: string;
-  title: string;
+  /** About 的主標在 mockup4 是兩行（`Understood.<br>In good hands.`），所以不是純字串 */
+  title: ReactNode;
   lead?: string;
 }) {
   return (

@@ -1,15 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "About · 02 Steady growth. Deep roots.",
+  "description": "區段標題與版型綁死，寫在前端（docs/15）。這裡是會增加的年份清單與背景圖。",
   "type": "object",
   "additionalProperties": false,
-  "required": ["title", "items"],
+  "required": ["items"],
   "properties": {
     "background": {
       "type": "string", "format": "uuid",
       "x-fieldType": "media", "x-mediaPreset": "section-bg", "x-localeInvariant": true
     },
-    "title": { "type": "string", "maxLength": 120, "x-fieldType": "text" },
     "items": {
       "type": "array", "minItems": 3, "maxItems": 12, "x-fieldType": "repeatable",
       "items": {
