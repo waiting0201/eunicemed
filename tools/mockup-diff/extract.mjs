@@ -57,6 +57,7 @@ export function declarations(styleText) {
       .replace(/(^|[^0-9A-Za-z.])\.([0-9])/g, '$10.$2'); // .5 -> 0.5
 
     if (ANNOTATION_VALUE.some((re) => re.test(value))) continue;
+    if (value.includes('${')) continue; // 樣板插值，沒有可比對的字面值
 
     out.push(`${prop}:${value}`);
   }
@@ -78,6 +79,25 @@ function fromMockup(src) {
     out.push(...declarations(body).map((d) => `:hover ${d}`));
   }
 
+  out.push(...fromScript(src));
+
+  return out;
+}
+
+/**
+ * mockup4 有兩頁（FAQ、Applications）把樣式組在 `data-dc-script` 裡的字串常數，
+ * 而不是寫成 `style="…"` 屬性 —— 分類鈕、手風琴的 +/× 圖示、人體圖熱點都在那裡。
+ * 不讀這一段的話，那些值會被誤報成「實作自創」。
+ */
+function fromScript(src) {
+  const script = src.match(/data-dc-script[^>]*>([\s\S]*?)<\/script>/);
+  if (!script) return [];
+
+  const out = [];
+  // 看起來像 CSS 宣告串的字串常數：以 `屬性:` 開頭且含分號
+  for (const [, quoted] of script[1].matchAll(/["'`]((?:[a-z-]+:[^"'`]*;\s*)+)["'`]/g)) {
+    out.push(...declarations(quoted));
+  }
   return out;
 }
 

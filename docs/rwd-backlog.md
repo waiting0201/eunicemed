@@ -40,3 +40,6 @@
 | `apps/web/app/[locale]/products/page.tsx` | `sm:grid-cols-2 lg:grid-cols-3` | `grid-template-columns:repeat(3,1fr)` | `stack`（已標） |
 | `apps/web/components/CategoryHero.tsx` | `lg:grid-cols-[1.05fr_0.95fr]` | `grid-template-columns:1.05fr .95fr` | `stack`（已標） |
 | `apps/web/components/CategoryOutro.tsx` | `lg:grid-cols-3` | `grid-template-columns:repeat(3,1fr)` | `stack`（已標） |
+| `apps/web/app/[locale]/faq/page.tsx` | `lg:grid-cols-[260px_1fr]` | `grid-template-columns:260px 1fr` | `stack`（已標） |
+| `apps/web/components/SideFilter.tsx` | `lg:sticky lg:top-[100px]` | `position:sticky;top:100px` | 手機需改為橫向捲動或收合 |
+| `apps/web/app/[locale]/where-to-buy/page.tsx` | `sm:grid-cols-2 lg:grid-cols-3` | `grid-template-columns:repeat(3,1fr)` | `stack`（已標） |

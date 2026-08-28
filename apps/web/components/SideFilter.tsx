@@ -1,4 +1,15 @@
 import Link from 'next/link';
+import { css } from '@/lib/css';
+
+/** 樣式逐字取自 mockup4 FAQ 的分類側欄（News／Insights／Downloads 共用同一組）。 */
+const S = {
+  rail: css`position:sticky;top:100px;display:flex;flex-direction:column;gap:6px;`,
+  label: css`color:#8AA0A6;font-weight:620;letter-spacing:.14em;text-transform:uppercase;font-size:.72rem;padding:0 16px 8px;`,
+  active: css`display:flex;justify-content:space-between;align-items:center;gap:12px;background:#E9F8FA;color:#0092A8;border-left:3px solid #00B5CD;font-weight:620;font-size:.95rem;line-height:1.4;padding:12px 16px 12px 13px;border-radius:0 12px 12px 0;`,
+  idle: css`display:flex;justify-content:space-between;align-items:center;gap:12px;background:transparent;color:#44565D;border-left:3px solid #DFE9EC;font-weight:500;font-size:.95rem;line-height:1.4;padding:12px 16px 12px 13px;border-radius:0 12px 12px 0;`,
+  countActive: css`background:#00B5CD;color:#fff;font-size:.72rem;font-weight:700;border-radius:999px;padding:2px 9px;`,
+  countIdle: css`background:#EDF4F6;color:#66787F;font-size:.72rem;font-weight:700;border-radius:999px;padding:2px 9px;`,
+} as const;
 import type { FacetCount } from '@/lib/api';
 import type { Locale } from '@/lib/locale';
 
@@ -40,10 +51,8 @@ export function SideFilter({
   const total = facets.reduce((sum, f) => sum + f.count, 0);
 
   return (
-    <aside className="flex flex-col gap-1.5 lg:sticky lg:top-[100px]">
-      <p className="px-4 pb-2 text-[0.72rem] font-[620] uppercase tracking-[0.14em] text-[#8AA0A6]">
-        {label}
-      </p>
+    <aside style={S.rail}>
+      <p style={S.label}>{label}</p>
       <Row href={href()} active={!active} count={total}>
         {ALL[locale]}
       </Row>
@@ -68,23 +77,9 @@ function Row({
   children: React.ReactNode;
 }) {
   return (
-    <Link
-      href={href}
-      aria-current={active ? 'true' : undefined}
-      className={`flex items-center justify-between gap-3 rounded-r-[12px] border-l-[3px] py-3 pr-4 pl-[13px] text-[0.95rem] leading-[1.4] ${
-        active
-          ? 'border-brand bg-[#E9F8FA] font-[620] text-brand-deep'
-          : 'border-hairline font-medium text-body'
-      }`}
-    >
+    <Link href={href} aria-current={active ? 'true' : undefined} style={active ? S.active : S.idle}>
       <span>{children}</span>
-      <span
-        className={`rounded-full px-[9px] py-0.5 text-[0.72rem] font-bold ${
-          active ? 'bg-brand text-white' : 'bg-[#EDF4F6] text-[#66787F]'
-        }`}
-      >
-        {count}
-      </span>
+      <span style={active ? S.countActive : S.countIdle}>{count}</span>
     </Link>
   );
 }

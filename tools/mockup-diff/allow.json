@@ -27,6 +27,14 @@
     "list-style:disc": "Privacy 內文是 CMS 產生的 HTML，可能有清單；mockup4 的佔位法律文字剛好沒有。preflight 會清掉標記，所以要補回來。",
     "list-style:decimal": "同上。",
     "padding-left:20px": "同上，清單縮排。",
-    "line-height:1.2": "Privacy 是唯一一頁把 h1–h4 行高定為 1.2（其餘 17 頁 1.12）。寫在 .m4-legal 裡而不是改全域。"
+    "line-height:1.2": "Privacy 是唯一一頁把 h1–h4 行高定為 1.2（其餘 17 頁 1.12）。寫在 .m4-legal 裡而不是改全域。",
+    "border-top:none": "mockup4 的 FAQ 分類鈕是 <button>，要自己清掉瀏覽器預設外框；本站用 <Link>（可分享網址、純 SSR），沒有那些預設。",
+    "border-right:none": "同上。",
+    "border-bottom:none": "同上。",
+    "font-family:inherit": "同上，<button> 不會繼承字型。",
+    "text-align:left": "同上，<button> 預設置中。",
+    "list-style:none": "FAQ 用原生 <details>，要拿掉預設的三角標記；mockup4 是 div + onClick，本來就沒有標記。",
+    "display:none": "同上，Safari 的 ::-webkit-details-marker。",
+    "transform:rotate(45deg)": "mockup4 用 JS 算出 `rotate(${isOpen ? 45 : 0}deg)`；本站用原生 <details>，展開角度寫在 globals.css 的 `.m4-faq[open]`，值相同。"
   }
 }

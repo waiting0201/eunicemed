@@ -247,3 +247,40 @@
     font-weight: 600;
   }
 }
+
+/**
+ * FAQ 手風琴。用原生 `<details>`，所以「展開時 + 轉成 ×」只能靠 CSS 的
+ * `[open]` 選取器 —— inline style 表達不了。
+ * 旋轉角度與緩動逐字取自 `mockup4/FAQ.dc.html` 的 `iconStyle`。
+ */
+@layer components {
+  .m4-faq > summary {
+    list-style: none;
+  }
+
+  .m4-faq > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .m4-faq[open] .m4-faq-icon {
+    transform: rotate(45deg);
+  }
+
+  /* FAQ 答案是 CMS 產生的 HTML，沒有 JSX 元素可掛 inline style */
+  .m4-answer p {
+    margin-top: 8px;
+  }
+
+  .m4-answer ul {
+    list-style: disc;
+    padding-left: 20px;
+  }
+
+  .m4-answer li {
+    margin-top: 4px;
+  }
+
+  .m4-answer a {
+    color: #0092a8;
+  }
+}
