@@ -11,11 +11,14 @@
  */
 import { readFileSync } from 'node:fs';
 
-/** 純標註膠囊（`slide 1 · 2560×960`、`8:3`）—— 整個屬性都是標註，不是設計。 */
-const ANNOTATION_PILL = 'background:rgba(10,30,38,.55)';
+/**
+ * 整個元素都是規格標註（`slide 1 · 2560×960`、`8:3`、`16:10`）的特徵。
+ * 深色膠囊底，或等寬字說明 —— 兩者在正式站都不存在。
+ */
+const ANNOTATION_ELEMENT = ['background:rgba(10,30,38,.55)', 'ui-monospace'];
 
-/** 標註用的宣告：等寬字說明、佔位斜紋。逐條剔除，但保留同一個屬性裡的版型宣告。 */
-const ANNOTATION_VALUE = [/ui-monospace/, /repeating-linear-gradient\(/];
+/** 佔位斜紋：逐條剔除，但保留同一個屬性裡的版型宣告（圖框本身是要的）。 */
+const ANNOTATION_VALUE = [/repeating-linear-gradient\(/];
 
 /** 把一段 `a:b;c:d` 切成正規化後的宣告陣列。 */
 export function declarations(styleText) {
@@ -48,7 +51,7 @@ function fromMockup(src) {
   const out = [];
 
   for (const [, body] of src.matchAll(/\sstyle="([^"]*)"/g)) {
-    if (body.includes(ANNOTATION_PILL)) continue; // 整個是標註膠囊
+    if (ANNOTATION_ELEMENT.some((m) => body.includes(m))) continue;
     out.push(...declarations(body));
   }
 
@@ -59,10 +62,30 @@ function fromMockup(src) {
   return out;
 }
 
-/** 實作的 `.tsx`：抓所有 css`…` 樣板字面值。 */
+/**
+ * mockup4 的 `style-hover` 在實作端是 `globals.css` 的 `[data-hover="…"]` 規則
+ * （inline style 表達不了 pseudo-class）。這張表把 token 換回它代表的宣告，
+ * 元素上出現 `data-hover="lift-4"` 就等同宣告了那組 hover 樣式。
+ * 值必須與 globals.css 裡的規則一致。
+ */
+const HOVER_TOKENS = {
+  'lift-shadow': 'transform:translateY(-4px);box-shadow:0 18px 40px rgba(10,60,72,.10);',
+  'lift-4': 'transform:translateY(-4px);',
+  'lift-3': 'transform:translateY(-3px);',
+  'lift-2-white': 'transform:translateY(-2px);color:#fff;',
+  edge: 'border-color:rgba(0,146,168,.4);',
+};
+
+/** 實作的 `.tsx`：抓所有 css`…` 樣板字面值，以及 `data-hover` token。 */
 function fromImpl(src) {
   const out = [];
   for (const [, body] of src.matchAll(/\bcss`([^`]*)`/g)) out.push(...declarations(body));
+
+  for (const [, token] of src.matchAll(/data-hover="([a-z0-9-]+)"/g)) {
+    const decls = HOVER_TOKENS[token];
+    if (decls) out.push(...declarations(decls).map((d) => `:hover ${d}`));
+  }
+
   return out;
 }
 

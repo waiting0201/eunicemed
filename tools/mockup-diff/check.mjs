@@ -73,6 +73,14 @@ if (snapshot) {
   process.exit(0);
 }
 
+/**
+ * 全站 mockup 宣告的聯集。EXTRA 以它為準 —— 共用元件（SectionHeading 等）
+ * 會把預設值帶進每一頁，在沒用到它的那頁本來就不該算「自創」。
+ * 真正要抓的是**全 18 頁都找不到**的宣告。
+ */
+const everywhere = new Set();
+for (const page of Object.keys(map.pages)) for (const d of mockupDecls(page)) everywhere.add(d);
+
 let missingTotal = 0;
 let extraTotal = 0;
 
@@ -81,7 +89,7 @@ for (const page of pages) {
   const impl = new Set(implDecls(page));
 
   const missing = [...mock].filter((d) => !impl.has(d) && !allow[d]).sort();
-  const extra = [...impl].filter((d) => !mock.has(d) && !allow[d]).sort();
+  const extra = [...impl].filter((d) => !everywhere.has(d) && !allow[d]).sort();
 
   missingTotal += missing.length;
   extraTotal += extra.length;

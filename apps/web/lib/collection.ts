@@ -1,3 +1,6 @@
+import type { CSSProperties } from 'react';
+import { css } from './css';
+
 /**
  * 系列專色（Care 7746c / Protect 5415c / Advance 5125c）的 class 對照。
  *
@@ -14,6 +17,23 @@ export const COLLECTION_TEXT: Record<string, string> = {
   protect: 'text-protect',
   advance: 'text-advance',
 };
+
+/**
+ * 同一組系列色，給已照抄 mockup4、改用 inline style 的元件用。
+ * 值逐字取自 mockup4 的產品卡系列標籤 —— 白底上的文字色。
+ */
+export const COLLECTION_COLOR: Record<string, CSSProperties> = {
+  care: css`color:#7A8022;`,
+  protect: css`color:#4B6B7E;`,
+  advance: css`color:#7A4D6F;`,
+};
+
+/** 未知 slug 退回品牌青（`#0092A8`，不是 `#00B5CD` —— 後者當文字對比不足）。 */
+export function collectionColor(slug: string | undefined): CSSProperties {
+  return (slug && COLLECTION_COLOR[slug]) || FALLBACK_COLOR;
+}
+
+const FALLBACK_COLOR = css`color:#0092A8;`;
 
 export const COLLECTION_BG: Record<string, string> = {
   care: 'bg-care',

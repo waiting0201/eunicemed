@@ -3,6 +3,14 @@
   "allow": {
     "-webkit-backdrop-filter:blur(10px)": "頁首毛玻璃在 Safari ≤17.4 需要 vendor prefix。mockup4 只在 Chromium 跑過所以沒寫。",
     "display:flex;min-height:100vh;flex-direction:column": "body 的黏底頁尾。mockup4 每頁內容都夠長所以看不出需要，但本站有內容短的語系版本。",
-    "border-top:1px solid #2c3e44": "mockup4 的 Resources.dc.html 這一條沒跟上深→淺轉換，仍是 rgba(255,255,255,.1)；另外 17 頁都是 #2C3E44。採多數值，視為 mockup4 自身的疏漏。"
+    "border-top:1px solid #2c3e44": "mockup4 的 Resources.dc.html 這一條沒跟上深→淺轉換，仍是 rgba(255,255,255,.1)；另外 17 頁都是 #2C3E44。採多數值，視為 mockup4 自身的疏漏。",
+    "animation:heroSlide 18s infinite": "mockup4 寫死 3 張、18 秒；本站張數由後台決定，HeroSlider 依張數在伺服器端產生 keyframes（em-slide-n-i）。n=3 時等價。",
+    "animation:heroSlide 18s 6s infinite": "同上。",
+    "animation:heroSlide 18s 12s infinite": "同上。",
+    "animation:heroDot 18s infinite": "同上，圓點。",
+    "animation:heroDot 18s 6s infinite": "同上。",
+    "animation:heroDot 18s 12s infinite": "同上。",
+    "top:10px": "規格標註殘留：佔位圖裡包住「8:3」字樣的 <span>，父層是等寬字說明，正式站用真圖所以整組不存在。",
+    "left:12px": "同上。"
   }
 }

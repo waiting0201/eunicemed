@@ -8,7 +8,7 @@ import { CollectionBadge } from '@/components/CollectionBadge';
 import { ProductCard } from '@/components/ProductCard';
 import { ProductInquiry } from '@/components/ProductInquiry';
 import { ProductGallery } from '@/components/ProductGallery';
-import { SectionHeading } from '@/components/SectionHeading';
+import { NUMERAL, SectionHeading } from '@/components/SectionHeading';
 import { SizeChart } from '@/components/SizeChart';
 
 type Params = { locale: string; category: string; sub: string; slug: string };
@@ -221,7 +221,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
       {(p.specs?.length || p.sizeChart) && (
         <section id="specs" className="bg-tint py-[clamp(56px,7vw,80px)]">
           <div className="mx-auto max-w-content px-gutter">
-            <SectionHeading index={next()} title={c.specsAndSizes} accent className="mb-9" />
+            <SectionHeading
+              index={next()}
+              title={c.specsAndSizes}
+              numeralStyle={NUMERAL.accent}
+              className="mb-9"
+            />
             <div className="grid gap-12 lg:grid-cols-[1fr_1.3fr]">
               {p.specs && p.specs.length > 0 && (
                 <div>

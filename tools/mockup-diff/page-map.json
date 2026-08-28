@@ -13,7 +13,8 @@
       "apps/web/app/[locale]/page.tsx",
       "apps/web/components/HeroSlider.tsx",
       "apps/web/components/SectionHeading.tsx",
-      "apps/web/components/SectionCtaLink.tsx"
+      "apps/web/components/SectionCtaLink.tsx",
+      "apps/web/lib/collection.ts"
     ],
     "About": [
       "apps/web/app/[locale]/about/page.tsx",
@@ -24,7 +25,8 @@
       "apps/web/components/PageHero.tsx",
       "apps/web/components/FilterChips.tsx",
       "apps/web/components/ProductGrid.tsx",
-      "apps/web/components/ProductCard.tsx"
+      "apps/web/components/ProductCard.tsx",
+      "apps/web/lib/collection.ts"
     ],
     "Product Category": [
       "apps/web/app/[locale]/products/[category]/page.tsx",
@@ -35,7 +37,8 @@
       "apps/web/components/CategoryOutro.tsx",
       "apps/web/components/FilterChips.tsx",
       "apps/web/components/ProductGrid.tsx",
-      "apps/web/components/ProductCard.tsx"
+      "apps/web/components/ProductCard.tsx",
+      "apps/web/lib/collection.ts"
     ],
     "Product Detail": [
       "apps/web/app/[locale]/products/[category]/[sub]/[slug]/page.tsx",
@@ -44,7 +47,8 @@
       "apps/web/components/CollectionBadge.tsx",
       "apps/web/components/SizeChart.tsx",
       "apps/web/components/ProductInquiry.tsx",
-      "apps/web/components/ProductCard.tsx"
+      "apps/web/components/ProductCard.tsx",
+      "apps/web/lib/collection.ts"
     ],
     "Applications": [
       "apps/web/app/[locale]/applications/page.tsx",
@@ -55,7 +59,8 @@
       "apps/web/app/[locale]/applications/[slug]/page.tsx",
       "apps/web/components/Breadcrumb.tsx",
       "apps/web/components/ProductCard.tsx",
-      "apps/web/components/SectionHeading.tsx"
+      "apps/web/components/SectionHeading.tsx",
+      "apps/web/lib/collection.ts"
     ],
     "Partnership": [
       "apps/web/app/[locale]/partnership/page.tsx",

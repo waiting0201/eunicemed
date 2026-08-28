@@ -32,3 +32,7 @@
 | 檔案:行 | 移除的 class | mockup4 的固定值 | 預定的 `data-r` |
 |---|---|---|---|
 | `apps/web/components/SiteNav.tsx` | `hidden md:flex` | `display:flex`（mockup4 沒有手機版頁首） | `hide` — 但**手機需要漢堡選單**，mockup4 沒有設計，第二階段要現場設計 |
+| `apps/web/app/[locale]/page.tsx` §01 | `sm:columns-2 lg:columns-4` | `columns:4` | `cols-1`（已標） |
+| `apps/web/app/[locale]/page.tsx` §02 | `lg:grid-cols-[0.9fr_1.1fr]` | `grid-template-columns:.9fr 1.1fr` | `stack` |
+| `apps/web/app/[locale]/page.tsx` §03 | `sm:grid-cols-2 lg:grid-cols-4` | `grid-template-columns:repeat(4,1fr)` | `cols-2` → `stack` |
+| `apps/web/app/[locale]/page.tsx` §04 | `lg:grid-cols-[1.02fr_0.98fr]` | `grid-template-columns:1.02fr .98fr` | `stack` |
