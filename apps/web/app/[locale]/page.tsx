@@ -44,6 +44,7 @@ const S = {
   // 02 APPLICATIONS
   s02: css`position:relative;overflow:hidden;color:#fff;padding:clamp(72px,9vw,120px) 0;margin-top:clamp(48px,6vw,80px);`,
   s02Img: css`position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;`,
+  s02Fallback: css`position:absolute;inset:0;background:#14262C;`,
   s02Scrim: css`position:absolute;inset:0;background:linear-gradient(90deg,rgba(9,36,45,.74) 0%,rgba(9,36,45,.5) 52%,rgba(9,36,45,.14) 100%);`,
   s02Inner: css`position:relative;max-width:1180px;margin:0 auto;padding:0 clamp(24px,5vw,64px);display:grid;grid-template-columns:.9fr 1.1fr;gap:56px;align-items:center;`,
   s02Title: css`color:#fff;font-weight:400;font-size:clamp(2rem,4vw,2.6rem);line-height:1.08;margin:8px 0 18px;`,
@@ -250,7 +251,8 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
               <div style={S.s02Scrim} />
             </>
           )}
-          {!band.background && <div className="absolute inset-0 bg-[#12333c]" />}
+          {/* 編輯者沒放背景圖時的底色。mockup4 一定有圖，這裡取全站唯一的深色面 */}
+          {!band.background && <div style={S.s02Fallback} />}
 
           <div style={S.s02Inner}>
             <div>
@@ -600,7 +602,7 @@ function Highlight({ text }: { text: string }) {
     <>
       {parts.map((part, i) =>
         i % 2 === 1 ? (
-          <span key={i} className="text-brand-deep">
+          <span key={i} style={S.introHighlight}>
             {part}
           </span>
         ) : (

@@ -52,7 +52,8 @@
       "apps/web/components/SizeChart.tsx",
       "apps/web/components/ProductInquiry.tsx",
       "apps/web/components/ProductCard.tsx",
-      "apps/web/lib/collection.ts"
+      "apps/web/lib/collection.ts",
+      "apps/web/components/SectionHeading.tsx"
     ],
     "Applications": [
       "apps/web/app/[locale]/applications/page.tsx",

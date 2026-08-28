@@ -48,3 +48,16 @@
 | `apps/web/app/[locale]/downloads/page.tsx` | `lg:grid-cols-[240px_1fr]` | `240px 1fr` | `stack`（已標） |
 | `apps/web/components/ArticleDetailPage.tsx` | `lg:grid-cols-[minmax(0,1fr)_260px]`、`sm:grid-cols-2/3`、`lg:sticky` | `minmax(0,1fr) 260px`、`repeat(3,1fr)`、`position:sticky` | `stack` / `static`（已標） |
 | `apps/web/components/ContactForm.tsx` | `sm:grid-cols-2` | `grid-template-columns:1fr 1fr` | `stack`（已標） |
+| `apps/web/app/[locale]/applications/**` | `sm:/lg:grid-cols-*` | `repeat(3,1fr)`／`repeat(4,1fr)`／`1fr 1fr` | `stack` / `cols-2`（已標） |
+| `apps/web/app/[locale]/products/**/[slug]/page.tsx` | `lg:grid-cols-2`、`lg:grid-cols-[1fr_1.3fr]`、`sm:flex-row` | `1fr 1fr`、`1fr 1.3fr`、`display:flex` | `stack`（已標） |
+| `apps/web/components/ProductInquiry.tsx`、`PartnershipForm.tsx` | `sm:grid-cols-2` | `1fr 1fr` | `stack`（已標） |
+| `apps/web/components/BodyMap.tsx` | `lg:grid-cols-[440px_1fr]` | `440px 1fr` | `stack`（已標）——**人體圖在窄螢幕需另行設計**：熱點與 chip 是固定座標 |
+| `apps/web/app/[locale]/resources/page.tsx` | （無） | 全部用 `repeat(auto-fit,minmax(…,1fr))` | 本來就會自己收，第二階段可能不必動 |
+
+## 第二階段的已知難題
+
+1. **手機沒有導覽**：mockup4 完全沒有手機版頁首，`SiteNav` 目前是 `data-r="hide"`。
+   漢堡選單要現場設計 —— 這是全站最大的一塊缺口。
+2. **人體圖**：`BodyMap` 的熱點與 chip 是 viewBox 座標換算的百分比，直接堆疊會重疊。
+3. **側欄篩選**：`SideFilter` 是 `position:sticky` 的 240/260px 直欄，窄螢幕要改成橫向捲動或收合。
+4. **尺寸表**：`SizeChart` 最多 5 欄，窄螢幕要能橫向捲動而不是壓扁。

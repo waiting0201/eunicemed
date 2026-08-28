@@ -1,3 +1,4 @@
+import { css } from '@/lib/css';
 import type { ProductDetail } from '@/lib/api';
 
 /**
@@ -6,6 +7,14 @@ import type { ProductDetail } from '@/lib/api';
  * 少了 sizes 就整塊不渲染，某列 values 比表頭短就補空格。
  * 版型是格線，欄數對不上會整個垮掉。
  */
+/** 樣式逐字取自 `mockup4/Product Detail.dc.html` §4 的尺寸表。 */
+const S = {
+  grid: css`display:grid;gap:1px;background:#EDF4F6;border:1px solid #DFE9EC;border-radius:14px;overflow:hidden;`,
+  head: css`background:#F0F6F8;padding:14px;text-align:center;color:#0092A8;font-weight:620;`,
+  cell: css`background:#F0F6F8;padding:14px;text-align:center;color:#4B5B61;font-size:.9rem;`,
+  footnote: css`color:#66787F;font-size:.82rem;margin-top:12px;`,
+} as const;
+
 export function SizeChart({ chart }: { chart: NonNullable<ProductDetail['sizeChart']> }) {
   const sizes = chart.sizes ?? [];
   if (sizes.length === 0) return null;
@@ -17,10 +26,7 @@ export function SizeChart({ chart }: { chart: NonNullable<ProductDetail['sizeCha
 
   return (
     <div>
-      <div
-        className="grid gap-px overflow-hidden rounded-[14px] border border-hairline bg-[#edf4f6]"
-        style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
-      >
+      <div style={{ ...S.grid, gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
         {hasRowLabels && <Cell head />}
         {sizes.map((s) => (
           <Cell key={s} head>
@@ -38,22 +44,12 @@ export function SizeChart({ chart }: { chart: NonNullable<ProductDetail['sizeCha
         ))}
       </div>
 
-      {chart.footnote && (
-        <p className="mt-3 text-[0.82rem] text-grey">{chart.footnote}</p>
-      )}
+      {chart.footnote && <p style={S.footnote}>{chart.footnote}</p>}
     </div>
   );
 }
 
-function Row({
-  label,
-  values,
-  width,
-}: {
-  label: string | null;
-  values: string[];
-  width: number;
-}) {
+function Row({ label, values, width }: { label: string | null; values: string[]; width: number }) {
   return (
     <>
       {label !== null && <Cell head>{label}</Cell>}
@@ -66,13 +62,5 @@ function Row({
 }
 
 function Cell({ children, head = false }: { children?: React.ReactNode; head?: boolean }) {
-  return (
-    <div
-      className={`bg-tint-deep p-3.5 text-center ${
-        head ? 'font-semibold text-brand-deep' : 'text-sm'
-      }`}
-    >
-      {children}
-    </div>
-  );
+  return <div style={head ? S.head : S.cell}>{children}</div>;
 }

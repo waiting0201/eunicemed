@@ -1,5 +1,7 @@
 'use client';
 
+import { css } from '@/lib/css';
+
 import { useState } from 'react';
 import type { ProductImage } from '@/lib/api';
 import { srcSetOf } from '@/lib/image';
@@ -23,6 +25,15 @@ const THUMB_LABEL: Record<Locale, (n: number) => string> = {
   'zh-TW': (n) => `查看第 ${n} 張圖`,
 };
 
+/** 樣式逐字取自 `mockup4/Product Detail.dc.html` §1 的圖庫。 */
+const S = {
+  main: css`position:relative;aspect-ratio:1/1;border-radius:22px;overflow:hidden;background:#F0F6F8;`,
+  img: css`display:block;width:100%;height:100%;object-fit:cover;`,
+  thumbs: css`display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px;`,
+  thumb: css`position:relative;aspect-ratio:1/1;border-radius:12px;overflow:hidden;background:#F0F6F8;`,
+  thumbOn: css`position:relative;aspect-ratio:1/1;border-radius:12px;overflow:hidden;background:#F0F6F8;border:2px solid #00B5CD;`,
+} as const;
+
 export function ProductGallery({
   images,
   productName,
@@ -36,18 +47,14 @@ export function ProductGallery({
   const thumbLabel = THUMB_LABEL[locale];
 
   if (images.length === 0) {
-    return (
-      <div className="flex aspect-square items-center justify-center rounded-[22px] bg-tint-deep text-sm text-grey">
-        1:1
-      </div>
-    );
+    return <div style={S.main}>1:1</div>;
   }
 
   const main = images[active] ?? images[0];
 
   return (
     <div>
-      <div className="aspect-square overflow-hidden rounded-[22px] bg-tint-deep">
+      <div style={S.main}>
         <img
           src={main.url}
           srcSet={srcSetOf(main)}
@@ -57,12 +64,12 @@ export function ProductGallery({
           decoding="async"
           width={1200}
           height={1200}
-          className="h-full w-full object-cover"
+          style={S.img}
         />
       </div>
 
       {images.length > 1 && (
-        <div className="mt-3 grid grid-cols-4 gap-3">
+        <div style={S.thumbs}>
           {images.map((img, i) => (
             <button
               key={img.url}
@@ -70,11 +77,7 @@ export function ProductGallery({
               onClick={() => setActive(i)}
               aria-label={thumbLabel(i + 1)}
               aria-current={i === active ? 'true' : undefined}
-              className={`aspect-square overflow-hidden rounded-xl bg-tint-deep transition ${
-                i === active
-                  ? 'ring-2 ring-brand'
-                  : 'ring-1 ring-hairline hover:ring-brand-bright'
-              }`}
+              style={i === active ? S.thumbOn : S.thumb}
             >
               <img
                 src={img.url}
@@ -85,7 +88,7 @@ export function ProductGallery({
                 decoding="async"
                 width={1200}
                 height={1200}
-                className="h-full w-full object-cover"
+                style={S.img}
               />
             </button>
           ))}
