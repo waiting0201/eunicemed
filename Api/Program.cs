@@ -84,6 +84,7 @@ var host = new HostBuilder()
         services.AddSingleton<HtmlSanitizers>();
         services.AddSingleton<LoginRateLimiter>();
         services.AddSingleton<ContactRateLimiter>();
+        services.AddSingleton<EmailSender>();
 
         // ── Dapper 讀取服務 ────────────────────────────────────────────────
         services.AddScoped<ICollectionReadService, CollectionReadService>();
@@ -113,6 +114,7 @@ var host = new HostBuilder()
         services.AddScoped<ContentHandler>();
         services.AddScoped<AdminContentHandler>();
         services.AddScoped<SiteHandler>();
+        services.AddScoped<ContactHandler>();
         services.AddScoped<AdminSummaryHandler>();
         services.AddScoped<MediaUsageWriter>();
 

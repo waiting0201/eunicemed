@@ -169,6 +169,44 @@ public class SalesLocationTranslationConfiguration : IEntityTypeConfiguration<Sa
     }
 }
 
+// ── 表單來信 ───────────────────────────────────────────────────────────────
+
+public class ContactSubmissionConfiguration : IEntityTypeConfiguration<ContactSubmission>
+{
+    public void Configure(EntityTypeBuilder<ContactSubmission> b)
+    {
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Type).HasDefaultValue(ContactType.General);
+        b.Property(x => x.Name).IsRequired().HasMaxLength(200);
+        b.Property(x => x.Email).IsRequired().HasMaxLength(320);
+        b.Property(x => x.Phone).HasMaxLength(50);
+        b.Property(x => x.Company).HasMaxLength(200);
+        b.Property(x => x.Country).HasMaxLength(80);
+        b.Property(x => x.PartnershipType).HasMaxLength(40);
+        b.Property(x => x.ProductSku).HasMaxLength(60);
+        b.Property(x => x.Subject).HasMaxLength(300);
+        b.Property(x => x.Message).IsRequired();
+        // Locale 可為 null，套不上 AsciiColumn（它要的是 PropertyBuilder<string>）。
+        // 仍要 varchar 而非 nvarchar —— 語系碼是 ASCII，且 Dapper 端以 AnsiString 傳送
+        b.Property(x => x.Locale).HasColumnType("varchar(10)").IsUnicode(false).HasMaxLength(10);
+        b.Property(x => x.IpAddress).HasMaxLength(60);
+        b.Property(x => x.Status).HasDefaultValue(ContactStatus.Received);
+        b.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+
+        // 產品下架不該讓來信跟著消失，所以是 SetNull 而不是串聯刪除 ——
+        // ProductSku 的快照就是為了這一刻留的
+        b.HasOne(x => x.Product).WithMany()
+         .HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.SetNull);
+
+        // 收件匣的預設排序（類型 → 狀態 → 新到舊）
+        b.HasIndex(x => new { x.Type, x.Status, x.CreatedAt }).HasDatabaseName("IX_Contact_Status");
+
+        // DB 端的速率限制靠這條數同一個 IP 的近期筆數（docs/04 §9）。
+        // 行程內的 token bucket 在 Flex Consumption 上是每個實例各一份，擋不住跨實例的洗版
+        b.HasIndex(x => new { x.IpAddress, x.CreatedAt }).HasDatabaseName("IX_Contact_Ip");
+    }
+}
+
 // ── 應用方案 ───────────────────────────────────────────────────────────────
 
 public class ApplicationConfiguration : IEntityTypeConfiguration<Application>

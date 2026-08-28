@@ -1,0 +1,111 @@
+### Phase 7 — 表單收件匣
+###
+### 三支前台表單（Contact / 產品詢價 / Partnership）都打 POST /contact，
+### 由 `type` 分流。**送件成功的定義是入庫成功** —— SMTP 未設定時
+### EmailSender 只記一行 log，不影響回應（CLAUDE.md §7 已封閉決議）。
+
+@host = http://localhost:7071/api
+
+# @name login
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "admin@eunicemed.com", "password": "ChangeMe123!" }
+
+###
+@at = {{login.response.body.data.accessToken}}
+
+### 1a 一般洽詢 → 201，且 Smtp__Host 為空時 log 一行「SMTP not configured」
+POST {{host}}/contact
+Content-Type: application/json
+
+{
+  "type": "general",
+  "name": "Ada Lovelace",
+  "email": "ada@example.com",
+  "subject": "Product availability",
+  "message": "Do you ship compression stockings to the UK?",
+  "locale": "en",
+  "ipAddress": "203.0.113.7"
+}
+
+### 1b 產品詢價 → 檢查回應後用 1e 確認 ProductId 有被 SKU 反查填上
+POST {{host}}/contact
+Content-Type: application/json
+
+{
+  "type": "product",
+  "name": "陳醫師",
+  "email": "clinic@example.tw",
+  "message": "想詢問這款護膝的批發價與最小訂購量。",
+  "locale": "zh-TW",
+  "productSku": "AKS-01"
+}
+
+### 1c 合作洽詢
+POST {{host}}/contact
+Content-Type: application/json
+
+{
+  "type": "partnership",
+  "name": "Marco Rossi",
+  "email": "marco@distributor.it",
+  "company": "Rossi Medical Supplies",
+  "country": "IT",
+  "partnershipType": "distributor",
+  "message": "We would like to distribute EuniceMed in northern Italy.",
+  "locale": "en"
+}
+
+### 1d 缺 message → 400
+POST {{host}}/contact
+Content-Type: application/json
+
+{ "type": "general", "name": "No Message", "email": "x@example.com" }
+
+### 1e 未登入也能送 → 確認 IsPublicRoute 那條有效（上面幾支本來就沒帶 token）
+###    連打 11 次後第 11 次應為 429（ContactRateLimiter 是 10 / 10 分鐘）
+
+### ─────────────────────────────────────────────────────────────
+### 後台收件匣
+
+### 2a 列表 → PagedResult 形狀
+GET {{host}}/admin/contact-submissions?page=1&pageSize=20
+Authorization: Bearer {{at}}
+
+### 2b 依類型與狀態篩選
+GET {{host}}/admin/contact-submissions?type=product&status=received
+Authorization: Bearer {{at}}
+
+### 2c 單筆詳情（把 id 換成 2a 回來的其中一筆）
+@submissionId = 00000000-0000-0000-0000-000000000000
+GET {{host}}/admin/contact-submissions/{{submissionId}}
+Authorization: Bearer {{at}}
+
+### 2d 標記已處理
+PATCH {{host}}/admin/contact-submissions/{{submissionId}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "status": "handled" }
+
+### 2e CSV 匯出 → text/csv，開頭有 BOM
+GET {{host}}/admin/contact-submissions/export
+Authorization: Bearer {{at}}
+
+### 2f 未知狀態 → 400
+PATCH {{host}}/admin/contact-submissions/{{submissionId}}
+Authorization: Bearer {{at}}
+Content-Type: application/json
+
+{ "status": "archived" }
+
+### 2g 未登入取列表 → 401
+GET {{host}}/admin/contact-submissions
+
+### 2h Viewer 角色：GET 應 200、PATCH 應 403
+###    （用 Viewer 帳號重跑 login 之後執行 2a 與 2d）
+
+### 2i 側欄徽章：summary 應含 contact-submissions 的未處理筆數
+GET {{host}}/admin/summary
+Authorization: Bearer {{at}}

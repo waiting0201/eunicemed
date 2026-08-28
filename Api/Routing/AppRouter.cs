@@ -43,6 +43,7 @@ public sealed class AppRouter(
     ContentHandler     content,
     AdminContentHandler adminContent,
     SiteHandler        site,
+    ContactHandler     contact,
     AdminSummaryHandler summary)
 {
     public async Task<IActionResult> RouteAsync(HttpRequest req, string route)
@@ -86,6 +87,9 @@ public sealed class AppRouter(
             ("POST", ["auth", "refresh"])         => await auth.RefreshAsync(req),
             ("POST", ["auth", "logout"])          => await auth.LogoutAsync(req),
             ("POST", ["auth", "change-password"]) => await auth.ChangePasswordAsync(req),
+
+            // ── Contact（公開送件）────────────────────────────────────────
+            ("POST", ["contact"]) => await contact.SubmitAsync(req),
 
             // ── Collections（公開唯讀）────────────────────────────────────
             ("GET", ["collections"])           => await collections.GetAllAsync(req),
@@ -284,6 +288,13 @@ public sealed class AppRouter(
             ("GET",    ["admin", "collections", var id])  => await collections.AdminGetByIdAsync(id),
             ("PUT" or "PATCH", ["admin", "collections", var id]) => await collections.AdminUpdateAsync(req, id),
             ("DELETE", ["admin", "collections", var id])  => await collections.AdminDeleteAsync(id),
+
+            // ── Admin：表單收件匣 ─────────────────────────────────────────
+            // 順序敏感：export 必須排在 {id} 之前，否則會被 var id 吃掉。
+            ("GET",   ["admin", "contact-submissions"])           => await contact.GetListAsync(req),
+            ("GET",   ["admin", "contact-submissions", "export"]) => await contact.ExportAsync(req),
+            ("GET",   ["admin", "contact-submissions", var id])   => await contact.GetAsync(id),
+            ("PATCH", ["admin", "contact-submissions", var id])   => await contact.UpdateStatusAsync(req, id),
 
             // ── Admin：Users（Admin only）─────────────────────────────────
             ("GET",    ["admin", "users"])         => await users.GetAllAsync(),

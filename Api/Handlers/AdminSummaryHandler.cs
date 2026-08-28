@@ -111,7 +111,15 @@ public sealed class AdminSummaryHandler(IDbConnection db)
 
         var pages = await db.QuerySingleAsync<SummaryRow>(pagesSql);
 
-        var result = rows.Append(pages).ToDictionary(
+        // 收件匣量的是完全不同的東西：不是「翻譯缺多少」而是「有幾封在等」。
+        // 借用同一個形狀（Total = 未處理筆數、語系兩欄留 0），因為側欄只讀 total ——
+        // 為了一個數字多開一支端點，會讓後台每次載入多一次來回
+        const string contactSql = "SELECT 'contact-submissions' AS [Key], COUNT(*) AS Total, "
+                                + "0 AS [En], 0 AS ZhTw FROM ContactSubmissions WHERE Status = 0";
+
+        var contact = await db.QuerySingleAsync<SummaryRow>(contactSql);
+
+        var result = rows.Append(pages).Append(contact).ToDictionary(
             r => r.Key,
             r => new { total = r.Total, locales = new { en = r.En, zhTw = r.ZhTw } });
 

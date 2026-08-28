@@ -140,6 +140,69 @@ public class SalesLocationTranslation : ILocalized
     public string? Note        { get; set; }
 }
 
+// ── 表單來信 ───────────────────────────────────────────────────────────────
+
+public static class ContactType
+{
+    public const byte General     = 0;   // Contact 頁的一般洽詢
+    public const byte Product     = 1;   // 產品詳情頁的詢價
+    public const byte Partnership = 2;   // Partnership 頁的合作洽詢
+}
+
+public static class ContactStatus
+{
+    public const byte Received = 0;
+    public const byte Handled  = 1;
+    public const byte Spam     = 2;
+}
+
+/// <summary>
+/// 訪客送出的表單。三支表單（Contact / 產品詢價 / Partnership）共用這一張表，
+/// 由 <see cref="Type"/> 分流 —— 它們問的問題有八成重疊，拆三張表只會讓
+/// 收件匣要 union 三次。
+///
+/// <para>
+/// **沒有翻譯表**：來信是使用者寫的，不是我們的內容。<see cref="Locale"/> 記的是
+/// 他當時在看哪個語系的網站，用來決定回信要用哪種語言。
+/// </para>
+///
+/// <para>
+/// <see cref="ProductSku"/> 是送件當下的型號快照，與 <see cref="ProductId"/> 並存 ——
+/// 產品之後改名、換 slug 甚至下架，這封信仍然追溯得到問的是哪一件。
+/// </para>
+/// </summary>
+public class ContactSubmission
+{
+    public Guid Id { get; set; }
+
+    public byte    Type    { get; set; } = ContactType.General;
+    public string  Name    { get; set; } = string.Empty;
+    public string  Email   { get; set; } = string.Empty;
+    public string? Phone   { get; set; }
+    public string? Company { get; set; }
+    public string? Country { get; set; }
+
+    /// <summary>oem | odm | distributor（Partnership 表單的下拉）</summary>
+    public string? PartnershipType { get; set; }
+
+    public Guid?    ProductId  { get; set; }
+    public Product? Product    { get; set; }
+    public string?  ProductSku { get; set; }
+
+    public string? Subject { get; set; }
+    public string  Message { get; set; } = string.Empty;
+    public string? Locale  { get; set; }
+
+    /// <summary>
+    /// ⚠️ **不可信**。沒有 WAF 的情況下 X-Forwarded-For 是送件端可控的
+    /// （見 <c>IpRateLimiter</c>）。只作為判斷洗版時的線索，不當識別依據。
+    /// </summary>
+    public string? IpAddress { get; set; }
+
+    public byte     Status    { get; set; } = ContactStatus.Received;
+    public DateTime CreatedAt { get; set; }
+}
+
 // ── 應用方案 ───────────────────────────────────────────────────────────────
 
 public static class ApplicationType

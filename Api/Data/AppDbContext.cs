@@ -52,6 +52,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ProductDownload>          ProductDownloads          { get; set; }
     public DbSet<SalesLocation>            SalesLocations            { get; set; }
     public DbSet<SalesLocationTranslation> SalesLocationTranslations { get; set; }
+    public DbSet<ContactSubmission>        ContactSubmissions        { get; set; }
     public DbSet<Application>              Applications              { get; set; }
     public DbSet<ApplicationTranslation>   ApplicationTranslations   { get; set; }
     public DbSet<ProductApplication>       ProductApplications       { get; set; }
