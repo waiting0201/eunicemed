@@ -1,12 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Home · 01 Hero products",
-  "description": "產品由 GET /products?featured=true 自動取用（依 FeaturedSortOrder），後台不逐格挑；此處只維護區段文案與全型錄漸層帶。",
+  "description": "產品由 GET /products?featured=true 自動取用（依 FeaturedSortOrder），後台不逐格挑。區段標題與版型綁死，寫在前端；此處只維護全型錄漸層帶的檔期文案。",
   "type": "object",
   "additionalProperties": false,
-  "required": ["title"],
   "properties": {
-    "title": { "type": "string", "maxLength": 120, "x-fieldType": "text" },
     "promo": {
       "type": "object", "additionalProperties": false,
       "properties": {

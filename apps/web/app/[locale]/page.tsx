@@ -103,21 +103,9 @@ type HeroSliderSection = {
   intervalSeconds?: number;
 };
 type FeaturedSection = {
-  title?: string;
   promo?: { eyebrow?: string; title?: string; link?: SectionCta };
 };
-type BodyPartBandSection = {
-  background?: MediaRef;
-  title?: string;
-  lead?: string;
-  cta?: SectionCta;
-  tiles?: { icon?: string; title?: string; subtitle?: string; link?: SectionCta }[];
-};
-type WhyPartnerSection = {
-  title?: string;
-  items?: { title?: string; body?: string }[];
-  cta?: SectionCta;
-};
+type BodyPartBandSection = { background?: MediaRef };
 type TestimonialSection = {
   title?: string;
   quote?: string;
@@ -126,38 +114,110 @@ type TestimonialSection = {
   video?: { poster?: MediaRef; source?: string };
   floatingChip?: string;
 };
-type LatestNewsSection = { title?: string; allLink?: SectionCta };
+
+/** §02 的一格。`icon` 對應 {@link TileIcon} 的圖形，`href` 不含語系前綴。 */
+type Tile = { icon: string; title: string; subtitle: string; href: string };
 
 /**
- * HERO 文案 —— **刻意寫死，不走 CMS**。
+ * 版面文案 —— **刻意寫死，不走 CMS**（決議見 docs/15-cms-scope.md）。
  *
  * <p>
- * 這段原本是 `home.heroIntro` 區段。拿掉的理由是它不是會被編輯的內容：
- * 三行字（品牌標語、主標、宣言）等同品牌識別，動它要動的是 mockup4 而不是後台。
- * 留在 CMS 只會讓它有機會被改到與版型不一致 —— 事實上上線後就發生過一次。
+ * HERO 那三行原本是 `home.heroIntro` 區段，2026-08-28 移出；其餘四段（01 標題、
+ * 02 整段、03 整段、05 標題）這次一併移出。判準都一樣：這些字與版型綁死，
+ * 改它要動的是 mockup4 而不是後台。留在 CMS 只是給了它走鐘的機會 ——
+ * heroIntro 被填成舊站文案、`whyPartner` 被填成 Company Profile 的核心價值，
+ * 都已經各發生過一次。
  * </p>
  *
  * <p>
- * 英文逐字取自 `mockup4/Home.dc.html` 的 HERO COPY 段。
- * `**…**` 是高亮標記，由 {@link Highlight} 轉成品牌青。
- * 品牌標語與主標維持英文（品牌符號，CLAUDE.md §5.1），
- * 非品牌符號的 `Made in Taiwan` 才翻譯。
+ * 英文逐字取自 `mockup4/Home.dc.html`。`**…**` 是高亮標記，
+ * 由 {@link Highlight} 轉成品牌青。品牌符號（`Not Just a Motion`、`OEM / ODM`、
+ * `ISO 13485`、`CE`）維持英文，其餘翻譯（CLAUDE.md §5.1）。
+ * </p>
+ *
+ * <p>
+ * ⚠️ **連結一律在渲染時就地組 `/${locale}/…`，不存進這張表。**
+ * 這正是先前的災情：URL 標了 `x-localeInvariant` 被當成跨語系共用欄位，
+ * 中文的內容匯入一跑就把英文版的連結蓋成 `/zh-TW/…`，
+ * 於是英文首頁的每個 CTA 都跳到中文頁。
  * </p>
  */
-const HERO_COPY: Record<Locale, { eyebrow: string; title: string; lead: string }> = {
+const COPY: Record<
+  Locale,
+  {
+    hero: { eyebrow: string; title: string; lead: string };
+    featured: string;
+    bodyPart: { title: [string, string]; lead: string; cta: string; tiles: Tile[] };
+    whyPartner: { title: string; items: { title: string; body: string }[]; cta: string };
+    latestNews: { title: string; allLink: string };
+  }
+> = {
   en: {
-    eyebrow: 'Not Just a Motion · Made in Taiwan',
-    title: 'Support Feels **Personal**.',
-    lead:
-      'We believe the true spirit of motion is about more than just movement — ' +
-      "it's about enhancing your quality of life.",
+    hero: {
+      eyebrow: 'Not Just a Motion · Made in Taiwan',
+      title: 'Support Feels **Personal**.',
+      lead:
+        'We believe the true spirit of motion is about more than just movement — ' +
+        "it's about enhancing your quality of life.",
+    },
+    featured: 'Hero products',
+    bodyPart: {
+      title: ['Find support', 'by body part'],
+      lead:
+        'Tap where it hurts or tires on our interactive body map, ' +
+        'or browse solutions for special care needs.',
+      cta: 'Explore applications →',
+      tiles: [
+        { icon: 'knee', title: 'Knee', subtitle: 'Stability & alignment', href: '/applications/knee' },
+        { icon: 'ankle-foot', title: 'Ankle & Foot', subtitle: 'Sprains & plantar relief', href: '/applications/ankle' },
+        { icon: 'back', title: 'Back & Waist', subtitle: 'Posture & lifting support', href: '/applications/back' },
+        { icon: 'special-care', title: 'Special care', subtitle: 'Elderly · bunion relief', href: '/applications' },
+      ],
+    },
+    whyPartner: {
+      title: 'A team your business can truly count on',
+      items: [
+        { title: 'Certified quality', body: 'ISO 13485 system with CE-marked product lines.' },
+        { title: 'OEM / ODM flexibility', body: 'From design and sampling to certification support.' },
+        { title: 'Made in Taiwan', body: 'In-house manufacturing with full traceability.' },
+        { title: 'Comfort-first R&D', body: 'Premium materials engineered for all-day wear.' },
+      ],
+      cta: 'Become a partner',
+    },
+    latestNews: { title: 'Latest news', allLink: 'All news →' },
   },
   'zh-TW': {
-    eyebrow: 'Not Just a Motion · 台灣製造',
-    title: 'Support Feels **Personal**.',
-    lead: '我們相信「動」的真義不只是移動 —— 而是讓生活品質更好。',
+    hero: {
+      eyebrow: 'Not Just a Motion · 台灣製造',
+      title: 'Support Feels **Personal**.',
+      lead: '我們相信「動」的真義不只是移動 —— 而是讓生活品質更好。',
+    },
+    featured: '精選產品',
+    bodyPart: {
+      title: ['依部位', '尋找支撐'],
+      lead: '在互動人體圖上點選不適或疲勞的部位，或直接瀏覽特殊照護的解決方案。',
+      cta: '探索應用方案 →',
+      tiles: [
+        { icon: 'knee', title: '膝部', subtitle: '穩定與對位', href: '/applications/knee' },
+        { icon: 'ankle-foot', title: '踝部與足部', subtitle: '扭傷與足底舒緩', href: '/applications/ankle' },
+        { icon: 'back', title: '背部與腰部', subtitle: '姿勢與搬提支撐', href: '/applications/back' },
+        { icon: 'special-care', title: '特殊照護', subtitle: '長者照護 · 拇趾外翻舒緩', href: '/applications' },
+      ],
+    },
+    whyPartner: {
+      title: '值得您的事業信賴的團隊',
+      items: [
+        { title: '認證品質', body: '通過 ISO 13485 系統，產品線具備 CE 標章。' },
+        { title: 'OEM / ODM 彈性', body: '從設計、打樣到認證協助，一應俱全。' },
+        { title: '台灣製造', body: '自有工廠生產，全程可追溯。' },
+        { title: '舒適優先的研發', body: '嚴選材質，為整日穿戴而設計。' },
+      ],
+      cta: '成為合作夥伴',
+    },
+    latestNews: { title: '最新消息', allLink: '所有消息 →' },
   },
 };
+
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { locale } = await params;
@@ -166,8 +226,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
 
   return {
-    title: plain(HERO_COPY[locale].title),
-    description: HERO_COPY[locale].lead,
+    title: plain(COPY[locale].hero.title),
+    description: COPY[locale].hero.lead,
     alternates: {
       canonical: `${siteUrl}/${locale}`,
       languages: { en: `${siteUrl}/en`, 'zh-TW': `${siteUrl}/zh-TW` },
@@ -189,12 +249,11 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
 
   if (!page) notFound();
 
+  const copy = COPY[locale];
   const slider = section<HeroSliderSection>(page, 'heroSlider');
-  const featuredCopy = section<FeaturedSection>(page, 'featuredProducts');
+  const promo = section<FeaturedSection>(page, 'featuredProducts')?.promo;
   const band = section<BodyPartBandSection>(page, 'bodyPartBand');
-  const why = section<WhyPartnerSection>(page, 'whyPartner');
   const testimonial = section<TestimonialSection>(page, 'testimonial');
-  const latestCopy = section<LatestNewsSection>(page, 'latestNews');
 
   let n = 0;
   const next = () => ++n;
@@ -208,22 +267,22 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
       {/* HERO COPY —— 只有上方留白：下方的留白由「01 精選產品」自己的 padding 給
           （mockup4 的 `padding: … 0`），兩段各自負責的話會疊成兩倍 */}
       <section style={S.intro}>
-        <p style={S.introEyebrow}>{HERO_COPY[locale].eyebrow}</p>
+        <p style={S.introEyebrow}>{copy.hero.eyebrow}</p>
         <h1 style={S.introTitle}>
-          <Highlight text={HERO_COPY[locale].title} />
+          <Highlight text={copy.hero.title} />
         </h1>
-        <p style={S.introLead}>{HERO_COPY[locale].lead}</p>
+        <p style={S.introLead}>{copy.hero.lead}</p>
       </section>
 
       {/* 01 精選產品 —— Pinterest 式瀑布流 */}
-      {featuredCopy && featured.items.length > 0 && (
+      {featured.items.length > 0 && (
         <section style={S.s01}>
-          <RuledSectionHeading index={next()} title={featuredCopy.title ?? ''} style={S.s01Head} />
+          <RuledSectionHeading index={next()} title={copy.featured} style={S.s01Head} />
 
           <FeaturedMasonry items={featured.items} />
 
-          {featuredCopy.promo && (
-            <PromoBand promo={featuredCopy.promo}>
+          {promo && (
+            <PromoBand promo={promo}>
               <div style={S.promoLeft}>
                 {/* 動線標記：三條同心的「起身」曲線，取自 mockup4。
                     純裝飾，不進無障礙樹。 */}
@@ -236,12 +295,8 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
                 </svg>
 
                 <div>
-                  {featuredCopy.promo.eyebrow && (
-                    <p style={S.promoEyebrow}>{featuredCopy.promo.eyebrow}</p>
-                  )}
-                  {featuredCopy.promo.title && (
-                    <h3 style={S.promoTitle}>{featuredCopy.promo.title}</h3>
-                  )}
+                  {promo.eyebrow && <p style={S.promoEyebrow}>{promo.eyebrow}</p>}
+                  {promo.title && <h3 style={S.promoTitle}>{promo.title}</h3>}
                 </div>
               </div>
               <span style={S.promoArrow}>&rarr;</span>
@@ -250,10 +305,9 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
         </section>
       )}
 
-      {/* 02 依部位找支撐 */}
-      {band && (
-        <section style={S.s02}>
-          {band.background && (
+      {/* 02 依部位找支撐 —— 文案是常數，CMS 只管背景圖，所以整段無條件渲染 */}
+      <section style={S.s02}>
+          {band?.background && (
             <>
               <img
                 src={band.background.url}
@@ -269,46 +323,49 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
             </>
           )}
           {/* 編輯者沒放背景圖時的底色。mockup4 一定有圖，這裡取全站唯一的深色面 */}
-          {!band.background && <div style={S.s02Fallback} />}
+          {!band?.background && <div style={S.s02Fallback} />}
 
           <div style={S.s02Inner}>
             <div>
               <span style={NUMERAL.onPhoto}>{String(next()).padStart(2, '0')}</span>
-              {band.title && <h2 style={S.s02Title}>{band.title}</h2>}
-              {band.lead && <p style={S.s02Lead}>{band.lead}</p>}
-              {band.cta?.url && <CtaLink cta={band.cta} variant="onDarkOutline" />}
+              <h2 style={S.s02Title}>
+                {copy.bodyPart.title[0]}
+                <br />
+                {copy.bodyPart.title[1]}
+              </h2>
+              <p style={S.s02Lead}>{copy.bodyPart.lead}</p>
+              <CtaLink
+                cta={{ label: copy.bodyPart.cta, url: `/${locale}/applications` }}
+                variant="onDarkOutline"
+              />
             </div>
 
             {/* 四格是**一塊**面板：1px 的格線由容器底色透出來，不是各自獨立的卡片 */}
-            {band.tiles && band.tiles.length > 0 && (
-              <div style={S.tiles} data-r="cols-2">
-                {band.tiles.map((tile, i) => (
-                  <TileLink key={tile.title ?? i} tile={tile} />
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* 03 合作優勢 */}
-      {why && (
-        <section style={S.s03}>
-          <SectionHeading index={next()} title={why.title ?? ''} titleStyle={S.s03Title} />
-          {/* 每欄頂上一條 2px 品牌青（mockup4） */}
-          {why.items && why.items.length > 0 && (
-            <div style={S.s03Grid} data-r="cols-2">
-              {why.items.map((item, i) => (
-                <div key={item.title ?? i} style={S.s03Item}>
-                  {item.title && <h3 style={S.s03ItemTitle}>{item.title}</h3>}
-                  {item.body && <p style={S.s03ItemBody}>{item.body}</p>}
-                </div>
+            <div style={S.tiles} data-r="cols-2">
+              {copy.bodyPart.tiles.map((tile) => (
+                <TileLink key={tile.icon} tile={tile} locale={locale} />
               ))}
             </div>
-          )}
-          {why.cta?.url && <CtaLink cta={why.cta} variant="ink" />}
+          </div>
         </section>
-      )}
+
+      {/* 03 合作優勢 */}
+      <section style={S.s03}>
+        <SectionHeading index={next()} title={copy.whyPartner.title} titleStyle={S.s03Title} />
+        {/* 每欄頂上一條 2px 品牌青（mockup4） */}
+        <div style={S.s03Grid} data-r="cols-2">
+          {copy.whyPartner.items.map((item) => (
+            <div key={item.title} style={S.s03Item}>
+              <h3 style={S.s03ItemTitle}>{item.title}</h3>
+              <p style={S.s03ItemBody}>{item.body}</p>
+            </div>
+          ))}
+        </div>
+        <CtaLink
+          cta={{ label: copy.whyPartner.cta, url: `/${locale}/partnership` }}
+          variant="ink"
+        />
+      </section>
 
       {/* 04 客戶見證 */}
       {testimonial && (
@@ -400,12 +457,17 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
       )}
 
       {/* 05 最新消息 */}
-      {latestCopy && news.items.length > 0 && (
+      {news.items.length > 0 && (
         <section style={S.s05}>
           <RuledSectionHeading
             index={next()}
-            title={latestCopy.title ?? ''}
-            action={latestCopy.allLink?.url && <CtaLink cta={latestCopy.allLink} variant="text" />}
+            title={copy.latestNews.title}
+            action={
+              <CtaLink
+                cta={{ label: copy.latestNews.allLink, url: `/${locale}/news` }}
+                variant="text"
+              />
+            }
             style={S.s05Head}
           />
           {news.items.slice(0, 3).map((item) => (
@@ -476,24 +538,16 @@ function NewsRow({ item, locale }: { item: ArticleListItem; locale: Locale }) {
   );
 }
 
-function TileLink({ tile }: { tile: NonNullable<BodyPartBandSection['tiles']>[number] }) {
-  const inner = (
-    <>
-      <TileIcon name={tile.icon} />
-      {tile.title && <h3 style={S.tileTitle}>{tile.title}</h3>}
-      {tile.subtitle && <p style={S.tileSub}>{tile.subtitle}</p>}
-    </>
-  );
-
+function TileLink({ tile, locale }: { tile: Tile; locale: Locale }) {
   // 沒有自己的圓角與外框：格線是容器透出來的 1px gap（mockup4）
   const style = { ...S.tile, WebkitBackdropFilter: 'blur(6px)' };
 
-  return tile.link?.url ? (
-    <Link href={tile.link.url} style={style}>
-      {inner}
+  return (
+    <Link href={`/${locale}${tile.href}`} style={style}>
+      <TileIcon name={tile.icon} />
+      <h3 style={S.tileTitle}>{tile.title}</h3>
+      <p style={S.tileSub}>{tile.subtitle}</p>
     </Link>
-  ) : (
-    <div style={style}>{inner}</div>
   );
 }
 

@@ -1,4 +1,9 @@
-"""首頁 5 個區段的 zh-TW。譯自已上線的英文版，品牌標語保留英文（品牌符號例外）。"""
+"""首頁區段的 zh-TW。譯自已上線的英文版，品牌標語保留英文（品牌符號例外）。
+
+⚠️ 2026-08-28 後台範圍收斂（docs/15）之後只剩 3 個區段有 schema：
+heroSlider、featuredProducts（只有 promo）、bodyPartBand（只有背景圖）。
+版面文案已搬進前端常數，這支腳本跟著收斂，否則重跑會 400。
+"""
 import json, sys, urllib.request
 
 API = 'https://func-eunicemed-prod.azurewebsites.net/api'
@@ -25,45 +30,11 @@ SECTIONS = {
         'intervalSeconds': 6,
     },
     'featuredProducts': {
-        'title': '精選產品',
-        'allLink': {'label': '所有產品 →', 'url': '/zh-TW/products'},
         'promo': {'eyebrow': '完整型錄', 'title': '為每一種動作而生的支撐',
                   'link': {'label': '→', 'url': '/zh-TW/products'}},
     },
-    'bodyPartBand': {
-        'background': band_bg,
-        'title': '依部位尋找支撐',
-        'lead': '在人體圖上點選會痛或疲勞的部位，或直接瀏覽特殊照護需求的解決方案。',
-        'cta': {'label': '瀏覽應用方案 →', 'url': '/zh-TW/applications'},
-        'tiles': [
-            {'icon': 'back', 'title': '背部與腰部', 'subtitle': '日常勞損與恢復期的腰部支撐',
-             'link': {'label': '查看', 'url': '/zh-TW/applications/back'}},
-            {'icon': 'knee', 'title': '膝關節', 'subtitle': '高負荷活動與復健期的穩定支撐',
-             'link': {'label': '查看', 'url': '/zh-TW/applications/knee'}},
-            {'icon': 'ankle-foot', 'title': '踝部與足部', 'subtitle': '保護、對位與矽膠足部照護',
-             'link': {'label': '查看', 'url': '/zh-TW/applications/ankle'}},
-            {'icon': 'special-care', 'title': '特殊照護', 'subtitle': '糖尿病、長途旅行與術後需求',
-             'link': {'label': '查看', 'url': '/zh-TW/applications'}},
-        ],
-    },
-    'whyPartner': {
-        'title': '我們所做的每一件事，都以核心價值為本',
-        'items': [
-            {'title': '高標準，為舒適而生',
-             'body': '每一件 EuniceMed 產品都從一個明確的目標開始：帶來真實的舒適與效能，不打折扣。'},
-            {'title': '專注於智慧支撐',
-             'body': '醫療彈性襪、矯型護具與 100% 醫療級矽膠足部照護，全數自主研發製造。'},
-            {'title': '用心製作，有目的地交付',
-             'body': '每一件產品都始於一個承諾：以精準製作的支撐，改善人們的生活。'},
-            {'title': '全球佈局，在地承諾',
-             'body': '與世界各地的醫療專業人員與經銷夥伴建立長期互信的關係。'},
-        ],
-        'cta': {'label': '成為合作夥伴', 'url': '/zh-TW/partnership'},
-    },
-    'latestNews': {
-        'title': '最新消息',
-        'allLink': {'label': '所有消息 →', 'url': '/zh-TW/news'},
-    },
+    # 收斂後只剩背景圖，且它是 x-localeInvariant —— 沿用英文版那一張
+    'bodyPartBand': {'background': band_bg},
 }
 
 for key, data in SECTIONS.items():
