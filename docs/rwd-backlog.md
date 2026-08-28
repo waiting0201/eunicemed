@@ -38,3 +38,5 @@
 | `apps/web/app/[locale]/page.tsx` §04 | `lg:grid-cols-[1.02fr_0.98fr]` | `grid-template-columns:1.02fr .98fr` | `stack` |
 | `apps/web/components/ProductGrid.tsx` | `grid-cols-2 lg:grid-cols-4` | `grid-template-columns:repeat(4,1fr)` | `cols-2`（已標） |
 | `apps/web/app/[locale]/products/page.tsx` | `sm:grid-cols-2 lg:grid-cols-3` | `grid-template-columns:repeat(3,1fr)` | `stack`（已標） |
+| `apps/web/components/CategoryHero.tsx` | `lg:grid-cols-[1.05fr_0.95fr]` | `grid-template-columns:1.05fr .95fr` | `stack`（已標） |
+| `apps/web/components/CategoryOutro.tsx` | `lg:grid-cols-3` | `grid-template-columns:repeat(3,1fr)` | `stack`（已標） |

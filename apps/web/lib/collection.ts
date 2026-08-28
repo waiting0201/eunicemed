@@ -52,6 +52,22 @@ export function collectionFill(slug: string | undefined): CSSProperties {
 
 const FALLBACK_FILL = css`background:#00B5CD;`;
 
+/**
+ * 支撐強度卡的頂線（分類頁 §4、應用方案詳情）。同樣是**填色**，用 Pantone 原值。
+ * mockup4：`border-top:4px solid #A8AD3C` / `#5B7F95` / `#7A4D6F`。
+ */
+export const COLLECTION_RULE: Record<string, CSSProperties> = {
+  care: css`border-top:4px solid #A8AD3C;`,
+  protect: css`border-top:4px solid #5B7F95;`,
+  advance: css`border-top:4px solid #7A4D6F;`,
+};
+
+export function collectionRule(slug: string | undefined): CSSProperties {
+  return (slug && COLLECTION_RULE[slug]) || FALLBACK_RULE;
+}
+
+const FALLBACK_RULE = css`border-top:4px solid #00B5CD;`;
+
 export const COLLECTION_BG: Record<string, string> = {
   care: 'bg-care',
   protect: 'bg-protect',

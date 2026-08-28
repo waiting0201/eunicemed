@@ -20,6 +20,24 @@ const ANNOTATION_ELEMENT = ['background:rgba(10,30,38,.55)', 'ui-monospace'];
 /** 佔位斜紋：逐條剔除，但保留同一個屬性裡的版型宣告（圖框本身是要的）。 */
 const ANNOTATION_VALUE = [/repeating-linear-gradient\(/];
 
+/**
+ * 只有 `position:absolute` 加一組 top/left 偏移、別的什麼都沒有的元素，
+ * 在 mockup4 裡一律是比例標籤（`16:10`、`8:3`）的外框 —— 全 18 頁 31 處都是。
+ * 它包在等寬字說明裡，正規表示式看不到父層，所以在這裡單獨認掉。
+ */
+function isRatioBadgeWrapper(body) {
+  const props = body
+    .split(';')
+    .filter((d) => d.includes(':'))
+    .map((d) => d.slice(0, d.indexOf(':')).trim());
+  return (
+    props.length > 0 &&
+    props.includes('position') &&
+    body.includes('position:absolute') &&
+    props.every((k) => ['position', 'top', 'left', 'right', 'bottom'].includes(k))
+  );
+}
+
 /** 把一段 `a:b;c:d` 切成正規化後的宣告陣列。 */
 export function declarations(styleText) {
   const out = [];
@@ -52,6 +70,7 @@ function fromMockup(src) {
 
   for (const [, body] of src.matchAll(/\sstyle="([^"]*)"/g)) {
     if (ANNOTATION_ELEMENT.some((m) => body.includes(m))) continue;
+    if (isRatioBadgeWrapper(body)) continue;
     out.push(...declarations(body));
   }
 
@@ -81,9 +100,14 @@ function fromImpl(src) {
   const out = [];
   for (const [, body] of src.matchAll(/\bcss`([^`]*)`/g)) out.push(...declarations(body));
 
-  for (const [, token] of src.matchAll(/data-hover="([a-z0-9-]+)"/g)) {
-    const decls = HOVER_TOKENS[token];
-    if (decls) out.push(...declarations(decls).map((d) => `:hover ${d}`));
+  // token 可能寫成 data-hover="lift-4"，也可能是 data-hover={boxed ? 'lift-shadow' : undefined}，
+  // 所以先確認這個檔案有用到 data-hover，再收集檔內出現過的 token 名稱。
+  if (src.includes('data-hover')) {
+    for (const [token, decls] of Object.entries(HOVER_TOKENS)) {
+      if (new RegExp(`['"]${token}['"]`).test(src)) {
+        out.push(...declarations(decls).map((d) => `:hover ${d}`));
+      }
+    }
   }
 
   return out;

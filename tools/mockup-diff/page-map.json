@@ -38,7 +38,8 @@
       "apps/web/components/FilterChips.tsx",
       "apps/web/components/ProductGrid.tsx",
       "apps/web/components/ProductCard.tsx",
-      "apps/web/lib/collection.ts"
+      "apps/web/lib/collection.ts",
+      "apps/web/components/Pagination.tsx"
     ],
     "Product Detail": [
       "apps/web/app/[locale]/products/[category]/[sub]/[slug]/page.tsx",

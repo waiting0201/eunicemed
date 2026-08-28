@@ -4,13 +4,24 @@ import { api } from '@/lib/api';
 import { isLocale, type Locale } from '@/lib/locale';
 import { CategoryHero } from '@/components/CategoryHero';
 import { FilterChips } from '@/components/FilterChips';
+import { Pagination } from '@/components/Pagination';
 import { ProductGrid } from '@/components/ProductGrid';
+import { css } from '@/lib/css';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { SiblingNav } from '@/components/SiblingNav';
 import { CategoryOutro } from '@/components/CategoryOutro';
 
+/** 樣式逐字取自 `mockup4/Product Category.dc.html` 的 §3 PRODUCT GRID + FILTERS。 */
+const S = {
+  grid: css`background:#F5FAFB;padding:clamp(48px,6vw,72px) 0;`,
+  inner: css`max-width:1180px;margin:0 auto;padding:0 clamp(24px,5vw,64px);`,
+  filters: css`display:flex;flex-direction:column;gap:14px;`,
+  count: css`margin-top:24px;font-size:.85rem;color:#66787F;`,
+  gridWrap: css`margin-top:24px;`,
+} as const;
+
 type Params = { locale: string; category: string; sub: string };
-type Search = { collection?: string; bodyPart?: string };
+type Search = { collection?: string; bodyPart?: string; page?: string };
 
 const COPY: Record<
   Locale,
@@ -30,11 +41,7 @@ const COPY: Record<
   },
 };
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<Params>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { locale, category, sub } = await params;
   if (!isLocale(locale)) return {};
 
@@ -80,6 +87,7 @@ export default async function SubCategoryPage({
     collection: q.collection,
     bodyPart: q.bodyPart,
     facets: 'true',
+    page: q.page,
     pageSize: '24',
   });
 
@@ -111,9 +119,9 @@ export default async function SubCategoryPage({
         }}
       />
 
-      <section id="grid" className="bg-tint py-[clamp(48px,6vw,72px)]">
-        <div className="mx-auto max-w-content px-gutter">
-          <div className="space-y-3.5">
+      <section id="grid" style={S.grid}>
+        <div style={S.inner}>
+          <div style={S.filters}>
             <FilterChips
               label={c.collection}
               param="collection"
@@ -134,11 +142,19 @@ export default async function SubCategoryPage({
             />
           </div>
 
-          <p className="mt-6 text-[0.85rem] text-[#66787F]">{c.count(result.totalCount)}</p>
+          <p style={S.count}>{c.count(result.totalCount)}</p>
 
-          <div className="mt-6">
-            <ProductGrid items={result.items} locale={locale} />
+          <div style={S.gridWrap}>
+            <ProductGrid items={result.items} locale={locale} variant="card" />
           </div>
+
+          <Pagination
+            page={result.page}
+            totalPages={result.totalPages}
+            basePath={basePath}
+            query={q}
+            variant="catalogue"
+          />
         </div>
       </section>
 

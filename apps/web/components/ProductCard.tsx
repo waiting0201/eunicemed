@@ -3,9 +3,20 @@ import type { ProductListItem } from '@/lib/api';
 import { css } from '@/lib/css';
 import { collectionColor } from '@/lib/collection';
 
-/** 樣式逐字取自 mockup4 的產品格子（Products／分類／相關產品共用）。 */
+/**
+ * 樣式逐字取自 mockup4 的產品格子。
+ *
+ * <p>
+ * mockup4 有**兩種**產品卡，不是一種：
+ * `tile` 是**無框裸磚**（Products 頁、產品詳情的相關產品），文字直接排在圖下 12px；
+ * `card` 是**白底細框卡**（分類／子分類頁、應用方案詳情、首頁 01 瀑布流），
+ * 內距 `16px 18px 20px`，並帶上浮加陰影的 hover。
+ * </p>
+ */
 const S = {
-  card: css`display:block;`,
+  tile: css`display:block;`,
+  card: css`display:block;background:#FFFFFF;border:1px solid #DFE9EC;border-radius:20px;overflow:hidden;`,
+  cardBody: css`padding:16px 18px 20px;`,
   media: css`position:relative;aspect-ratio:1/1;border-radius:18px;overflow:hidden;background:#F0F6F8;`,
   img: css`display:block;width:100%;height:100%;object-fit:cover;`,
   placeholder: css`width:100%;height:100%;`,
@@ -31,12 +42,25 @@ import { SIZES, srcSetOf } from '@/lib/image';
  * `unoptimized` 仍會走它自己的載入路徑，而本站需要的是完全掌握 srcSet
  * 以指向 Blob 上已產生的尺寸變體。見 lib/image.ts 的說明。
  */
-export function ProductCard({ item }: { item: ProductListItem }) {
+export type ProductCardVariant = 'tile' | 'card';
+
+export function ProductCard({
+  item,
+  variant = 'tile',
+}: {
+  item: ProductListItem;
+  variant?: ProductCardVariant;
+}) {
+  const boxed = variant === 'card';
   // mockup4 的副標在型號與子分類之間擺盪（那是佔位資料）；有型號就用型號
   const sub = item.sku ?? item.subCategory?.name ?? null;
 
   return (
-    <Link href={item.url} style={S.card}>
+    <Link
+      href={item.url}
+      style={boxed ? S.card : S.tile}
+      data-hover={boxed ? 'lift-shadow' : undefined}
+    >
       <div style={S.media}>
         {item.image ? (
           <img
@@ -55,7 +79,7 @@ export function ProductCard({ item }: { item: ProductListItem }) {
         )}
       </div>
 
-      <div style={S.body}>
+      <div style={boxed ? S.cardBody : S.body}>
         {item.collection && (
           <span style={{ ...S.eyebrow, ...collectionColor(item.collection.slug) }}>
             {item.collection.name}
