@@ -3,7 +3,7 @@ import { api } from '@/lib/api';
 import { emptyValue, fieldLabel, type SchemaNode } from '@/lib/schema';
 import { Field } from './Field';
 import { RichText, type RichTextProfile } from './RichText';
-import { ImageField } from '../MediaPicker';
+import { ImageField } from '../MediaField';
 import { Icon } from '../Icon';
 
 /**

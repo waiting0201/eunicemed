@@ -6,7 +6,7 @@ import { Field, FieldRow } from '@/components/form/Field';
 import { Repeater } from '@/components/form/Repeater';
 import { MultiSelect } from '@/components/form/MultiSelect';
 import { SizeChartEditor } from '@/components/form/SizeChartEditor';
-import { ImageField, ImageList } from '@/components/MediaPicker';
+import { ImageField, ImageList } from '@/components/MediaField';
 import { LocaleTabs, LOCALES, type Locale } from '@/components/LocaleTabs';
 import { StatusTag } from '@/components/StatusTag';
 import { Icon } from '@/components/Icon';

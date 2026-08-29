@@ -11,7 +11,7 @@ import {
 import { Field, FieldRow } from '@/components/form/Field';
 import { RichText } from '@/components/form/RichText';
 import { MultiSelect } from '@/components/form/MultiSelect';
-import { ImageField, ImageList } from '@/components/MediaPicker';
+import { ImageField, ImageList } from '@/components/MediaField';
 import { LocaleTabs, LOCALES, type Locale } from '@/components/LocaleTabs';
 import { StatusTag } from '@/components/StatusTag';
 import { Icon } from '@/components/Icon';

@@ -4,7 +4,7 @@ import { api, ApiError, type AdminDownload } from '@/lib/api';
 import { DataTable, FilterGroup, ListPage, MissingCount } from '@/components/ListPage';
 import { Dialog, DialogActions } from '@/components/Dialog';
 import { Field, FieldRow } from '@/components/form/Field';
-import { FileField } from '@/components/MediaPicker';
+import { FileField } from '@/components/MediaField';
 import { LocaleGauges } from '@/components/Gauge';
 import { StatusSelect } from '@/components/StatusSelect';
 import { StatusTag } from '@/components/StatusTag';
@@ -216,7 +216,7 @@ function DownloadDialog({
         />
       }
     >
-      <Field label="檔案" required hint="PDF 從媒體庫挑選。刪除這筆下載不會刪掉檔案本身。">
+      <Field label="檔案" required hint="直接上傳 PDF。刪除這筆下載不會刪掉檔案本身。">
         <FileField
           mediaId={draft.mediaId}
           fileName={fileName ?? (download?.fileUrl ? download.fileUrl.split('/').pop() : null)}

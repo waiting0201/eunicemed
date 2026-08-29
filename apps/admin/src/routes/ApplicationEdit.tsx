@@ -11,7 +11,7 @@ import { Field, FieldRow } from '@/components/form/Field';
 import { RichText } from '@/components/form/RichText';
 import { Repeater } from '@/components/form/Repeater';
 import { MultiSelect } from '@/components/form/MultiSelect';
-import { ImageField } from '@/components/MediaPicker';
+import { ImageField } from '@/components/MediaField';
 import { BodyMapPicker, type GhostSpot } from '@/components/BodyMapPicker';
 import { LocaleTabs, LOCALES, type Locale } from '@/components/LocaleTabs';
 import { StatusTag } from '@/components/StatusTag';

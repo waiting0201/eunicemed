@@ -4,7 +4,7 @@ import { api, ApiError, type AdminCertification } from "@/lib/api";
 import { DataTable, ListPage } from "@/components/ListPage";
 import { Dialog, DialogActions } from "@/components/Dialog";
 import { Field, FieldRow } from "@/components/form/Field";
-import { ImageField } from "@/components/MediaPicker";
+import { ImageField } from "@/components/MediaField";
 import { TranslationTabs } from "@/components/TranslationTabs";
 import { LocaleGauges } from "@/components/Gauge";
 import { StatusTag } from "@/components/StatusTag";
