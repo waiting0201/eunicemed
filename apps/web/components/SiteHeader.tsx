@@ -3,7 +3,6 @@ import { css } from '@/lib/css';
 import { Logo } from './Logo';
 import { MobileNav } from './MobileNav';
 import { SiteNav } from './SiteNav';
-import type { MenuNode } from '@/lib/api';
 import type { Locale } from '@/lib/locale';
 import { LOCALES, LOCALE_SHORT_LABELS } from '@/lib/locale';
 
@@ -12,14 +11,13 @@ import { LOCALES, LOCALE_SHORT_LABELS } from '@/lib/locale';
  * 高 76px、左右 `clamp(24px,5vw,64px)`、白底九成透明加 10px 毛玻璃。
  *
  * <p>
- * 導覽由 `GET /menus` 提供（後台可維護）。
- * **選單為空時退回內建清單**：導覽是每一頁都看得到的東西，
- * 資料還沒建、或後端暫時取不到時，整條導覽消失比顯示一份稍舊的清單糟得多。
+ * **導覽寫在這裡，不進 CMS**（docs/15 §2：等同導覽的東西回程式碼）。
+ * 六個去處與整個 IA 綁死，改一項等於改網站結構，不是改內容 ——
+ * 而一個開著的欄位就是一個會被填壞的欄位。
  * </p>
  *
  * <p>
  * **Where to Buy 不在導覽列裡** —— mockup4 把它做成導覽右側獨立的青底藥丸鈕。
- * 後台若把它排進 header 選單，這裡會把它抽出來當按鈕，而不是多印一次。
  * </p>
  *
  * 品牌名 EuniceMed 是品牌符號，兩種語系都不翻譯。
@@ -39,7 +37,7 @@ const S = {
 
 const WHERE_TO_BUY = '/where-to-buy';
 
-const FALLBACK: Record<Locale, { href: string; label: string }[]> = {
+const NAV: Record<Locale, { href: string; label: string }[]> = {
   en: [
     { href: '/about', label: 'About' },
     { href: '/products', label: 'Products' },
@@ -58,9 +56,8 @@ const FALLBACK: Record<Locale, { href: string; label: string }[]> = {
   ],
 };
 
-export function SiteHeader({ locale, menu }: { locale: Locale; menu?: MenuNode[] }) {
-  const all =
-    menu && menu.length > 0 ? menu.map((m) => ({ href: m.url, label: m.label })) : FALLBACK[locale];
+export function SiteHeader({ locale }: { locale: Locale }) {
+  const all = NAV[locale];
 
   const buy = all.find((item) => item.href === WHERE_TO_BUY);
   const items = all.filter((item) => item.href !== WHERE_TO_BUY);

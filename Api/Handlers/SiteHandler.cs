@@ -11,37 +11,16 @@ using Microsoft.EntityFrameworkCore;
 namespace EuniceMed.Api.Handlers;
 
 /// <summary>
-/// 導覽、轉址、設定、sitemap。Phase 7 中**不依賴 SMTP** 的那一半
-/// （`POST /contact` 與收件匣要等寄信設定，見 CLAUDE.md §7）。
+/// 轉址與 sitemap。
+///
+/// <para>
+/// 導覽與站台設定**不在這裡** —— 兩者都寫在前端程式碼（docs/15-cms-scope.md）：
+/// 導覽等同網站結構，設定那張表從頭到尾是空的，站上跑的一直是前端常數。
+/// </para>
 /// </summary>
 public sealed class SiteHandler(AppDbContext db, ISiteReadService reader, Services.PageSchemaRegistry registry)
 {
     // ── 公開 ───────────────────────────────────────────────────────────────
-
-    /// <summary>GET /menus?locale=&amp;menu=header|footer —— 不帶 menu 時兩組都回。</summary>
-    public async Task<IActionResult> GetMenusAsync(HttpRequest req)
-    {
-        var locale = Locales.Normalize(req.Query["locale"]);
-        var which  = ProductHandler.Nullable(req.Query["menu"]);
-
-        if (which is not null && !MenuNames.All.Contains(which))
-            throw AppException.BadRequest($"未知的 menu：{which}（header / footer）。");
-
-        var wanted = which is null ? MenuNames.All.ToArray() : [which];
-
-        var result = new Dictionary<string, IReadOnlyList<MenuNodeDto>>();
-        foreach (var name in wanted)
-            result[name.ToLowerInvariant()] = await reader.GetMenuAsync(name, locale);
-
-        return new OkObjectResult(ApiResponse.Ok(result));
-    }
-
-    /// <summary>GET /settings?locale=</summary>
-    public async Task<IActionResult> GetSettingsAsync(HttpRequest req)
-    {
-        var locale = Locales.Normalize(req.Query["locale"]);
-        return new OkObjectResult(ApiResponse.Ok(await reader.GetSettingsAsync(locale)));
-    }
 
     /// <summary>
     /// GET /sitemap —— **無 locale 參數**：一次回全部語系的可索引 URL，
@@ -141,81 +120,6 @@ public sealed class SiteHandler(AppDbContext db, ISiteReadService reader, Servic
         return new OkObjectResult(ApiResponse.Ok(rows));
     }
 
-    // ── 後台：選單 ─────────────────────────────────────────────────────────
-
-    public async Task<IActionResult> AdminGetMenusAsync()
-    {
-        var rows = await db.MenuItems
-            .Include(m => m.Translations)
-            .OrderBy(m => m.Menu).ThenBy(m => m.SortOrder)
-            .ToListAsync();
-
-        return new OkObjectResult(ApiResponse.Ok(rows.Select(ToDto).ToArray()));
-    }
-
-    /// <summary>
-    /// PUT /admin/menus —— **整棵樹一次送**（docs/04 §6）。
-    ///
-    /// <para>
-    /// 逐項 CRUD 在樹狀結構上很難用：搬移一個節點是「改 parent + 改兩邊排序」，
-    /// 拆成多次請求會在中途留下順序錯亂的狀態。整批取代則是一次交易。
-    /// </para>
-    /// </summary>
-    public async Task<IActionResult> AdminReplaceMenusAsync(HttpRequest req)
-    {
-        var body = await AdminWrite.ReadAsync<ReplaceMenusRequest>(req);
-
-        if (!MenuNames.All.Contains(body.Menu))
-            throw AppException.BadRequest($"未知的 menu：{body.Menu}（header / footer）。");
-
-        Validate(body.Items, depth: 1);
-
-        var strategy = db.Database.CreateExecutionStrategy();
-
-        await strategy.ExecuteAsync(async () =>
-        {
-            await using var tx = await db.Database.BeginTransactionAsync();
-
-            // 先刪子節點再刪父節點 —— ParentId 是 Restrict（自參照無法 cascade）
-            var existing = await db.MenuItems.Where(m => m.Menu == body.Menu).ToListAsync();
-            db.MenuItems.RemoveRange(existing.Where(m => m.ParentId is not null));
-            await db.SaveChangesAsync();
-            db.MenuItems.RemoveRange(existing.Where(m => m.ParentId is null));
-            await db.SaveChangesAsync();
-
-            Insert(body.Items, body.Menu, null);
-            await db.SaveChangesAsync();
-
-            await tx.CommitAsync();
-        });
-
-        return new OkObjectResult(ApiResponse.Ok($"{body.Menu} 選單已更新。"));
-
-        void Insert(MenuNodeInput[] items, string menu, Guid? parentId)
-        {
-            for (var i = 0; i < items.Length; i++)
-            {
-                var node = new MenuItem
-                {
-                    Menu      = menu,
-                    Url       = items[i].Url.Trim(),
-                    ParentId  = parentId,
-                    SortOrder = i,
-                };
-
-                foreach (var (rawLocale, label) in items[i].Labels ?? [])
-                    node.Translations.Add(new MenuItemTranslation
-                    {
-                        Locale = AdminWrite.ValidLocale(rawLocale),
-                        Label  = label.Trim(),
-                    });
-
-                db.MenuItems.Add(node);
-                if (items[i].Children is { Length: > 0 } kids) Insert(kids, menu, node.Id);
-            }
-        }
-    }
-
     // ── 後台：轉址 ─────────────────────────────────────────────────────────
 
     public async Task<IActionResult> AdminGetRedirectsAsync(HttpRequest req)
@@ -293,89 +197,7 @@ public sealed class SiteHandler(AppDbContext db, ISiteReadService reader, Servic
         return new OkObjectResult(ApiResponse.Ok("轉址規則已刪除。"));
     }
 
-    // ── 後台：設定 ─────────────────────────────────────────────────────────
-
-    public async Task<IActionResult> AdminGetSettingsAsync()
-    {
-        var rows = await db.Settings.Include(s => s.Translations).OrderBy(s => s.Key).ToListAsync();
-
-        return new OkObjectResult(ApiResponse.Ok(rows.Select(s => new AdminSettingDto(
-            s.Key,
-            JsonField.Parse(s.ValueJson),
-            s.Translations.OrderBy(t => t.Locale)
-                          .ToDictionary(t => t.Locale, t => JsonField.Parse(t.ValueJson)),
-            s.UpdatedAt)).ToArray()));
-    }
-
-    /// <summary>PUT /admin/settings —— 整批 upsert，未帶到的鍵維持原狀。</summary>
-    public async Task<IActionResult> AdminUpdateSettingsAsync(HttpRequest req)
-    {
-        var body = await AdminWrite.ReadAsync<UpdateSettingsRequest>(req);
-        if (body.Items is null || body.Items.Count == 0)
-            throw AppException.BadRequest("items 為必填。");
-
-        var now  = Clock.Now;
-        var keys = body.Items.Keys.ToArray();
-
-        var existing = await db.Settings.Include(s => s.Translations)
-                                        .Where(s => keys.Contains(s.Key))
-                                        .ToDictionaryAsync(s => s.Key);
-
-        foreach (var (key, input) in body.Items)
-        {
-            if (string.IsNullOrWhiteSpace(key) || key.Length > 120)
-                throw AppException.BadRequest($"設定鍵不合法：'{key}'。");
-
-            if (!existing.TryGetValue(key, out var setting))
-            {
-                setting = new Setting { Key = key };
-                db.Settings.Add(setting);
-                existing[key] = setting;
-            }
-
-            if (input.Value is not null)
-            {
-                setting.ValueJson = input.Value.ToJsonString();
-                setting.UpdatedAt = now;
-            }
-
-            foreach (var (rawLocale, value) in input.Translations ?? [])
-            {
-                var locale = AdminWrite.ValidLocale(rawLocale);
-                var tr = setting.Translations.FirstOrDefault(t => t.Locale == locale);
-
-                if (tr is null)
-                {
-                    tr = new SettingTranslation { Key = key, Locale = locale };
-                    setting.Translations.Add(tr);
-                }
-
-                tr.ValueJson = value?.ToJsonString() ?? "null";
-                tr.UpdatedAt = now;
-            }
-        }
-
-        await db.SaveChangesAsync();
-        return new OkObjectResult(ApiResponse.Ok($"已更新 {body.Items.Count} 項設定。"));
-    }
-
     // ── 內部 ───────────────────────────────────────────────────────────────
-
-    /// <summary>導覽最多兩層（docs/09 的 header 版型）。更深的樹版型渲染不出來。</summary>
-    private static void Validate(MenuNodeInput[] items, int depth)
-    {
-        if (depth > 2) throw AppException.BadRequest("導覽最多兩層。");
-
-        foreach (var item in items)
-        {
-            if (string.IsNullOrWhiteSpace(item.Url))
-                throw AppException.BadRequest("每個導覽項目都必須有 url。");
-            if (item.Labels is null || item.Labels.Count == 0)
-                throw AppException.BadRequest($"'{item.Url}' 至少要有一個語系的標籤。");
-
-            if (item.Children is { Length: > 0 } kids) Validate(kids, depth + 1);
-        }
-    }
 
     /// <summary>
     /// 轉址路徑一律以 `/` 開頭、去掉尾斜線。
@@ -406,30 +228,11 @@ public sealed class SiteHandler(AppDbContext db, ISiteReadService reader, Servic
         _ => throw AppException.BadRequest("statusCode 只接受 301 / 302 / 307 / 308。"),
     };
 
-    private static AdminMenuItemDto ToDto(MenuItem m) => new(
-        m.Id, m.Menu, m.ParentId, m.Url, m.SortOrder,
-        m.Translations.OrderBy(t => t.Locale).ToDictionary(t => t.Locale, t => t.Label));
-
     private static AdminRedirectDto ToDto(Redirect r) =>
         new(r.Id, r.FromPath, r.ToPath, r.StatusCode, r.CreatedAt);
 }
 
 // ── 請求／回應 ─────────────────────────────────────────────────────────────
-
-public sealed record MenuNodeInput(
-    string                      Url,
-    Dictionary<string, string>? Labels   = null,
-    MenuNodeInput[]?            Children = null);
-
-public sealed record ReplaceMenusRequest(string Menu, MenuNodeInput[] Items);
-
-public sealed record AdminMenuItemDto(
-    Guid                       Id,
-    string                     Menu,
-    Guid?                      ParentId,
-    string                     Url,
-    int                        SortOrder,
-    Dictionary<string, string> Labels);
 
 public sealed record UpsertRedirectRequest(
     string? FromPath   = null,
@@ -442,15 +245,3 @@ public sealed record AdminRedirectDto(
     string   ToPath,
     short    StatusCode,
     DateTime CreatedAt);
-
-public sealed record SettingInput(
-    JsonNode?                      Value        = null,
-    Dictionary<string, JsonNode?>? Translations = null);
-
-public sealed record UpdateSettingsRequest(Dictionary<string, SettingInput>? Items = null);
-
-public sealed record AdminSettingDto(
-    string                          Key,
-    JsonNode?                       Value,
-    Dictionary<string, JsonNode?>   Translations,
-    DateTime                        UpdatedAt);

@@ -5,6 +5,7 @@ import { Field } from './Field';
 import { RichText, type RichTextProfile } from './RichText';
 import { ImageField } from '../MediaField';
 import { Icon } from '../Icon';
+import { CertificationRefField, CertificationRefNotice } from './CertificationRefField';
 
 /**
  * 由 JSON Schema 生成的表單（docs/03 §8：`x-fieldType` 對應元件）。
@@ -181,6 +182,17 @@ function SchemaField({
       );
 
     case 'ref':
+      // 認證沒有自己的畫面 —— 內容在這裡就地改（見 CertificationRefField）
+      if (node['x-refEntity'] === 'Certification')
+        return (
+          <Field label={label} required={required}>
+            <CertificationRefField
+              value={(value as string) ?? ''}
+              onChange={onChange as (v: string) => void}
+            />
+          </Field>
+        );
+
       return (
         <RefField
           label={label}
@@ -271,7 +283,10 @@ function SchemaField({
   );
 }
 
-/** `x-refEntity` 的下拉。目前解析器支援 Certification / Article / Download。 */
+/**
+ * `x-refEntity` 的下拉。支援 Article / Download。
+ * Certification 走 <see cref="CertificationRefField"/>，因為它沒有獨立畫面可跳。
+ */
 function RefField({
   label,
   entity,
@@ -288,8 +303,6 @@ function RefField({
   const { data } = useQuery({
     queryKey: ['ref', entity],
     queryFn: async () => {
-      if (entity === 'Certification')
-        return (await api.certifications()).map((c) => ({ id: c.slug, label: c.mark }));
       if (entity === 'Download')
         return (await api.downloads()).map((d) => ({
           id: d.id,
@@ -354,6 +367,11 @@ function RepeatableField({
     onChange(next);
   };
 
+  // 認證的共用關係只印一次，不是每一格都印
+  const refsCertification =
+    item?.['x-refEntity'] === 'Certification' ||
+    Object.values(item?.properties ?? {}).some((p) => p['x-refEntity'] === 'Certification');
+
   return (
     <div className="mb-5">
       <div className="mb-2 flex items-baseline justify-between gap-3">
@@ -362,6 +380,8 @@ function RepeatableField({
           {value.length} / {max}
         </span>
       </div>
+
+      {refsCertification && <CertificationRefNotice />}
 
       {value.map((entry, i) => (
         <div key={i} className="panel mb-2 p-3">

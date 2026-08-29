@@ -194,6 +194,12 @@ export const api = {
       body: JSON.stringify(body),
     }),
 
+  createCertification: (body: unknown) =>
+    request<AdminCertification>('/admin/certifications', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
   saveCertification: (id: string, body: unknown) =>
     request<AdminCertification>(`/admin/certifications/${id}`, {
       method: 'PUT',

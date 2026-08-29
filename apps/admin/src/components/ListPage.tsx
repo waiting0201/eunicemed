@@ -14,6 +14,7 @@ export function ListPage({
   title,
   summary,
   actions,
+  tabs,
   filters,
   children,
 }: {
@@ -22,6 +23,8 @@ export function ListPage({
   /** 右上角的數量或缺漏提示 */
   summary?: ReactNode;
   actions?: ReactNode;
+  /** 同一個模組底下的分頁列（如產品／分類／系列），緊接在標題之下 */
+  tabs?: ReactNode;
   filters?: ReactNode;
   children: ReactNode;
 }) {
@@ -37,6 +40,8 @@ export function ListPage({
           {actions}
         </div>
       </header>
+
+      {tabs}
 
       {filters && <div className="mb-4 flex flex-wrap gap-2">{filters}</div>}
 

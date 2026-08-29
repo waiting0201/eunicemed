@@ -5,6 +5,7 @@ import { api, type AdminProductListItem } from '@/lib/api';
 import { LocaleGauges } from '@/components/Gauge';
 import { StatusTag } from '@/components/StatusTag';
 import { describeLevel, levelOf, type LocaleLevels } from '@/lib/completeness';
+import { ProductTabs } from '@/components/ProductTabs';
 
 /**
  * 產品列表 —— 後台最密集的畫面，也是驗證儀表的地方。
@@ -41,7 +42,7 @@ export function Products() {
     <>
       <header className="mb-4 flex flex-wrap items-baseline justify-between gap-4">
         <div>
-          <div className="eyebrow">內容</div>
+          <div className="eyebrow">產品</div>
           <h1 className="page-title">產品</h1>
         </div>
         {data && (
@@ -58,6 +59,8 @@ export function Products() {
           </p>
         )}
       </header>
+
+      <ProductTabs />
 
       <div className="mb-4 flex flex-wrap gap-2">
         <input

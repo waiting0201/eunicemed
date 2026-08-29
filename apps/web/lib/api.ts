@@ -196,15 +196,10 @@ export type ProductDetail = {
 
 export type Stat = { value: string; label: string };
 
-// ── 導覽 / 設定 / Sitemap ─────────────────────────────────────────────────
-
-export type MenuNode = { url: string; label: string; children: MenuNode[] };
-
-/** `GET /menus` 回 `{header, footer}`；缺該語系標籤的項目不會出現。 */
-export type Menus = Record<string, MenuNode[]>;
-
-/** 設定值是自由 JSON（字串、數字、物件都可能），呼叫端自行收斂型別。 */
-export type Settings = Record<string, unknown>;
+// ── Sitemap ───────────────────────────────────────────────────────────────
+//
+// 導覽與站台設定不在這裡：兩者都寫在程式碼（`SiteHeader` / `SiteFooter` /
+// `lib/company.ts`），不經 API 也不進 CMS。見 docs/15-cms-scope.md。
 
 export type SitemapEntry = {
   /** **不含語系前綴**，前端逐語系組出 loc 與 hreflang */
@@ -431,10 +426,6 @@ export const api = {
 
   page: (locale: string, key: string) =>
     getOrNull<import('./page').PageContent>(`/pages/${enc(key)}?locale=${enc(locale)}`),
-
-  menus: (locale: string) => get<Menus>(`/menus?locale=${enc(locale)}`),
-
-  settings: (locale: string) => get<Settings>(`/settings?locale=${enc(locale)}`),
 
   sitemap: () => get<SitemapEntry[]>('/sitemap'),
 

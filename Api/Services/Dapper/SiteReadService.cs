@@ -7,11 +7,6 @@ namespace EuniceMed.Api.Services.Dapper;
 
 public interface ISiteReadService
 {
-    Task<IReadOnlyList<MenuNodeDto>> GetMenuAsync(string menu, string locale);
-
-    /// <summary>設定鍵值；翻譯值覆寫不翻譯的值。</summary>
-    Task<Dictionary<string, object?>> GetSettingsAsync(string locale);
-
     /// <summary>
     /// sitemap 的**實體驅動**部分（分類／子分類／產品／應用方案／文章）。
     /// 靜態頁那半在 <c>SiteHandler</c>，因為它必須共用 <c>PageHandler.IsRenderable</c>。
@@ -26,57 +21,6 @@ public sealed class SiteReadService(IDbConnection db) : ISiteReadService
         var p = new DynamicParameters();
         p.Add("@locale", locale, DbType.AnsiString, size: 10);
         return p;
-    }
-
-    // ── 導覽 ───────────────────────────────────────────────────────────────
-
-    public async Task<IReadOnlyList<MenuNodeDto>> GetMenuAsync(string menu, string locale)
-    {
-        var p = P(locale);
-        p.Add("@menu", menu, DbType.AnsiString, size: 20);
-
-        // INNER JOIN 翻譯表 —— 缺該語系標籤的項目整個不出現，
-        // 而不是顯示他語（語言純度）。導覽尤其不能混語系：那是全站每一頁都看得到的東西。
-        var rows = await db.QueryAsync<(Guid Id, Guid? ParentId, string Url, string Label, int SortOrder)>(
-            """
-            SELECT mi.Id, mi.ParentId, mi.Url, mit.Label, mi.SortOrder
-            FROM   MenuItems mi
-                   INNER JOIN MenuItemTranslations mit
-                          ON mit.MenuItemId = mi.Id AND mit.Locale = @locale
-            WHERE  mi.Menu = @menu
-            ORDER  BY mi.SortOrder, mit.Label
-            """, p);
-
-        var all = rows.AsList();
-
-        // 樹狀組裝在應用層做，不用遞迴 CTE：導覽最多兩層、幾十筆，
-        // 一次撈完在記憶體組比在 SQL 裡遞迴好讀也好改。
-        var byParent = all.GroupBy(r => r.ParentId).ToDictionary(g => g.Key ?? Guid.Empty, g => g.ToList());
-
-        return Build(Guid.Empty);
-
-        List<MenuNodeDto> Build(Guid parent) =>
-            byParent.TryGetValue(parent, out var kids)
-                ? kids.Select(k => new MenuNodeDto(k.Url, k.Label, Build(k.Id).ToArray())).ToList()
-                : [];
-    }
-
-    // ── 設定 ───────────────────────────────────────────────────────────────
-
-    public async Task<Dictionary<string, object?>> GetSettingsAsync(string locale)
-    {
-        var rows = await db.QueryAsync<(string Key, string ValueJson, string? LocalValueJson)>(
-            """
-            SELECT s.[Key], s.ValueJson, st.ValueJson AS LocalValueJson
-            FROM   Settings s
-                   LEFT JOIN SettingTranslations st ON st.[Key] = s.[Key] AND st.Locale = @locale
-            """, P(locale));
-
-        // 翻譯值優先。刻意用 LEFT JOIN 而非 INNER：不需翻譯的設定（email、電話、URL）
-        // 本來就沒有翻譯列，用 INNER 會讓它們整個消失。
-        return rows.ToDictionary(
-            r => r.Key,
-            r => (object?)JsonField.Parse(r.LocalValueJson ?? r.ValueJson));
     }
 
     // ── Sitemap ────────────────────────────────────────────────────────────

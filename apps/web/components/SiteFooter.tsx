@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { css } from '@/lib/css';
 import { Logo } from './Logo';
-import type { MenuNode, Settings } from '@/lib/api';
+import { COMPANY } from '@/lib/company';
 import type { Locale } from '@/lib/locale';
 
 /**
@@ -9,14 +9,12 @@ import type { Locale } from '@/lib/locale';
  * 上排是 logo 與連結左右分置，下排一條 `#2C3E44` 細線隔開版權與品牌主張。
  *
  * <p>
- * 連結由 `GET /menus` 的 `footer` 提供；與頁首同樣的原則：
- * **取不到就退回內建值**。
+ * 連結與頁首同樣**寫在程式碼裡，不進 CMS**（docs/15 §2）。
  * </p>
  *
  * <p>
- * 公司地址／電話／營業時間由 `GET /settings` 提供（docs/03-cms.md §3 明訂
- * Contact 頁與頁尾共用同一份設定）。mockup4 的頁尾**沒有**印這些 ——
- * 它們在 Contact 頁。這裡只留 `settings` 參數不再輸出，避免頁尾與版型不符。
+ * mockup4 的頁尾**沒有**印公司地址與電話 —— 它們在 Contact 頁，
+ * 這裡只有一條 LinkedIn。
  * </p>
  */
 /**
@@ -43,7 +41,7 @@ const COPY: Record<Locale, { rights: string; company: string }> = {
   },
 };
 
-const FALLBACK: Record<Locale, { href: string; label: string }[]> = {
+const NAV: Record<Locale, { href: string; label: string }[]> = {
   en: [
     { href: '/contact', label: 'Contact Us' },
     { href: '/news', label: 'Latest News' },
@@ -58,23 +56,9 @@ const FALLBACK: Record<Locale, { href: string; label: string }[]> = {
   ],
 };
 
-export function SiteFooter({
-  locale,
-  menu,
-  settings,
-}: {
-  locale: Locale;
-  menu?: MenuNode[];
-  settings?: Settings;
-}) {
+export function SiteFooter({ locale }: { locale: Locale }) {
   const c = COPY[locale];
-  const items =
-    menu && menu.length > 0 ? menu.map((m) => ({ href: m.url, label: m.label })) : FALLBACK[locale];
-
-  const linkedIn =
-    typeof settings?.['social.linkedin'] === 'string'
-      ? (settings['social.linkedin'] as string)
-      : null;
+  const items = NAV[locale];
 
   return (
     <footer style={S.footer}>
@@ -91,11 +75,9 @@ export function SiteFooter({
               </Link>
             ))}
             {/* LinkedIn 是外站連結，沒設定就不印空殼 */}
-            {linkedIn && (
-              <a href={linkedIn} target="_blank" rel="noreferrer noopener">
-                LinkedIn
-              </a>
-            )}
+            <a href={COMPANY.linkedIn} target="_blank" rel="noreferrer noopener">
+              LinkedIn
+            </a>
           </nav>
         </div>
 

@@ -142,9 +142,7 @@ public sealed record SalesLocationsDto(
     SalesLocationDto[] Domestic,
     RegionGroupDto[]   International);
 
-// ── 導覽 / 設定 / Sitemap ──────────────────────────────────────────────────
-
-public sealed record MenuNodeDto(string Url, string Label, MenuNodeDto[] Children);
+// ── Sitemap ───────────────────────────────────────────────────────────────
 
 /// <summary>
 /// sitemap 的一列。<c>Path</c> **不含語系前綴** —— 前端逐語系組出 loc 與 hreflang。

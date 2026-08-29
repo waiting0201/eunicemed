@@ -8,6 +8,7 @@ import {
   type TaxonomyTranslation,
 } from "@/lib/api";
 import { DataTable, ListPage } from "@/components/ListPage";
+import { ProductTabs } from "@/components/ProductTabs";
 import { Dialog, DialogActions } from "@/components/Dialog";
 import { Field, FieldRow } from "@/components/form/Field";
 import { ImageField } from "@/components/MediaField";
@@ -65,7 +66,8 @@ export function Taxonomy() {
 
   return (
     <ListPage
-      eyebrow="分類"
+      eyebrow="產品"
+      tabs={<ProductTabs />}
       title="分類與子分類"
       summary={
         categories.data && (

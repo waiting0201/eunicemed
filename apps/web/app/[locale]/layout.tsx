@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
-import { api, type Menus, type Settings } from '@/lib/api';
 import { isLocale, LOCALES } from '@/lib/locale';
 import { SiteHeader } from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
@@ -57,19 +56,12 @@ export default async function LocaleLayout({
   // 這與後端「缺翻譯就 404」是同一條語言純度原則（docs/08 §5.2）。
   if (!isLocale(locale)) notFound();
 
-  // 導覽與站台設定每一頁都要。**取不到就用內建值繼續渲染** ——
-  // 後端暫時掛掉時，使用者應該還能瀏覽網站，而不是看到整頁錯誤。
-  const [menus, settings] = await Promise.all([
-    api.menus(locale).catch((): Menus => ({})),
-    api.settings(locale).catch((): Settings => ({})),
-  ]);
-
   return (
     <html lang={locale}>
       <body className="flex min-h-screen flex-col">
-        <SiteHeader locale={locale} menu={menus.header} />
+        <SiteHeader locale={locale} />
         <main className="flex-1">{children}</main>
-        <SiteFooter locale={locale} menu={menus.footer} settings={settings} />
+        <SiteFooter locale={locale} />
         <FloatingContact locale={locale} />
       </body>
     </html>

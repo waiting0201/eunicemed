@@ -13,14 +13,9 @@ import { Downloads } from './routes/Downloads';
 import { Locations } from './routes/Locations';
 import { Pages } from './routes/Pages';
 import { PageEdit } from './routes/PageEdit';
-import { Media } from './routes/Media';
 import { Users } from './routes/Users';
-import { Redirects } from './routes/Redirects';
-import { Settings } from './routes/Settings';
-import { Menus } from './routes/Menus';
 import { Taxonomy } from './routes/Taxonomy';
 import { Collections } from './routes/Collections';
-import { Certifications } from './routes/Certifications';
 import { auth } from './lib/api';
 
 /**
@@ -53,11 +48,6 @@ export function App() {
             <Route path="/locations" element={<Locations />} />
             <Route path="/categories" element={<Taxonomy />} />
             <Route path="/collections" element={<Collections />} />
-            <Route path="/certifications" element={<Certifications />} />
-            <Route path="/media" element={<Media />} />
-            <Route path="/menus" element={<Menus />} />
-            <Route path="/redirects" element={<Redirects />} />
-            <Route path="/settings" element={<Settings />} />
             <Route path="/users" element={<Users />} />
           </Route>
         </Route>

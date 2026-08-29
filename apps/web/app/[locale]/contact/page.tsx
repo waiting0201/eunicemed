@@ -1,7 +1,7 @@
 import { css } from '@/lib/css';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { api, type Settings } from '@/lib/api';
+import { COMPANY, COMPANY_LOCALIZED } from '@/lib/company';
 import { isLocale, type Locale } from '@/lib/locale';
 import { ContactForm } from '@/components/ContactForm';
 
@@ -29,8 +29,8 @@ type Params = { locale: string };
  * 「原本深色面改為淺青漸層」兩處之一）。
  *
  * <p>
- * 聯絡資訊取自 `GET /settings`，與頁尾同一份來源（docs/03-cms.md §3）；
- * 取不到就退回 CLAUDE.md §1 記載的品牌方資料。
+ * 聯絡資訊寫在 `lib/company.ts`，不進 CMS（docs/15）——
+ * 值取自 CLAUDE.md §1 記載的品牌方資料。
  * </p>
  */
 const COPY: Record<
@@ -43,8 +43,6 @@ const COPY: Record<
     phone: string;
     email: string;
     hours: string;
-    addressValue: string;
-    hoursValue: string;
     metaTitle: string;
   }
 > = {
@@ -56,8 +54,6 @@ const COPY: Record<
     phone: 'Phone',
     email: 'Email',
     hours: 'Hours',
-    addressValue: '11F, No. 123-9, Xingde Rd, Sanchong Dist, New Taipei City 24158, Taiwan',
-    hoursValue: 'Mon–Fri 09:00–18:00 (UTC+8)',
     metaTitle: 'Contact',
   },
   'zh-TW': {
@@ -68,8 +64,6 @@ const COPY: Record<
     phone: '電話',
     email: '電子郵件',
     hours: '營業時間',
-    addressValue: '24158 新北市三重區興德路 123-9 號 11 樓',
-    hoursValue: '週一至週五 09:00–18:00（UTC+8）',
     metaTitle: '聯絡我們',
   },
 };
@@ -130,14 +124,8 @@ export default async function ContactPage({ params }: { params: Promise<Params> 
   if (!isLocale(locale)) notFound();
 
   const c = COPY[locale];
-  const settings = await api.settings(locale).catch((): Settings => ({}));
-  const s = (key: string, fallback: string) =>
-    typeof settings[key] === 'string' ? (settings[key] as string) : fallback;
-
-  const address = s('company.address', c.addressValue);
-  const hours = s('company.hours', c.hoursValue);
-  const phone = s('company.phone', '+886 2 8511 3758');
-  const email = s('company.email', 'service@comfortplus-medical.com');
+  const { address, hours } = COMPANY_LOCALIZED[locale];
+  const { phone, email } = COMPANY;
 
   return (
     <section style={S.section}>

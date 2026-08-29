@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, ApiError, type AdminCollection } from "@/lib/api";
 import { DataTable, ListPage } from "@/components/ListPage";
+import { ProductTabs } from "@/components/ProductTabs";
 import { Dialog, DialogActions } from "@/components/Dialog";
 import { Field } from "@/components/form/Field";
 import { TranslationTabs } from "@/components/TranslationTabs";
@@ -30,7 +31,8 @@ export function Collections() {
 
   return (
     <ListPage
-      eyebrow="分類"
+      eyebrow="產品"
+      tabs={<ProductTabs />}
       title="系列"
       summary={
         data && (

@@ -128,9 +128,8 @@ public sealed class AppRouter(
             ("GET", ["downloads"])       => await content.GetDownloadsAsync(req),
             ("GET", ["sales-locations"]) => await content.GetSalesLocationsAsync(req),
 
-            // ── 導覽 / 設定 / 轉址 / sitemap（公開）───────────────────────
-            ("GET", ["menus"])     => await site.GetMenusAsync(req),
-            ("GET", ["settings"])  => await site.GetSettingsAsync(req),
+            // ── 轉址 / sitemap（公開）─────────────────────────────────────
+            // 導覽與站台設定沒有端點：兩者都寫在前端程式碼裡（docs/15）
             ("GET", ["sitemap"])   => await site.GetSitemapAsync(),
             ("GET", ["redirects"]) => await site.GetRedirectsAsync(),
 
@@ -270,17 +269,13 @@ public sealed class AppRouter(
             // ── Admin：側欄統計 ───────────────────────────────────────────
             ("GET", ["admin", "summary"]) => await summary.GetAsync(),
 
-            // ── Admin：選單 / 轉址 / 設定 ─────────────────────────────────
-            ("GET", ["admin", "menus"])          => await site.AdminGetMenusAsync(),
-            ("PUT", ["admin", "menus"])          => await site.AdminReplaceMenusAsync(req),
-
+            // ── Admin：轉址 ───────────────────────────────────────────────
+            // 後台沒有轉址畫面：slug 改動由 RedirectWriter 自動建規則，
+            // 舊站的一次性對照走 Api/http/phase7-site.http（docs/15）
             ("GET",    ["admin", "redirects"])          => await site.AdminGetRedirectsAsync(req),
             ("POST",   ["admin", "redirects"])          => await site.AdminCreateRedirectAsync(req),
             ("PUT" or "PATCH", ["admin", "redirects", var id]) => await site.AdminUpdateRedirectAsync(req, id),
             ("DELETE", ["admin", "redirects", var id])  => await site.AdminDeleteRedirectAsync(id),
-
-            ("GET", ["admin", "settings"]) => await site.AdminGetSettingsAsync(),
-            ("PUT", ["admin", "settings"]) => await site.AdminUpdateSettingsAsync(req),
 
             // ── Admin：Collections ────────────────────────────────────────
             ("GET",    ["admin", "collections"])          => await collections.AdminGetAllAsync(),
@@ -375,12 +370,8 @@ public sealed class AppRouter(
             (not "GET", ["admin", "downloads", ..])          => Editors,
             (not "GET", ["admin", "sales-locations", ..])    => Editors,
 
-            // 選單與轉址改動會影響全站導覽與既有網址，寫入需 Editor 以上
-            (not "GET", ["admin", "menus", ..])     => Editors,
+            // 轉址改動會影響既有網址，寫入需 Editor 以上
             (not "GET", ["admin", "redirects", ..]) => Editors,
-
-            // 設定：Admin only
-            (_, ["admin", "settings", ..]) => Admins,
 
             // 維護端點：Admin only（另需 X-Maintenance-Key，於 Handler 檢查）
             (_, ["admin", "maintenance", ..]) => Admins,
