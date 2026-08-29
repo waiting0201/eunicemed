@@ -193,8 +193,10 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
     siteConfig: {
       // 平台層 CORS：/admin 的瀏覽器 XHR 會直接打 Function App。
       // SSR 是伺服器對伺服器，不受此限制。
+      // 自訂網域還沒接上（STATUS §六之二），所以一定要同時放行 SWA 的預設網域 ——
+      // 只列 siteUrl 的話，後台在 *.azurestaticapps.net 上的每個 XHR 都會被 CORS 擋掉
       cors: {
-        allowedOrigins: [ siteUrl ]
+        allowedOrigins: [ siteUrl, 'https://${staticWebApp.properties.defaultHostname}' ]
         supportCredentials: false
       }
       appSettings: [

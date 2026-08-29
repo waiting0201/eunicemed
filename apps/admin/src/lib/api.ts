@@ -12,7 +12,23 @@
  * refresh token 同理 —— 本案沒有 httpOnly cookie 的中介層可用（SWA + Function App 直連）。
  * </p>
  */
-const BASE = '/api';
+/**
+ * API 位址。
+ *
+ * <p>
+ * 本機留空 —— vite dev server 把 `/api` proxy 到 `localhost:7071`，走相對路徑最省事。
+ * **正式站必須是絕對位址**：後台與公開站同網域（SWA），但 API 在
+ * `*.azurewebsites.net`，SWA 那一側沒有任何 `/api` 路由，相對路徑會撞上
+ * Next.js 的 404 頁面 —— 後台會拿到一頁 HTML、`res.json()` 炸掉，
+ * 症狀就是「登入不了」而且看不出原因。
+ * </p>
+ *
+ * <p>
+ * 由 `VITE_API_BASE` 在 build 時注入（`.github/workflows/web.yml`），
+ * 跨網域由 Function App 的 CORS 白名單放行（`infra/main.bicep`）。
+ * </p>
+ */
+const BASE = import.meta.env.VITE_API_BASE ?? '/api';
 
 const ACCESS = 'em.access';
 const REFRESH = 'em.refresh';

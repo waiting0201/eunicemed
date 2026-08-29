@@ -45,8 +45,12 @@ jobs:
 
       # 後台先 build，產物落在 apps/web/public/admin —— 它是公開站的一部分，
       # 順序反過來的話部署出去的 /admin 會是上一次的版本
+      # VITE_API_BASE 必須是絕對位址：SWA 網域上沒有 /api 路由，相對路徑會撞到
+      # Next.js 的 404 頁，後台就登入不了（docs/03 §1）
       - name: Build admin SPA
         run: pnpm --filter admin build
+        env:
+          VITE_API_BASE: ${{ vars.API_BASE }}
 
       # build-time 的環境變數。request-time 的那一份設在 SWA 資源上（infra/main.bicep）——
       # 兩邊都要，少一邊就會有一半的頁面拿不到 API 位址（docs/07 §6.4）
