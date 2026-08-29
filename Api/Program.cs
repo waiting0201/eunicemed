@@ -117,6 +117,7 @@ var host = new HostBuilder()
         services.AddScoped<ContactHandler>();
         services.AddScoped<AdminSummaryHandler>();
         services.AddScoped<MediaUsageWriter>();
+        services.AddScoped<RedirectWriter>();
 
         // ── Router ────────────────────────────────────────────────────────
         services.AddScoped<AppRouter>();

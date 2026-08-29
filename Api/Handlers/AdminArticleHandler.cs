@@ -22,6 +22,7 @@ namespace EuniceMed.Api.Handlers;
 public sealed class AdminArticleHandler(
     AppDbContext     db,
     MediaUsageWriter mediaUsage,
+    RedirectWriter   redirects,
     HtmlSanitizers   sanitizers)
 {
     // ── 文章分類 ───────────────────────────────────────────────────────────
@@ -243,6 +244,9 @@ public sealed class AdminArticleHandler(
 
         AdminWrite.ApplyRowVersion(db.Entry(entity).Property(a => a.RowVer), body.RowVersion);
 
+        // 文章網址是 /{news|insights}/{slug} —— type 與 slug 都會改到它
+        var before = (entity.Type, entity.Slug);
+
         if (!string.IsNullOrWhiteSpace(body.Slug))
         {
             var slug = Slugify.Make(body.Slug.Trim());
@@ -255,11 +259,9 @@ public sealed class AdminArticleHandler(
         var categoryId = body.ClearCategory ? null : body.CategoryId ?? entity.CategoryId;
         await ValidateCategoryAsync(type, categoryId);
 
-        // Type 換掉會讓文章的公開網址從 /news/{slug} 變成 /insights/{slug}，舊網址立刻 404。
-        // 允許改（草稿期常見），但已發布者擋下 —— 轉址要人工判斷（Phase 7 的 Redirect）。
-        if (type != entity.Type && entity.Status == ContentStatus.Published)
-            throw AppException.Conflict("已發布的文章不可更改 type，網址會從 /news 變成 /insights 而舊網址失效。請先取消發布。");
-
+        // Type 換掉會讓公開網址從 /news/{slug} 變成 /insights/{slug}。
+        // 以前這在已發布的文章上是擋下來的（轉址得人工補），現在 RedirectWriter
+        // 會自動把舊網址接過去，所以不需要再擋。
         entity.Type       = type;
         entity.CategoryId = categoryId;
 
@@ -276,6 +278,9 @@ public sealed class AdminArticleHandler(
         await AdminWrite.EnsureMediaExistsAsync(db, entity.CoverMediaId);
 
         entity.UpdatedAt = Clock.Now;
+        var after = (entity.Type, entity.Slug);
+        if (after != before) await redirects.ArticlePathChangedAsync(before, after);
+
         await db.SaveChangesAsync();
         await RebuildUsageAsync(entity);
 

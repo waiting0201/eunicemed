@@ -18,7 +18,8 @@ namespace EuniceMed.Api.Handlers;
 /// 是不會有人當場發現的破壞。要刪就先把引用改掉。
 /// </para>
 /// </summary>
-public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter mediaUsage)
+public sealed class AdminTaxonomyHandler(
+    AppDbContext db, MediaUsageWriter mediaUsage, RedirectWriter redirects)
 {
     // ── 分類 ───────────────────────────────────────────────────────────────
 
@@ -83,6 +84,8 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
         AdminWrite.ApplyRowVersion(db.Entry(entity).Property(c => c.RowVer), body.RowVersion);
 
+        var oldSlug = entity.Slug;
+
         if (!string.IsNullOrWhiteSpace(body.Slug))
         {
             var slug = Slugify.Make(body.Slug.Trim());
@@ -99,6 +102,11 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
         await AdminWrite.EnsureMediaExistsAsync(db, [entity.ImageMediaId, entity.HeroImageMediaId]);
 
         entity.UpdatedAt = Clock.Now;
+
+        // 分類 slug 是每一筆產品網址的第二段 —— 改它等於一次改掉底下所有產品的網址
+        if (entity.Slug != oldSlug)
+            await redirects.CategorySlugChangedAsync(entity.Id, oldSlug, entity.Slug);
+
         await db.SaveChangesAsync();
         await RebuildCategoryUsageAsync(entity);
 
@@ -195,6 +203,8 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
 
         AdminWrite.ApplyRowVersion(db.Entry(entity).Property(s => s.RowVer), body.RowVersion);
 
+        var before = (Category: await CategorySlugAsync(entity.CategoryId), Sub: entity.Slug);
+
         if (!string.IsNullOrWhiteSpace(body.Slug))
         {
             var slug = Slugify.Make(body.Slug.Trim());
@@ -208,12 +218,8 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
             if (!await db.Categories.AnyAsync(c => c.Id == categoryId))
                 throw AppException.BadRequest($"分類 {categoryId} 不存在。");
 
-            // 換分類會讓底下所有產品的三段 URL 一起改變，且舊 URL 立刻 404。
-            // 擋在這裡，要求編輯者先把產品搬走 —— 轉址規則要人工判斷（Phase 7 的 Redirect）。
-            var products = await db.Products.CountAsync(p => p.SubCategoryId == entity.Id);
-            if (products > 0)
-                throw AppException.Conflict($"此子分類底下仍有 {products} 筆產品，換分類會讓它們的網址全部失效。請先搬移產品。");
-
+            // 換分類會讓底下所有產品的三段 URL 一起改變。以前這在有產品時是擋下來的
+            // （轉址得人工補），現在 RedirectWriter 會為每一筆產品都接上舊網址。
             entity.CategoryId = categoryId;
         }
 
@@ -226,11 +232,19 @@ public sealed class AdminTaxonomyHandler(AppDbContext db, MediaUsageWriter media
         await AdminWrite.EnsureMediaExistsAsync(db, [entity.ImageMediaId, entity.HeroImageMediaId]);
 
         entity.UpdatedAt = Clock.Now;
+
+        var after = (Category: await CategorySlugAsync(entity.CategoryId), Sub: entity.Slug);
+        if (after != before) await redirects.SubCategoryPathChangedAsync(entity.Id, before, after);
+
         await db.SaveChangesAsync();
         await RebuildSubCategoryUsageAsync(entity);
 
         return new OkObjectResult(ApiResponse.Ok(await WithCountsAsync(entity), "子分類已更新。"));
     }
+
+    /// <summary>產品／子分類網址的第二段。</summary>
+    private async Task<string> CategorySlugAsync(Guid categoryId) =>
+        await db.Categories.Where(c => c.Id == categoryId).Select(c => c.Slug).FirstAsync();
 
     public async Task<IActionResult> DeleteSubCategoryAsync(string id)
     {

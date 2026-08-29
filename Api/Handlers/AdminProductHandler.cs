@@ -27,6 +27,7 @@ namespace EuniceMed.Api.Handlers;
 public sealed class AdminProductHandler(
     AppDbContext     db,
     MediaUsageWriter mediaUsage,
+    RedirectWriter   redirects,
     HtmlSanitizers   sanitizers)
 {
     // ── 讀取 ───────────────────────────────────────────────────────────────
@@ -162,6 +163,10 @@ public sealed class AdminProductHandler(
 
         AdminWrite.ApplyRowVersion(db.Entry(entity).Property(p => p.RowVer), body.RowVersion);
 
+        // 產品網址是四段的 /products/{category}/{sub}/{slug} —— 換分類一樣會換網址，
+        // 所以三個組件都要記下改動前的值
+        var before = await ProductPathAsync(entity.CategoryId, entity.SubCategoryId, entity.Slug);
+
         if (!string.IsNullOrWhiteSpace(body.Slug))
         {
             var slug = Slugify.Make(body.Slug.Trim());
@@ -185,6 +190,11 @@ public sealed class AdminProductHandler(
 
         await ApplyAsync(entity, body);
         entity.UpdatedAt = Clock.Now;
+
+        // 網址變了就把舊的接到新的 —— 後台沒有轉址畫面，
+        // 這一步不做的話既有連結（含搜尋引擎索引）會直接 404
+        var after = await ProductPathAsync(entity.CategoryId, entity.SubCategoryId, entity.Slug);
+        if (after != before) await redirects.ProductPathChangedAsync(before, after);
 
         await db.SaveChangesAsync();
         await RebuildUsageAsync(entity);
@@ -311,6 +321,15 @@ public sealed class AdminProductHandler(
     }
 
     // ── 內部 ───────────────────────────────────────────────────────────────
+
+    /// <summary>組出產品網址的三個段。子分類可為 null（三段網址）。</summary>
+    private async Task<(string Category, string? Sub, string Slug)> ProductPathAsync(
+        Guid categoryId, Guid? subCategoryId, string slug) =>
+        (await db.Categories.Where(c => c.Id == categoryId).Select(c => c.Slug).FirstAsync(),
+         subCategoryId is { } sub
+             ? await db.SubCategories.Where(s => s.Id == sub).Select(s => s.Slug).FirstOrDefaultAsync()
+             : null,
+         slug);
 
     private async Task<Product> LoadFullAsync(Guid id) =>
         await db.Products
