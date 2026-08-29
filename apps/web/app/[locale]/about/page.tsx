@@ -64,7 +64,6 @@ const S = {
   s05Hero: css`grid-column:1 / 3;display:flex;align-items:center;gap:20px;background:linear-gradient(140deg,#00B5CD,#007D95);border-radius:18px;padding:24px 28px;`,
   s05HeroMark: css`color:#fff;font-weight:620;font-size:1.35rem;letter-spacing:-.01em;`,
   s05HeroBody: css`color:rgba(255,255,255,.85);font-size:.9rem;`,
-  certSub: css`font-size:.82rem;color:#0092A8;`,
   certLogo: css`width:42px;height:42px;flex:0 0 auto;object-fit:contain;`,
   s05Card: css`background:#FFFFFF;border:1px solid #DFE9EC;border-radius:18px;padding:22px 24px;`,
   s05CardMark: css`color:#0092A8;font-weight:680;font-size:1.5rem;letter-spacing:-.01em;`,
@@ -487,7 +486,6 @@ function CertCard({
       )}
       <div>
         <div style={hero ? S.s05HeroMark : S.s05CardMark}>{cert.mark}</div>
-        {cert.subLabel && <div style={S.certSub}>{cert.subLabel}</div>}
         {cert.description && <p style={hero ? S.s05HeroBody : S.s05CardBody}>{cert.description}</p>}
       </div>
     </div>
