@@ -91,7 +91,7 @@
 | [docs/12-local-dev.md](docs/12-local-dev.md) | **本機環境設定與每日啟動指令**、migration 操作、常見問題、多語系參數型別檢查 | **第一次進專案時先讀這份**、環境跑不起來時 |
 | [docs/13-api-roadmap.md](docs/13-api-roadmap.md) | API 各階段的**內容與驗收方式**、架構前提、**累積的踩坑紀錄** | 接續開發時、遇到怪問題時先翻踩坑那節 |
 | [docs/14-assets.md](docs/14-assets.md) | **不進版控的素材**（`reference/`、`mockup4/`）：內容、用途、取得方式 | 新機器 clone 之後發現找不到設計稿或字型時 |
-| [docs/15-cms-scope.md](docs/15-cms-scope.md) | **後台可編輯範圍決議**：哪些內容進 CMS、哪些回程式碼，逐支 schema 的裁決與理由 | **新增或移除任何 `PageSchemas/*.json` 之前**、覺得某段文案「怎麼不能在後台改」時 |
+| [docs/15-cms-scope.md](docs/15-cms-scope.md) | **後台可編輯範圍決議**：哪些內容進 CMS、哪些回程式碼，逐支 schema 的裁決與理由；§7 是「一個單元在它露出的地方維護」的側欄收斂 | **新增或移除任何 `PageSchemas/*.json` 之前**、**在側欄加一個模組之前**、覺得某段文案「怎麼不能在後台改」時 |
 
 ---
 
@@ -160,6 +160,11 @@ EuniceMed/
 - 元件庫集中於 `apps/web/components`。
 
 ### 5.2a 後台 UI（CMS `/admin`）
+- **一個單元的內容，在它露出的地方維護** —— 不要為了對齊資料表而多開一個側欄項。
+  認證在「關於我們」裡改、分類與系列在「產品」的分頁上、圖片在用到它的那個欄位上傳。
+  判準與逐項裁決見 [docs/15-cms-scope.md](docs/15-cms-scope.md) §7。
+- **每個上傳欄位下方一律顯示建議尺寸與比例**，文字由 `GET /admin/media-presets` 帶出，
+  不在畫面寫死（見 [docs/11](docs/11-media-specs.md) §1.1）。
 - **樣式一律 Tailwind CSS**，與公開站共用同一份設定與品牌 token。UI 元件用 **shadcn/ui**（Tailwind 基底）。**不使用 Ant Design 或任何自帶設計系統的元件庫** —— 理由見 [docs/03-cms.md](docs/03-cms.md) §8。
 - ⚠️ **任何後台介面工作（新畫面、改版面、調元件）開始前，必須先啟動 `frontend-design` skill。**
   公開站有 `mockup4/` 可照著切，**後台沒有任何設計稿**，是要現場設計的。不得憑感覺直接寫 Tailwind class。

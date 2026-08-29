@@ -58,11 +58,11 @@
 | **Downloads 下載** | ＋ | 標題、**說明文字**、檔案（PDF）、類型（型錄/認證文件/使用手冊）、**檔案語言**、關聯產品 | 標題/說明 |
 | **SalesLocations 銷售據點** | ＋ | **型態（台灣通路 / 國際經銷）**、國家、名稱、地址、**分店註記**、電話、網址、**地區標籤**、排序 | 名稱/地址/註記/地區標籤 |
 | **Pages 頁面區段** | ＋★ | **18 頁**（13 單例頁 + 5 模板頁共用文案）的具名欄位內容；區段不可增刪，只能編輯內容與隱藏整段 | 全部文字（media / 連結可跨語系同步） |
-| **Media 媒體** | ＋ | 圖片/PDF 資產庫（存 Blob）、alt 文字、**引用反查**、**尺寸規格 preset 與自動縮圖輸出** | alt |
-| **Menus 導覽** | ＝ | 主選單/頁尾連結結構（Resources 次導覽固定於模板，不可編輯） | 標題 |
-| **Redirects 轉址** | ＝ | 舊→新 URL 301（內容遷移用） | — |
+| **Media 媒體** | ＋ | 圖片/PDF（存 Blob）、alt 文字、尺寸規格 preset 與自動縮圖輸出。**沒有獨立畫面** —— 上傳與 alt 都在用到它的那個欄位裡（[15](15-cms-scope.md) §7.3） | alt |
 | **ContactSubmissions** | ＝ | 表單收件匣（general/product/partnership，唯讀 + 標記處理） | — |
-| **Settings 設定** | ＋ | 公司資訊（地址/電話/信箱/營業時間）、社群連結、全站 SEO 預設；**Contact 頁四格資訊由此取用，不重複維護** | 地址/營業時間 |
+| ~~Menus 導覽~~ | — | **已移除**：導覽寫在 `SiteHeader` / `SiteFooter`（[15](15-cms-scope.md) §7.4） | — |
+| ~~Settings 設定~~ | — | **已移除**：公司資訊寫在 `apps/web/lib/company.ts`（同上） | — |
+| **Redirects 轉址** | ＝ | 舊→新 URL 301。**沒有畫面** —— slug 改動時由 `RedirectWriter` 自動寫入（[15](15-cms-scope.md) §7.5） | — |
 
 > 欄位細節對應 [05-database.md](05-database.md) 各資料表；每頁區段與欄位對應 [09-page-blocks.md](09-page-blocks.md)。
 
@@ -100,17 +100,21 @@ Draft（草稿） ──提交──► Review（待審，選用） ──發布
 >
 > 文字由 `GET /admin/media-presets` 取回、依欄位的 `presetKey` 帶入，**不在各畫面寫死**；尺寸調整只需改 `MediaPresets.json`，全後台同步生效。上傳後伺服器依該寬度等比縮圖（只縮不放），比例／大小不符只警示不阻擋。詳見 [11-media-specs.md](11-media-specs.md)。
 
-**側欄依「多久會動一次」分三群**（2026-08-28，見 [15-cms-scope.md](15-cms-scope.md) §4.4）。
-判準與角色規則同源：改動會不會波及全站 URL，或屬系統管理。
+**側欄九項，無摺疊群組**（2026-08-29，見 [15-cms-scope.md](15-cms-scope.md) §7）。
 
 ```
-日常     表單收件匣 · 產品 · 文章 · 頁面內容
-內容     應用方案 · FAQ · 下載 · 銷售據點 · 媒體庫
-進階 ▸   分類與子分類 · 系列 · 認證 · 導覽選單 · 轉址 · 設定 · 使用者
+日常   表單收件匣 · 產品 · 文章 · 頁面內容
+內容   應用方案 · FAQ · 下載 · 銷售據點
+帳號   使用者
 ```
 
-「進階」預設摺疊 —— 分類 slug 改一個，底下所有產品網址就失效；這一群不該在找「今天要做什麼」時擋在路上。
-側欄收合（minified）時一律忽略摺疊態，否則那七項會完全沒有入口。
+分群仍是「多久會動一次」，但**哪些東西該有一項**改用另一條判準：
+**一個單元的內容，在它露出的地方維護。** 所以側欄上找不到：
+
+- **認證** —— 在「頁面內容 → 關於我們 → 05 認證」就地編輯（那是它唯一露出的地方）
+- **分類與子分類**、**系列** —— 在「產品」畫面的分頁上（它們是產品的屬性）
+- **媒體庫** —— 圖改成在各欄位就地上傳（§6）
+- **導覽選單**、**轉址**、**設定** —— 見 [15](15-cms-scope.md) §7.4／§7.5
 
 | 畫面 | 功能 |
 |------|------|
@@ -128,11 +132,11 @@ Draft（草稿） ──提交──► Review（待審，選用） ──發布
 | FAQ 管理 | **分類下拉 + 分類管理子頁**（排序、名稱）、排序、問答編輯 |
 | 下載管理 | 上傳 PDF、分類（型錄/認證文件/使用手冊）、**檔案語言**、**說明文字**、關聯產品；列表以 `EN · PDF · 說明` 預覽 |
 | 銷售據點管理 | **「台灣」/「國際」兩分頁**；國際列加地區標籤、排序 |
-| 媒體庫 | 上傳、搜尋（可依 preset 篩選）、alt 編輯、**引用查詢（含頁面區段內的引用）**、顯示原始／輸出尺寸與 preset、**重新輸出（reprocess）**、解析度不足與比例不符標記 |
-| 導覽/選單 | 拖拉排序（Resources 次導覽不在此，固定於模板） |
+| ~~媒體庫~~ | **已移除**（[15](15-cms-scope.md) §7.3）。上傳與 alt 回到各欄位；引用反查與媒體刪除是刻意放棄的 |
+| ~~導覽/選單~~ | **已移除**（[15](15-cms-scope.md) §7.4）。導覽等同網站結構，寫在前端 |
 | **表單收件匣** | 列表（依類型／狀態篩選、分頁）、詳情對話框、標記已處理／垃圾／退回未處理、匯出 CSV（帶目前篩選）。**預設只看未處理** —— 收件匣的用途是清空，不是瀏覽。<br>全站唯一「內容不是我們寫的」模組：**只能讀與標記，沒有建立也沒有編輯**，也沒有翻譯這個維度，所以不掛完整度儀表；側欄改用**未處理筆數徽章**（同一個槽位，回答同一類問題）|
 | 使用者管理（Admin） | 帳號、角色 |
-| 設定 | 公司資訊、社群、SEO 預設、轉址、多語系設定值 |
+| ~~設定~~ | **已移除**（[15](15-cms-scope.md) §7.4） |
 
 ### 5.1 「頁面內容」畫面
 
@@ -160,21 +164,33 @@ Draft（草稿） ──提交──► Review（待審，選用） ──發布
 
 ## 6. 媒體上傳流程
 
+> **上傳一律發生在用到那張圖的欄位裡**，後台沒有媒體庫畫面（[15](15-cms-scope.md) §7.3）。
+> 元件在 `apps/admin/src/components/MediaField.tsx`：`ImageField`（單張）、
+> `ImageList`（多張＋排序＋主圖）、`FileField`（PDF）。
+
 **圖片（需縮圖，走 API 代傳）**
 
-1. 上傳格顯示該欄位 preset 的建議尺寸（`GET /admin/media-presets`）。
-2. 選檔 → 前端立即以 `createImageBitmap` 讀出寬高，比例／解析度不符時**當場提示**（仍可續傳）。
+1. 欄位下方顯示該 preset 的建議尺寸與比例（`<PresetHint>` ← `GET /admin/media-presets`）。
+2. 按「選擇圖片」開系統選檔視窗。**多張的圖庫可一次選多個檔，但一張一張傳** ——
+   Function App 實例 2048MB，同時解碼多張 2560px 來源圖會 OOM（[07](07-azure-deployment.md) §10）。
 3. `POST /api/admin/media`（multipart，帶 `presetKey`）→ 伺服器 SkiaSharp **依 preset 寬等比縮圖（只縮不放）**、輸出 WebP + 原格式、去 EXIF、轉 sRGB、正規化檔名。
-4. 寫入 Blob（master 與 variants）與 `Media` / `MediaVariant`，回傳 `warnings` 供後台顯示。
-5. 圖片由 **Blob 匿名讀取容器直接對外**（無 CDN）；上傳時寫入長 `Cache-Control`，前端以 custom loader 指向已產生的尺寸變體，不經 SWA 圖片優化端點（見 [07-azure-deployment.md](07-azure-deployment.md) §7.3）。
+4. 寫入 Blob（master 與 variants）與 `Media` / `MediaVariant`，回傳 `warnings`。
+   **比例不符／解析度不足／檔案過大一律是黃字警示，圖仍然存進去**（[11](11-media-specs.md) §4）。
+   前端不另做 `createImageBitmap` 預檢 —— 後端已回同一組判斷，兩處維護同一條規則只會走鐘。
+5. 上傳成功後欄位就地出現 alt 輸入格，離開焦點時 `PATCH /admin/media/{id}`。
+   **這是全後台唯一的 alt 入口**，而全站的 `<img alt>` 都取自 `Media.AltText`。
+6. 圖片由 **Blob 匿名讀取容器直接對外**（無 CDN）；上傳時寫入長 `Cache-Control`，前端以 custom loader 指向已產生的尺寸變體，不經 SWA 圖片優化端點（見 [07-azure-deployment.md](07-azure-deployment.md) §7.3）。
 
 **PDF（不縮圖，走 SAS 直傳）**
 
 1. `POST /admin/uploads/sas` 取上傳網址 → 前端直傳 Blob（不佔用 Function）。
 2. 回報 metadata 建立 `Media`（`presetKey = document`）。
 
+兩條路的分歧收在 `useFieldUpload(presetKey)` 裡，呼叫端不需要知道。
+
 - 限制與拒絕條件（格式白名單、20MB、像素上限、SVG sanitize）見 [11-media-specs.md](11-media-specs.md) §4。**病毒掃描（Defender for Storage）不在本次方案內**（會產生額外費用），因此格式白名單與 SVG sanitize 是唯一防線，務必在 API 端嚴格執行。
 - 原始檔另存同一 Storage Account 的 `media-originals` 容器（**私有，不對外**），供 preset 調整後 `POST /admin/media/{id}/reprocess` 重新輸出。
+- **孤兒圖不會被清掉**：沒有刪除媒體的 UI（[15](15-cms-scope.md) §7.3 的刻意取捨）。`GET /admin/media` 仍在，供各編輯頁載入既有圖的縮圖網址與 alt。
 
 ---
 

@@ -264,12 +264,10 @@
 > `Download.FileLocale` 是**檔案本身的語言**，**刻意不套站台語系白名單**
 > （可能有站台沒有的語言，如日文型錄），與翻譯的 `Locale`（介面語系）是兩件事。
 
-### 導覽 / 設定 / 轉址 / Sitemap（公開）
+### 轉址 / Sitemap（公開）
 
 | Method | Path | 權限 | 說明 |
 |---|---|---|---|
-| GET | `/menus?locale=&menu=` | 公開 | 回 `{header,footer}`；不帶 `menu` 時兩組都回。缺該語系標籤的項目不出現 |
-| GET | `/settings?locale=` | 公開 | 翻譯值覆寫不翻譯值；不需翻譯的設定用 LEFT JOIN 保留 |
 | GET | `/sitemap` | 公開 | **無 locale 參數**。每列的 `locales` 只列該語系確實有內容的 |
 | GET | `/redirects` | 公開 | 供前端 middleware 載入（5 分鐘快取） |
 
@@ -289,16 +287,20 @@
 > **不可寫成 `SUM(CASE WHEN EXISTS (子查詢))`** —— SQL Server 拒絕
 > 「彙總函式內含子查詢」（Msg 130）。
 
-### 後台：選單 / 轉址 / 設定
+### 後台：轉址
 
 | Method | Path | 權限 | 說明 |
 |---|---|---|---|
-| GET | `/admin/menus` | 登入 | 全部語系的扁平清單 |
-| PUT | `/admin/menus` | Editor+ | **整棵樹一次取代**（`{menu, items[]}`）；最多兩層，超過回 400 |
 | GET | `/admin/redirects?search=` | 登入 | |
 | POST · PUT/PATCH · DELETE | `/admin/redirects[/{id}]` | Editor+ | 路徑正規化；自我轉址 400、重複來源 409；狀態碼限 301/302/307/308 |
-| GET | `/admin/settings` | Admin | 同時回不翻譯值與各語系值 |
-| PUT | `/admin/settings` | Admin | 整批 upsert，未帶到的鍵維持原狀 |
+
+> **後台沒有轉址畫面**（docs/15 §7）。這幾條留著供舊站對照一次性灌入
+> （`Api/http/phase7-site.http`）。日常的轉址由 `RedirectWriter` 在 slug／分類
+> 改動時自動寫入，編輯者不需要知道有這個概念。
+>
+> **`/menus` 與 `/settings` 已移除**（2026-08-29）。導覽寫在 `SiteHeader` / `SiteFooter`，
+> 公司聯絡資訊寫在 `apps/web/lib/company.ts` —— 兩張表線上都是空的，
+> 站上跑的一直是那些常數。
 
 ---
 
