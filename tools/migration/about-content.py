@@ -11,6 +11,9 @@ additionalProperties:false 而 400。
 （EuniceMed、AerGo、All-in-One Premium Promise、Lycra、Oeko-Tex Standard 100、
 ISO 13485、CE、MIT）維持英文（CLAUDE.md §5.1）。
 
+圖片會先由 `tools/crop-to-preset.py` 裁成 preset 的比例再上傳 —— 管線本身不裁切，
+丟未裁的母檔進去只會讓瀏覽器下載一堆用不到的畫素（見下方 SLOTS 的註解）。
+
 ⚠️ **04 製造與品質的兩張照片沒有來源**：mockup4 那兩格是佔位框
 （`factory exterior 1600×900`、`production line 1200×1200`），
 `mockup4/images/` 裡沒有廠區照。這支腳本只上傳文字重點，圖等客戶提供。
@@ -20,7 +23,8 @@ import json, os, subprocess, sys, urllib.request
 # 預設打正式站；本機驗證時用 EM_API=http://localhost:7071/api 覆寫
 API = os.environ.get('EM_API', 'https://func-eunicemed-prod.azurewebsites.net/api')
 TOKEN = open(sys.argv[1]).read().strip()
-IMG = 'mockup4/images'
+SRC = 'mockup4/images'
+OUT = 'mockup4/exports/about'   # 裁好的 preset 版本（gitignore 內，隨時可重生）
 
 
 def call(method, path, body=None):
@@ -34,8 +38,9 @@ def call(method, path, body=None):
         return json.load(e)
 
 
-def find_or_upload(filename, preset, alt):
+def find_or_upload(path, preset, alt):
     """已經傳過就重用 —— 這支腳本要能重跑，不該每跑一次多一張同樣的圖。"""
+    filename = os.path.basename(path)
     stem = os.path.splitext(filename)[0]
     hit = call('GET', f'/admin/media?presetKey={preset}&search={stem}')
     # 這支端點回的是純陣列（不分頁）；容錯處理成兩種形狀都能吃
@@ -51,7 +56,7 @@ def find_or_upload(filename, preset, alt):
         ['curl', '-s', '-m', '300', '-X', 'POST', f'{API}/admin/media',
          '-H', f'Authorization: Bearer {TOKEN}',
          '-F', f'presetKey={preset}', '-F', f'altText={alt}',
-         '-F', f'file=@{os.path.join(IMG, filename)}'],
+         '-F', f'file=@{path}'],
         capture_output=True, text=True).stdout
     try:
         r = json.loads(out)
@@ -69,18 +74,42 @@ def find_or_upload(filename, preset, alt):
     return r['data']['id']
 
 
-print('── 上傳圖片')
-# 版位對照見 mockup4/IMAGES.md。三張都是設計稿的原始素材，
-# 比例與 preset 不完全相符（band 是直式的品牌紋樣、section-bg 是 1.54:1），
-# 會回尺寸警告但不影響存檔 —— mockup4 本來就是以 object-fit:cover 裁切使用。
-# 用 -src 這張 master 而不是 mockup4 頁面引用的 1200 寬版本：
-# 靜態 mockup 直接把檔案交給瀏覽器，所以要事先壓小；我們的管線是伺服器依 preset
-# 重新編碼並出一整階梯，餵它高解析度的原稿只會更清楚。
-# 這是平面向量風的品牌紋樣，壓縮後極小（實測 page-band master 約 70KB）。
-band = find_or_upload('brand-pattern-src.jpg', 'page-band', '')
-portrait = find_or_upload('about-athlete.jpg', 'portrait-4x5',
-                          'Athlete wearing EuniceMed knee support')
-milestone_bg = find_or_upload('band-teal.jpg', 'section-bg', '')
+# 版位 → 來源、preset、裁切錨點、alt。
+#
+# **先裁再傳。** 媒體管線是「只縮不放、不裁切」（docs/11 §1、§4），preset 的 height
+# 只用來出警告 —— 實際裁切是前台的 object-fit:cover 做的。直接丟設計稿的直式母檔
+# 進 page-band，伺服器會原樣存下 2480×3508，瀏覽器為了顯示一條 480px 高的橫幅
+# 下載一整張 8.7MP、CSS 丟掉其中 87%。視覺是對的，頻寬不是。
+#
+# 錨點必須與前台的 object-position 逐字一致，否則裁出來的構圖與設計稿不同：
+#   page-band    → PageBand.tsx           object-position: center
+#   portrait-4x5 → about/page.tsx         object-position: top center
+#   section-bg   → about/page.tsx s02Img  object-position: center 25%
+SLOTS = [
+    ('brand-pattern-src.jpg', 'page-band',    'center',     '01-hero-band', ''),
+    ('about-athlete.jpg',     'portrait-4x5', 'top center', '02-story-portrait',
+     'Athlete wearing EuniceMed knee support'),
+    ('band-teal.jpg',         'section-bg',   'center 25%', '03-milestones-background', ''),
+]
+
+
+def prepare(source, preset, position, stem):
+    """裁成 preset 的比例，輸出到 OUT。已經裁過就沿用。"""
+    os.makedirs(OUT, exist_ok=True)
+    dst = os.path.join(OUT, f'{stem}__{preset}.jpg')
+    subprocess.run(
+        [sys.executable, 'tools/crop-to-preset.py',
+         os.path.join(SRC, source), dst, preset, position],
+        check=True)
+    return dst
+
+
+print('── 裁切並上傳圖片')
+ids = {}
+for source, preset, position, stem, alt in SLOTS:
+    ids[preset] = find_or_upload(prepare(source, preset, position, stem), preset, alt)
+
+band, portrait, milestone_bg = ids['page-band'], ids['portrait-4x5'], ids['section-bg']
 
 STORY_EN = (
     '<p>At EuniceMed, we believe life should be lived with comfort and confidence '
