@@ -15,6 +15,17 @@ import { getRedirects, normalize } from '@/lib/redirects';
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  /*
+   * 後台是 `public/admin/` 底下的 SPA（BrowserRouter, basename="/admin"），
+   * 它的深層網址在伺服器上沒有對應檔案 —— 直接放行的話會走到下面被補上語系前綴，
+   * 變成 `/en/admin/products` 而 404（在後台按 F5 就會遇到）。
+   * 一律 rewrite 回 SPA 的進入點，路由交給前端接手。
+   * 資產（有副檔名）不會進到這裡，matcher 已經排除。
+   */
+  if (pathname === '/admin' || pathname.startsWith('/admin/')) {
+    return NextResponse.rewrite(new URL('/admin/index.html', req.url));
+  }
+
   const rule = (await getRedirects()).get(normalize(pathname));
   if (rule) {
     const target = req.nextUrl.clone();
