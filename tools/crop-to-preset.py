@@ -2,7 +2,7 @@
 把來源圖裁成某個 media preset 的比例，錨點與前台的 `object-position` 一致。
 
 用法：
-    python3 tools/crop-to-preset.py <來源> <輸出> <preset> [object-position]
+    python3 tools/crop-to-preset.py <來源> <輸出> <preset> [object-position] [版位比例]
 
     python3 tools/crop-to-preset.py mockup4/images/brand-pattern-src.jpg \
         out.jpg page-band center
@@ -19,16 +19,29 @@ preset 的 height 只用來出警告，實際裁切是前台的 `object-fit: cov
     page-band      → object-position: center       （PageBand.tsx）
     portrait-4x5   → object-position: top center   （about/page.tsx portraitImg）
     section-bg     → object-position: center 25%   （about/page.tsx s02Img）
+
+**版位比例**（第 5 個參數，形如 `21:9`）用在「preset 的比例不等於版位比例」的地方 ——
+裁切要跟著**版位**走，preset 只決定存檔寬度與大小上限。Partnership §01／§02 的
+`WideShot` 就是這種：版位是 21:9（`img` 上的 2100×900 也是這個比例），
+但 schema 掛的是 `section-bg`（2.844）與 `wide-16x9`（1.778）。
+照 preset 裁會裁過頭，瀏覽器接著再 cover 一次，構圖就跟設計稿不同了。
 """
 import json, sys
 from PIL import Image
 
 src, dst, preset_key = sys.argv[1], sys.argv[2], sys.argv[3]
 position = sys.argv[4] if len(sys.argv) > 4 else 'center'
+slot_ratio = sys.argv[5] if len(sys.argv) > 5 else None
 
 presets = {p['key']: p for p in json.load(open('Api/Media/media-presets.json'))['presets']}
 preset = presets[preset_key]
-target = preset['width'] / preset['height']
+if slot_ratio:
+    rw, rh = (float(n) for n in slot_ratio.replace('/', ':').split(':'))
+    target = rw / rh
+    shape = f'{preset_key} 版位 {slot_ratio}'
+else:
+    target = preset['width'] / preset['height']
+    shape = f'{preset_key} {preset["aspect"]}'
 
 # CSS 的 object-position：關鍵字換算成百分比。只有縱向那一維會用到 ——
 # 這裡處理的都是「原圖比版位高」的情況（橫向溢出的話 x 才會有作用）
@@ -71,7 +84,10 @@ if out.mode in ('RGBA', 'LA', 'P'):
 out.save(dst, quality=95, subsampling=0, optimize=True)
 
 print(f'{src}  {w}×{h}  →  {dst}  {out.size[0]}×{out.size[1]}'
-      f'   （{preset_key} {preset["aspect"]}，錨點 {position}）')
+      f'   （{shape}，錨點 {position}）')
 if out.size[0] < preset['width']:
     print(f'  ⚠ 寬度 {out.size[0]} < preset 的 {preset["width"]} —— '
           f'來源就這麼寬，放大是假的畫素，維持原寬')
+if slot_ratio:
+    print(f'  ⚠ 裁的是版位比例 {slot_ratio}，不是 {preset_key} 的 {preset["aspect"]} —— '
+          f'上傳時會出現一則比例提示，可忽略')

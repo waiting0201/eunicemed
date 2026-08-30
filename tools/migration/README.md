@@ -9,6 +9,8 @@
 | `legacy-news.py` | 10 篇最新消息 | 舊站 `/news-2/{slug}?format=json` |
 | `mockup4-home.py` | 首頁 hero banner + 04 Trusted worldwide 的**假資料**（**只灌本機**）| `mockup4/Home.dc.html` |
 | `mockup4-categories.py` | 三大分類的卡片圖（掛既有產品照，**只灌本機**）| `mockup4/Products.dc.html` |
+| `about-content.py` | About 頁留在 CMS 的欄位與三張圖（en + zh-TW）| `mockup4/About.dc.html` + 新譯 |
+| `partnership-content.py` | Partnership 頁留在 CMS 的四個區段與三張圖（en + zh-TW）| `mockup4/Partnership.dc.html` + 新譯 |
 | 產品 149 筆 | — | 用既有的 `POST /admin/products/import`，見下 |
 
 ## 用法
@@ -25,6 +27,16 @@ python3 tools/migration/home-sections.py /tmp/token
 
 # 3. 新聞（需先抓好 /tmp/legacy-news.json，抓法見腳本註解）
 python3 tools/migration/legacy-news.py /tmp/token https://func-eunicemed-prod.azurewebsites.net/api
+```
+
+灌本機時改打本機的 API（token 也要換成本機那組）：
+
+```bash
+curl -s -X POST http://localhost:7071/api/auth/login -H 'Content-Type: application/json' \
+  -d '{"email":"sa@system.local","password":"Admin@123"}' \
+  | python3 -c "import sys,json;print(json.load(sys.stdin)['data']['accessToken'])" > /tmp/token-local
+
+EM_API=http://localhost:7071/api python3 tools/migration/partnership-content.py /tmp/token-local
 ```
 
 ## 產品匯入的特別做法
