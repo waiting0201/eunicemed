@@ -7,6 +7,7 @@
 |---|---|---|
 | `home-sections.py` | 首頁 5 個區段的英文文案 | 舊站首頁逐字 + [docs/10](../../docs/10-legacy-content.md) §1 的 Company Profile |
 | `legacy-news.py` | 10 篇最新消息 | 舊站 `/news-2/{slug}?format=json` |
+| `mockup4-home.py` | 首頁 hero banner + 04 Trusted worldwide 的**假資料**（**只灌本機**）| `mockup4/Home.dc.html` |
 | 產品 149 筆 | — | 用既有的 `POST /admin/products/import`，見下 |
 
 ## 用法
