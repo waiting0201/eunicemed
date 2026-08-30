@@ -255,17 +255,22 @@ export default async function ProductsPage({
 /**
  * 分類卡。圖與文都在 `Category` 實體上（docs/09 §4.1），不是區段內容 ——
  * 所以改分類名稱只要改一個地方，總覽頁與分類頁會一起變。
+ *
+ * 圖是**卡片圖**（`Category.ImageMediaId`，preset `square`），不是落地頁的
+ * `heroImage`（16:10）—— 這格是 1:1，拿 hero 來裁會把構圖切掉兩側。
  */
 function CategoryCard({ category, locale }: { category: CategoryDetail; locale: Locale }) {
   return (
     <Link href={`/${locale}/products/${category.slug}`} style={S.catCard} data-hover="lift-shadow">
       <div style={S.catMedia}>
-        {category.heroImage && (
+        {category.image && (
           <img
-            src={category.heroImage.url}
-            srcSet={srcSetOf(category.heroImage)}
+            src={category.image.url}
+            srcSet={srcSetOf(category.image)}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px"
-            alt={category.heroImage.alt ?? category.name}
+            /* 卡圖與產品共用同一筆媒體，alt 是產品名 —— 這裡要的是分類名，
+               與 mockup4 的 `alt` 一致 */
+            alt={category.name}
             loading="lazy"
             decoding="async"
             width={1200}

@@ -33,11 +33,17 @@ public sealed class TaxonomyReadService(IDbConnection db) : ITaxonomyReadService
     }
 
     private sealed record CatRow(
-        string Slug, string Name, string? Description, string? HeroUrl, string? HeroAlt,
+        string Slug, string Name, string? Description,
+        Guid? ImageMediaId, string? ImageUrl, string? ImageAlt,
+        Guid? HeroMediaId, string? HeroUrl, string? HeroAlt,
         string? StatsJson, string? SupportLevelsJson, string? SeoTitle, string? SeoDescription);
 
     private const string CatSelect = """
         SELECT c.Slug, ct.Name, ct.Description,
+               c.ImageMediaId,
+               (SELECT BlobUrl FROM Media WHERE Id = c.ImageMediaId) AS ImageUrl,
+               (SELECT AltText FROM Media WHERE Id = c.ImageMediaId) AS ImageAlt,
+               c.HeroImageMediaId AS HeroMediaId,
                (SELECT BlobUrl FROM Media WHERE Id = c.HeroImageMediaId) AS HeroUrl,
                (SELECT AltText FROM Media WHERE Id = c.HeroImageMediaId) AS HeroAlt,
                ct.StatsJson, ct.SupportLevelsJson, ct.SeoTitle, ct.SeoDescription
@@ -55,7 +61,9 @@ public sealed class TaxonomyReadService(IDbConnection db) : ITaxonomyReadService
             ? await SubCategoryRefsByCategoryAsync(locale)
             : new Dictionary<string, SubCategoryRefDto[]>();
 
-        return rows.Select(r => ToDto(r, subs.GetValueOrDefault(r.Slug, []))).ToList();
+        var variants = await VariantsAsync(rows);
+
+        return rows.Select(r => ToDto(r, subs.GetValueOrDefault(r.Slug, []), variants)).ToList();
     }
 
     public async Task<CategoryDto?> GetCategoryAsync(string slug, string locale)
@@ -67,7 +75,7 @@ public sealed class TaxonomyReadService(IDbConnection db) : ITaxonomyReadService
         if (row is null) return null;
 
         var subs = await SubCategoryRefsByCategoryAsync(locale);
-        return ToDto(row, subs.GetValueOrDefault(slug, []));
+        return ToDto(row, subs.GetValueOrDefault(slug, []), await VariantsAsync([row]));
     }
 
     public async Task<IReadOnlyList<SubCategoryRefDto>> GetSubCategoriesAsync(string locale, string? categorySlug)
@@ -103,6 +111,10 @@ public sealed class TaxonomyReadService(IDbConnection db) : ITaxonomyReadService
         // 與產品詳情一樣驗證歸屬：category 與 sub 不相符即查無資料 → 404
         var row = await db.QueryFirstOrDefaultAsync<CatRow>("""
             SELECT sc.Slug, sct.Name, sct.Description,
+                   sc.ImageMediaId,
+                   (SELECT BlobUrl FROM Media WHERE Id = sc.ImageMediaId) AS ImageUrl,
+                   (SELECT AltText FROM Media WHERE Id = sc.ImageMediaId) AS ImageAlt,
+                   sc.HeroImageMediaId AS HeroMediaId,
                    (SELECT BlobUrl FROM Media WHERE Id = sc.HeroImageMediaId) AS HeroUrl,
                    (SELECT AltText FROM Media WHERE Id = sc.HeroImageMediaId) AS HeroAlt,
                    sct.StatsJson, CAST(NULL AS nvarchar(max)) AS SupportLevelsJson,
@@ -113,7 +125,7 @@ public sealed class TaxonomyReadService(IDbConnection db) : ITaxonomyReadService
             WHERE  sc.IsDeleted = 0 AND sc.Status = 1 AND c.Slug = @category AND sc.Slug = @sub
             """, p);
 
-        return row is null ? null : ToDto(row, []);
+        return row is null ? null : ToDto(row, [], await VariantsAsync([row]));
     }
 
     public async Task<IReadOnlyList<CertificationDto>> GetCertificationsAsync(string locale)
@@ -162,9 +174,14 @@ public sealed class TaxonomyReadService(IDbConnection db) : ITaxonomyReadService
         return new FacetLabels(await Read(), await Read(), await Read(), await Read());
     }
 
-    private static CategoryDto ToDto(CatRow r, SubCategoryRefDto[] subs) => new(
+    private Task<Dictionary<Guid, ImageVariantDto[]>> VariantsAsync(IEnumerable<CatRow> rows) =>
+        MediaVariantLoader.LoadAsync(db, rows.SelectMany(r => new[] { r.ImageMediaId, r.HeroMediaId }));
+
+    private static CategoryDto ToDto(
+        CatRow r, SubCategoryRefDto[] subs, Dictionary<Guid, ImageVariantDto[]> variants) => new(
         r.Slug, r.Name, r.Description,
-        r.HeroUrl is null ? null : new MediaRefDto(r.HeroUrl, r.HeroAlt),
+        MediaVariantLoader.Ref(r.ImageUrl, r.ImageAlt, r.ImageMediaId, variants),
+        MediaVariantLoader.Ref(r.HeroUrl, r.HeroAlt, r.HeroMediaId, variants),
         JsonField.Parse(r.StatsJson),
         JsonField.Parse(r.SupportLevelsJson),
         subs,

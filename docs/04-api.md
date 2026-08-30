@@ -221,7 +221,8 @@ GET /api/certifications?locale=en                   # About 認證帶與產品�
 {
   "slug": "orthopedic-support", "name": "Orthopedic Support",
   "description": "…",
-  "heroImage": { "url": "…", "alt": "…" },
+  "image": { "url": "…", "alt": "…", "variants": [ … ] },
+  "heroImage": { "url": "…", "alt": "…", "variants": [ … ] },
   "stats": [ { "value": "28", "label": "products" }, { "value": "5", "label": "body parts" },
              { "value": "CE · ISO 13485", "label": "certified" } ],
   "supportLevels": { "title": "Three levels of support", "lead": "…",
@@ -232,6 +233,9 @@ GET /api/certifications?locale=en                   # About 認證帶與產品�
 ```
 
 > `stats[].value` 為 `"auto"` 時由 API 代入實際產品數。
+>
+> `image` 是總覽頁分類卡的方形圖（`ImageMediaId`，preset `square`），
+> `heroImage` 是落地頁的 16:10 大圖（`HeroImageMediaId`）—— 兩張不同用途，別互相代用。
 
 ### 應用方案（Applications）
 ```

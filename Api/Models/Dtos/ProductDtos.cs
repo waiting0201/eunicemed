@@ -86,6 +86,8 @@ public sealed record CategoryDto(
     string          Slug,
     string          Name,
     string?         Description,
+    // 總覽頁分類卡的方形圖（preset square），與落地頁 hero 是不同的兩張
+    MediaRefDto?    Image,
     MediaRefDto?    HeroImage,
     object?         Stats,
     object?         SupportLevels,

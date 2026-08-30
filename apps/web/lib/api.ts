@@ -357,6 +357,8 @@ export type CategoryDetail = {
   slug: string;
   name: string;
   description: string | null;
+  /** 總覽頁分類卡的方形圖；落地頁 hero 是另一張（16:10） */
+  image: MediaRef | null;
   heroImage: MediaRef | null;
   stats: Stat[] | null;
   supportLevels: {
