@@ -4,7 +4,9 @@ import { notFound } from 'next/navigation';
 import { api } from '@/lib/api';
 import { isLocale, type Locale } from '@/lib/locale';
 import { ContactCta } from '@/components/ContactCta';
+import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
+import { BRAND_BANDS } from '@/lib/bands';
 import { ResourcesSubnav } from '@/components/ResourcesSubnav';
 import { SideFilter } from '@/components/SideFilter';
 
@@ -90,6 +92,7 @@ export default async function FaqPage({
   return (
     <>
       <ResourcesSubnav locale={locale} active="/faq" />
+      <PageBand image={BRAND_BANDS.pattern01} />
       <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />
 
       <section style={S.section}>

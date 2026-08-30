@@ -6,7 +6,9 @@ import { srcSetOf } from '@/lib/image';
 import { isLocale, type Locale } from '@/lib/locale';
 import { css } from '@/lib/css';
 import { BodyMap } from '@/components/BodyMap';
+import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
+import { BRAND_BANDS } from '@/lib/bands';
 import { SectionHeading } from '@/components/SectionHeading';
 
 /** 樣式逐字取自 `mockup4/Applications.dc.html`。 */
@@ -80,6 +82,7 @@ export default async function ApplicationsPage({ params }: { params: Promise<Par
 
   return (
     <>
+      <PageBand image={BRAND_BANDS.pattern02} />
       <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />
 
       {spots.length > 0 && (

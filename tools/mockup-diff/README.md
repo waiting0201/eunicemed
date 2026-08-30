@@ -40,6 +40,18 @@ node tools/mockup-diff/check.mjs --snapshot       # 重建 baseline/
 - **EXTRA**：實作有、mockup4 沒有。抓自創的樣式。
 - 例外寫在 `allow.json`，**每一條都要有理由** —— 那份檔案就是全站「明知故犯」的完整紀錄。
 
+## 這個工具證明不了什麼
+
+比對的是**宣告集合**，所以它能抓「值抄錯」與「自創樣式」，
+但**抓不到「這個元素根本沒被渲染」**。
+
+2026-08-30 實際踩到：`page-map.json` 把 `PageBand.tsx` 列進 FAQ／Insights／News／
+Downloads／Where to Buy／Applications 的檔案清單，那 6 頁因此算「有覆蓋」band 的宣告 ——
+但它們從來沒有 `import PageBand`，線上根本沒有那條頁頂圖帶。**六頁 100%，六頁都缺一整段。**
+
+`page-map.json` 是人維護的「這一頁用到哪些檔案」，列進去不等於用到。
+版型是否完整仍要靠眼睛（或 `viewport-check.mjs` 的截圖）確認，這支只保證「有的部分抄對了」。
+
 ## baseline/ 是什麼
 
 `mockup4/` 不進版控（客戶資產，見 docs/14-assets.md），所以它改了也 diff 不出來。

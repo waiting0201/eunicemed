@@ -301,3 +301,58 @@ admin 的轉址端點為此保留，只是沒有 UI。
 
 ⚠️ 這是一支**破壞性 migration**（`DROP TABLE`）。目前尚未有正式站，所以直接刪；
 若正式庫已有想留的紀錄，套用前先備份 —— 遷移是在 Function App 啟動時自動套用的，沒有攔截點。
+
+---
+
+## 9. 收尾（2026-08-30）：把「不能編輯」變成看不見
+
+§3 把 12 頁的版面文案判回程式碼，但後台當時只是**照列不誤**：
+`GET /admin/pages` 回全部 18 列，`routes/Pages.tsx` 對 `sectionCount === 0` 印一顆
+「尚未開放編輯」的徽章，tooltip 寫「這一頁的 schema 檔尚未撰寫」。
+
+那句話把**定案**寫成了**待辦**。編輯者（與客戶）唯一合理的反應是每隔一陣子問一次
+「那些什麼時候開放」。決議本身沒問題，出口沒收乾淨而已。
+
+### 9.1 6 頁的頁頂 band 其實從來沒上線
+
+收尾時先查到一個真的缺口。mockup4 有 10 頁在頁首放同一條 16:3 的 band，
+但 `PageBand` 的圖來源是 CMS 的 `hero.band`，而其中 6 頁
+（Applications／FAQ／Insights／News／Downloads／Where to Buy）連 schema 都沒有 ——
+**那 6 頁根本沒有渲染 band**，線上是 h1 直接接在頁首下面。
+
+`pnpm --filter web mockup:check` 一直是 100%，因為
+[`tools/mockup-diff/page-map.json`](../tools/mockup-diff/page-map.json) 把
+`PageBand.tsx` 列進了那 6 頁的檔案清單 —— 檔案在清單裡，宣告就算覆蓋到，
+但頁面實際上沒有 import 它。**宣告集合比對證明不了某個元素有被渲染**，
+這是這個工具的結構性盲點，不是設定寫錯。
+
+**修法**：band 跟著版面文案一起寫死。三張品牌圖樣進
+`apps/web/public/brand/bands/`，由 [`apps/web/lib/bands.ts`](../apps/web/lib/bands.ts)
+的 `BRAND_BANDS` 以 `MediaRef` 的形狀提供，所以 `PageBand` 一行都不用改 ——
+它不需要知道圖是後台上傳的還是常數。
+
+- 圖樣取自 mockup4 的 A4 母檔（2480×3508）**置中裁 16:3**。mockup4 是拿 1200 寬的
+  直式圖交給 `object-fit:cover` 現場裁，可視範圍相同、解析度更高。
+- webp 階梯照 `page-band` preset（2560/1600/1200/800），**只縮不放**所以上限是
+  裁切後的實際寬度 2480 —— 與 API 產變體的規則一致（[11](11-media-specs.md) §2a）。
+- 全部 15 個檔共 288KB。是平塗向量圖樣，webp 每張 1–22KB。
+
+> **about／products／partnership／privacy 的 band 維持後台可換圖**（§3B 的裁決不動）。
+> 代價是後台會出現「有些頁能換頁頂圖、有些不能」的不一致，需要在交接時講一句。
+> 那四頁的 band 是形象照的版位，這 6 頁的是品牌圖樣，本來就是兩種東西。
+
+### 9.2 清單濾掉沒有區段的頁
+
+`AdminListAsync` 加 `.Where(p => p.Sections.Any(s => s.IsEnabled))`，18 列變 6 列，
+`Pages.tsx` 的徽章分支隨之刪除。
+
+判準是**「有沒有啟用中的區段」而不是寫死的名單** —— 哪天補了 schema 檔，
+同步器建完列就會自己回到清單上，不必記得回來改這裡。
+
+清單底下留一句 `form-hint`：
+
+> 只列出有內容可以改的頁面。FAQ、下載、銷售據點、應用方案、文章這些頁面的
+> 版面文字與頁頂圖固定不變，實際內容在左側各自的項目裡維護。
+
+用側欄上的原字指路。少了 12 列本身不會讓人困惑，**找不到「最新消息」才會** ——
+所以這句話要回答的是「我要改的東西在哪」，不是「為什麼少了 12 頁」。

@@ -3,7 +3,9 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { api, type DownloadFile } from '@/lib/api';
 import { isLocale, type Locale } from '@/lib/locale';
+import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
+import { BRAND_BANDS } from '@/lib/bands';
 import { ResourcesSubnav } from '@/components/ResourcesSubnav';
 import { SideFilter } from '@/components/SideFilter';
 
@@ -96,6 +98,7 @@ export default async function DownloadsPage({
   return (
     <>
       <ResourcesSubnav locale={locale} active="/downloads" />
+      <PageBand image={BRAND_BANDS.pattern08} />
       <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />
 
       <section style={S.section}>

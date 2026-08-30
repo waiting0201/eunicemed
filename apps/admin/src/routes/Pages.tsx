@@ -6,8 +6,11 @@ import { PAGE_LABELS } from '@/lib/pages';
 import { formatDate } from '@/lib/format';
 
 /**
- * 18 個頁面。**不能新增或刪除** —— 頁面集合由 `Api/PageSchemas/` 的檔案決定，
- * 啟動時由同步器建立（docs/05 §5）。後台只改內容與啟用狀態。
+ * 有可編輯區段的頁面。**不能新增或刪除** —— 頁面集合由 `Api/PageSchemas/` 的檔案
+ * 決定，啟動時由同步器建立（docs/05 §5）。後台只改內容與啟用狀態。
+ *
+ * 另外 12 頁的版面文案定案寫死在前端（docs/15 §2），一個欄位也沒有，
+ * `GET /admin/pages` 已把它們濾掉 —— 所以這裡不需要「沒有區段」的狀態。
  */
 export function Pages() {
   const { data, isPending, error } = useQuery({
@@ -66,15 +69,7 @@ export function Pages() {
                 )}
               </td>
               <td>
-                {page.sectionCount > 0 ? (
-                  <span className="mono">{page.sectionCount}</span>
-                ) : (
-                  // schema 還沒寫的頁 —— 前台用寫死的文案渲染，不是壞掉，
-                  // 但編輯者在這裡什麼也改不了，要講清楚
-                  <span className="badge" title="這一頁的 schema 檔尚未撰寫">
-                    尚未開放編輯
-                  </span>
-                )}
+                <span className="mono">{page.sectionCount}</span>
               </td>
               <td>
                 <span className="mono text-[0.78rem]">{formatDate(page.updatedAt)}</span>
@@ -83,6 +78,15 @@ export function Pages() {
           );
         })}
       </DataTable>
+
+      {/*
+        清單只有 6 列，而站上有 18 頁 —— 少了的那些不是還沒做，是定案不進後台
+        （docs/15 §2）。不解釋的話，編輯者會在這裡找「最新消息」找到懷疑人生。
+        用側欄上的原字（FAQ、下載、銷售據點…）指路，才接得上他們要去的地方。
+      */}
+      <p className="form-hint mt-3">
+        只列出有內容可以改的頁面。FAQ、下載、銷售據點、應用方案、文章這些頁面的版面文字與頁頂圖固定不變，實際內容在左側各自的項目裡維護。
+      </p>
     </ListPage>
   );
 }

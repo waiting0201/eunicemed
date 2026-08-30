@@ -27,6 +27,12 @@ API 的 Phase 0–7 全數完成，**表單收件匣已於 2026-08-28 補上並�
 導覽選單與設定回到前端常數、轉址改由 `RedirectWriter` 在 slug 變動時自動產生。
 同時修好一個線上缺漏：頁尾的 LinkedIn 連結（原本靠一個從未填過的 Setting 鍵）。
 
+**2026-08-30 收尾**（[docs/15](docs/15-cms-scope.md) §9）：`GET /admin/pages` 改為只回有區段的頁，
+後台不再列出 12 頁「尚未開放編輯」—— 那是定案，寫成待辦只會被反覆追問。
+順帶補上又一個線上缺漏：Applications／FAQ／Insights／News／Downloads／Where to Buy
+**六頁的頁頂 band 從來沒有渲染過**（圖來源是 CMS，而那六頁沒有 schema），
+現以靜態品牌圖樣寫死。`mockup:check` 一直是 100% —— 宣告集合比對證明不了元素有被渲染。
+
 剩下的是內容工作（17 個子分類落地頁文案、認證文案）與上線收尾（自訂網域、監控告警）。
 
 ---
@@ -169,14 +175,14 @@ facet 篩選、standalone 產物 66MB／250MB。
 | Product Category | `/[locale]/products/{category}` | ✅ **已切版可運作** |
 | Sub-category | `/[locale]/products/{category}/{sub}` | ✅ **已切版可運作** |
 | Product Detail | `/[locale]/products/{category}/{sub}/{slug}` | ✅ **可運作**（§08 詢價面板送出已恢復）|
-| Applications／Detail | `/[locale]/applications[/{slug}]` | ✅ **已切版可運作**（含人體圖 SVG 互動）|
+| Applications／Detail | `/[locale]/applications[/{slug}]` | ✅ **已切版可運作**（含人體圖 SVG 互動；頁頂 band 為靜態品牌圖樣）|
 | Partnership | `/[locale]/partnership` | ✅ **可運作**（§03 洽詢表單送出已恢復；hero 文案改為前端常數）|
 | Resources | `/[locale]/resources` | ✅ **可運作**（含 `ref:Article` / `ref:Download` 解析）<br>2026-08-28 前線上是**完全空白**的 —— 五個區段都沒填，其中三個已定案改為前端常數 |
-| FAQ | `/[locale]/faq` | ✅ **已切版可運作**（分類篩選 + 原生 details 手風琴）|
-| Insights／Article Detail | `/[locale]/insights[/{slug}]` | ✅ **已切版可運作**（含伺服器端 TOC）|
-| News／News Detail | `/[locale]/news[/{slug}]` | ✅ **已切版可運作**（含活動面板、圖庫、prev/next）|
-| Downloads | `/[locale]/downloads` | ✅ **已切版可運作**（類型篩選）|
-| Where to Buy | `/[locale]/where-to-buy` | ✅ **已切版可運作**（伺服器端分組）|
+| FAQ | `/[locale]/faq` | ✅ **已切版可運作**（分類篩選 + 原生 details 手風琴；頁頂 band 為靜態品牌圖樣）|
+| Insights／Article Detail | `/[locale]/insights[/{slug}]` | ✅ **已切版可運作**（含伺服器端 TOC；列表頁頂 band 為靜態品牌圖樣）|
+| News／News Detail | `/[locale]/news[/{slug}]` | ✅ **已切版可運作**（含活動面板、圖庫、prev/next；列表頁頂 band 為靜態品牌圖樣）|
+| Downloads | `/[locale]/downloads` | ✅ **已切版可運作**（類型篩選；頁頂 band 為靜態品牌圖樣）|
+| Where to Buy | `/[locale]/where-to-buy` | ✅ **已切版可運作**（伺服器端分組；頁頂 band 為靜態品牌圖樣）|
 | Contact | `/[locale]/contact` | ✅ **可運作**，送出已恢復（2026-08-28）|
 | Privacy | `/[locale]/privacy` | ✅ **可運作**（Legal 淨化 profile）<br>2026-08-28 前線上是**完全空白**的；條文仍留在 CMS，頁首文案改為前端常數 |
 
@@ -219,7 +225,7 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 |---|---|
 | 登入 | ✅ 可運作（含 refresh token 單次使用的併發處理）|
 | Dashboard | — 刻意不做，改由側欄儀表取代 |
-| 頁面內容 | ✅ 可運作 —— 表單由 `GET /admin/page-schema/{key}` 動態生成<br>**19 個區段、6 個 pageKey**（2026-08-28 收斂，見 [docs/15](docs/15-cms-scope.md)）；10 種 `x-fieldType` 全支援；richtext 走 TipTap（lazy chunk）<br>其餘 12 頁在此畫面是空的 —— **那是定案不是壞掉**，那些頁的版面文案寫死在前端 |
+| 頁面內容 | ✅ 可運作 —— 表單由 `GET /admin/page-schema/{key}` 動態生成<br>**19 個區段、6 個 pageKey**（2026-08-28 收斂，見 [docs/15](docs/15-cms-scope.md)）；10 種 `x-fieldType` 全支援；richtext 走 TipTap（lazy chunk）<br>清單只列這 6 頁，其餘 12 頁由 `GET /admin/pages` 濾掉（2026-08-30，見 [docs/15](docs/15-cms-scope.md) §9）—— 那些頁的版面文案與頁頂 band 寫死在前端 |
 | 產品列表 | ✅ 可運作（搜尋／狀態篩選／分頁／完整度儀表）|
 | 產品編輯 | 🟡 可運作（雙語分頁、三個 repeater、圖庫＋主圖、使用情境照、部位／認證多選、尺寸表編輯器、發布／取消發布、`rowVersion` 併發、移除語系）<br>缺：相關產品拖曳|
 | 分類 / 子分類 | ✅ 可運作，**在「產品」畫面的分頁上**（分類與子分類同一張表、雙語＋SEO、卡片圖／頁首大圖、子分類狀態、`rowVersion` 併發、移除語系）<br>不提供新增／刪除 —— 那等於改全站 URL 結構。改 slug 或換分類會自動產生轉址 |

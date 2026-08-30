@@ -4,7 +4,9 @@ import { notFound } from 'next/navigation';
 import { api, type SalesLocation } from '@/lib/api';
 import { isLocale, type Locale } from '@/lib/locale';
 import { ContactCta } from '@/components/ContactCta';
+import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
+import { BRAND_BANDS } from '@/lib/bands';
 
 /** 樣式逐字取自 `mockup4/Where to Buy.dc.html`。 */
 const S = {
@@ -97,6 +99,7 @@ export default async function WhereToBuyPage({ params }: { params: Promise<Param
 
   return (
     <>
+      <PageBand image={BRAND_BANDS.pattern08} />
       <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />
 
       <section style={S.section}>

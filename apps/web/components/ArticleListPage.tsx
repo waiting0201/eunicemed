@@ -1,10 +1,12 @@
 import type { FacetedResult, ArticleListItem } from '@/lib/api';
 import type { Locale } from '@/lib/locale';
 import { ArticleCard } from './ArticleCard';
+import { PageBand } from './PageBand';
 import { PageHero } from './PageHero';
 import { ResourcesSubnav } from './ResourcesSubnav';
 import { SideFilter } from './SideFilter';
 import { css } from '@/lib/css';
+import { BRAND_BANDS } from '@/lib/bands';
 import { Pagination } from './Pagination';
 
 /** 樣式逐字取自 mockup4 的 News／Insights 列表。 */
@@ -49,6 +51,7 @@ export function ArticleListPage({
   return (
     <>
       <ResourcesSubnav locale={locale} active={`/${kind}`} />
+      <PageBand image={BRAND_BANDS.pattern02} />
       <PageHero eyebrow={copy.eyebrow} title={copy.title} lead={copy.lead} />
 
       <section style={S.section}>

@@ -87,11 +87,26 @@ public sealed class PageHandler(
         }));
     }
 
-    /// <summary>GET /admin/pages —— 18 頁清單。</summary>
+    /// <summary>
+    /// GET /admin/pages —— **有可編輯區段的頁面**清單。
+    ///
+    /// <para>
+    /// `Page` 有 18 列（見 <see cref="Data.Configurations.PageConfiguration"/>），
+    /// 但其中 12 頁的版面文案已定案寫死在前端（docs/15 §2），沒有任何 schema 檔，
+    /// 因此後台對它們一個欄位也開不出來。把那些頁列出來只會得到一列
+    /// 「尚未開放編輯」，讀起來像壞掉而不是像決議 —— 所以這裡濾掉。
+    /// </para>
+    ///
+    /// <para>
+    /// 判準是「有沒有啟用中的區段」而不是寫死的名單，
+    /// 所以哪天補了 schema 檔，同步器建完列就會自己回到清單上。
+    /// </para>
+    /// </summary>
     public async Task<IActionResult> AdminListAsync()
     {
         var pages = await db.Set<Page>()
             .Include(p => p.Sections)
+            .Where(p => p.Sections.Any(s => s.IsEnabled))
             .OrderBy(p => p.Kind).ThenBy(p => p.Key)
             .ToListAsync();
 

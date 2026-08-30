@@ -92,7 +92,7 @@
 |---|---|---|---|
 | GET | `/pages/{key}?locale=` | 公開 | `sections{}` 物件 + `refs`；media 已解析；未翻譯或內容不足的區段省略 |
 | GET | `/admin/page-schema/{key}` | 登入 | 該頁全部區段 schema，`x-mediaPreset` 已展開成尺寸與提示 |
-| GET | `/admin/pages` | 登入 | 18 頁清單 |
+| GET | `/admin/pages` | 登入 | **有可編輯區段的頁面**清單（目前 6 頁）。`Page` 有 18 列，另 12 頁無 schema 檔、版面文案寫死在前端，一律濾掉 —— 見 [15](15-cms-scope.md) §2 |
 | GET | `/admin/pages/{key}` | 登入 | 全區段 × 全語系（media 回原始 mediaId） |
 | PUT | `/admin/pages/{key}/sections/{sectionKey}` | Author+ | 驗證失敗回 400，errors 帶 JSON Pointer |
 | PATCH | `/admin/pages/{key}/sections/{sectionKey}/enabled` | Author+ | |
