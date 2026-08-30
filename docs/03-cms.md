@@ -80,7 +80,8 @@ Draft（草稿） ──提交──► Review（待審，選用） ──發布
 - 每筆內容含 `Status`（Draft/Published/Archived）、`PublishedAt`、`UpdatedBy`。
 - **發布動作**：API 僅更新狀態為 `Published`；前端為純 SSR，下一次請求即反映，**無需 revalidation**。
 - **預覽**：CMS 提供「預覽」連結，前端以 Draft Mode 帶 token 取未發布內容。
-- 版本/稽核：寫入 `AuditLog`（誰、何時、改了什麼）。
+- **不做版本／稽核紀錄**：`AuditLog` 已於 2026-08-30 移除（小站，累積的量遠大於它的用途；見 [15](15-cms-scope.md) §8）。
+  「誰最後改的」仍留在 `Product` / `PageSection` 的 `UpdatedBy` / `UpdatedAt` 欄位。
 
 > **頁面區段（Page / PageSection）沒有 Draft 狀態**——儲存即生效（純 SSR，下一請求就是線上內容）。
 > 這是刻意的：區段是既有頁面的文案微調，不是需要審核的新內容。要先看效果再上線時，用 Draft Mode 預覽連結。
@@ -199,7 +200,6 @@ Draft（草稿） ──提交──► Review（待審，選用） ──發布
 - 登入失敗鎖定、密碼雜湊（ASP.NET Identity / PBKDF2）、refresh token 輪替。
 - 後台所有寫入端點需有效 JWT + 角色；Function App CORS 僅允許 `https://www.eunicemed.com`。
 - CSRF：採 Bearer token（非 cookie session）即免；若用 cookie 需 CSRF token。
-- 稽核所有寫入操作至 `AuditLog`。
 - ⚠️ **無平台層防護**：SWA Free **不支援 IP 限制**，且本案無 Front Door/WAF。`/admin` 的入口對全網開放，安全性完全落在應用層 —— 登入失敗鎖定、短效 JWT + refresh 輪替、API 端每個端點都驗角色（不可只靠前端隱藏選單）、登入端點加速率限制。
 
 ---
@@ -304,7 +304,6 @@ Draft（草稿） ──提交──► Review（待審，選用） ──發布
 - [ ] 上傳後輸出寬度確為 preset 寬（原圖較小時不放大並標示解析度不足）
 - [ ] 產品只需一張 1:1 圖即可在首頁精選／型錄／相關產品／圖庫全部正常顯示
 - [ ] 表單收件匣可檢視/匯出
-- [ ] 稽核紀錄完整
 - [ ] **18 頁的頁面內容皆可編輯**，且無法新增／刪除／拖曳區段（僅可切換啟用）
 - [ ] 頁面區段儲存時通過 JSON Schema 驗證，錯誤能定位到具體欄位
 - [ ] 「同步至其他語系」只影響非文字欄位，不覆蓋已翻譯文案

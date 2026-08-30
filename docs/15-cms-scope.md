@@ -273,3 +273,31 @@ admin 的轉址端點為此保留，只是沒有 UI。
 - `RefField` 的 Article 選項固定 `pageSize: 100` 且無搜尋，超過 100 篇會靜默截斷。
 - [09](09-page-blocks.md) §429 規劃過以 `settingKey` 取值的 `infoPanel` 區塊 ——
   全 repo 零實作，隨 §7.4 一併記為放棄。
+
+---
+
+## 8. 第三次收斂（2026-08-30）：拿掉稽核紀錄
+
+`AuditLog` 連同 `AuditLogInterceptor` 整組移除，migration `DropAuditLog` 把表刪掉。
+
+**理由**：這是一個內容量固定的形象網站 —— 18 頁版面、149 支產品、四個角色、
+編輯者大概不到十個人。稽核紀錄卻是**每一次寫入都長一列，而且沒有任何人會去看**：
+沒有 API 端點讀它，後台沒有畫面，也沒有保留期限或清除機制。
+一次產品匯入就是上百列，`DataJson` 還把整筆實體的欄位值都存了一份。
+它會變成 DB 裡最大的一張表，而它的用途在這個規模上是零。
+
+稽核紀錄要成立，前提是「有人會因為它去追一件事」—— 那需要查詢介面、保留策略、
+以及夠多的編輯者讓「誰改的」真的成為問題。三個前提本案都不成立。
+
+**替代**：誰最後改的仍留在 `Product` / `PageSection` 的 `UpdatedBy` / `UpdatedAt`。
+真要回溯內容，走 Azure SQL 的備份還原（[07](07-azure-deployment.md)）。
+
+**沒有連帶影響**：`AuditLog` 從來沒有對外的端點，[api-routes.md](api-routes.md) 裡也沒有它，
+後台沒有任何畫面讀它。移除只動到 API 內部。
+
+`Services/CurrentUser.cs` **留著** —— 它是「目前操作者」的正解（`IHttpContextAccessor`
+在 Functions worker 不會被填充，見 [13](13-api-roadmap.md) 踩坑 2026-08-17），
+`AppRouter` 仍在驗證後設定它，之後任何需要操作者的服務都該走它，不要再繞回去。
+
+⚠️ 這是一支**破壞性 migration**（`DROP TABLE`）。目前尚未有正式站，所以直接刪；
+若正式庫已有想留的紀錄，套用前先備份 —— 遷移是在 Function App 啟動時自動套用的，沒有攔截點。

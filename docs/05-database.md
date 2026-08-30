@@ -14,7 +14,7 @@
 - 主鍵：`Id UNIQUEIDENTIFIER`（`NEWSEQUENTIALID()` 預設，兼顧分散式產生與索引）。
 - 每表含稽核欄位：`CreatedAt`、`UpdatedAt`（`datetime2`，UTC）、`CreatedBy`、`UpdatedBy`。
 - **多語系**：可翻譯內容拆「主表 + Translation 表」，以 `(EntityId, Locale)` 為鍵。slug 放主表（跨語系共用）。
-- **軟刪除**：重要內容用 `IsDeleted BIT` + 過濾；表單/稽核不刪。
+- **軟刪除**：重要內容用 `IsDeleted BIT` + 過濾；表單不刪。
 - 字串一律 `NVARCHAR`（Unicode）；金額/數值依需求。
 - 索引：slug、locale、status、外鍵、排序欄位。
 - **固定版面模型**：頁面版面鎖定於 mockup4，**不提供自由區塊建構器**。可編輯內容以 `(PageKey, SectionKey)` 定位，欄位由 `EuniceMed.Core/PageSchemas/*.json`（JSON Schema）定義；新增/移除/重排區段屬**版面變更**，走程式碼 PR + seed 同步器，不是編輯操作。詳見 §3.7 與 [09-page-blocks.md](09-page-blocks.md)。
@@ -56,7 +56,6 @@ MenuItem（自參照樹）+ MenuItemTranslation
 Redirect
 ContactSubmission (Type: general | product | partnership)
 User *───* Role               (UserRole)
-AuditLog
 Setting 1───* SettingTranslation
 ```
 
@@ -645,7 +644,7 @@ CREATE INDEX IX_MediaUsage_Entity ON MediaUsage(Entity, EntityId);
 | Application concerns / howTo / supportLevels / mapPosition | **JSON** | 只在該應用方案表單內編輯 |
 | PageSection 全部欄位 | **JSON** | 見 §3.7 規則 1 |
 
-### 3.12 表單 / 使用者 / 稽核 / 設定
+### 3.12 表單 / 使用者 / 設定
 
 ```sql
 CREATE TABLE ContactSubmission (
@@ -690,16 +689,7 @@ CREATE TABLE RefreshToken (
     RevokedAt DATETIME2 NULL
 );
 
-CREATE TABLE AuditLog (
-    Id        BIGINT IDENTITY PRIMARY KEY,
-    UserId    UNIQUEIDENTIFIER NULL,
-    Action    NVARCHAR(60) NOT NULL,         -- create|update|delete|publish|login
-    Entity    NVARCHAR(80) NOT NULL,
-    EntityId  NVARCHAR(80) NULL,
-    DataJson  NVARCHAR(MAX) NULL,            -- 變更內容/差異
-    CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
-);
-CREATE INDEX IX_Audit_Entity ON AuditLog(Entity, EntityId, CreatedAt DESC);
+-- AuditLog 已於 2026-08-30 移除（migration `DropAuditLog`），理由見 15-cms-scope.md §8。
 
 CREATE TABLE Setting (
     [Key]     NVARCHAR(120) NOT NULL PRIMARY KEY,   -- company.address, company.phone, company.email,

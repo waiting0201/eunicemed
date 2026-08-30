@@ -66,8 +66,8 @@ public sealed class AppRouter(
                     ApiResponse.Fail("Unauthorized.", "Invalid or missing Bearer token."));
 
             // 寫入 HttpContext.User 供 Handler 讀 claims；
-            // 另外明確設定 CurrentUser —— IHttpContextAccessor 在 Functions worker 不會被填充，
-            // 少了這行 AuditLog.UserId 會永遠是 null（見 Services/CurrentUser.cs）。
+            // 另外明確設定 CurrentUser —— IHttpContextAccessor 在 Functions worker
+            // 不會被填充，服務層拿不到操作者（見 Services/CurrentUser.cs）。
             req.HttpContext.User = principal;
             currentUser.Set(principal);
 

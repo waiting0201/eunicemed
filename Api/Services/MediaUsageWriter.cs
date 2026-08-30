@@ -10,7 +10,7 @@ namespace EuniceMed.Api.Services;
 /// 重建 <see cref="MediaUsage"/> 列。docs/05-database.md §3.10。
 ///
 /// <para>
-/// **刻意不做成 SaveChangesInterceptor**（對照 <c>AuditLogInterceptor</c> 是）：
+/// **刻意不做成 SaveChangesInterceptor**：
 /// 這裡要走 schema、是非同步的，而且應該在呼叫點看得見。
 /// 兩種機制對應兩件本質不同的事。
 /// </para>

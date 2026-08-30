@@ -91,7 +91,7 @@
 | [docs/12-local-dev.md](docs/12-local-dev.md) | **本機環境設定與每日啟動指令**、migration 操作、常見問題、多語系參數型別檢查 | **第一次進專案時先讀這份**、環境跑不起來時 |
 | [docs/13-api-roadmap.md](docs/13-api-roadmap.md) | API 各階段的**內容與驗收方式**、架構前提、**累積的踩坑紀錄** | 接續開發時、遇到怪問題時先翻踩坑那節 |
 | [docs/14-assets.md](docs/14-assets.md) | **不進版控的素材**（`reference/`、`mockup4/`）：內容、用途、取得方式 | 新機器 clone 之後發現找不到設計稿或字型時 |
-| [docs/15-cms-scope.md](docs/15-cms-scope.md) | **後台可編輯範圍決議**：哪些內容進 CMS、哪些回程式碼，逐支 schema 的裁決與理由；§7 是「一個單元在它露出的地方維護」的側欄收斂 | **新增或移除任何 `PageSchemas/*.json` 之前**、**在側欄加一個模組之前**、覺得某段文案「怎麼不能在後台改」時 |
+| [docs/15-cms-scope.md](docs/15-cms-scope.md) | **後台可編輯範圍決議**：哪些內容進 CMS、哪些回程式碼，逐支 schema 的裁決與理由；§7 是「一個單元在它露出的地方維護」的側欄收斂，§8 是拿掉稽核紀錄 | **新增或移除任何 `PageSchemas/*.json` 之前**、**在側欄加一個模組之前**、覺得某段文案「怎麼不能在後台改」時 |
 
 ---
 
@@ -238,6 +238,14 @@ EuniceMed/
       形狀取自 `.ai` 原稿的加號，但單獨使用是本專案的延伸；完整 logo 在 16–32px 讀不出來。
       客戶若有正式 icon 版本，換掉 `apps/web/app/favicon.ico`、`apps/web/public/brand/eunicemed-mark.png`
       與 `apps/admin/src/assets/eunicemed-mark.png` 三處。見 [docs/08](docs/08-design.md) §3
+- [ ] **同一個檔案上傳兩次會產生兩筆 `Media`，但它們共用同一個 blob，刪任一筆都會把另一筆的圖砍掉**（2026-08-30 實際踩到）。
+      檔名帶的是內容雜湊，所以第二次上傳寫回同一組 blob；`POST /admin/media` 不去重，於是多一列。
+      `DELETE /admin/media/{id}` 的 409 只檢查**被刪的那一列**有沒有引用，
+      通過之後就把 blob 刪掉 —— 另一列（即使正被頁面引用）當場變成 404 的死連結，畫面上只看到破圖。
+      兩個修法擇一：上傳時以檔名去重、直接回既有那一筆；或刪除時確認沒有別列共用該檔名才刪 blob。
+      前者順便讓媒體庫不會長出一堆同圖不同列。
+      ⚠️ `POST /admin/media/{id}/reprocess`（[docs/api-routes.md](docs/api-routes.md) 有列）**尚未實作**，
+      所以踩到之後沒有「重新產生 blob」這條退路，只能刪掉整筆重傳。
 - [ ] reCAPTCHA 用哪個版本（v2 checkbox / v2 invisible / v3 score）？v3 需決定分數門檻。另 [07](docs/07-azure-deployment.md) §6.4 只有後端 `Recaptcha__SecretKey`，缺前端 site key
 - [ ] `mockup/`、`mockup2/`、`mockup3/`（共約 120MB 的早期版型）要不要納入版控？目前以 `.gitignore` 擋著 —— 圖片進了 git 歷史就拿不掉了
 

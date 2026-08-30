@@ -69,12 +69,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Setting>             Settings             { get; set; }
     public DbSet<SettingTranslation>  SettingTranslations  { get; set; }
 
-    // ── 使用者與稽核 ────────────────────────────────────────────────────
+    // ── 使用者 ──────────────────────────────────────────────────────────
     public DbSet<User>         Users         { get; set; }
     public DbSet<Role>         Roles         { get; set; }
     public DbSet<UserRole>     UserRoles     { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
-    public DbSet<AuditLog>     AuditLogs     { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

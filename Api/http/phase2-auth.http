@@ -1,4 +1,4 @@
-### Phase 2 驗收：Auth / RBAC / AuditLog / 後台 CRUD 骨架
+### Phase 2 驗收：Auth / RBAC / 後台 CRUD 骨架
 ### 前提：func start 執行中；local.settings.json 已設 Seed__AdminEmail / Seed__AdminPassword。
 
 @host  = http://localhost:7071/api
@@ -208,23 +208,3 @@ Authorization: Bearer {{at}}
 
 ### 27. 刪除後 → 應 404
 GET {{host}}/collections/test-series?locale=en
-
-###############################################################################
-# 稽核紀錄（DB 端驗收）
-#
-# docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa \
-#   -P '<你的本機密碼>' -C -d EuniceMedDb -h -1 -W -Q "SET NOCOUNT ON;
-#   SELECT a.Action + ' ' + a.Entity + ' by ' + ISNULL(u.Email,'SYSTEM')
-#   FROM AuditLogs a LEFT JOIN [User] u ON u.Id = a.UserId
-#   ORDER BY a.Id DESC;"
-#
-# 必須滿足：
-#   1. create / update / delete / login 都有紀錄
-#   2. **by 欄位是實際操作者，不是 SYSTEM** —— IHttpContextAccessor 在 Functions worker
-#      不會被填充，所以操作者是靠 AppRouter 明確設定的 CurrentUser 傳進去的。
-#      若這裡全是 SYSTEM，表示 CurrentUser 沒被設定，稽核就少了「誰」這一半。
-#   3. DataJson 不含 PasswordHash 或 TokenHash：
-#      SELECT CASE WHEN EXISTS(SELECT 1 FROM AuditLogs
-#             WHERE DataJson LIKE '%PasswordHash%' OR DataJson LIKE '%TokenHash%')
-#             THEN 'FAIL' ELSE 'OK' END;
-###############################################################################

@@ -1,5 +1,4 @@
 using EuniceMed.Api.Data;
-using EuniceMed.Api.Data.Interceptors;
 using EuniceMed.Api.Data.Seed;
 using EuniceMed.Api.Handlers;
 using EuniceMed.Api.Middleware;
@@ -49,7 +48,7 @@ var host = new HostBuilder()
         var connStr = cfg["ConnectionStrings:DefaultConnection"]
             ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is required.");
 
-        // 目前操作者。由 AppRouter 在驗證後設定，AuditLogInterceptor 讀取。
+        // 目前請求的操作者。由 AppRouter 在驗證後設定。
         // 刻意不用 IHttpContextAccessor —— 它在 Functions worker 不會被填充。
         services.AddScoped<CurrentUser>();
         services.AddHttpContextAccessor();
@@ -57,14 +56,12 @@ var host = new HostBuilder()
         // ── EF Core + SQL Server（寫入路徑）────────────────────────────────
         // Max Pool Size 需與客戶 Azure SQL 的連線上限、Function App 的
         // maximumInstanceCount 一起算 —— Flex Consumption 每個實例各有一個 pool。
-        services.AddScoped<AuditLogInterceptor>();
-        services.AddDbContext<AppDbContext>((sp, opt) =>
+        services.AddDbContext<AppDbContext>((_, opt) =>
             opt.UseSqlServer(connStr, sql =>
                {
                    sql.EnableRetryOnFailure(3);
                    sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-               })
-               .AddInterceptors(sp.GetRequiredService<AuditLogInterceptor>()));
+               }));
 
         // ── Dapper IDbConnection（讀取路徑，與 EF 共用同一 connection string）──
         services.AddScoped<IDbConnection>(_ => new SqlConnection(connStr));

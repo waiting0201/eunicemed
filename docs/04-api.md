@@ -485,7 +485,6 @@ GET/POST/PUT/DELETE /admin/users[/{id}]
 
 **規則**
 
-- 所有寫入記 `AuditLog`。
 - 發布僅更新 DB 狀態；前端為**純 SSR**，下一次請求即反映，**無需呼叫前端 revalidation webhook**。
 - `PUT /admin/pages/{key}/sections/{sectionKey}` 以該 `sectionKey` 的 JSON Schema 驗證 `data`；失敗回 400，`errors` 每一項以 JSON Pointer 開頭標出欄位路徑（如 `"/items/2/year: maxLength"`）。
 - `syncInvariantFields: true`（後台預設）時，把標有 `x-localeInvariant` 的欄位一併寫入其他語系（見 [09-page-blocks.md](09-page-blocks.md) §9.3）。
@@ -598,7 +597,7 @@ Api/
 ## 10. 驗收清單
 - [ ] 公開端點匿名可讀、回應符合 `ApiResponse` 信封與 `PagedResult` 分頁格式
 - [ ] 缺該語系翻譯的內容整筆消失（不 fallback 露出他語）；Dapper 的 `@locale` 以 `varchar(10)` 送出，索引未失效
-- [ ] 後台端點 JWT + 角色強制、稽核完整
+- [ ] 後台端點 JWT + 角色強制
 - [ ] `POST /contact` 驗證 + reCAPTCHA + 寄信 + 入庫 + 限流；`type=product` 有寫入 `ProductSku` 快照
 - [ ] 發布後純 SSR 下一請求即反映（無需 revalidate）
 - [ ] `GET /pages/{key}` 支援全部 18 個 key，回 `sections{}` 物件並解析 `refs`

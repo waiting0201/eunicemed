@@ -89,11 +89,6 @@ public sealed class AuthHandler(
         var roles = user.UserRoles.Select(ur => ur.Role!.Name).ToArray();
         var (access, refresh) = await IssueTokensAsync(user, roles, now);
 
-        db.Add(new AuditLog
-        {
-            UserId = user.Id, Action = AuditActions.Login,
-            Entity = nameof(User), EntityId = user.Id.ToString(), CreatedAt = now,
-        });
         await db.SaveChangesAsync();
 
         return new OkObjectResult(ApiResponse.Ok(

@@ -50,11 +50,11 @@ Entity + translation → `Data/Configurations/CollectionConfiguration.cs`（含 
 
 **驗收**：[`Api/http/phase1-collections.http`](../Api/http/phase1-collections.http) 全 10 條通過，且 plan cache 顯示 `(@locale varchar(10))`。
 
-### ✅ Phase 2 — Auth / RBAC / AuditLog / CRUD 骨架
+### ✅ Phase 2 — Auth / RBAC / CRUD 骨架
 
-`User` / `Role` / `UserRole` / `RefreshToken` / `AuditLog`。`AuthHandler`（login / refresh / logout，BCrypt，refresh 單次使用後撤銷）、`JwtService`（照 Jabez，`MapInboundClaims = false`）。
+`User` / `Role` / `UserRole` / `RefreshToken`（當初還有 `AuditLog`，2026-08-30 移除，見 [15](15-cms-scope.md) §8）。`AuthHandler`（login / refresh / logout，BCrypt，refresh 單次使用後撤銷）、`JwtService`（照 Jabez，`MapInboundClaims = false`）。
 `AppRouter` 的守門方法：`IsPublicRoute` / `GetRequiredRole` / `RequireRole`，外加 EuniceMed 特有的一條 —— **Author 可建草稿但不可發布**。
-`AuditLogInterceptor`（`SaveChangesInterceptor`，需要 `EntityEntry.OriginalValues`）。`/auth/login` 速率限制 + DB 登入失敗鎖定。
+`/auth/login` 速率限制 + DB 登入失敗鎖定。
 
 **驗收**：[`Api/http/phase2-auth.http`](../Api/http/phase2-auth.http) 全數通過，含 RBAC 矩陣、
 token 輪替（單次使用）、帳號鎖定與解鎖、改密碼撤銷所有 session、三項自我保護（不能停用／降權／刪除自己）。
@@ -830,8 +830,8 @@ Next 只留下指向 standalone 之外的符號連結。SWA 打包時直接失�
 
 ### 2026-08-17 · `IHttpContextAccessor` 在 Functions worker 不會被填充
 
-`AuditLogInterceptor` 原本用 `IHttpContextAccessor` 取操作者，結果 `AuditLog.UserId` **永遠是 null** ——
-稽核紀錄少了 docs/04 §6 要求的「誰」。原因是它靠 ASP.NET Core hosting layer 設定的 AsyncLocal，
+當時的 `AuditLogInterceptor`（已隨稽核紀錄移除）用 `IHttpContextAccessor` 取操作者，
+結果寫進去的 `UserId` **永遠是 null**。原因是它靠 ASP.NET Core hosting layer 設定的 AsyncLocal，
 而 isolated worker 的 pipeline 不經過那裡（即使開了 ASP.NET Core integration 也一樣）。
 處置：改為 scoped 的 `Services/CurrentUser.cs`，由 `AppRouter` 在驗證通過後明確 `Set(principal)`。
 **任何需要「目前使用者」的地方都走這個服務，不要用 `IHttpContextAccessor`。**
