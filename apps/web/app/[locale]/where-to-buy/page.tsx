@@ -119,24 +119,35 @@ export default async function WhereToBuyPage({ params }: { params: Promise<Param
         {data.international.length > 0 && (
           <>
             <h2 style={S.heading}>{c.international}</h2>
-            {data.international.map((group) => (
-              <div key={group.region || '__other'}>
-                {/*
-                  未填 region 的一組由 API 集中放在最後（docs/04 §4）。
-                  一定要給它標題，否則它看起來像是上一個地區的延續。
+            {/*
+              mockup4 把國際經銷排成**一個** 3 欄格線，地區標籤在卡片**內**、
+              名稱之上（`cardNameUnderRegion` 的 margin-top:4px 就是接在標籤後面）。
+              API 回的是分好組的結構（docs/04 §4），這裡攤平回一張清單 ——
+              分組只決定順序與每張卡片掛哪個標籤。
 
-                  ⚠️ 用 `||` 而不是 `??`：API 回的是**空字串**而非 null
-                  （`RegionLabel` 是 nullable 但實際資料多為空字串），
-                  `??` 接不到空字串，那組會渲染成一行空白標題。
-                */}
-                <p style={S.region}>{group.region?.trim() || c.otherRegions}</p>
-                <div style={S.grid} data-r="cols-2">
-                  {group.items.map((loc) => (
-                    <Card key={cardKey(loc)} loc={loc} visit={c.visit} />
-                  ))}
-                </div>
-              </div>
-            ))}
+              先前是每組各自包一層 div、標籤放在卡片外、每組再開一張滿版格線，
+              於是一組只有一筆時，卡片各佔一列的三分之一寬、組間也沒有間距。
+            */}
+            <div style={S.grid} data-r="cols-2">
+              {data.international.flatMap((group) =>
+                group.items.map((loc) => (
+                  <Card
+                    key={cardKey(loc)}
+                    loc={loc}
+                    visit={c.visit}
+                    /*
+                      未填 region 的一組由 API 集中放在最後（docs/04 §4）。
+                      一定要給它標籤，否則它看起來像是上一張卡片的延續。
+
+                      ⚠️ 用 `||` 而不是 `??`：API 回的是**空字串**而非 null
+                      （`RegionLabel` 是 nullable 但實際資料多為空字串），
+                      `??` 接不到空字串，那幾張卡會渲染成一行空白標籤。
+                    */
+                    region={group.region?.trim() || c.otherRegions}
+                  />
+                )),
+              )}
+            </div>
           </>
         )}
 
@@ -146,10 +157,12 @@ export default async function WhereToBuyPage({ params }: { params: Promise<Param
   );
 }
 
-function Card({ loc, visit }: { loc: SalesLocation; visit: string }) {
+/** `region` 只有國際經銷會給 —— 台灣那一組的分組標題是 h2，不重複標在卡片上。 */
+function Card({ loc, visit, region }: { loc: SalesLocation; visit: string; region?: string }) {
   return (
     <div style={S.card}>
-      <h3 style={S.cardName}>{loc.name}</h3>
+      {region && <p style={S.region}>{region}</p>}
+      <h3 style={region ? S.cardNameUnderRegion : S.cardName}>{loc.name}</h3>
       {loc.address && <p style={S.cardBody}>{loc.address}</p>}
       {loc.note && <p style={S.cardBody}>{loc.note}</p>}
       {loc.phone && (
