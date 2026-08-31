@@ -5,7 +5,8 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { css } from '@/lib/css';
-import { LOCALES, LOCALE_SHORT_LABELS, type Locale } from '@/lib/locale';
+import { type Locale } from '@/lib/locale';
+import { LocaleSwitch } from './LocaleSwitch';
 
 /**
  * 手機版導覽。
@@ -134,16 +135,7 @@ export function MobileNav({
                   </Link>
                 )}
                 <span style={S.locale}>
-                  {LOCALES.map((l, i) => (
-                    <span key={l}>
-                      {i > 0 && ' · '}
-                      {l === locale ? (
-                        <b style={S.localeCurrent}>{LOCALE_SHORT_LABELS[l]}</b>
-                      ) : (
-                        <Link href={`/${l}`}>{LOCALE_SHORT_LABELS[l]}</Link>
-                      )}
-                    </span>
-                  ))}
+                  <LocaleSwitch locale={locale} currentStyle={S.localeCurrent} />
                 </span>
               </div>
             </nav>

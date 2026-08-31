@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { css } from '@/lib/css';
 import { Logo } from './Logo';
+import { LocaleSwitch } from './LocaleSwitch';
 import { MobileNav } from './MobileNav';
 import { SiteNav } from './SiteNav';
 import type { Locale } from '@/lib/locale';
-import { LOCALES, LOCALE_SHORT_LABELS } from '@/lib/locale';
+
 
 /**
  * 站台頁首。版型逐項照 mockup4：**整條滿版**（不套 1180px 容器）、
@@ -84,17 +85,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
 
       {/* 語系切換：mockup4 是「**EN** · 中」，現用語系用 ink 加粗，其餘維持次要灰 */}
       <span style={S.locale} data-r="hide">
-        {LOCALES.map((l, i) => (
-          <span key={l}>
-            {/* mockup4 是「EN · 中」，分隔就是前後各一個空白的間隔號 */}
-            {i > 0 && ' · '}
-            {l === locale ? (
-              <b style={S.localeCurrent}>{LOCALE_SHORT_LABELS[l]}</b>
-            ) : (
-              <Link href={`/${l}`}>{LOCALE_SHORT_LABELS[l]}</Link>
-            )}
-          </span>
-        ))}
+        <LocaleSwitch locale={locale} currentStyle={S.localeCurrent} />
       </span>
 
       {/* mockup4 沒有手機版頁首，這一支是現場設計的（見 MobileNav） */}

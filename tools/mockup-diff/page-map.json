@@ -4,6 +4,7 @@
     "apps/web/app/[locale]/layout.tsx",
     "apps/web/components/SiteHeader.tsx",
     "apps/web/components/SiteNav.tsx",
+    "apps/web/components/LocaleSwitch.tsx",
     "apps/web/components/Logo.tsx",
     "apps/web/components/SiteFooter.tsx",
     "apps/web/components/FloatingContact.tsx"
