@@ -83,7 +83,7 @@ API 的 Phase 0–7 全數完成，**表單收件匣已於 2026-08-28 補上並�
 | 頁面區段 | `Page` `PageSection` `PageSectionTranslation` | ✅ 18 頁；區段由 schema 目錄同步（目前 6 個） |
 | 應用方案 | `Application` `ApplicationTranslation` `ProductApplication` | ✅ 7 筆 × 雙語（4 筆含人體圖座標）；內容文案待撰寫 |
 | 文章 | `Article` `ArticleTranslation` `ArticleCategory` `ArticleCategoryTranslation` `ArticleImage` `ArticleTag` `NewsEvent` `NewsEventTranslation` | ✅ 分類 6 筆 × 雙語；`NewsEvent` 為共用 PK 的 1:1 |
-| FAQ | `Faq` `FaqTranslation` `FaqCategory` `FaqCategoryTranslation` | ✅ 分類 3 筆 × 雙語；題目待填 |
+| FAQ | `Faq` `FaqTranslation` `FaqCategory` `FaqCategoryTranslation` | ✅ 分類 3 筆 × 雙語；題目 9 筆 × 雙語（取自 mockup4，**目前只灌本機**）|
 | 下載 | `Download` `DownloadTranslation` `ProductDownload` | ✅ 表已建；`FileLocale` 與介面語系刻意分離 |
 | 據點 | `SalesLocation` `SalesLocationTranslation` | ✅ 表已建；資料來源待客戶提供 |
 | 導覽 | `MenuItem` `MenuItemTranslation` | ⚠️ 表在但**已無端點也無 UI**，線上一直是空的；導覽寫在前端（docs/15 §7.4）|

@@ -11,6 +11,7 @@
 | `mockup4-categories.py` | 三大分類的卡片圖（掛既有產品照，**只灌本機**）| `mockup4/Products.dc.html` |
 | `about-content.py` | About 頁留在 CMS 的欄位與三張圖（en + zh-TW）| `mockup4/About.dc.html` + 新譯 |
 | `partnership-content.py` | Partnership 頁留在 CMS 的四個區段與三張圖（en + zh-TW）| `mockup4/Partnership.dc.html` + 新譯 |
+| `faq-content.py` | FAQ 頁的 3 個分類與 9 則問答（en + zh-TW）| `mockup4/FAQ.dc.html` + 新譯 |
 | `resources-downloads.py` | Resources 頁「Most requested documents」引用的三份文件（en + zh-TW）| 舊站 `/downloadpage01` + 新譯 |
 | 產品 149 筆 | — | 用既有的 `POST /admin/products/import`，見下 |
 
