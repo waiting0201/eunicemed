@@ -540,6 +540,22 @@ export const api = {
 
   product: (id: string) => request<AdminProduct>(`/admin/products/${id}`),
 
+  /**
+   * 相關產品。**與產品本體是不同的端點** —— 產品詳情不回這份清單，
+   * 存檔也不會一起送（`AdminProduct` 裡沒有這個欄位）。
+   */
+  productRelated: (id: string) => request<AdminRelatedItem[]>(`/admin/products/${id}/related`),
+
+  /**
+   * 整批取代，**陣列順序就是產品頁的顯示順序**。
+   * 空陣列＝清掉人工指定，回到自動挑選（見 `RelatedProducts` 的說明）。
+   */
+  saveProductRelated: (id: string, relatedProductIds: string[]) =>
+    request<null>(`/admin/products/${id}/related`, {
+      method: 'PUT',
+      body: JSON.stringify({ relatedProductIds }),
+    }),
+
   saveProduct: (id: string, body: unknown) =>
     request<AdminProduct>(`/admin/products/${id}`, {
       method: 'PUT',
@@ -880,6 +896,18 @@ export type ProductTranslation = {
   seoTitle?: string | null;
   seoDescription?: string | null;
   ogImageMediaId?: string | null;
+};
+
+/**
+ * 相關產品清單的一列。
+ * 只有**英文名** —— 後端這支不 join 其他語系（`AdminRelatedItemDto`）。
+ */
+export type AdminRelatedItem = {
+  id: string;
+  slug: string;
+  nameEn: string | null;
+  sku: string | null;
+  sortOrder: number;
 };
 
 export type AdminProduct = {

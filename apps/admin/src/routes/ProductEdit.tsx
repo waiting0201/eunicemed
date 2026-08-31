@@ -1,10 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api, ApiError, type AdminProduct, type ProductTranslation } from '@/lib/api';
+import {
+  api,
+  ApiError,
+  type AdminProduct,
+  type AdminRelatedItem,
+  type ProductTranslation,
+} from '@/lib/api';
 import { Field, FieldRow } from '@/components/form/Field';
 import { Repeater } from '@/components/form/Repeater';
 import { MultiSelect } from '@/components/form/MultiSelect';
+import { RelatedProducts } from '@/components/form/RelatedProducts';
 import { SizeChartEditor } from '@/components/form/SizeChartEditor';
 import { ImageField, ImageList } from '@/components/MediaField';
 import { LocaleTabs, LOCALES, type Locale } from '@/components/LocaleTabs';
@@ -49,6 +56,13 @@ export function ProductEdit() {
    * 至少當次編輯看得到縮圖；重新整理後由下面的 mediaUrls 查詢補齊。
    */
   const [pickedUrls, setPickedUrls] = useState<Record<string, string>>({});
+  /**
+   * 相關產品是**另一支端點**（`AdminProduct` 裡沒有這個欄位），所以自己一份草稿。
+   * 只有真的動過才送出 —— 每次存檔都無條件 PUT 的話，沒碰過這一格的人
+   * 也會把別人剛改好的順序整批覆蓋掉。
+   */
+  const [related, setRelated] = useState<AdminRelatedItem[] | null>(null);
+  const [relatedDirty, setRelatedDirty] = useState(false);
 
   const { data, isPending } = useQuery({
     queryKey: ['product', id],
@@ -79,6 +93,12 @@ export function ProductEdit() {
     staleTime: 5 * 60_000,
   });
 
+  const relatedQuery = useQuery({
+    queryKey: ['product-related', id],
+    queryFn: () => api.productRelated(id!),
+    enabled: Boolean(id),
+  });
+
   useEffect(() => {
     if (data) {
       setDraft(data);
@@ -86,8 +106,25 @@ export function ProductEdit() {
     }
   }, [data]);
 
+  useEffect(() => {
+    if (relatedQuery.data) {
+      setRelated(relatedQuery.data);
+      setRelatedDirty(false);
+    }
+  }, [relatedQuery.data]);
+
   const save = useMutation({
-    mutationFn: (body: unknown) => api.saveProduct(id!, body),
+    // 產品本體先存 —— 它帶 rowVersion，撞併發要在改動相關產品之前就停下來
+    mutationFn: async (body: unknown) => {
+      const result = await api.saveProduct(id!, body);
+
+      if (relatedDirty && related) {
+        await api.saveProductRelated(id!, related.map((r) => r.id));
+        setRelatedDirty(false);
+      }
+
+      return result;
+    },
     onSuccess: (result) => {
       // 用回傳值取代手上那份 —— rowVersion 已經前進，不換掉的話下次存檔會自撞 409
       setDraft(result);
@@ -352,6 +389,15 @@ export function ProductEdit() {
                 onChange={(certificationIds) => patch({ certificationIds })}
                 keyOf={(c) => c.id}
                 labelOf={(c) => c.mark}
+              />
+
+              <RelatedProducts
+                productId={draft.id}
+                items={related ?? []}
+                onChange={(next) => {
+                  setRelated(next);
+                  setRelatedDirty(true);
+                }}
               />
             </div>
           </div>
