@@ -13,6 +13,7 @@
 | `partnership-content.py` | Partnership 頁留在 CMS 的四個區段與三張圖（en + zh-TW）| `mockup4/Partnership.dc.html` + 新譯 |
 | `faq-content.py` | FAQ 頁的 3 個分類與 9 則問答（en + zh-TW）| `mockup4/FAQ.dc.html` + 新譯 |
 | `privacy-content.py` | Privacy & Legal 頁的頁首 band 與條文（en + zh-TW）| `mockup4/Privacy.dc.html` + 新譯，**示意條文、非法務定稿** |
+| `sales-locations.py` | Where to Buy 的 6 個據點（en + zh-TW）| `mockup4/Where to Buy.dc.html` + 新譯，**除自家門市外皆為示意資料** |
 | `resources-downloads.py` | Resources 頁「Most requested documents」引用的三份文件（en + zh-TW）| 舊站 `/downloadpage01` + 新譯 |
 | 產品 149 筆 | — | 用既有的 `POST /admin/products/import`，見下 |
 

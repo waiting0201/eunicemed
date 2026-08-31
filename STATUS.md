@@ -85,7 +85,7 @@ API 的 Phase 0–7 全數完成，**表單收件匣已於 2026-08-28 補上並�
 | 文章 | `Article` `ArticleTranslation` `ArticleCategory` `ArticleCategoryTranslation` `ArticleImage` `ArticleTag` `NewsEvent` `NewsEventTranslation` | ✅ 分類 6 筆 × 雙語；`NewsEvent` 為共用 PK 的 1:1 |
 | FAQ | `Faq` `FaqTranslation` `FaqCategory` `FaqCategoryTranslation` | ✅ 分類 3 筆 × 雙語；題目 9 筆 × 雙語（取自 mockup4，**目前只灌本機**）|
 | 下載 | `Download` `DownloadTranslation` `ProductDownload` | ✅ 表已建；`FileLocale` 與介面語系刻意分離 |
-| 據點 | `SalesLocation` `SalesLocationTranslation` | ✅ 表已建；資料來源待客戶提供 |
+| 據點 | `SalesLocation` `SalesLocationTranslation` | ✅ 表已建；6 筆 × 雙語（3 台灣 + 3 國際，取自 mockup4 的**示意資料**，**目前只灌本機**）；正式清單待客戶提供 |
 | 導覽 | `MenuItem` `MenuItemTranslation` | ⚠️ 表在但**已無端點也無 UI**，線上一直是空的；導覽寫在前端（docs/15 §7.4）|
 | 轉址 | `Redirect` | ✅ `FromPath` 唯一；前端 middleware 執行。slug 改動時由 `RedirectWriter` 自動寫入 |
 | 設定 | `Setting` `SettingTranslation` | ⚠️ 同導覽，表留著但已無端點；公司資訊寫在 `apps/web/lib/company.ts` |
@@ -182,7 +182,7 @@ facet 篩選、standalone 產物 66MB／250MB。
 | Insights／Article Detail | `/[locale]/insights[/{slug}]` | ✅ **已切版可運作**（含伺服器端 TOC；列表頁頂 band 為靜態品牌圖樣）|
 | News／News Detail | `/[locale]/news[/{slug}]` | ✅ **已切版可運作**（含活動面板、圖庫、prev/next；列表頁頂 band 為靜態品牌圖樣）|
 | Downloads | `/[locale]/downloads` | ✅ **已切版可運作**（類型篩選；頁頂 band 為靜態品牌圖樣）|
-| Where to Buy | `/[locale]/where-to-buy` | ✅ **已切版可運作**（伺服器端分組；頁頂 band 為靜態品牌圖樣）|
+| Where to Buy | `/[locale]/where-to-buy` | ✅ **已切版可運作**（伺服器端分組；頁頂 band 為靜態品牌圖樣）<br>2026-08-31 本機灌入 6 筆據點（en + zh-TW）—— mockup4 的示意資料，網址全為 `#` 故留空 |
 | Contact | `/[locale]/contact` | ✅ **可運作**，送出已恢復（2026-08-28）|
 | Privacy | `/[locale]/privacy` | ✅ **可運作**（Legal 淨化 profile）<br>2026-08-28 前線上是**完全空白**的；條文仍留在 CMS，頁首文案改為前端常數<br>2026-08-31 本機灌入 band 與 6 節條文（en + zh-TW）—— **mockup4 的示意文案，待法務定稿** |
 
