@@ -80,7 +80,7 @@ API 的 Phase 0–7 全數完成，**表單收件匣已於 2026-08-28 補上並�
 | 產品 | `Product` `ProductTranslation` `ProductImage` `ProductRelated` `ProductBodyPart` `ProductCertification` | ✅ 149 筆（匯入後已發布） |
 | 媒體 | `Media` `MediaVariant` `MediaUsage` | ✅ 管線可運作，已上傳 12 張測試圖 |
 | 使用者 | `User` `Role` `UserRole` `RefreshToken` | ✅ 4 角色 + 預設管理者（環境變數注入） |
-| 頁面區段 | `Page` `PageSection` `PageSectionTranslation` | ✅ 18 頁；區段由 schema 目錄同步（目前 6 個） |
+| 頁面區段 | `Page` `PageSection` `PageSectionTranslation` | ✅ 18 頁；區段由 schema 目錄同步（目前 6 個）。`privacy` 兩支已填雙語（取自 mockup4 的**示意條文**，**目前只灌本機**）|
 | 應用方案 | `Application` `ApplicationTranslation` `ProductApplication` | ✅ 7 筆 × 雙語（4 筆含人體圖座標）；內容文案待撰寫 |
 | 文章 | `Article` `ArticleTranslation` `ArticleCategory` `ArticleCategoryTranslation` `ArticleImage` `ArticleTag` `NewsEvent` `NewsEventTranslation` | ✅ 分類 6 筆 × 雙語；`NewsEvent` 為共用 PK 的 1:1 |
 | FAQ | `Faq` `FaqTranslation` `FaqCategory` `FaqCategoryTranslation` | ✅ 分類 3 筆 × 雙語；題目 9 筆 × 雙語（取自 mockup4，**目前只灌本機**）|
@@ -184,7 +184,7 @@ facet 篩選、standalone 產物 66MB／250MB。
 | Downloads | `/[locale]/downloads` | ✅ **已切版可運作**（類型篩選；頁頂 band 為靜態品牌圖樣）|
 | Where to Buy | `/[locale]/where-to-buy` | ✅ **已切版可運作**（伺服器端分組；頁頂 band 為靜態品牌圖樣）|
 | Contact | `/[locale]/contact` | ✅ **可運作**，送出已恢復（2026-08-28）|
-| Privacy | `/[locale]/privacy` | ✅ **可運作**（Legal 淨化 profile）<br>2026-08-28 前線上是**完全空白**的；條文仍留在 CMS，頁首文案改為前端常數 |
+| Privacy | `/[locale]/privacy` | ✅ **可運作**（Legal 淨化 profile）<br>2026-08-28 前線上是**完全空白**的；條文仍留在 CMS，頁首文案改為前端常數<br>2026-08-31 本機灌入 band 與 6 節條文（en + zh-TW）—— **mockup4 的示意文案，待法務定稿** |
 
 **2026-08-28 逐元素照抄**（分支 `feat/mockup4-verbatim`，尚未合併）：
 先前兩輪校正是把 mockup4 的 inline style **翻譯**成 Tailwind arbitrary value，翻譯就會漂移 ——
