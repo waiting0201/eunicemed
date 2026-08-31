@@ -296,6 +296,9 @@ function SubmissionBody({ data }: { data: ContactDetail }) {
     ['主旨', data.subject],
     ['語系', data.locale],
     ['來源 IP', data.ipAddress],
+    // 分數低於門檻的來信會直接被標成垃圾，這一列就是「為什麼」——
+    // 沒有它，編輯者面對的是一封沒有理由的垃圾信（門檻在 Recaptcha__MinScore）
+    ['reCAPTCHA 分數', data.recaptchaScore === null ? null : `${data.recaptchaScore.toFixed(1)} / 1.0`],
   ];
 
   return (

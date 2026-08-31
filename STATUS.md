@@ -37,6 +37,10 @@ API 的 Phase 0–7 全數完成，**表單收件匣已於 2026-08-28 補上並�
 6 個據點、Resources 引用的三份文件 —— 已灌進**正式站**，en 與 zh-TW 皆齊（以公開端點實測）。
 同時修掉切換語系會跳回首頁、以及國際經銷商列表在寬螢幕下裂成兩塊。
 
+**2026-08-31 reCAPTCHA v3**：三支表單接上 Google reCAPTCHA v3。**低分不擋件** ——
+未達門檻（預設 0.5）的來信照樣入庫、狀態直接記成 `spam` 並跳過通知信，
+分數存下來給收件匣顯示；金鑰未設定時整段跳過，表單行為與接上之前相同（見 [docs/13](docs/13-api-roadmap.md)）。
+
 **2026-08-31 媒體修正**：同一個檔案上傳兩次會產生兩列 `Media` 共用同一組 blob，
 刪任一列就把另一列的圖砍成死連結（畫面上只看到破圖）。改為**上傳以檔名去重**
 （雜湊改算「內容 + presetKey」）＋**刪除只刪沒有別列共用的 blob**，並補上
@@ -64,7 +68,7 @@ API 的 Phase 0–7 全數完成，**表單收件匣已於 2026-08-28 補上並�
 |---|---|---|
 | 規格文件 | ✅ | 15 份，見 [CLAUDE.md](CLAUDE.md) §3 |
 | 資料模型 | ✅ | **53 張表**全數完成（`ContactSubmission` 於 2026-08-28 補上，含 `IX_Contact_Ip`；`AuditLog` 於 2026-08-30 移除）|
-| API | ✅ | `AppRouter` 共 **141** 條分派（`PUT or PATCH` 合併寫的算一條）。Phase 0–7 全數完成，契約表上**已無待實作端點**（2026-08-31 補上 `media/{id}/reprocess`）。⚠️ reCAPTCHA 未接（版本與 site key 未拍板）|
+| API | ✅ | `AppRouter` 共 **141** 條分派（`PUT or PATCH` 合併寫的算一條）。Phase 0–7 全數完成，契約表上**已無待實作端點**（2026-08-31 補上 `media/{id}/reprocess` 與 reCAPTCHA v3）|
 | 前台 `apps/web` | ✅ | 18 頁全數可運作，**版型已逐元素照抄 mockup4**（`mockup:check` 18/18 100%，見 §四）；手機／平板已完成並實測；三支表單已恢復送出 |
 | 後台 `apps/admin` | 🟡 | 全部畫面可運作（含表單收件匣）。**2026-08-29 第二次收斂**：側欄 16 → 9 項，圖片改為欄位就地上傳，認證收進「關於我們」、分類與系列收進「產品」（見 [docs/15](docs/15-cms-scope.md) §7）。只剩產品的相關產品拖曳 |
 | 基礎設施 `infra/` | ✅ | 已部署至 `EuniceMedUS`（West US 2）：Storage／Function App／SWA 共 13 個資源 |
@@ -74,7 +78,7 @@ API 的 Phase 0–7 全數完成，**表單收件匣已於 2026-08-28 補上並�
 
 ## 二、資料模型（53 張表）
 
-**53 張全數建立**，11 支 migration。遷移於 Function App 啟動時自動套用。
+**53 張全數建立**，12 支 migration。遷移於 Function App 啟動時自動套用。
 
 ### ✅ 已完成
 
@@ -96,7 +100,7 @@ API 的 Phase 0–7 全數完成，**表單收件匣已於 2026-08-28 補上並�
 | 下載 | `Download` `DownloadTranslation` `ProductDownload` | ✅ 表已建；`FileLocale` 與介面語系刻意分離 |
 | 據點 | `SalesLocation` `SalesLocationTranslation` | ✅ 表已建；6 筆 × 雙語（3 台灣 + 3 國際，取自 mockup4 的**示意資料**，本機與正式站皆已灌）；正式清單待客戶提供 |
 | 導覽 | `MenuItem` `MenuItemTranslation` | ⚠️ 表在但**已無端點也無 UI**，線上一直是空的；導覽寫在前端（docs/15 §7.4）|
-| 表單 | `ContactSubmission` | ✅ 2026-08-28 建表，含 `IX_Contact_Ip`；收件匣可用 |
+| 表單 | `ContactSubmission` | ✅ 2026-08-28 建表，含 `IX_Contact_Ip`；2026-08-31 加 `RecaptchaScore`（nullable，擴張式）|
 | 轉址 | `Redirect` | ✅ `FromPath` 唯一；前端 middleware 執行。slug 改動時由 `RedirectWriter` 自動寫入 |
 | 設定 | `Setting` `SettingTranslation` | ⚠️ 同導覽，表留著但已無端點；公司資訊寫在 `apps/web/lib/company.ts` |
 
@@ -144,7 +148,7 @@ API 的 Phase 0–7 全數完成，**表單收件匣已於 2026-08-28 補上並�
 | `sales-locations` | ✅ | 伺服器端分組；未填 region 者集中於最後一組 |
 | 頁面區段 `pages/{key}` | ✅ | `sections{}` + `refs`、media 已解析、未翻譯區段自動省略 |
 | `menus` / `settings` / `sitemap` / `redirects` | ✅ | sitemap 的語系判定共用 `IsRenderable`，不會宣告空白頁 |
-| `POST /contact` | ✅ | 蜜罐＋速率限制＋必填；先入庫再寄信，SMTP 未設定就跳過寄信。⚠️ reCAPTCHA 未接 |
+| `POST /contact` | ✅ | 蜜罐＋速率限制＋必填＋**reCAPTCHA v3**；先入庫再寄信，SMTP 未設定就跳過寄信。低分不擋件，狀態記成 `spam` 並跳過通知信；未設 `Recaptcha__SecretKey` 時整段跳過 |
 
 ### 後台
 
@@ -164,7 +168,7 @@ API 的 Phase 0–7 全數完成，**表單收件匣已於 2026-08-28 補上並�
 | FAQ／下載／據點 | ✅ | 寫入為 Editor+（無草稿工作流，存檔即生效） |
 | 轉址 | ✅ | 路徑正規化、自我轉址 400、重複來源 409。**沒有後台畫面** —— 舊站對照走 `.http`，日常由 `RedirectWriter` 自動產生 |
 | ~~選單／設定~~ | — | **端點已移除**（2026-08-29，docs/15 §7.4）|
-| 表單收件匣 | ✅ | 列表（篩選＋分頁）／詳情／標記狀態／CSV 匯出；未處理筆數併進 `/admin/summary` |
+| 表單收件匣 | ✅ | 列表（篩選＋分頁）／詳情／標記狀態／CSV 匯出；未處理筆數併進 `/admin/summary`。詳情帶 `recaptchaScore` |
 
 ---
 
@@ -193,7 +197,7 @@ facet 篩選、standalone 產物 66MB／250MB。
 | News／News Detail | `/[locale]/news[/{slug}]` | ✅ **已切版可運作**（含活動面板、圖庫、prev/next；列表頁頂 band 為靜態品牌圖樣）|
 | Downloads | `/[locale]/downloads` | ✅ **已切版可運作**（類型篩選；頁頂 band 為靜態品牌圖樣）|
 | Where to Buy | `/[locale]/where-to-buy` | ✅ **已切版可運作**（伺服器端分組；頁頂 band 為靜態品牌圖樣）<br>2026-08-31 灌入 6 筆據點（en + zh-TW，本機與正式站）—— mockup4 的示意資料，網址全為 `#` 故留空 |
-| Contact | `/[locale]/contact` | ✅ **可運作**，送出已恢復（2026-08-28）|
+| Contact | `/[locale]/contact` | ✅ **可運作**，送出已恢復（2026-08-28）；2026-08-31 接上 reCAPTCHA v3（無 widget，表單下方為 Google 要求的聲明）|
 | Privacy | `/[locale]/privacy` | ✅ **可運作**（Legal 淨化 profile）<br>2026-08-28 前線上是**完全空白**的；條文仍留在 CMS，頁首文案改為前端常數<br>2026-08-31 灌入 band 與 6 節條文（en + zh-TW，本機與正式站）—— **mockup4 的示意文案，待法務定稿** |
 
 **2026-08-28 逐元素照抄**（原分支 `feat/mockup4-verbatim`，已併入 `main`）：
@@ -252,7 +256,7 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 | 媒體欄位（無獨立畫面）| ✅ 每個圖片／檔案欄位就地上傳本機檔：尺寸與比例提示、非阻擋警告、alt 輸入格、圖庫可多選依序上傳、**PDF 直傳＋登記**<br>刻意放棄：引用反查、刪除媒體、reprocess |
 | ~~導覽選單／轉址／設定~~ | **已移除**（2026-08-29，見 [docs/15](docs/15-cms-scope.md) §7.4／§7.5）|
 | 使用者 | ✅ 可運作（角色、停用、重設密碼、解鎖、刪除）|
-| 表單收件匣 | ✅ 可運作（依類型／狀態篩選、分頁、詳情對話框、標記已處理／垃圾、CSV 匯出）<br>不掛完整度儀表 —— 來信沒有翻譯這個維度；側欄改用未處理筆數徽章 |
+| 表單收件匣 | ✅ 可運作（依類型／狀態篩選、分頁、詳情對話框、標記已處理／垃圾、CSV 匯出、詳情顯示 reCAPTCHA 分數）<br>不掛完整度儀表 —— 來信沒有翻譯這個維度；側欄改用未處理筆數徽章 |
 
 ---
 
@@ -332,7 +336,7 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 | ~~6~~ | ~~149 筆產品的 zh-TW 翻譯~~ | **已解除**（2026-08-19，125 個品名 + 285 句 feature，品牌詞與型號保留英文）<br>⚠️ **譯文未經客戶審閱**，其中 features 屬醫療器材療效宣稱，正式對外前建議由客戶或法務確認 |
 
 | 7 | **2026-08-28 新譯的 zh-TW 版面文案**（About / Resources / Products / Partnership / Privacy 五頁，約 90 條）| ⚠️ 與 149 筆產品譯文同樣**未經客戶審閱**。英文逐字取自 mockup4，中文是新譯的 —— 五頁在此之前 DB 是空的，沒有既有中文可沿用 |
-| 8 | **reCAPTCHA 版本與 site key** | `POST /contact` 目前只有蜜罐＋速率限制 |
+| 8 | **reCAPTCHA 的 site key / secret key**（版本已定 v3，門檻 0.5）| **不擋上線** —— 未設金鑰時前端不載腳本、後端跳過驗證，表單行為與接上之前相同。接線已備妥：`gh variable set NEXT_PUBLIC_RECAPTCHA_SITE_KEY` + `gh secret set RECAPTCHA_SECRET_KEY`，各重跑一次 `web.yml` 與 `infra.yml` 即生效（順序見 [docs/07](docs/07-azure-deployment.md) §6.4）|
 
 > **已解除**：媒體變體階梯（2026-08-17 定案採階梯，見 [docs/11](docs/11-media-specs.md) §2a）—— Phase 3 可開工。
 

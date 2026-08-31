@@ -5,6 +5,7 @@ using EuniceMed.Api.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace EuniceMed.Api.Handlers;
 
@@ -23,15 +24,23 @@ namespace EuniceMed.Api.Handlers;
 /// </para>
 ///
 /// <para>
-/// ⚠️ 目前的防濫用只有三道：前台的蜜罐欄位、行程內的 IP token bucket
-/// （<see cref="ContactRateLimiter"/>，跨實例無效），以及必填檢查。
-/// reCAPTCHA 的版本與 site key 尚未拍板（CLAUDE.md §7），還沒接。
+/// 防濫用四道：前台的蜜罐欄位、行程內的 IP token bucket
+/// （<see cref="ContactRateLimiter"/>，跨實例無效）、必填檢查，
+/// 以及 **reCAPTCHA v3**（<see cref="RecaptchaVerifier"/>）。
+/// </para>
+///
+/// <para>
+/// ⚠️ **reCAPTCHA 低分不擋件，只把狀態記成 <c>spam</c>。** 這三支表單就是這個站的
+/// 商業目的，為了一個猜出來的門檻丟掉真的詢價，比收下幾封垃圾信貴得多；
+/// 收件匣本來就有 spam 篩選，複核成本接近零。
 /// </para>
 /// </summary>
 public sealed class ContactHandler(
-    AppDbContext        db,
-    ContactRateLimiter  rateLimiter,
-    EmailSender         email)
+    AppDbContext            db,
+    ContactRateLimiter      rateLimiter,
+    EmailSender             email,
+    RecaptchaVerifier       recaptcha,
+    ILogger<ContactHandler> logger)
 {
     // ── 公開 ───────────────────────────────────────────────────────────────
 
@@ -52,6 +61,10 @@ public sealed class ContactHandler(
         if (!mail.Contains('@'))
             throw AppException.BadRequest("email 格式不正確。");
 
+        // 驗在必填檢查之後、入庫之前。分數只影響**狀態**，不影響收不收
+        var verdict = await recaptcha.VerifyAsync(
+            body.RecaptchaToken, IpRateLimiter.ClientIp(req), req.HttpContext.RequestAborted);
+
         var entity = new ContactSubmission
         {
             Type            = ParseType(body.Type),
@@ -67,6 +80,8 @@ public sealed class ContactHandler(
             Locale          = body.Locale is null ? null : Locales.Normalize(body.Locale),
             // 記錄用，不可信 —— 見 ContactSubmission.IpAddress
             IpAddress       = Trim(body.IpAddress) ?? IpRateLimiter.ClientIp(req),
+            RecaptchaScore  = verdict.Score,
+            Status          = verdict.Passed ? ContactStatus.Received : ContactStatus.Spam,
         };
 
         // 產品詢價：以 SKU 反查產品。查不到就只留快照 —— 舊網址、改過型號的產品
@@ -78,7 +93,12 @@ public sealed class ContactHandler(
         db.ContactSubmissions.Add(entity);
         await db.SaveChangesAsync();   // ← 入庫成功就是送件成功
 
-        await email.SendAsync(NotificationSubject(entity), NotificationBody(entity));
+        // 被標成 spam 的不寄通知信 —— 標記的用意就是把它擋在人的注意力之外。
+        // 信箱裡照樣塞滿垃圾的話，這個機制等於沒做。收件匣仍看得到。
+        if (verdict.Passed)
+            await email.SendAsync(NotificationSubject(entity), NotificationBody(entity));
+        else
+            LogFlagged(entity, verdict);
 
         return new ObjectResult(ApiResponse.Ok(new { id = entity.Id }, "訊息已送出。")) { StatusCode = 201 };
     }
@@ -215,7 +235,16 @@ public sealed class ContactHandler(
     private static ContactDetail ToDetailDto(ContactSubmission x) => new(
         x.Id, TypeName(x.Type), StatusName(x.Status), x.Name, x.Email, x.Phone,
         x.Company, x.Country, x.PartnershipType, x.ProductId, x.ProductSku,
-        x.Subject, x.Message, x.Locale, x.IpAddress, x.CreatedAt);
+        x.Subject, x.Message, x.Locale, x.IpAddress, x.RecaptchaScore, x.CreatedAt);
+
+    /// <summary>
+    /// 被標成 spam 的來信不寄通知信，所以 log 是唯一看得到「剛剛擋掉什麼」的地方。
+    /// 門檻調得太緊時，這幾行就是證據。
+    /// </summary>
+    private void LogFlagged(ContactSubmission x, RecaptchaResult verdict) =>
+        logger.LogInformation(
+            "Contact submission {Id} flagged as spam: score={Score} reason={Reason} ip={Ip}",
+            x.Id, verdict.Score, verdict.Reason, x.IpAddress);
 
     private static string NotificationSubject(ContactSubmission x) =>
         $"[EuniceMed] {TypeName(x.Type)} enquiry from {x.Name}";
@@ -240,7 +269,7 @@ public sealed class ContactHandler(
 public sealed record SubmitContactRequest(
     string? Type, string? Name, string? Email, string? Phone, string? Company,
     string? Country, string? PartnershipType, string? ProductSku, string? Subject,
-    string? Message, string? Locale, string? IpAddress);
+    string? Message, string? Locale, string? IpAddress, string? RecaptchaToken);
 
 public sealed record UpdateContactStatusRequest(string? Status);
 
@@ -252,4 +281,4 @@ public sealed record ContactDetail(
     Guid Id, string Type, string Status, string Name, string Email, string? Phone,
     string? Company, string? Country, string? PartnershipType, Guid? ProductId,
     string? ProductSku, string? Subject, string Message, string? Locale,
-    string? IpAddress, DateTime CreatedAt);
+    string? IpAddress, double? RecaptchaScore, DateTime CreatedAt);

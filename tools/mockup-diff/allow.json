@@ -37,6 +37,8 @@
     "display:none": "同上，Safari 的 ::-webkit-details-marker。",
     "transform:rotate(45deg)": "mockup4 用 JS 算出 `rotate(${isOpen ? 45 : 0}deg)`；本站用原生 <details>，展開角度寫在 globals.css 的 `.m4-faq[open]`，值相同。",
     "color:#b3261e": "表單送出失敗的錯誤訊息。mockup4 的表單不會送出，所以沒有錯誤狀態；此色為 Material 的 error 色，與品牌青、墨色都拉得開。",
+    "margin-top:12px;font-size:.78rem;line-height:1.5;color:#6b7a80": "reCAPTCHA 的法律聲明（RecaptchaNotice）。mockup4 沒有 reCAPTCHA，但 Google 允許隱藏右下角徽章的條件，就是在表單上明示這段文字並連到隱私權政策與服務條款 —— 少了它就是違反使用條款。字級與灰階取表單既有的說明文字。",
+    "color:#6b7a80;text-decoration:underline": "同上，聲明裡連到 Google 政策的兩個連結。底線是為了在灰字上仍看得出可點。",
     "margin:28px 0 8px": ".m4-prose 的 h3。mockup4 的示範文章只用到 h2，但 CMS 的內文可以有第三層標題。級距沿用 h2 的比例縮一階。",
     "min-width:0": "grid 子項預設 min-width:auto，長字串（無空白的網址）會把欄位撐開。mockup4 是靜態稿，內容長度可控。",
     "scroll-margin-top:100px": "側欄目錄跳到 h2 時要避開黏在頂部的頁首（76px）。mockup4 的目錄連結是 href=\"#\"，不會真的跳。",

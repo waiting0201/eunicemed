@@ -89,6 +89,26 @@ docker run -d --name mailpit -p 1025:1025 -p 8025:8025 axllent/mailpit
 
 Web UI 在 <http://localhost:8025>，可看到 contact 表單送出的通知信。`local.settings.json` 的 `Smtp__Host=localhost` / `Smtp__Port=1025` 已對應此設定。
 
+### 2.4 reCAPTCHA（本機預設關閉）
+
+`local.settings.json` 的 `Recaptcha__Disabled=true` —— 表單照常送出、狀態一律 `received`。
+**本機不必也不該接真金鑰**：v3 的 site key 綁網域，`localhost` 拿不到有意義的分數。
+
+要驗「低分被標成 spam」那條路徑，把驗證端點指到一支假服務：
+
+```jsonc
+// Api/local.settings.json
+"Recaptcha__Disabled": "false",
+"Recaptcha__SecretKey": "任意非空字串",
+"Recaptcha__VerifyUrl": "http://127.0.0.1:8099/"   // 回固定分數的假服務
+```
+
+假服務只要對 POST 回 `{"success":true,"score":0.1}` 即可（做法見 `Api/http/phase7-contact.http` §3）。
+⚠️ **驗完要還原** —— 這三個值留著會讓本機的表單一直被標成垃圾。
+
+前端的 `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` 空著就是不啟用：不載 Google 腳本、不帶 token、
+表單下方也不顯示那段法律聲明。
+
 ---
 
 ## 3. 每天啟動

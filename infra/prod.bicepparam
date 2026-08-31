@@ -15,3 +15,7 @@ param siteUrl = 'https://www.eunicemed.com'
 // CI 走的是同一組值，存在 GitHub Actions Secrets（見 .github/workflows/infra.yml）。
 param jwtSigningKey = readEnvironmentVariable('JWT_SIGNING_KEY', '')
 param sqlConnectionString = readEnvironmentVariable('SQL_CONNECTION_STRING', '')
+
+// 尚未取得。**留空就是不啟用**：Bicep 不寫這個 App Setting，API 端跳過驗證，
+// 表單行為與接上之前相同。拿到之後在 GitHub Secrets 設 `RECAPTCHA_SECRET_KEY` 即可。
+param recaptchaSecretKey = readEnvironmentVariable('RECAPTCHA_SECRET_KEY', '')

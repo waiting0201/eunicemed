@@ -315,7 +315,7 @@
 
 | Method | Path | 權限 | 說明 |
 |---|---|---|---|
-| POST | `/contact` | 公開 | honeypot（前台）+ 速率限制（10 / 10 分鐘）；**先入庫再寄信**，SMTP 失敗仍回 201。⚠️ reCAPTCHA 尚未接（版本與 site key 未拍板）|
+| POST | `/contact` | 公開 | honeypot（前台）+ 速率限制（10 / 10 分鐘）+ **reCAPTCHA v3**（`recaptchaToken`）；**先入庫再寄信**，SMTP 失敗仍回 201。⚠️ **低分不擋件**：未達 `Recaptcha__MinScore` 者照樣 201、狀態記成 `spam` 且不寄通知信 |
 | GET | `/admin/contact-submissions?type=&status=&page=` | 登入 | 含 Viewer。`PagedResult` |
 | GET | `/admin/contact-submissions/export?type=&status=` | 登入 | CSV（帶 BOM）。**順序敏感：必須排在 `{id}` 之前** |
 | GET | `/admin/contact-submissions/{id}` | 登入 | 單筆詳情 |

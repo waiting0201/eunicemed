@@ -200,8 +200,16 @@ richtext 的伺服器端淨化與 SVG 清洗**已完成**（見下）。
   逐次打 API 會把後端請求量放大到與流量同級。取不到時**放行不擋** ——
   轉址是錦上添花，後端掛掉時使用者應該還能瀏覽網站。
 
-**尚未完成**：`POST /contact`（先入庫再寄信）、MailKit、表單收件匣、`ContactSubmission` 資料表。
-全部擋於 🔴 **SMTP 主機／帳密／每日寄送上限**（CLAUDE.md §7）—— 寄送上限會回頭決定速率限制的數字。
+**2026-08-28 補齊**：`POST /contact`（先入庫再寄信）、MailKit、表單收件匣、`ContactSubmission` 資料表。
+**不再擋於 SMTP** —— 送件成功的定義是入庫成功，`Smtp:Host` 未設定時跳過寄信只記 log。
+
+**2026-08-31 補上 reCAPTCHA v3**（驗收：`phase7-contact.http` §3）。定案兩件事：
+
+- **低分不擋件，只把狀態記成 `spam` 並跳過通知信。** 三支表單就是這個站的商業目的，
+  為了一個猜出來的門檻丟掉真的詢價，比收下幾封垃圾信貴得多；收件匣本來就有 spam 篩選。
+  分數存進 `ContactSubmission.RecaptchaScore`，詳情頁顯示 —— 沒有它，編輯者面對的是一封沒有理由的垃圾信。
+- **驗證服務連不上、或金鑰未設定時放行**（與 `EmailSender` 同一個模式）。
+  Google 掛掉是我們的問題，不是送件者的問題。
 
 ### ⬜ Phase 8 — 部署 · 2–3 天
 
@@ -735,6 +743,19 @@ Jabez 的 `Clock.Now` 回台北時間；本專案回 **UTC**，因為 [05](05-da
 **取名前先想一下該名稱是否可能與所依賴套件的公開型別衝突**，
 尤其是 `Json`、`Media`、`Schema`、`Registry` 這類通用詞。
 現名 `PageSchemaRegistry`，語意上也更精確。
+
+### 2026-08-31 · reCAPTCHA 沒有 v3 的官方測試金鑰
+
+Google 文件上那組「一律通過」的測試金鑰**只有 v2**：拿它的 secret 去 siteverify，
+回的是 `{"success":true,"hostname":"testkey.google.com"}` —— **沒有 `score` 欄位**。
+所以在拿到真的 site key 之前，分數門檻那條分支用真金鑰是驗不到的。
+
+作法是把驗證端點做成可設定（`Recaptcha__VerifyUrl`），本機指到一支回固定分數的假服務，
+才驗得到 0.1 → 標記 spam、0.9 → 正常收件。這個設定本身也有正當用途：
+google.com 連不到的地區要改用 `www.recaptcha.net`。
+
+驗過的四條路徑：真金鑰（success 無分數）→ 收件、沒帶 token → 標記、
+假服務低分 → 標記且存下分數、驗證服務關掉 → 放行。
 
 ### 2026-08-31 · 兩列 Media 共用同一組 blob，刪一列會砍掉另一列的圖
 

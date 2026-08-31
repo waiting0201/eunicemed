@@ -201,6 +201,17 @@ public class ContactSubmission
 
     public byte     Status    { get; set; } = ContactStatus.Received;
     public DateTime CreatedAt { get; set; }
+
+    /// <summary>
+    /// reCAPTCHA v3 的分數（0.0–1.0）。未啟用、驗不成或 v2 時為 null。
+    ///
+    /// <para>
+    /// 低於門檻者<see cref="Status"/>直接記成 <see cref="ContactStatus.Spam"/>，
+    /// **但仍然入庫** —— 分數留著，是為了讓編輯者在收件匣看得出「為什麼被標成垃圾」，
+    /// 而不是面對一封沒有理由的信（見 <c>RecaptchaVerifier</c>）。
+    /// </para>
+    /// </summary>
+    public double? RecaptchaScore { get; set; }
 }
 
 // ── 應用方案 ───────────────────────────────────────────────────────────────

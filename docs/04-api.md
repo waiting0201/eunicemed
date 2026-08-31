@@ -408,7 +408,12 @@ POST /api/contact
 }
 → 201 { "id": "...", "status": "received" }
 ```
-- 驗證欄位（依 `type` 條件必填）+ reCAPTCHA + honeypot；限流（IP/分鐘，**自製 token bucket** —— 本案無 WAF/APIM）。
+- 驗證欄位（依 `type` 條件必填）+ **reCAPTCHA v3** + honeypot；限流（IP/分鐘，**自製 token bucket** —— 本案無 WAF/APIM）。
+  - ⚠️ **reCAPTCHA 低分不擋件。** 未達 `Recaptcha__MinScore`（預設 0.5）者照樣 `201`、照樣入庫，
+    只是 `Status` 直接記成 `spam`、跳過通知信，並把分數存進 `RecaptchaScore` 供收件匣顯示。
+    三支表單是這個站的商業目的，為了一個猜出來的門檻丟掉真的詢價，比收下幾封垃圾信貴得多。
+  - 沒帶 token（機器人直接打 API）同樣是標記而非拒絕；**驗證服務連不上時放行**，
+    未設 `Recaptcha__SecretKey` 時整段跳過（與 SMTP 同一個模式）。
 - 寫入 `ContactSubmission`，**再**以品牌方既有信箱的 **SMTP**（MailKit）寄信通知 `service@comfortplus-medical.com`。
   - **順序不可顛倒**：先入庫再寄信。SMTP 失敗只記 log 並回 `201`，不得讓端點回錯造成訪客重複送出。
   - 寄件網域需設 SPF（必要時 DKIM），否則通知信易被判垃圾；若信箱有每日寄送量上限，需納入速率限制考量。

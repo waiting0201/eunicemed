@@ -184,7 +184,17 @@ Flex Consumption **不支援 deployment slot**。API 部署即為就地更新（
 | `Maintenance__Key` | 隨機字串 | `POST /admin/maintenance/*` 需要，尚未設定 |
 | `Seed__AdminEmail` / `Seed__AdminPassword` / `Seed__AdminDisplayName` | 選填 | 只在 `User` 表為空時建立第一個管理者。**正式環境目前未設**，需另行建帳號 |
 | `Smtp__Host` / `Smtp__Port` / `Smtp__Username` / `Smtp__Password` / `Smtp__From` / `Smtp__To` | 品牌方提供 | 尚未取得（§6.3）|
-| `Recaptcha__SecretKey` | Google | 尚未取得 |
+| `Recaptcha__SecretKey` | Google | 尚未取得。由 **GitHub Secret `RECAPTCHA_SECRET_KEY`** → `infra.yml` → Bicep 參數寫入；留空則整項不寫。未設定時 API 跳過驗證，表單照常運作（與 SMTP 同一個模式）|
+| `Recaptcha__MinScore` | 選填，預設 `0.5` | v3 低於此分數者仍入庫，但狀態記成 `spam` 且不寄通知信 |
+| `Recaptcha__Disabled` | 選填 | `true` 時即使有 secret 也不驗（預覽環境用）|
+| `Recaptcha__VerifyUrl` | 選填 | 預設 `https://www.google.com/recaptcha/api/siteverify`。google.com 連不到的地區改成 `https://www.recaptcha.net/...`（前端腳本網域要一起換）|
+
+> ⚠️ **App Settings 是整批取代的。** ARM 的 `siteConfig.appSettings` 每次部署都以範本裡那一份
+> 覆蓋整個清單 —— 用 `az functionapp config appsettings set` 手動加的鍵，會在下一次
+> `infra.yml` 部署時被**靜靜洗掉**（不會有錯誤，只是那個功能忽然不動了）。
+>
+> 所以拿到金鑰時的正確作法是**加成 Bicep 參數 + GitHub Secret**（reCAPTCHA 已照此接好），
+> 不是下一行 az 指令。SMTP 那組目前還沒接，補的時候要照同一個形狀做。
 
 `functionAppConfig` 裡另外三個值也會讓 host 起不來：
 
@@ -241,9 +251,24 @@ MI 需要的角色（`infra/main.bicep` 已寫好，範圍是整個帳戶）：
 | `NEXT_PUBLIC_API_BASE` | 同上（`/admin` SPA 用） |
 | `NEXT_PUBLIC_MEDIA_BASE` | `https://steunicemedprod.blob.core.windows.net/media` |
 | `NEXT_PUBLIC_SITE_URL` | `https://www.eunicemed.com` |
+| `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | reCAPTCHA v3 的 site key，**尚未取得**。存成 GitHub **variable**（不是 secret —— 它本來就會被內嵌進公開 bundle）。空著就是不啟用：不載 Google 腳本、不帶 token、表單下方也不顯示那段法律聲明 |
 
 > SWA 的環境變數需**同時**設在 GitHub Actions build step（build-time，`gh variable set`）
 > 與 SWA 資源的 Environment variables（request-time，由 Bicep 設定）。
+>
+> **reCAPTCHA 金鑰到手時只要兩個指令**（不必改任何程式碼）：
+>
+> ```bash
+> gh variable set NEXT_PUBLIC_RECAPTCHA_SITE_KEY --body '6Lc...'   # 前端，build-time
+> gh secret   set RECAPTCHA_SECRET_KEY          --body '6Lc...'   # 後端，經 Bicep 寫進 App Settings
+> ```
+>
+> site key 是 **build 時內嵌**的，設完要重跑一次 `web.yml`（推一個 commit 或手動 dispatch）；
+> secret key 要重跑 `infra.yml`（需 `prod` environment 人工核准）。兩支各跑一次才會同時生效。
+>
+> ⚠️ **順序有差，先 site key、後 secret。** 只有 site key 時，前端帶 token 但後端沒 secret
+> 不驗，一律 `received` —— 無害。反過來只有 secret key 時，前端不帶 token，後端會把
+> **每一封來信**都標成 `spam` 且不寄通知信，而且不會有任何錯誤訊息。
 >
 > ⚠️ **URL 裡沒有版本段。** 早期文件寫 `/api/v1`，實作從來沒有 —— `host.json` 的
 > `routePrefix` 是 `api`，端點就是 `/api/collections`。設成 `/api/v1` 的症狀是
@@ -388,7 +413,7 @@ az monitor app-insights query --app appi-eunicemed-prod -g EuniceMedUS \
 - [ ] Function App CORS 僅允許正式網域
 - [ ] 圖片走 Blob 直連，未經 SWA 圖片優化端點
 - [ ] SMTP 寄信實測成功，且寄信失敗不影響表單入庫
-- [ ] `POST /contact` 速率限制與 reCAPTCHA 生效
+- [ ] `POST /contact` 速率限制與 reCAPTCHA 生效（需先設 `Recaptcha__SecretKey` 與 `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`；後者是 build-time，設完要重新 build）
 - [ ] Azure Monitor 告警（Function 失敗、5xx、SWA 頻寬）已設定並測過通知
 - [ ] Blob soft delete + versioning 已開啟
 - [ ] 已與客戶確認 SQL 備份保留期與還原程序

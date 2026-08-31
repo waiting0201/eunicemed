@@ -38,6 +38,8 @@ jobs:
         env:
           JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY }}
           SQL_CONNECTION_STRING: ${{ secrets.SQL_CONNECTION_STRING }}
+          # 未設定就是空字串，Bicep 會整項不寫（見 main.bicep 的 recaptchaSecretKey）
+          RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
         run: |
           az deployment group what-if \
             --resource-group EuniceMedUS \
@@ -64,6 +66,8 @@ jobs:
         env:
           JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY }}
           SQL_CONNECTION_STRING: ${{ secrets.SQL_CONNECTION_STRING }}
+          # 未設定就是空字串，Bicep 會整項不寫（見 main.bicep 的 recaptchaSecretKey）
+          RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
         run: |
           az deployment group create \
             --resource-group EuniceMedUS \

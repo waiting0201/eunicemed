@@ -1043,4 +1043,6 @@ export type ContactDetail = ContactListItem & {
   productId: string | null;
   message: string;
   ipAddress: string | null;
+  /** reCAPTCHA v3 的 0.0–1.0 分數。未啟用或驗不成時為 null */
+  recaptchaScore: number | null;
 };

@@ -21,6 +21,7 @@
     "Smtp__EnableSsl": "false",
     "Recaptcha__Disabled": "true",
     "Recaptcha__SecretKey": "REPLACE_WITH_RECAPTCHA_SECRET",
+    "Recaptcha__MinScore": "0.5",
     "Maintenance__Key": "dev",
     "Seed__AdminEmail": "admin@example.com",
     "Seed__AdminPassword": "REPLACE_WITH_AT_LEAST_12_CHARS",

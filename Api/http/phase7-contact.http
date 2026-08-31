@@ -109,3 +109,40 @@ GET {{host}}/admin/contact-submissions
 ### 2i 側欄徽章：summary 應含 contact-submissions 的未處理筆數
 GET {{host}}/admin/summary
 Authorization: Bearer {{at}}
+
+###############################################################################
+# 3. reCAPTCHA v3（2026-08-31）
+#
+# 前提：`Recaptcha__SecretKey` 有值且 `Recaptcha__Disabled` 不是 true。
+# ⚠️ **低分不擋件**：以下每一條都回 201，差別只在入庫的 Status 與有沒有寄通知信。
+###############################################################################
+
+### 3a 帶 token → Google 測試 secret 回 success 但**沒有 score** → Status=received
+# 測試 secret：6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe（Google 文件的公開測試金鑰，只有 v2）
+POST {{host}}/contact
+Content-Type: application/json
+
+{ "type": "general", "name": "Case A", "email": "a@example.com", "message": "hi", "recaptchaToken": "anything" }
+
+### 3b 沒帶 token（機器人直接打 API）→ Status=spam、不寄信
+POST {{host}}/contact
+Content-Type: application/json
+
+{ "type": "general", "name": "Case B", "email": "b@example.com", "message": "hi" }
+
+### 3c 分數門檻
+# v3 沒有官方測試金鑰（見 docs/13 踩坑），要驗門檻得把 Recaptcha__VerifyUrl 指到假服務：
+#   Recaptcha__VerifyUrl = http://127.0.0.1:8099/
+#   假服務：token 為 "low" 回 score 0.1，其餘回 0.9
+# 預期：low → Status=spam 且 RecaptchaScore=0.1；high → Status=received 且 0.9
+POST {{host}}/contact
+Content-Type: application/json
+
+{ "type": "general", "name": "Score low", "email": "low@example.com", "message": "hi", "recaptchaToken": "low" }
+
+### 3d 驗證服務連不上 → **放行**（Status=received、分數 null）
+# 把上面那支假服務關掉再送一次即可。Google 掛掉不是送件者的問題。
+
+### 3e 後台詳情要帶 recaptchaScore（收件匣靠它說明為什麼被標成垃圾）
+GET {{host}}/admin/contact-submissions/{{submissionId}}
+Authorization: Bearer {{at}}

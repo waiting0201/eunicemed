@@ -1,8 +1,10 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { css } from '@/lib/css';
 import { submitContact, type ContactState } from '@/app/[locale]/contact/actions';
+import { loadRecaptcha, withRecaptcha } from '@/lib/recaptcha';
+import { RecaptchaNotice } from './RecaptchaNotice';
 import type { Locale } from '@/lib/locale';
 
 /**
@@ -72,6 +74,13 @@ const S = {
   status: css`font-size:.95rem;`,
 } as const;
 
+/**
+ * 送出前補上 reCAPTCHA token。**寫在模組層**：每次 render 都新建一個 action
+ * 會讓 `useActionState` 每次都拿到不同的 reducer。
+ * `partnership_form` 是 v3 的 action 名稱，Google 後台的分數分佈會照它分開看。
+ */
+const submit = withRecaptcha(submitContact, 'partnership_form');
+
 export function PartnershipForm({
   locale,
   types,
@@ -82,9 +91,14 @@ export function PartnershipForm({
   submitLabel: string;
 }) {
   const c = COPY[locale];
-  const [state, action, pending] = useActionState<ContactState, FormData>(submitContact, {
+  const [state, action, pending] = useActionState<ContactState, FormData>(submit, {
     status: 'idle',
   });
+
+  // v3 的分數來自它對使用者行為的觀察，所以表單一出現就載腳本，不是等按下送出
+  useEffect(() => {
+    void loadRecaptcha();
+  }, []);
 
   if (state.status === 'ok') {
     return (
@@ -155,6 +169,8 @@ export function PartnershipForm({
       <button type="submit" disabled={pending} style={S.submit} className="disabled:opacity-60">
         {pending ? c.sending : submitLabel}
       </button>
+
+      <RecaptchaNotice locale={locale} />
     </form>
   );
 }

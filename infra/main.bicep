@@ -59,6 +59,19 @@ param jwtSigningKey string
 @secure()
 param sqlConnectionString string
 
+@description('''
+reCAPTCHA v3 的 secret key（寫入 App Setting `Recaptcha__SecretKey`）。
+
+**留空就不寫這一項**，API 端因此跳過驗證、表單照常運作
+（`Api/Services/RecaptchaVerifier.cs`）。前端的 site key 是另一回事 ——
+它是 build-time 的 GitHub variable `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`（docs/07 §6.4）。
+
+⚠️ **這一項必須留在這裡，不能事後用 `az functionapp config appsettings set` 補。**
+ARM 的 `appSettings` 是整批取代：手動加的鍵會在下一次 infra 部署時被這份範本洗掉。
+''')
+@secure()
+param recaptchaSecretKey string = ''
+
 // Storage 帳戶名稱不可有連字號，且全域唯一
 var storageName = 'st${namePrefix}prod'
 var functionAppName = 'func-${namePrefix}-prod'
@@ -199,7 +212,7 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
         allowedOrigins: [ siteUrl, 'https://${staticWebApp.properties.defaultHostname}' ]
         supportCredentials: false
       }
-      appSettings: [
+      appSettings: concat([
         // Flex Consumption 的 host 儲存體以 MI 存取，不放連線字串
         {
           // Functions host 自己的儲存體。**用連線字串而非 Managed Identity** ——
@@ -266,10 +279,20 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: insights.properties.ConnectionString
         }
-        // SMTP 與 reCAPTCHA 的值尚未取得（CLAUDE.md §7）。
-        // 刻意不在這裡放空字串佔位 —— 空的 Smtp__Host 會讓寄信在執行期才失敗，
-        // 而缺少設定會在啟動時就講清楚。拿到之後用 az functionapp config appsettings set 補。
-      ]
+        // SMTP 的值尚未取得（CLAUDE.md §7）。刻意不放空字串佔位 ——
+        // 空的 Smtp__Host 會讓寄信在執行期才失敗，缺少設定則在啟動時就講清楚。
+        //
+        // ⚠️ 拿到之後**要照下面 reCAPTCHA 的作法加成參數**，不要用
+        // `az functionapp config appsettings set` 手動補：ARM 的 appSettings 是整批取代，
+        // 手動加的鍵會在下一次 infra 部署時被這份範本靜靜洗掉。
+      ],
+      // 空值就整項不寫（見 recaptchaSecretKey 的說明）
+      empty(recaptchaSecretKey) ? [] : [
+        {
+          name: 'Recaptcha__SecretKey'
+          value: recaptchaSecretKey
+        }
+      ])
     }
   }
 }

@@ -82,6 +82,7 @@ var host = new HostBuilder()
         services.AddSingleton<LoginRateLimiter>();
         services.AddSingleton<ContactRateLimiter>();
         services.AddSingleton<EmailSender>();
+        services.AddSingleton<RecaptchaVerifier>();
 
         // ── Dapper 讀取服務 ────────────────────────────────────────────────
         services.AddScoped<ICollectionReadService, CollectionReadService>();

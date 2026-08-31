@@ -86,6 +86,10 @@ export async function submitContact(
         country: str('country'),
         partnershipType: str('partnershipType'),
         productSku: str('productSku'),
+        // reCAPTCHA v3。表單元件在送出前補上（lib/recaptcha.ts）；
+        // 沒有 site key、或 Google 的腳本載不起來時就是 null —— 後端不會因此拒收，
+        // 只會把那封信在收件匣標成 spam
+        recaptchaToken: str('recaptchaToken'),
       }),
     });
 

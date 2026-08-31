@@ -191,7 +191,9 @@ export async function getProductPage(
   - `general`（Contact 頁）
   - `product`（產品詳情頁詢價，附 `productSlug`）
   - `partnership`（Partnership 頁，附公司/國家欄位）
-- client component + zod 驗證；reCAPTCHA v3 token 隨送。
+- client component；reCAPTCHA v3 token 由 `lib/recaptcha.ts` 的 `withRecaptcha` 在送出前補上（**包在 Server Action 外層**，不是隱藏欄位 —— token 兩分鐘就過期）。
+- 徽章以 `globals.css` 隱藏（會疊到浮動聯絡按鈕），改在表單下方顯示 Google 要求的聲明（`RecaptchaNotice`）—— 兩者必須成對存在，否則違反使用條款。
+- 沒設 `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` 時整支是 no-op：不載腳本、不帶 token、不顯示聲明。
 - 成功顯示確認、失敗顯示錯誤。
 - 防濫用：honeypot 欄位 + 前端節流；真正防護在 API 端。
 

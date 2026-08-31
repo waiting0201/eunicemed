@@ -237,7 +237,6 @@ EuniceMed/
       形狀取自 `.ai` 原稿的加號，但單獨使用是本專案的延伸；完整 logo 在 16–32px 讀不出來。
       客戶若有正式 icon 版本，換掉 `apps/web/app/favicon.ico`、`apps/web/public/brand/eunicemed-mark.png`
       與 `apps/admin/src/assets/eunicemed-mark.png` 三處。見 [docs/08](docs/08-design.md) §3
-- [ ] reCAPTCHA 用哪個版本（v2 checkbox / v2 invisible / v3 score）？v3 需決定分數門檻。另 [07](docs/07-azure-deployment.md) §6.4 只有後端 `Recaptcha__SecretKey`，缺前端 site key
 - [ ] `mockup/`、`mockup2/`、`mockup3/`（共約 120MB 的早期版型）要不要納入版控？目前以 `.gitignore` 擋著 —— 圖片進了 git 歷史就拿不掉了
 
 ### 🔵 內容與範圍，不擋當前階段
@@ -256,6 +255,8 @@ EuniceMed/
 ### 已封閉
 
 - [x] CMS 後台管理者驗證：**自建 JWT + Identity**（方案內無 Entra ID 資源）
+- [x] **reCAPTCHA 版本：v3（分數制），門檻 0.5，低分不擋件只標成 `spam`**（2026-08-31 實作）。
+      金鑰仍待取得，但**不擋上線** —— 未設 `Recaptcha__SecretKey` / `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` 時整段跳過，表單行為與接上之前相同
 - [x] **重複上傳共用 blob 導致刪一列砍掉另一列的圖**（2026-08-30 踩到、2026-08-31 修掉）：
       雜湊改算「內容 + presetKey」＋上傳以檔名去重＋刪除只刪沒有別列共用的 blob；`reprocess` 一併補上。見 [docs/13](docs/13-api-roadmap.md) 踩坑
 - [x] **客戶 Azure SQL 的 collation**：已確認為 `_CI_`（2026-08-19 上線時實測），slug 比對與本機一致

@@ -481,3 +481,17 @@
     display: none !important;
   }
 }
+
+/**
+ * reCAPTCHA v3 的浮動徽章。
+ *
+ * 它固定在右下角，正好疊在本站的浮動聯絡按鈕上（`FloatingContact`）——
+ * 兩顆都在同一個位置，訪客會點不到我們自己的那顆。
+ *
+ * Google 的品牌規範允許隱藏徽章，**條件是在表單上明示聲明並連到隱私權政策與
+ * 服務條款**，那段文字在 `RecaptchaNotice`。少了它就是違反使用條款，
+ * 所以這條規則與那個元件必須成對存在。
+ */
+.grecaptcha-badge {
+  visibility: hidden;
+}
