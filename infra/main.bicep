@@ -36,6 +36,18 @@ param namePrefix string = 'eunicemed'
 param siteUrl string = 'https://www.eunicemed.com'
 
 @description('''
+除了 `siteUrl` 與 SWA 預設網域之外，還要放行的瀏覽器來源。
+
+`eunicemed.4webdemo.com` 是客戶目前看的測試網址 —— Cloudflare 代理到同一個 SWA
+（內容與預設網域逐位元組相同）。`/admin` 的 XHR 直接打 Function App，
+少了這一條，後台在那個網址上登入不了。
+
+⚠️ **2026-08-31 發現這一條是手動加的。** `siteConfig.cors` 與 `appSettings` 一樣是
+整批取代 —— 補進範本之前，任何一次 infra 部署都會把它洗掉，症狀是後台忽然登入失敗。
+''')
+param extraCorsOrigins array = [ 'https://eunicemed.4webdemo.com' ]
+
+@description('''
 後台 JWT 的簽章金鑰（32 bytes 以上）。
 輪替此值會讓所有既有的 access / refresh token 立即失效。
 以 --parameters 於部署時帶入，不要寫進 bicepparam 進版控。
@@ -209,8 +221,15 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
       // 自訂網域還沒接上（STATUS §六之二），所以一定要同時放行 SWA 的預設網域 ——
       // 只列 siteUrl 的話，後台在 *.azurestaticapps.net 上的每個 XHR 都會被 CORS 擋掉
       cors: {
-        allowedOrigins: [ siteUrl, 'https://${staticWebApp.properties.defaultHostname}' ]
-        supportCredentials: false
+        allowedOrigins: concat(
+          [ siteUrl, 'https://${staticWebApp.properties.defaultHostname}' ],
+          extraCorsOrigins
+        )
+        // ⚠️ 正式站上是 true（2026-08-31 以 `az functionapp cors show` 對照發現）。
+        // 範本原本寫 false，改成 true 只是**如實反映線上**，不是新的決定 ——
+        // 後台走 Bearer token、fetch 沒有帶 credentials，其實用不到這一項。
+        // 要關掉的話請當成一次獨立的變更，確認沒有東西依賴 cookie 之後再做。
+        supportCredentials: true
       }
       appSettings: concat([
         // Flex Consumption 的 host 儲存體以 MI 存取，不放連線字串

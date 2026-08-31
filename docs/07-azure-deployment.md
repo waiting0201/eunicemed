@@ -189,6 +189,12 @@ Flex Consumption **不支援 deployment slot**。API 部署即為就地更新（
 | `Recaptcha__Disabled` | 選填 | `true` 時即使有 secret 也不驗（預覽環境用）|
 | `Recaptcha__VerifyUrl` | 選填 | 預設 `https://www.google.com/recaptcha/api/siteverify`。google.com 連不到的地區改成 `https://www.recaptcha.net/...`（前端腳本網域要一起換）|
 
+> ⚠️ **CORS 也是整批取代的。** `siteConfig.cors.allowedOrigins` 與下面的 appSettings 同理。
+> 2026-08-31 對照線上與範本時發現 `https://eunicemed.4webdemo.com`（客戶目前看的測試網址，
+> Cloudflare 代理到同一個 SWA）與 `supportCredentials: true` 都是手動加的，不在範本裡 ——
+> 那一次 infra 部署就會把它們洗掉，症狀是**後台在測試網址上忽然登入不了**。
+> 兩者已補進 `infra/main.bicep`（`extraCorsOrigins` 參數）。
+
 > ⚠️ **App Settings 是整批取代的。** ARM 的 `siteConfig.appSettings` 每次部署都以範本裡那一份
 > 覆蓋整個清單 —— 用 `az functionapp config appsettings set` 手動加的鍵，會在下一次
 > `infra.yml` 部署時被**靜靜洗掉**（不會有錯誤，只是那個功能忽然不動了）。

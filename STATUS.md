@@ -269,8 +269,8 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 | `.github/workflows/api-deploy.yml` | ✅ build／publish／deploy／啟動健康檢查皆通過（需 `prod` environment 人工核准）|
 | `.github/workflows/web.yml` | ✅ 已部署成功，站台可存取 |
 | `.github/workflows/infra.yml` | ✅ 已執行成功（PR 跑 what-if）|
-| 自訂網域 + HTTPS | ⬜ 目前為 `zealous-sand-0bdf5e01e.7.azurestaticapps.net` |
-| 平台層 CORS | ✅ Function App 的 allowedOrigins 已由 Bicep 設定 |
+| 自訂網域 + HTTPS | ⬜ 尚未綁 `www.eunicemed.com`。客戶目前看的是 `eunicemed.4webdemo.com`（Cloudflare 代理到同一個 SWA）|
+| 平台層 CORS | ✅ `www.eunicemed.com`＋SWA 預設網域＋`eunicemed.4webdemo.com`（客戶測試網址）。⚠️ 後者與 `supportCredentials` 2026-08-31 才從線上補回範本 —— 原本是手動加的，下一次 infra 部署會把它洗掉（後台在測試網址上登入不了）|
 | Azure Monitor 告警 | ⬜ |
 | 客戶 Azure SQL 連線資訊 | 🔴 待提供 |
 
@@ -281,6 +281,10 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 ## 六之二、正式環境狀態（2026-08-19）
 
 **全站已在 Azure 上運作。** <https://zealous-sand-0bdf5e01e.7.azurestaticapps.net>
+
+客戶目前看的是 <https://eunicemed.4webdemo.com> —— Cloudflare 代理到同一個 SWA，
+內容與預設網域逐位元組相同（2026-08-31 實測）。**不要與 <https://eunicemed-mockup4.pages.dev> 混淆**，
+那個是靜態 `mockup4/` 設計稿，不是前台。
 
 | 元件 | 狀態 |
 |---|---|
