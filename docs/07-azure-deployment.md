@@ -184,7 +184,7 @@ Flex Consumption **不支援 deployment slot**。API 部署即為就地更新（
 | `Maintenance__Key` | 隨機字串 | `POST /admin/maintenance/*` 需要，尚未設定 |
 | `Seed__AdminEmail` / `Seed__AdminPassword` / `Seed__AdminDisplayName` | 選填 | 只在 `User` 表為空時建立第一個管理者。**正式環境目前未設**，需另行建帳號 |
 | `Smtp__Host` / `Smtp__Port` / `Smtp__Username` / `Smtp__Password` / `Smtp__From` / `Smtp__To` | 品牌方提供 | 尚未取得（§6.3）|
-| `Recaptcha__SecretKey` | Google | 尚未取得。由 **GitHub Secret `RECAPTCHA_SECRET_KEY`** → `infra.yml` → Bicep 參數寫入；留空則整項不寫。未設定時 API 跳過驗證，表單照常運作（與 SMTP 同一個模式）|
+| `Recaptcha__SecretKey` | Google | ✅ 2026-08-31 已設。由 **GitHub Secret `RECAPTCHA_SECRET_KEY`** → `infra.yml` → Bicep 參數寫入；留空則整項不寫（未設定時 API 跳過驗證，表單照常運作）|
 | `Recaptcha__MinScore` | 選填，預設 `0.5` | v3 低於此分數者仍入庫，但狀態記成 `spam` 且不寄通知信 |
 | `Recaptcha__Disabled` | 選填 | `true` 時即使有 secret 也不驗（預覽環境用）|
 | `Recaptcha__VerifyUrl` | 選填 | 預設 `https://www.google.com/recaptcha/api/siteverify`。google.com 連不到的地區改成 `https://www.recaptcha.net/...`（前端腳本網域要一起換）|
@@ -257,7 +257,7 @@ MI 需要的角色（`infra/main.bicep` 已寫好，範圍是整個帳戶）：
 | `NEXT_PUBLIC_API_BASE` | 同上（`/admin` SPA 用） |
 | `NEXT_PUBLIC_MEDIA_BASE` | `https://steunicemedprod.blob.core.windows.net/media` |
 | `NEXT_PUBLIC_SITE_URL` | `https://www.eunicemed.com` |
-| `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | reCAPTCHA v3 的 site key，**尚未取得**。存成 GitHub **variable**（不是 secret —— 它本來就會被內嵌進公開 bundle）。空著就是不啟用：不載 Google 腳本、不帶 token、表單下方也不顯示那段法律聲明 |
+| `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | ✅ 2026-08-31 已設（`6Lc7iKEt…`，網域含 `eunicemed.4webdemo.com`）。存成 GitHub **variable**（不是 secret —— 它本來就會被內嵌進公開 bundle）。空著就是不啟用：不載腳本、不帶 token、也不顯示法律聲明 |
 
 > SWA 的環境變數需**同時**設在 GitHub Actions build step（build-time，`gh variable set`）
 > 與 SWA 資源的 Environment variables（request-time，由 Bicep 設定）。

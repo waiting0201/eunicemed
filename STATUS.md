@@ -340,7 +340,7 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 | ~~6~~ | ~~149 筆產品的 zh-TW 翻譯~~ | **已解除**（2026-08-19，125 個品名 + 285 句 feature，品牌詞與型號保留英文）<br>⚠️ **譯文未經客戶審閱**，其中 features 屬醫療器材療效宣稱，正式對外前建議由客戶或法務確認 |
 
 | 7 | **2026-08-28 新譯的 zh-TW 版面文案**（About / Resources / Products / Partnership / Privacy 五頁，約 90 條）| ⚠️ 與 149 筆產品譯文同樣**未經客戶審閱**。英文逐字取自 mockup4，中文是新譯的 —— 五頁在此之前 DB 是空的，沒有既有中文可沿用 |
-| 8 | **reCAPTCHA 的 site key / secret key**（版本已定 v3，門檻 0.5）| **不擋上線** —— 未設金鑰時前端不載腳本、後端跳過驗證，表單行為與接上之前相同。接線已備妥：`gh variable set NEXT_PUBLIC_RECAPTCHA_SITE_KEY` + `gh secret set RECAPTCHA_SECRET_KEY`，各重跑一次 `web.yml` 與 `infra.yml` 即生效（順序見 [docs/07](docs/07-azure-deployment.md) §6.4）|
+| ~~8~~ | ~~reCAPTCHA~~ | **已解除**（2026-08-31）：v3 已接、金鑰已設（GitHub variable + secret），三支 workflow 皆已部署，正式站生效中 |
 
 > **已解除**：媒體變體階梯（2026-08-17 定案採階梯，見 [docs/11](docs/11-media-specs.md) §2a）—— Phase 3 可開工。
 

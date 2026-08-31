@@ -256,7 +256,8 @@ EuniceMed/
 
 - [x] CMS 後台管理者驗證：**自建 JWT + Identity**（方案內無 Entra ID 資源）
 - [x] **reCAPTCHA 版本：v3（分數制），門檻 0.5，低分不擋件只標成 `spam`**（2026-08-31 實作）。
-      金鑰仍待取得，但**不擋上線** —— 未設 `Recaptcha__SecretKey` / `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` 時整段跳過，表單行為與接上之前相同
+      金鑰已於 2026-08-31 設定（GitHub variable + secret，網域含 `eunicemed.4webdemo.com`），正式站生效中。
+      未設金鑰時整段跳過，表單行為與接上之前相同
 - [x] **重複上傳共用 blob 導致刪一列砍掉另一列的圖**（2026-08-30 踩到、2026-08-31 修掉）：
       雜湊改算「內容 + presetKey」＋上傳以檔名去重＋刪除只刪沒有別列共用的 blob；`reprocess` 一併補上。見 [docs/13](docs/13-api-roadmap.md) 踩坑
 - [x] **客戶 Azure SQL 的 collation**：已確認為 `_CI_`（2026-08-19 上線時實測），slug 比對與本機一致
