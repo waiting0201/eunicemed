@@ -7,8 +7,8 @@
 |---|---|---|
 | `home-sections.py` | 首頁 5 個區段的英文文案 | 舊站首頁逐字 + [docs/10](../../docs/10-legacy-content.md) §1 的 Company Profile |
 | `legacy-news.py` | 10 篇最新消息 | 舊站 `/news-2/{slug}?format=json` |
-| `mockup4-home.py` | 首頁 hero banner + 04 Trusted worldwide 的**假資料**（**只灌本機**）| `mockup4/Home.dc.html` |
-| `mockup4-categories.py` | 三大分類的卡片圖（掛既有產品照，**只灌本機**）| `mockup4/Products.dc.html` |
+| `mockup4-home.py` | 首頁 hero banner + 04 Trusted worldwide 的**假資料** | `mockup4/Home.dc.html` |
+| `mockup4-categories.py` | 三大分類的卡片圖（掛既有產品照）| `mockup4/Products.dc.html` |
 | `about-content.py` | About 頁留在 CMS 的欄位與三張圖（en + zh-TW）| `mockup4/About.dc.html` + 新譯 |
 | `partnership-content.py` | Partnership 頁留在 CMS 的四個區段與三張圖（en + zh-TW）| `mockup4/Partnership.dc.html` + 新譯 |
 | `faq-content.py` | FAQ 頁的 3 個分類與 9 則問答（en + zh-TW）| `mockup4/FAQ.dc.html` + 新譯 |
@@ -58,8 +58,14 @@ curl -X POST http://localhost:7072/api/admin/products/import -H "Authorization: 
 
 匯入器以 SKU 為業務鍵，可重複執行。匯入的產品一律是草稿，要另外發布。
 
-## 已知缺口
+## 現況（2026-08-31）
 
-- **圖片**：舊站首頁沒有 8:3 的 banner 素材，產品照也還沒搬 —— 目前正式站 0 筆媒體。
-- **zh-TW**：舊站本身只有英文，所以中文站仍是空的。
-- **Insights／Downloads**：舊站的 `/healthy-life`（8 篇）與 `/downloadpage01`（3 筆）尚未搬。
+表中每一支都已對**正式站**跑過，en 與 zh-TW 皆齊：149 產品（含產品照）／10 消息／
+8 Insights／3 下載／9 FAQ／6 據點，六個有 schema 的頁面區段全數有內容。
+
+### 已知缺口
+
+- **首頁 hero 與 04 Trusted worldwide 是假資料** —— 舊站沒有 8:3 的 banner 素材，等品牌方提供。
+- **zh-TW 未經客戶審閱** —— 舊站只有英文，中文全是新譯的；產品 features 屬醫療器材療效宣稱。
+- **Insights 的 zh-TW 放的是英文原文**，語言純度的刻意例外（見 [08](../../docs/08-design.md) §2）。
+- **Privacy 條文與 6 個據點是 mockup4 的示意資料**，待法務定稿與客戶提供正式清單。

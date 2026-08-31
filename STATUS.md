@@ -6,7 +6,7 @@
 > [docs/api-routes.md](docs/api-routes.md) 是**路由契約**（與 `Api/Routing/AppRouter.cs` 逐條對應）。
 > 三份不要互相抄，各司其職。
 
-**最後更新**：2026-08-29
+**最後更新**：2026-08-31
 
 ---
 
@@ -33,6 +33,10 @@ API 的 Phase 0–7 全數完成，**表單收件匣已於 2026-08-28 補上並�
 **六頁的頁頂 band 從來沒有渲染過**（圖來源是 CMS，而那六頁沒有 schema），
 現以靜態品牌圖樣寫死。`mockup:check` 一直是 100% —— 宣告集合比對證明不了元素有被渲染。
 
+**2026-08-31 內容上線**：先前只灌本機的 mockup4 示意內容 —— FAQ 9 則、Privacy 6 節條文、
+6 個據點、Resources 引用的三份文件 —— 已灌進**正式站**，en 與 zh-TW 皆齊（以公開端點實測）。
+同時修掉切換語系會跳回首頁、以及國際經銷商列表在寬螢幕下裂成兩塊。
+
 剩下的是內容工作（17 個子分類落地頁文案、認證文案）與上線收尾（自訂網域、監控告警）。
 
 ---
@@ -54,18 +58,18 @@ API 的 Phase 0–7 全數完成，**表單收件匣已於 2026-08-28 補上並�
 | 層 | 狀態 | 說明 |
 |---|---|---|
 | 規格文件 | ✅ | 15 份，見 [CLAUDE.md](CLAUDE.md) §3 |
-| 資料模型 | ✅ | 54 張表全數完成（`ContactSubmission` 於 2026-08-28 補上，含 `IX_Contact_Ip`）|
+| 資料模型 | ✅ | **53 張表**全數完成（`ContactSubmission` 於 2026-08-28 補上，含 `IX_Contact_Ip`；`AuditLog` 於 2026-08-30 移除）|
 | API | ✅ | `AppRouter` 共 **140** 條分派（2026-08-29 移除 menus／settings 六條；`PUT or PATCH` 合併寫的算一條）。Phase 0–7 全數完成。⚠️ reCAPTCHA 未接（版本與 site key 未拍板）|
 | 前台 `apps/web` | ✅ | 18 頁全數可運作，**版型已逐元素照抄 mockup4**（`mockup:check` 18/18 100%，見 §四）；手機／平板已完成並實測；三支表單已恢復送出 |
 | 後台 `apps/admin` | 🟡 | 全部畫面可運作（含表單收件匣）。**2026-08-29 第二次收斂**：側欄 16 → 9 項，圖片改為欄位就地上傳，認證收進「關於我們」、分類與系列收進「產品」（見 [docs/15](docs/15-cms-scope.md) §7）。只剩產品的相關產品拖曳 |
 | 基礎設施 `infra/` | ✅ | 已部署至 `EuniceMedUS`（West US 2）：Storage／Function App／SWA 共 13 個資源 |
-| CI/CD `.github/` | 🟡 | infra 與 web 兩支已實際部署成功；api 部署成功但健康檢查失敗（等 SQL 連線字串）|
+| CI/CD `.github/` | ✅ | 三支都在跑：infra／web／api 皆實際部署成功，api 的啟動健康檢查自 2026-08-19 起通過（最近一次 2026-08-30）|
 
 ---
 
-## 二、資料模型（54 張表）
+## 二、資料模型（53 張表）
 
-已建立 **53** 張，7 支 migration。遷移於 Function App 啟動時自動套用。
+**53 張全數建立**，11 支 migration。遷移於 Function App 啟動時自動套用。
 
 ### ✅ 已完成
 
@@ -80,21 +84,20 @@ API 的 Phase 0–7 全數完成，**表單收件匣已於 2026-08-28 補上並�
 | 產品 | `Product` `ProductTranslation` `ProductImage` `ProductRelated` `ProductBodyPart` `ProductCertification` | ✅ 149 筆（匯入後已發布） |
 | 媒體 | `Media` `MediaVariant` `MediaUsage` | ✅ 管線可運作，已上傳 12 張測試圖 |
 | 使用者 | `User` `Role` `UserRole` `RefreshToken` | ✅ 4 角色 + 預設管理者（環境變數注入） |
-| 頁面區段 | `Page` `PageSection` `PageSectionTranslation` | ✅ 18 頁；區段由 schema 目錄同步（目前 6 個）。`privacy` 兩支已填雙語（取自 mockup4 的**示意條文**，**目前只灌本機**）|
+| 頁面區段 | `Page` `PageSection` `PageSectionTranslation` | ✅ 18 頁；區段由 schema 目錄同步（目前 6 個）。`privacy` 兩支已填雙語（取自 mockup4 的**示意條文**，本機與正式站皆已灌）|
 | 應用方案 | `Application` `ApplicationTranslation` `ProductApplication` | ✅ 7 筆 × 雙語（4 筆含人體圖座標）；內容文案待撰寫 |
 | 文章 | `Article` `ArticleTranslation` `ArticleCategory` `ArticleCategoryTranslation` `ArticleImage` `ArticleTag` `NewsEvent` `NewsEventTranslation` | ✅ 分類 6 筆 × 雙語；`NewsEvent` 為共用 PK 的 1:1 |
-| FAQ | `Faq` `FaqTranslation` `FaqCategory` `FaqCategoryTranslation` | ✅ 分類 3 筆 × 雙語；題目 9 筆 × 雙語（取自 mockup4，**目前只灌本機**）|
+| FAQ | `Faq` `FaqTranslation` `FaqCategory` `FaqCategoryTranslation` | ✅ 分類 3 筆 × 雙語；題目 9 筆 × 雙語（取自 mockup4，本機與正式站皆已灌）|
 | 下載 | `Download` `DownloadTranslation` `ProductDownload` | ✅ 表已建；`FileLocale` 與介面語系刻意分離 |
-| 據點 | `SalesLocation` `SalesLocationTranslation` | ✅ 表已建；6 筆 × 雙語（3 台灣 + 3 國際，取自 mockup4 的**示意資料**，**目前只灌本機**）；正式清單待客戶提供 |
+| 據點 | `SalesLocation` `SalesLocationTranslation` | ✅ 表已建；6 筆 × 雙語（3 台灣 + 3 國際，取自 mockup4 的**示意資料**，本機與正式站皆已灌）；正式清單待客戶提供 |
 | 導覽 | `MenuItem` `MenuItemTranslation` | ⚠️ 表在但**已無端點也無 UI**，線上一直是空的；導覽寫在前端（docs/15 §7.4）|
+| 表單 | `ContactSubmission` | ✅ 2026-08-28 建表，含 `IX_Contact_Ip`；收件匣可用 |
 | 轉址 | `Redirect` | ✅ `FromPath` 唯一；前端 middleware 執行。slug 改動時由 `RedirectWriter` 自動寫入 |
 | 設定 | `Setting` `SettingTranslation` | ⚠️ 同導覽，表留著但已無端點；公司資訊寫在 `apps/web/lib/company.ts` |
 
-### ⬜ 未建立（1 張）
+### ⬜ 未建立
 
-| 模組 | 資料表 | 排定 |
-|---|---|---|
-| 表單 | `ContactSubmission` | Phase 7（擋於 SMTP）|
+無。`AuditLog` 是唯一被移除的表（2026-08-30，[docs/15](docs/15-cms-scope.md) §8）。
 
 ---
 
@@ -102,8 +105,10 @@ API 的 Phase 0–7 全數完成，**表單收件匣已於 2026-08-28 補上並�
 
 `AppRouter` 共 **140** 條分派（`PUT or PATCH` 合併寫的算一條）。完整契約見 [docs/api-routes.md](docs/api-routes.md)。
 
-> ⚠️ 這份表與 `docs/api-routes.md` 的列數本來就有落差（那份是契約、以方法拆開列），
-> 兩邊的**逐條一致性**尚未做過完整核對，另案處理。
+> ✅ **2026-08-31 已逐條核對過**：把兩邊都展開成「方法 + 正規化路徑」後各為 **157 條，完全一致**
+> （`AppRouter` 的 140 條分派裡有 17 條是 `PUT or PATCH` 合寫的；契約表的 `[/{id}]` 是一組 CRUD 的壓縮寫法）。
+> 核對時修掉的落差：8 支後台模組的 `GET /{id}` 契約表漏列、表單收件匣被放在「待實作」區。
+> 目前唯一的差異是 `POST /admin/media/{id}/reprocess` —— 契約表有、程式沒有，已明確歸在「待實作」。
 
 ### 系統與驗證
 
@@ -182,11 +187,11 @@ facet 篩選、standalone 產物 66MB／250MB。
 | Insights／Article Detail | `/[locale]/insights[/{slug}]` | ✅ **已切版可運作**（含伺服器端 TOC；列表頁頂 band 為靜態品牌圖樣）|
 | News／News Detail | `/[locale]/news[/{slug}]` | ✅ **已切版可運作**（含活動面板、圖庫、prev/next；列表頁頂 band 為靜態品牌圖樣）|
 | Downloads | `/[locale]/downloads` | ✅ **已切版可運作**（類型篩選；頁頂 band 為靜態品牌圖樣）|
-| Where to Buy | `/[locale]/where-to-buy` | ✅ **已切版可運作**（伺服器端分組；頁頂 band 為靜態品牌圖樣）<br>2026-08-31 本機灌入 6 筆據點（en + zh-TW）—— mockup4 的示意資料，網址全為 `#` 故留空 |
+| Where to Buy | `/[locale]/where-to-buy` | ✅ **已切版可運作**（伺服器端分組；頁頂 band 為靜態品牌圖樣）<br>2026-08-31 灌入 6 筆據點（en + zh-TW，本機與正式站）—— mockup4 的示意資料，網址全為 `#` 故留空 |
 | Contact | `/[locale]/contact` | ✅ **可運作**，送出已恢復（2026-08-28）|
-| Privacy | `/[locale]/privacy` | ✅ **可運作**（Legal 淨化 profile）<br>2026-08-28 前線上是**完全空白**的；條文仍留在 CMS，頁首文案改為前端常數<br>2026-08-31 本機灌入 band 與 6 節條文（en + zh-TW）—— **mockup4 的示意文案，待法務定稿** |
+| Privacy | `/[locale]/privacy` | ✅ **可運作**（Legal 淨化 profile）<br>2026-08-28 前線上是**完全空白**的；條文仍留在 CMS，頁首文案改為前端常數<br>2026-08-31 灌入 band 與 6 節條文（en + zh-TW，本機與正式站）—— **mockup4 的示意文案，待法務定稿** |
 
-**2026-08-28 逐元素照抄**（分支 `feat/mockup4-verbatim`，尚未合併）：
+**2026-08-28 逐元素照抄**（原分支 `feat/mockup4-verbatim`，已併入 `main`）：
 先前兩輪校正是把 mockup4 的 inline style **翻譯**成 Tailwind arbitrary value，翻譯就會漂移 ——
 保真度因此很不平均（`PageHero` 幾乎完美，About §02 幾乎每個值都不同）。
 本輪改為**逐字照搬**：`apps/web/lib/css.ts` 的 `css`…`` 樣板讓兩邊維持同一種語法，
@@ -252,7 +257,7 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 |---|---|
 | Azure 資源建立（SWA / Function App / Storage） | ✅ `EuniceMedUS` / West US 2 |
 | `infra/main.bicep` | ✅ 已部署（13 個資源，含 MI 的 4 個角色指派）|
-| `.github/workflows/api-deploy.yml` | 🟡 build／publish／deploy 皆成功；健康檢查 🔴 擋於 SQL 連線字串 |
+| `.github/workflows/api-deploy.yml` | ✅ build／publish／deploy／啟動健康檢查皆通過（需 `prod` environment 人工核准）|
 | `.github/workflows/web.yml` | ✅ 已部署成功，站台可存取 |
 | `.github/workflows/infra.yml` | ✅ 已執行成功（PR 跑 what-if）|
 | 自訂網域 + HTTPS | ⬜ 目前為 `zealous-sand-0bdf5e01e.7.azurestaticapps.net` |
@@ -296,14 +301,15 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 | 項目 | 說明 |
 |---|---|
 | 自訂網域 `www.eunicemed.com` | 尚未綁定，目前是 `*.azurestaticapps.net` |
-| SMTP | 表單與收件匣仍擋在這裡 |
+| SMTP | **只剩通知信**：2026-08-28 起未設定就跳過寄信，送件照常入庫、收件匣照常看得到 |
 | Managed Identity 存取 SQL | 客戶 SQL 尚未設 Entra 管理員，目前用帳密連線字串 |
 | 資料庫層級 | Basic 5 DTU；純 SSR 每頁多次查詢，有流量時需評估升級 |
-| 內容 | 149 筆產品與首頁 7 區段的 zh-TW 文案仍缺（見下方§七）|
+| 內容 | 17 個子分類落地頁文案與 5 筆認證文案仍缺；已上線的 zh-TW 譯文未經客戶審閱（見下方§七）|
 
 ---
 
-> **內容現況（2026-08-19）**：英文與中文皆為 149 產品 / 10 消息 / 8 Insights / 3 下載 / 5 首頁區段（Hero 文案已於 2026-08-28 移出 CMS）。
+> **內容現況（2026-08-31，以正式站公開端點實測）**：en 與 zh-TW 皆為 149 產品 / 10 消息 / 8 Insights /
+> 3 下載 / 9 FAQ / 6 據點 / 7 應用方案 / 5 認證，六個有 schema 的頁面（home·about·products·partnership·resources·privacy）區段全數有內容。
 > 其中 **Insights 的 zh-TW 放的是英文原文**（語言純度的刻意例外，見 [08](docs/08-design.md) §2），
 > 產品與消息的中文為機器翻譯**未經客戶審閱**。
 

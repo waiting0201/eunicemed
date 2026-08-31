@@ -97,7 +97,7 @@
 
 ## 4. 倉庫結構
 
-> **目前進度見 [STATUS.md](STATUS.md)。** `apps/`、`infra/`、`.github/` 尚未建立。
+> **目前進度見 [STATUS.md](STATUS.md)。** 下列目錄全數已建立並已部署至 Azure。
 > 各階段做法與踩坑見 [docs/13-api-roadmap.md](docs/13-api-roadmap.md)；本機怎麼跑見 [docs/12-local-dev.md](docs/12-local-dev.md)。
 
 ```
@@ -114,7 +114,7 @@ EuniceMed/
 │   ├── Data/                  # AppDbContext、Configurations、Migrations、Seed
 │   ├── Models/{Entities,Dtos}/
 │   ├── Common/                # ApiResponse、PagedResult、AppException、LocaleQuery
-│   ├── PageSchemas/           # {pageKey}.{sectionKey}.json（60 支）
+│   ├── PageSchemas/           # {pageKey}.{sectionKey}.json（19 支 / 6 個 pageKey，見 docs/15）
 │   └── http/                  # 各階段 .http 驗收檔
 ├── apps/
 │   ├── web/                   # Next.js 前端（公開網站）— 唯一部署到 SWA 的 app
@@ -215,7 +215,6 @@ EuniceMed/
 
 - [ ] **SMTP 主機／埠／帳密，以及該信箱的每日寄送量上限** —— 上限會回頭決定速率限制的數字。
       ⚠️ 2026-08-28 起**不再擋上線**：收件匣照常收件，只是不寄通知信（見 docs/15 §6）
-- [ ] **客戶 Azure SQL 的 collation？** 若為區分大小寫的 `_CS_`，slug 比對在本機與正式站行為不同，只會在上線後才發現（見 [12](docs/12-local-dev.md) §2.1）
 - [ ] **客戶 Azure SQL 的連線數上限？** 決定 `Max Pool Size` 與 Function App 的 `maximumInstanceCount` —— Flex Consumption 每個實例各有一個連線池
 - [ ] 客戶提供的 Azure SQL：是否可設 Entra 管理員以啟用 Managed Identity 連線？備份保留天數與還原程序為何？
 
@@ -265,6 +264,7 @@ EuniceMed/
 ### 已封閉
 
 - [x] CMS 後台管理者驗證：**自建 JWT + Identity**（方案內無 Entra ID 資源）
+- [x] **客戶 Azure SQL 的 collation**：已確認為 `_CI_`（2026-08-19 上線時實測），slug 比對與本機一致
 - [x] API 專案結構、回應格式、Migration 時機、影像套件：**全數對齊 [Jabez/Api](/Users/tim/webapps/Jabez/Api)**，見 [docs/13-api-roadmap.md](docs/13-api-roadmap.md)「架構前提」
 - [x] **媒體變體階梯：採階梯**（2026-08-17）。WebP 出完整階梯、原格式只出 preset 寬度那一張，每次上傳 1–5 個檔。
       階梯定義見 [docs/11-media-specs.md](docs/11-media-specs.md) §2a，機器可讀版在 `Api/Media/media-presets.json` 的 `output` 欄位。

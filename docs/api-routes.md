@@ -20,6 +20,11 @@
 | Editor+ | Editor / Admin（含發布動作） |
 | Admin | 僅 Admin |
 
+**壓縮列的讀法**：`/admin/faqs[/{id}]` 這種寫法代表一組 CRUD ——
+`POST` 打的是基底路徑，`GET`／`PUT`／`PATCH`／`DELETE` 打的是 `/{id}`。
+方法欄列出 `GET` 表示該模組另有**單筆讀取**（權限同該模組的列表，通常是「登入」）；
+`GET` 的列表版本另外單獨列一列，因為它有查詢參數。
+
 ---
 
 ## 已實作
@@ -162,11 +167,11 @@
 | Method | Path | 權限 | 說明 |
 |---|---|---|---|
 | GET | `/admin/categories` | 登入 | 回全部語系 + 子分類數 + 產品數 |
-| POST · PUT/PATCH · DELETE | `/admin/categories[/{id}]` | Editor+ | 軟刪除；仍有子分類或產品引用時回 409 |
+| GET · POST · PUT/PATCH · DELETE | `/admin/categories[/{id}]` | Editor+ | 軟刪除；仍有子分類或產品引用時回 409 |
 | GET | `/admin/sub-categories?category=` | 登入 | |
-| POST · PUT/PATCH · DELETE | `/admin/sub-categories[/{id}]` | Editor+ | slug **全站唯一**；底下有產品時不可換分類、不可刪除（皆 409） |
+| GET · POST · PUT/PATCH · DELETE | `/admin/sub-categories[/{id}]` | Editor+ | slug **全站唯一**；底下有產品時不可換分類、不可刪除（皆 409） |
 | GET | `/admin/certifications` | 登入 | |
-| POST · PUT/PATCH · DELETE | `/admin/certifications[/{id}]` | Editor+ | **硬刪除**（此表無 IsDeleted）；仍掛在產品上時回 409 |
+| GET · POST · PUT/PATCH · DELETE | `/admin/certifications[/{id}]` | Editor+ | **硬刪除**（此表無 IsDeleted）；仍掛在產品上時回 409 |
 | GET | `/admin/body-parts` | 登入 | 7 筆固定 |
 | PUT/PATCH | `/admin/body-parts/{id}` | Editor+ | 只能改名稱 / ShowOnBodyMap / 排序，**slug 不可改** |
 
@@ -222,7 +227,7 @@
 | GET/PUT/DELETE | `/admin/articles/{id}/event` | Author+ | NewsEvent（共用主鍵 1:1）；PUT 兼建立與更新；掛到 insight 回 400 |
 | GET/PUT | `/admin/articles/{id}/gallery` | Author+ | 整批取代，陣列順序即畫面順序 |
 | GET | `/admin/article-categories?kind=` | 登入 | 含 articleCount |
-| POST · PUT/PATCH · DELETE | `/admin/article-categories[/{id}]` | Editor+ | slug **只在同一個 kind 內唯一**；有文章時不可換 kind、不可刪除（皆 409） |
+| GET · POST · PUT/PATCH · DELETE | `/admin/article-categories[/{id}]` | Editor+ | slug **只在同一個 kind 內唯一**；有文章時不可換 kind、不可刪除（皆 409） |
 
 > **`ArticleCategory.Kind` 必須等於 `Article.Type`**，不符回 400。這條 FK 表達不了
 > （需要複合 FK），只能在應用層擋 —— 否則文章會出現在分類計數裡但點進分類找不到。
@@ -248,13 +253,13 @@
 | Method | Path | 權限 | 說明 |
 |---|---|---|---|
 | GET | `/admin/faq-categories` | 登入 | 含 faqCount |
-| POST · PUT/PATCH · DELETE | `/admin/faq-categories[/{id}]` | Editor+ | 底下有題目時不可刪（409） |
+| GET · POST · PUT/PATCH · DELETE | `/admin/faq-categories[/{id}]` | Editor+ | 底下有題目時不可刪（409） |
 | GET | `/admin/faqs?category=&status=` | 登入 | |
-| POST · PUT/PATCH · DELETE | `/admin/faqs[/{id}]` | Editor+ | `answer` 淨化後為空回 400（會變成點得開但空白的問答） |
+| GET · POST · PUT/PATCH · DELETE | `/admin/faqs[/{id}]` | Editor+ | `answer` 淨化後為空回 400（會變成點得開但空白的問答） |
 | GET | `/admin/downloads?type=&status=&fileLocale=` | 登入 | 含 fileUrl 與掛載的 productIds |
-| POST · PUT/PATCH · DELETE | `/admin/downloads[/{id}]` | Editor+ | 仍掛在產品或被認證引用時回 409 |
+| GET · POST · PUT/PATCH · DELETE | `/admin/downloads[/{id}]` | Editor+ | 仍掛在產品或被認證引用時回 409 |
 | GET | `/admin/sales-locations?type=&country=&status=` | 登入 | |
-| POST · PUT/PATCH · DELETE | `/admin/sales-locations[/{id}]` | Editor+ | `countryCode` 一律轉大寫 |
+| GET · POST · PUT/PATCH · DELETE | `/admin/sales-locations[/{id}]` | Editor+ | `countryCode` 一律轉大寫 |
 
 > **這四個模組的寫入是 Editor+，不是 Author+。** 它們沒有發布端點，`status` 是 payload
 > 裡的一個欄位、存檔即生效；開放 Author 寫入的話，他只要在建立時送 `status=1` 就直接上線，
@@ -302,19 +307,7 @@
 > 公司聯絡資訊寫在 `apps/web/lib/company.ts` —— 兩張表線上都是空的，
 > 站上跑的一直是那些常數。
 
----
-
-## 待實作
-
-依 [13-api-roadmap.md](13-api-roadmap.md) 的階段順序。詳細規格見 [04-api.md](04-api.md) §4–§6。
-
-### Phase 3 剩餘 — 媒體
-
-| Method | Path | 權限 | 說明 |
-|---|---|---|---|
-| POST | `/admin/media/{id}/reprocess` | Editor+ | 以目前 preset 重新輸出 master 與 variants |
-
-### 表單收件匣（2026-08-28 實作）
+### 表單收件匣
 
 **不擋於 SMTP。** 送件成功的定義是入庫成功，`Smtp:Host` 未設定時跳過寄信只記 log
 （見 [15](15-cms-scope.md) §1、`Api/Services/EmailSender.cs`）。
@@ -326,3 +319,15 @@
 | GET | `/admin/contact-submissions/export?type=&status=` | 登入 | CSV（帶 BOM）。**順序敏感：必須排在 `{id}` 之前** |
 | GET | `/admin/contact-submissions/{id}` | 登入 | 單筆詳情 |
 | PATCH | `/admin/contact-submissions/{id}` | Editor+ | 只改狀態（received / handled / spam）；內容是訪客寫的，不可編輯 |
+
+---
+
+## 待實作
+
+依 [13-api-roadmap.md](13-api-roadmap.md) 的階段順序。詳細規格見 [04-api.md](04-api.md) §4–§6。
+
+### Phase 3 剩餘 — 媒體
+
+| Method | Path | 權限 | 說明 |
+|---|---|---|---|
+| POST | `/admin/media/{id}/reprocess` | Editor+ | 以目前 preset 重新輸出 master 與 variants |
