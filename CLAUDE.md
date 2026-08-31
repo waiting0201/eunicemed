@@ -237,14 +237,6 @@ EuniceMed/
       形狀取自 `.ai` 原稿的加號，但單獨使用是本專案的延伸；完整 logo 在 16–32px 讀不出來。
       客戶若有正式 icon 版本，換掉 `apps/web/app/favicon.ico`、`apps/web/public/brand/eunicemed-mark.png`
       與 `apps/admin/src/assets/eunicemed-mark.png` 三處。見 [docs/08](docs/08-design.md) §3
-- [ ] **同一個檔案上傳兩次會產生兩筆 `Media`，但它們共用同一個 blob，刪任一筆都會把另一筆的圖砍掉**（2026-08-30 實際踩到）。
-      檔名帶的是內容雜湊，所以第二次上傳寫回同一組 blob；`POST /admin/media` 不去重，於是多一列。
-      `DELETE /admin/media/{id}` 的 409 只檢查**被刪的那一列**有沒有引用，
-      通過之後就把 blob 刪掉 —— 另一列（即使正被頁面引用）當場變成 404 的死連結，畫面上只看到破圖。
-      兩個修法擇一：上傳時以檔名去重、直接回既有那一筆；或刪除時確認沒有別列共用該檔名才刪 blob。
-      前者順便讓媒體庫不會長出一堆同圖不同列。
-      ⚠️ `POST /admin/media/{id}/reprocess`（[docs/api-routes.md](docs/api-routes.md) 有列）**尚未實作**，
-      所以踩到之後沒有「重新產生 blob」這條退路，只能刪掉整筆重傳。
 - [ ] reCAPTCHA 用哪個版本（v2 checkbox / v2 invisible / v3 score）？v3 需決定分數門檻。另 [07](docs/07-azure-deployment.md) §6.4 只有後端 `Recaptcha__SecretKey`，缺前端 site key
 - [ ] `mockup/`、`mockup2/`、`mockup3/`（共約 120MB 的早期版型）要不要納入版控？目前以 `.gitignore` 擋著 —— 圖片進了 git 歷史就拿不掉了
 
@@ -264,6 +256,8 @@ EuniceMed/
 ### 已封閉
 
 - [x] CMS 後台管理者驗證：**自建 JWT + Identity**（方案內無 Entra ID 資源）
+- [x] **重複上傳共用 blob 導致刪一列砍掉另一列的圖**（2026-08-30 踩到、2026-08-31 修掉）：
+      雜湊改算「內容 + presetKey」＋上傳以檔名去重＋刪除只刪沒有別列共用的 blob；`reprocess` 一併補上。見 [docs/13](docs/13-api-roadmap.md) 踩坑
 - [x] **客戶 Azure SQL 的 collation**：已確認為 `_CI_`（2026-08-19 上線時實測），slug 比對與本機一致
 - [x] API 專案結構、回應格式、Migration 時機、影像套件：**全數對齊 [Jabez/Api](/Users/tim/webapps/Jabez/Api)**，見 [docs/13-api-roadmap.md](docs/13-api-roadmap.md)「架構前提」
 - [x] **媒體變體階梯：採階梯**（2026-08-17）。WebP 出完整階梯、原格式只出 preset 寬度那一張，每次上傳 1–5 個檔。

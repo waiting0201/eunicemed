@@ -160,6 +160,7 @@ public sealed class AppRouter(
             ("GET",    ["admin", "media"])                    => await media.GetAllAsync(req),
             ("POST",   ["admin", "media"])                    => await media.UploadAsync(req),
             ("GET",    ["admin", "media", var id, "usages"])  => await media.GetUsagesAsync(id),
+            ("POST",   ["admin", "media", var id, "reprocess"]) => await media.ReprocessAsync(req, id),
             ("PUT" or "PATCH", ["admin", "media", var id])    => await media.UpdateAsync(req, id),
             ("DELETE", ["admin", "media", var id])            => await media.DeleteAsync(id),
 
@@ -372,6 +373,10 @@ public sealed class AppRouter(
 
             // 轉址改動會影響既有網址，寫入需 Editor 以上
             (not "GET", ["admin", "redirects", ..]) => Editors,
+
+            // 重製會換掉所有輸出檔，影響每一個引用它的頁面 —— 與其他媒體寫入不同，
+            // 這條不開放 Author（docs/api-routes.md）
+            ("POST", ["admin", "media", _, "reprocess"]) => Editors,
 
             // 維護端點：Admin only（另需 X-Maintenance-Key，於 Handler 檢查）
             (_, ["admin", "maintenance", ..]) => Admins,

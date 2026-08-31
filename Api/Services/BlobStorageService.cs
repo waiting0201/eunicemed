@@ -17,6 +17,12 @@ public interface IBlobStorageService
 
     Task DeleteAsync(string blobUrl, CancellationToken ct = default);
 
+    /// <summary>
+    /// 取回私有 media-originals 容器裡的原檔。reprocess 由它重新跑一次縮圖管線。
+    /// 找不到時回 null —— 上傳於此欄位存在之前的舊資料就是這種情形。
+    /// </summary>
+    Task<byte[]?> DownloadOriginalAsync(string blobUrl, CancellationToken ct = default);
+
     /// <summary>PDF 直傳用的寫入 SAS，避免大檔佔用 Function。</summary>
     Task<(string UploadUrl, string BlobUrl)> CreateUploadSasAsync(string fileName, TimeSpan validFor);
 
@@ -117,6 +123,17 @@ public sealed class BlobStorageService : IBlobStorageService
         var name = Path.GetFileName(new Uri(blobUrl).AbsolutePath);
         await _client.Value.GetBlobContainerClient(_mediaContainer)
             .GetBlobClient(name).DeleteIfExistsAsync(cancellationToken: ct);
+    }
+
+    public async Task<byte[]?> DownloadOriginalAsync(string blobUrl, CancellationToken ct = default)
+    {
+        var name = Path.GetFileName(new Uri(blobUrl).AbsolutePath);
+        var blob = _client.Value.GetBlobContainerClient(_originalsContainer).GetBlobClient(name);
+
+        if (!await blob.ExistsAsync(ct)) return null;
+
+        var content = await blob.DownloadContentAsync(ct);
+        return content.Value.Content.ToArray();
     }
 
     public async Task<(bool Exists, long SizeBytes, string ContentType)> GetMediaBlobInfoAsync(

@@ -71,16 +71,24 @@ public sealed class MediaHandler(
 
         using var stream = file.OpenReadStream();
         var rendered = images.Render(stream, file.FileName, preset);
+        var master = rendered.Files.First(f => f.IsMaster);
+
+        // 同一份內容配同一個 preset 會算出同一個檔名（雜湊含 preset key），
+        // 於是第二次上傳寫回同一組 blob。若還照樣多開一列 Media，兩列就共用檔案 ——
+        // 刪掉任一列會把另一列的圖砍成死連結，畫面上只看到破圖、沒有任何錯誤。
+        // 所以這裡直接沿用既有那一筆，連 blob 都不必再寫一次。
+        if (await db.Media.FirstOrDefaultAsync(
+                m => m.FileName == master.FileName, req.HttpContext.RequestAborted) is { } existing)
+            return await ReuseAsync(existing, rendered, req.HttpContext.RequestAborted);
 
         // 原檔另存私有容器，供日後 preset 調整時 reprocess
         stream.Position = 0;
         using var originalBuf = new MemoryStream();
         await file.CopyToAsync(originalBuf, req.HttpContext.RequestAborted);
         var originalUrl = await blobs.UploadOriginalAsync(
-            $"{Path.GetFileNameWithoutExtension(rendered.Files[0].FileName)}{Path.GetExtension(file.FileName)}",
+            $"{Path.GetFileNameWithoutExtension(master.FileName)}{Path.GetExtension(file.FileName)}",
             originalBuf.ToArray(), file.ContentType, req.HttpContext.RequestAborted);
 
-        var master = rendered.Files.First(f => f.IsMaster);
         var uploaded = new List<(RenderedImage File, string Url)>();
 
         foreach (var f in rendered.Files)
@@ -138,6 +146,36 @@ public sealed class MediaHandler(
     }
 
     /// <summary>
+    /// 同一份內容 + 同一個 preset 再傳一次：回既有那一筆，狀態碼 200（不是 201）。
+    ///
+    /// <para>
+    /// 回的形狀與新上傳完全相同，後台不需要分辨是哪一種 —— 它要的就是
+    /// 「這個欄位該填哪個 mediaId」。警告照樣回：內容一樣，提醒也一樣成立。
+    /// </para>
+    /// </summary>
+    private async Task<IActionResult> ReuseAsync(Media existing, RenderResult rendered, CancellationToken ct)
+    {
+        var variants = await db.Set<MediaVariant>()
+            .Where(v => v.MediaId == existing.Id)
+            .OrderBy(v => v.Width)
+            .Select(v => new MediaVariantDto(v.Format, v.Width, v.Height, v.BlobUrl))
+            .ToArrayAsync(ct);
+
+        logger.LogInformation(
+            "Media upload deduplicated: {Id} preset={Preset} file={File}",
+            existing.Id, existing.PresetKey, existing.FileName);
+
+        var response = new MediaUploadResponse(
+            existing.Id, existing.PresetKey, existing.BlobUrl,
+            existing.Width, existing.Height, existing.SizeBytes,
+            new OriginalInfo(existing.OriginalWidth ?? 0, existing.OriginalHeight ?? 0, existing.SizeBytes),
+            variants,
+            rendered.Warnings.Select(w => new UploadWarningDto(w.Code, w.Expected, w.Actual, w.Message)).ToArray());
+
+        return new OkObjectResult(ApiResponse.Ok(response, "這個檔案已經上傳過了，沿用既有的那一筆。"));
+    }
+
+    /// <summary>
     /// SVG 上傳：清洗後原樣存放，不縮圖（向量本來就無所謂尺寸）。
     ///
     /// <para>
@@ -161,7 +199,15 @@ public sealed class MediaHandler(
         var clean = SvgSanitizer.Sanitize(raw);
         var bytes = System.Text.Encoding.UTF8.GetBytes(clean);
 
-        var name = $"{FileNames.Normalize(Path.GetFileNameWithoutExtension(file.FileName))}-{FileNames.ShortHash(bytes)}.svg";
+        var name = $"{FileNames.Normalize(Path.GetFileNameWithoutExtension(file.FileName))}-{FileNames.ShortHash(bytes, preset.Key)}.svg";
+
+        // 與點陣路徑同一個理由：重複上傳只會多一列共用同一個 blob 的 Media
+        if (await db.Media.FirstOrDefaultAsync(m => m.FileName == name, req.HttpContext.RequestAborted) is { } dup)
+            return new OkObjectResult(ApiResponse.Ok(
+                new MediaUploadResponse(dup.Id, dup.PresetKey, dup.BlobUrl, dup.Width, dup.Height, dup.SizeBytes,
+                    new OriginalInfo(0, 0, dup.SizeBytes), [], []),
+                "這個檔案已經上傳過了，沿用既有的那一筆。"));
+
         var url = await blobs.UploadMediaAsync(name, bytes, "image/svg+xml", req.HttpContext.RequestAborted);
 
         var media = new Media
@@ -281,16 +327,144 @@ public sealed class MediaHandler(
         // 先刪 Blob 再刪 DB：反過來的話 Blob 失敗會留下孤兒 DB 列，
         // 而孤兒 Blob 比孤兒 DB 列容易清理。
         var variants = await db.Set<MediaVariant>().Where(v => v.MediaId == guid).ToListAsync();
-        foreach (var v in variants)
+
+        // ⚠️ **只刪沒有別列共用的 blob。** 上傳去重之後不該再長出共用的列，
+        // 但在那之前傳的重複列還在庫裡：那種情況下刪掉這一列會連帶砍掉另一列
+        // 正在用的檔案，而被害的那一方只會在畫面上變成破圖，不會有任何錯誤。
+        // SVG 與 PDF 沒有 variant 列，master 網址要另外算進來。
+        var urls = variants.Select(v => v.BlobUrl).Append(media.BlobUrl).Distinct();
+        foreach (var url in urls)
         {
-            try { await blobs.DeleteAsync(v.BlobUrl); }
-            catch (Exception ex) { logger.LogWarning(ex, "刪除 blob 失敗 {Url}，繼續。", v.BlobUrl); }
+            if (await IsSharedAsync(url, guid))
+            {
+                logger.LogInformation("Blob {Url} 仍被其他媒體列指著，保留不刪。", url);
+                continue;
+            }
+
+            try { await blobs.DeleteAsync(url); }
+            catch (Exception ex) { logger.LogWarning(ex, "刪除 blob 失敗 {Url}，繼續。", url); }
         }
 
         db.Media.Remove(media);   // MediaVariant 為 Cascade
         await db.SaveChangesAsync();
 
         return new OkObjectResult(ApiResponse.Ok($"媒體 '{id}' 已刪除。"));
+    }
+
+    /// <summary>這個 blob 還有別的媒體列指著嗎（master 或 variant 都算）。</summary>
+    private async Task<bool> IsSharedAsync(string blobUrl, Guid excluding) =>
+        await db.Media.AnyAsync(m => m.Id != excluding && m.BlobUrl == blobUrl)
+        || await db.Set<MediaVariant>().AnyAsync(v => v.MediaId != excluding && v.BlobUrl == blobUrl);
+
+    /// <summary>
+    /// POST /admin/media/{id}/reprocess —— 以目前的 preset 階梯重新輸出所有檔案。
+    ///
+    /// <para>
+    /// preset 的寬度階梯會調整（docs/11 §2a），調整後既有媒體仍停在舊階梯上。
+    /// 這裡從私有容器的**原檔**重跑一次管線，換掉輸出檔與 variant 列；
+    /// 沒有這條路，上傳出問題的唯一補救是刪掉整筆重傳，而刪除會讓所有引用它的
+    /// 地方變成破圖。
+    /// </para>
+    /// </summary>
+    public async Task<IActionResult> ReprocessAsync(HttpRequest req, string id)
+    {
+        if (!Guid.TryParse(id, out var guid))
+            throw AppException.BadRequest("Invalid media ID format.");
+
+        var ct = req.HttpContext.RequestAborted;
+
+        var media = await db.Media.FirstOrDefaultAsync(m => m.Id == guid, ct)
+            ?? throw AppException.NotFound("Media");
+
+        if (!Presets.TryGet(media.PresetKey, out var preset))
+            throw AppException.BadRequest(
+                $"這筆媒體的 presetKey '{media.PresetKey}' 已不存在，無法重製。");
+
+        if (preset.IsDocument || media.MimeType == "image/svg+xml")
+            throw AppException.BadRequest("PDF 與 SVG 不經縮圖管線，沒有可重製的內容。");
+
+        if (string.IsNullOrWhiteSpace(media.OriginalBlobUrl))
+            throw AppException.BadRequest("這筆媒體沒有留下原檔，只能刪除後重新上傳。");
+
+        var original = await blobs.DownloadOriginalAsync(media.OriginalBlobUrl, ct)
+            ?? throw AppException.BadRequest("原檔已不在儲存體裡，只能刪除後重新上傳。");
+
+        using var source = new MemoryStream(original);
+        var rendered = images.Render(source, OriginalFileName(media.OriginalBlobUrl), preset);
+        var master   = rendered.Files.First(f => f.IsMaster);
+
+        await blobs.EnsureContainersAsync(ct);
+
+        var uploaded = new List<(RenderedImage File, string Url)>();
+        foreach (var f in rendered.Files)
+            uploaded.Add((f, await blobs.UploadMediaAsync(f.FileName, f.Bytes, ContentTypeFor(f.Format), ct)));
+
+        // 舊階梯留下、這次沒再產生的檔案才刪，且一樣要避開別列共用的
+        var fresh = uploaded.Select(u => u.Url).ToHashSet();
+        var stale = await db.Set<MediaVariant>().Where(v => v.MediaId == guid).ToListAsync(ct);
+
+        foreach (var v in stale.Where(v => !fresh.Contains(v.BlobUrl)))
+        {
+            if (await IsSharedAsync(v.BlobUrl, guid)) continue;
+
+            try { await blobs.DeleteAsync(v.BlobUrl); }
+            catch (Exception ex) { logger.LogWarning(ex, "刪除舊變體 blob 失敗 {Url}，繼續。", v.BlobUrl); }
+        }
+
+        db.Set<MediaVariant>().RemoveRange(stale);
+
+        foreach (var (f, url) in uploaded)
+        {
+            db.Set<MediaVariant>().Add(new MediaVariant
+            {
+                MediaId   = media.Id,
+                Format    = f.Format,
+                Width     = f.Width,
+                Height    = f.Height,
+                SizeBytes = f.Bytes.Length,
+                BlobUrl   = url,
+            });
+        }
+
+        var masterUpload = uploaded.First(u => u.File.IsMaster);
+        media.BlobUrl        = masterUpload.Url;
+        media.FileName       = master.FileName;
+        media.MimeType       = ContentTypeFor(master.Format);
+        media.SizeBytes      = master.Bytes.Length;
+        media.Width          = master.Width;
+        media.Height         = master.Height;
+        media.OriginalWidth  = rendered.OriginalWidth;
+        media.OriginalHeight = rendered.OriginalHeight;
+
+        await db.SaveChangesAsync(ct);
+
+        logger.LogInformation(
+            "Media reprocessed: {Id} preset={Preset} files={Count}", media.Id, preset.Key, uploaded.Count);
+
+        var response = new MediaUploadResponse(
+            media.Id, preset.Key, media.BlobUrl, media.Width, media.Height, media.SizeBytes,
+            new OriginalInfo(rendered.OriginalWidth, rendered.OriginalHeight, original.LongLength),
+            uploaded.Select(u => new MediaVariantDto(u.File.Format, u.File.Width, u.File.Height, u.Url)).ToArray(),
+            rendered.Warnings.Select(w => new UploadWarningDto(w.Code, w.Expected, w.Actual, w.Message)).ToArray());
+
+        return new OkObjectResult(ApiResponse.Ok(response, "已依目前的 preset 重新輸出。"));
+    }
+
+    /// <summary>
+    /// 原檔的 blob 名稱是「master 檔名的字幹 + 原始副檔名」，字幹尾巴帶著上傳當下
+    /// 的雜湊。重製時要**先把那 8 碼拿掉**再交給管線，否則每重製一次就多疊一層
+    /// （<c>banner-1a2b3c4d-5e6f7a8b.jpg</c>）。內容與 preset 沒變的話，
+    /// 去掉之後算出來的檔名會與原本完全相同，重製即為覆寫同一組 blob。
+    /// </summary>
+    private static string OriginalFileName(string originalBlobUrl)
+    {
+        var name = Path.GetFileName(new Uri(originalBlobUrl).AbsolutePath);
+        var stem = Path.GetFileNameWithoutExtension(name);
+
+        if (stem.Length > 9 && stem[^9] == '-' && stem[^8..].All(Uri.IsHexDigit))
+            stem = stem[..^9];
+
+        return stem + Path.GetExtension(name);
     }
 
     /// <summary>POST /admin/uploads/sas —— PDF 直傳。</summary>

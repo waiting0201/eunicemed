@@ -102,7 +102,13 @@ public sealed class ImageService
         var warnings = Inspect(original, bytes.LongLength, preset);
 
         var stem = FileNames.Normalize(Path.GetFileNameWithoutExtension(originalFileName));
-        var hash = FileNames.ShortHash(bytes);
+
+        // ⚠️ 雜湊把 **preset key 一起算進去**。只雜湊內容的話，同一張圖配兩個
+        // 不同 preset 會得到同一個 master 檔名，但階梯與 master 寬度是照 preset
+        // 走的 —— 第二次上傳會覆寫掉第一次的檔案，第一列的尺寸欄位當場與 blob
+        // 對不起來。檔名唯一標識「這份內容 + 這個 preset」之後，
+        // <see cref="Handlers.MediaHandler"/> 才能拿檔名去重。
+        var hash = FileNames.ShortHash(bytes, preset.Key);
         var baseName = $"{stem}-{hash}";
 
         var files = new List<RenderedImage>();
@@ -208,7 +214,21 @@ public static class FileNames
     /// <summary>
     /// 內容雜湊的前 8 碼。用於檔名去重，也讓同一路徑的檔案可以設
     /// <c>Cache-Control: immutable</c> —— 內容變了檔名就變（docs/07 §1.1）。
+    ///
+    /// <para>
+    /// <paramref name="scope"/> 會併入雜湊。輸出檔的內容取決於「來源檔 + preset」
+    /// 兩者，檔名也必須如此，否則同一張圖換個 preset 上傳就會覆寫掉前一組檔案。
+    /// 不給 scope 時與純內容雜湊等值。
+    /// </para>
     /// </summary>
-    public static string ShortHash(byte[] content) =>
-        Convert.ToHexString(SHA256.HashData(content))[..8].ToLowerInvariant();
+    public static string ShortHash(byte[] content, string? scope = null)
+    {
+        using var sha = SHA256.Create();
+        sha.TransformBlock(content, 0, content.Length, null, 0);
+
+        var salt = Encoding.UTF8.GetBytes(scope ?? string.Empty);
+        sha.TransformFinalBlock(salt, 0, salt.Length);
+
+        return Convert.ToHexString(sha.Hash!)[..8].ToLowerInvariant();
+    }
 }

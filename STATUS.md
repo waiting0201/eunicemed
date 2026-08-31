@@ -37,6 +37,11 @@ API 的 Phase 0–7 全數完成，**表單收件匣已於 2026-08-28 補上並�
 6 個據點、Resources 引用的三份文件 —— 已灌進**正式站**，en 與 zh-TW 皆齊（以公開端點實測）。
 同時修掉切換語系會跳回首頁、以及國際經銷商列表在寬螢幕下裂成兩塊。
 
+**2026-08-31 媒體修正**：同一個檔案上傳兩次會產生兩列 `Media` 共用同一組 blob，
+刪任一列就把另一列的圖砍成死連結（畫面上只看到破圖）。改為**上傳以檔名去重**
+（雜湊改算「內容 + presetKey」）＋**刪除只刪沒有別列共用的 blob**，並補上
+`POST /admin/media/{id}/reprocess` —— 先前踩到之後沒有退路，只能刪掉整筆重傳。
+
 剩下的是內容工作（17 個子分類落地頁文案、認證文案）與上線收尾（自訂網域、監控告警）。
 
 ---
@@ -59,7 +64,7 @@ API 的 Phase 0–7 全數完成，**表單收件匣已於 2026-08-28 補上並�
 |---|---|---|
 | 規格文件 | ✅ | 15 份，見 [CLAUDE.md](CLAUDE.md) §3 |
 | 資料模型 | ✅ | **53 張表**全數完成（`ContactSubmission` 於 2026-08-28 補上，含 `IX_Contact_Ip`；`AuditLog` 於 2026-08-30 移除）|
-| API | ✅ | `AppRouter` 共 **140** 條分派（2026-08-29 移除 menus／settings 六條；`PUT or PATCH` 合併寫的算一條）。Phase 0–7 全數完成。⚠️ reCAPTCHA 未接（版本與 site key 未拍板）|
+| API | ✅ | `AppRouter` 共 **141** 條分派（`PUT or PATCH` 合併寫的算一條）。Phase 0–7 全數完成，契約表上**已無待實作端點**（2026-08-31 補上 `media/{id}/reprocess`）。⚠️ reCAPTCHA 未接（版本與 site key 未拍板）|
 | 前台 `apps/web` | ✅ | 18 頁全數可運作，**版型已逐元素照抄 mockup4**（`mockup:check` 18/18 100%，見 §四）；手機／平板已完成並實測；三支表單已恢復送出 |
 | 後台 `apps/admin` | 🟡 | 全部畫面可運作（含表單收件匣）。**2026-08-29 第二次收斂**：側欄 16 → 9 項，圖片改為欄位就地上傳，認證收進「關於我們」、分類與系列收進「產品」（見 [docs/15](docs/15-cms-scope.md) §7）。只剩產品的相關產品拖曳 |
 | 基礎設施 `infra/` | ✅ | 已部署至 `EuniceMedUS`（West US 2）：Storage／Function App／SWA 共 13 個資源 |
@@ -103,12 +108,12 @@ API 的 Phase 0–7 全數完成，**表單收件匣已於 2026-08-28 補上並�
 
 ## 三、API 端點
 
-`AppRouter` 共 **140** 條分派（`PUT or PATCH` 合併寫的算一條）。完整契約見 [docs/api-routes.md](docs/api-routes.md)。
+`AppRouter` 共 **141** 條分派（`PUT or PATCH` 合併寫的算一條）。完整契約見 [docs/api-routes.md](docs/api-routes.md)。
 
-> ✅ **2026-08-31 已逐條核對過**：把兩邊都展開成「方法 + 正規化路徑」後各為 **157 條，完全一致**
-> （`AppRouter` 的 140 條分派裡有 17 條是 `PUT or PATCH` 合寫的；契約表的 `[/{id}]` 是一組 CRUD 的壓縮寫法）。
+> ✅ **2026-08-31 已逐條核對過**：把兩邊都展開成「方法 + 正規化路徑」後各為 **158 條，完全一致**
+> （`AppRouter` 的 141 條分派裡有 17 條是 `PUT or PATCH` 合寫的；契約表的 `[/{id}]` 是一組 CRUD 的壓縮寫法）。
 > 核對時修掉的落差：8 支後台模組的 `GET /{id}` 契約表漏列、表單收件匣被放在「待實作」區。
-> 目前唯一的差異是 `POST /admin/media/{id}/reprocess` —— 契約表有、程式沒有，已明確歸在「待實作」。
+> 當時唯一的差異 `POST /admin/media/{id}/reprocess`（契約表有、程式沒有）已於同日實作，**待實作區現在是空的**。
 
 ### 系統與驗證
 
@@ -150,7 +155,7 @@ API 的 Phase 0–7 全數完成，**表單收件匣已於 2026-08-28 補上並�
 | 舊站匯入 `admin/products/import` | ✅ | 冪等，149 筆；已補上 Admin only 的授權規則 |
 | 產品 `admin/products` | ✅ | 含 publish / unpublish / related、軟刪除連帶清理、`rowVersion` 409 |
 | 分類／子分類／認證／部位 | ✅ | 讀取登入即可、寫入 Editor+；刪除先擋引用回 409 |
-| 媒體 `admin/media` | 🟡 | 上傳／列表／引用反查／刪除保護／SAS **＋登記**／SVG 清洗／alt 文字更新皆可用；缺 reprocess。**後台已無媒體庫畫面**，引用反查與刪除沒有 UI 使用（docs/15 §7.3）|
+| 媒體 `admin/media` | ✅ | 上傳（**同內容同 preset 去重，回既有那筆**）／列表／引用反查／刪除保護（**不刪別列共用的 blob**）／`reprocess`／SAS ＋登記／SVG 清洗／alt 文字更新皆可用。**後台已無媒體庫畫面**，引用反查、刪除與 reprocess 沒有 UI 使用，走 `.http`（docs/15 §7.3）|
 | 頁面區段 `admin/pages` | ✅ | 含 schema 端點、JSON Pointer 驗證、跨語系同步、同步器、**媒體 preset 比對** |
 | 文章 `admin/articles` | ✅ | 含排程發布、活動面板（1:1）、圖庫排序、kind/type 一致性驗證 |
 | 文章分類 `admin/article-categories` | ✅ | slug 只在同 kind 內唯一 |

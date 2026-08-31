@@ -114,6 +114,52 @@ DELETE {{host}}/admin/media/{unusedMediaId}
 Authorization: Bearer {{at}}
 
 ###############################################################################
+# 6e-6h. 去重與共用 blob（2026-08-31 修）
+#
+# 症狀：同一個檔案上傳兩次會多一列 Media，兩列共用同一組 blob，
+#       刪任一列就把另一列的圖砍成 404 —— 畫面上只看到破圖，沒有錯誤訊息。
+###############################################################################
+
+### 6e. 同一份內容 + 同一個 preset 再傳一次 → 200（不是 201），且 data.id 與前一次相同
+# 用 6a 的列表確認：媒體庫**不會**因此多一列
+POST {{host}}/admin/media
+Authorization: Bearer {{at}}
+Content-Type: multipart/form-data; boundary=----b
+
+------b
+Content-Disposition: form-data; name="presetKey"
+
+photo-4x3
+------b
+Content-Disposition: form-data; name="file"; filename="dedup-test.png"
+Content-Type: image/png
+
+< ./sample.png
+------b--
+
+### 6f. 同一份內容 + **不同** preset → 201，且檔名不同
+# 雜湊算的是「內容 + presetKey」。只算內容的話這一次會覆寫掉 6e 那組 blob，
+# 而階梯與 master 寬度是照 preset 走的 —— 第一列的 Width 會與檔案對不起來。
+
+### 6g. 修正前上傳的重複列：刪掉它，另一列的檔案必須全部還在
+# 這種列已經在庫裡了，去重擋不到。手動造一列來驗（sqlcmd，正式庫請勿執行）：
+#   INSERT INTO Media (Id, BlobUrl, FileName, MimeType, SizeBytes, AltText, Width, Height,
+#                      PresetKey, OriginalWidth, OriginalHeight, OriginalBlobUrl, CreatedAt)
+#   SELECT NEWID(), BlobUrl, FileName, MimeType, SizeBytes, N'legacy dup', Width, Height,
+#          PresetKey, OriginalWidth, OriginalHeight, OriginalBlobUrl, SYSUTCDATETIME()
+#   FROM Media WHERE Id = '{mediaId}';
+#   -- variant 列也要一起複製，才是正式庫裡真正的形狀
+# 刪掉那一列之後，逐一 GET 原本那列的 master 與每個 variant URL，應全數 200。
+DELETE {{host}}/admin/media/{duplicateMediaId}
+Authorization: Bearer {{at}}
+
+### 6h. 以目前的 preset 階梯重新輸出
+# 內容與 preset 都沒變時檔名相同 —— 重製即為覆寫同一組 blob，變體列數不會翻倍。
+# PDF / SVG / 沒有留下原檔者回 400（原檔在私有的 media-originals 容器）。
+POST {{host}}/admin/media/{mediaId}/reprocess
+Authorization: Bearer {{at}}
+
+###############################################################################
 # 7. 端到端：前端真的拿得到圖
 #
 # 公開端點的 media 欄位會帶 `variants` 清單。

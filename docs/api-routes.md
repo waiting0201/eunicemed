@@ -115,11 +115,12 @@
 | Method | Path | 權限 | 說明 |
 |---|---|---|---|
 | GET | `/admin/media-presets` | 登入 | 14 個 preset 的機器可讀規格；後台提示文字來源 |
-| POST | `/admin/media` | Author+ | multipart 代傳，必帶 `presetKey`；415/413/400 硬拒絕、`warnings[]` 軟提醒 |
+| POST | `/admin/media` | Author+ | multipart 代傳，必帶 `presetKey`；415/413/400 硬拒絕、`warnings[]` 軟提醒。**同一份內容配同一個 preset 只會有一列**：再傳一次回既有那筆，狀態碼 200（新上傳為 201）|
 | GET | `/admin/media?search=&presetKey=` | 登入 | 媒體庫 |
 | GET | `/admin/media/{id}/usages` | 登入 | 引用反查（含埋在 `DataJson` 內的，schema 驅動） |
 | PUT/PATCH | `/admin/media/{id}` | Author+ | 目前只有 `altText`；空白會正規化成 null。**不換圖** —— 換圖等於換一筆媒體 |
-| DELETE | `/admin/media/{id}` | Editor+ | 有引用時回 409 |
+| POST | `/admin/media/{id}/reprocess` | Editor+ | 以目前 preset 重新輸出 master 與 variants（preset 階梯調整後補檔）。從私有容器的原檔重跑；PDF／SVG／沒有原檔者回 400 |
+| DELETE | `/admin/media/{id}` | Editor+ | 有引用時回 409。**只刪沒有別列共用的 blob** —— 去重之前上傳的重複列還在庫裡 |
 | POST | `/admin/uploads/sas` | Author+ | PDF 直傳用的 Blob SAS |
 | POST | `/admin/uploads/register` | Author+ | 直傳完成後把 PDF 登記成一筆 Media（**沒有這步，PDF 進不了下載模組**）。大小取自 blob 本身，不採信前端數字；同一個檔名重覆登記回既有那筆 |
 
@@ -324,10 +325,5 @@
 
 ## 待實作
 
-依 [13-api-roadmap.md](13-api-roadmap.md) 的階段順序。詳細規格見 [04-api.md](04-api.md) §4–§6。
-
-### Phase 3 剩餘 — 媒體
-
-| Method | Path | 權限 | 說明 |
-|---|---|---|---|
-| POST | `/admin/media/{id}/reprocess` | Editor+ | 以目前 preset 重新輸出 master 與 variants |
+**目前沒有。** 這份表上的每一條都已實作（2026-08-31 起 —— 最後一條 `reprocess` 於當日補上）。
+新端點的規格見 [04-api.md](04-api.md) §4–§6，階段順序見 [13-api-roadmap.md](13-api-roadmap.md)。

@@ -26,6 +26,10 @@
 1. **依 preset 的建議寬度等比縮放**——只縮不放（`width > preset.width` 才縮；較小的原圖維持原尺寸並在後台標示「解析度不足」）。
 2. **依 §2a 的階梯轉出多個寬度**：WebP（q78）出完整階梯、原格式（JPEG q78 / PNG）只出 preset 寬度那一張。PNG 透明度保留。
 3. 移除 EXIF、色彩轉 sRGB、檔名正規化（小寫、去空白、加短雜湊）。
+   短雜湊算的是**內容 + presetKey**，不是只有內容 —— 輸出檔的階梯與 master 寬度
+   取決於兩者，只雜湊內容的話同一張圖換個 preset 上傳會覆寫掉前一組檔案。
+   反過來，同一份內容配同一個 preset 必然得到同一個檔名，`POST /admin/media`
+   就以此去重：**不會有兩列 `Media` 指著同一組 blob**。
 4. 寫入 `Media`（含 `PresetKey`、原始寬高）與 `MediaVariant`（每個輸出檔一列）。
 5. 前端只引用 normalized master 與**上傳時已產生的 variant**。⚠️ **不使用 SWA 的 `next/image` 即時優化**——那會讓圖片位元組經過 SWA 並吃掉 Free 方案 100GB/月頻寬（見 [07-azure-deployment.md](07-azure-deployment.md) §7.3）。因此**響應式尺寸必須在上傳當下一併產生**（每個 preset 輸出所需的寬度斷點），前端以 custom loader 從 `MediaVariant` 挑選。
 
