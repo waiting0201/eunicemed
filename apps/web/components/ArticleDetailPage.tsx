@@ -4,7 +4,9 @@ import type { ArticleDetail } from '@/lib/api';
 import { srcSetOf } from '@/lib/image';
 import type { Locale } from '@/lib/locale';
 import { formatDate } from '@/lib/date';
+import { articleSchema, breadcrumbSchema } from '@/lib/schema';
 import { ArticleCard } from './ArticleCard';
+import { JsonLd } from './JsonLd';
 import { ResourcesSubnav } from './ResourcesSubnav';
 import { ShareLinks } from './ShareLinks';
 
@@ -154,6 +156,17 @@ export function ArticleDetailPage({
 
   return (
     <>
+      <JsonLd data={articleSchema(locale, a, `/${kind}/${a.slug}`, kind)} />
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: listLabel, url: `/${locale}/${kind}` },
+          ...(a.category
+            ? [{ name: a.category.name, url: `/${locale}/${kind}?category=${a.category.slug}` }]
+            : []),
+          { name: a.title },
+        ])}
+      />
+
       <ResourcesSubnav locale={locale} active={`/${kind}`} />
 
       <nav style={S.breadcrumb}>

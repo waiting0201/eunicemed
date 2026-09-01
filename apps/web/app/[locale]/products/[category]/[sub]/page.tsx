@@ -7,6 +7,7 @@ import { FilterChips } from '@/components/FilterChips';
 import { Pagination } from '@/components/Pagination';
 import { ProductGrid } from '@/components/ProductGrid';
 import { css } from '@/lib/css';
+import { pageMetadata } from '@/lib/seo';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { SiblingNav } from '@/components/SiblingNav';
 import { CategoryOutro } from '@/components/CategoryOutro';
@@ -48,19 +49,16 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const data = await api.subCategory(locale, category, sub);
   if (!data) return {};
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
-  const path = `/products/${category}/${sub}`;
 
-  return {
+  return pageMetadata({
+    locale,
+    path: `/products/${category}/${sub}`,
     title: data.seo.title ?? data.name,
     // 子分類頁有獨立 URL，SEO 敘述是必填 —— 缺的話這裡會是 undefined，
     // 屬於內容缺口而非程式問題（docs/05 §4 的 thin-page 提醒）
-    description: data.seo.description ?? data.description ?? undefined,
-    alternates: {
-      canonical: `${siteUrl}/${locale}${path}`,
-      languages: { en: `${siteUrl}/en${path}`, 'zh-TW': `${siteUrl}/zh-TW${path}` },
-    },
-  };
+    description: data.seo.description ?? data.description,
+    image: data.seo.ogImage ?? data.heroImage?.url ?? data.image?.url,
+  });
 }
 
 export default async function SubCategoryPage({

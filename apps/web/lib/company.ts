@@ -20,13 +20,53 @@ export const COMPANY = {
   linkedIn: 'https://www.linkedin.com/company/eunicemed',
 } as const;
 
-export const COMPANY_LOCALIZED: Record<Locale, { address: string; hours: string }> = {
+/**
+ * 拆成欄位的地址。**只給 JSON-LD 的 `PostalAddress` 用** ——
+ * 畫面上一律用同一列的 `address` 那一整串，不要在畫面重新拼接。
+ */
+export type PostalAddress = {
+  streetAddress: string;
+  addressLocality: string;
+  addressRegion: string;
+  postalCode: string;
+  /** ISO 3166-1 alpha-2 */
+  addressCountry: string;
+};
+
+export const COMPANY_LOCALIZED: Record<
+  Locale,
+  { address: string; hours: string; postal: PostalAddress }
+> = {
   en: {
     address: '11F, No. 123-9, Xingde Rd, Sanchong Dist, New Taipei City 24158, Taiwan',
     hours: 'Mon–Fri 09:00–18:00 (UTC+8)',
+    postal: {
+      streetAddress: '11F, No. 123-9, Xingde Rd',
+      addressLocality: 'Sanchong Dist',
+      addressRegion: 'New Taipei City',
+      postalCode: '24158',
+      addressCountry: 'TW',
+    },
   },
   'zh-TW': {
     address: '24158 新北市三重區興德路 123-9 號 11 樓',
     hours: '週一至週五 09:00–18:00（UTC+8）',
+    postal: {
+      streetAddress: '興德路 123-9 號 11 樓',
+      addressLocality: '三重區',
+      addressRegion: '新北市',
+      postalCode: '24158',
+      addressCountry: 'TW',
+    },
   },
 };
+
+/**
+ * 營業時間的機器可讀版（`OpeningHoursSpecification`）。
+ * 與上面 `hours` 那句話是同一件事的兩種寫法 —— 改一邊要改另一邊。
+ */
+export const OPENING_HOURS = {
+  days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+  opens: '09:00',
+  closes: '18:00',
+} as const;

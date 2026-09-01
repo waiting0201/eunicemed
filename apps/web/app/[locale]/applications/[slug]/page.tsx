@@ -7,6 +7,7 @@ import { isLocale, type Locale } from '@/lib/locale';
 import { ProductCard } from '@/components/ProductCard';
 import { css } from '@/lib/css';
 import { collectionColor, collectionRule } from '@/lib/collection';
+import { pageMetadata } from '@/lib/seo';
 import { NUMERAL, SectionHeading } from '@/components/SectionHeading';
 
 /** 樣式逐字取自 `mockup4/Application Detail.dc.html`。 */
@@ -146,17 +147,14 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const data = await api.application(locale, slug);
   if (!data) return {};
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
-  const path = `/applications/${slug}`;
 
-  return {
+  return pageMetadata({
+    locale,
+    path: `/applications/${slug}`,
     title: data.seo.title ?? data.name,
-    description: data.seo.description ?? data.lead ?? undefined,
-    alternates: {
-      canonical: `${siteUrl}/${locale}${path}`,
-      languages: { en: `${siteUrl}/en${path}`, 'zh-TW': `${siteUrl}/zh-TW${path}` },
-    },
-  };
+    description: data.seo.description ?? data.lead,
+    image: data.seo.ogImage ?? data.heroImage?.url,
+  });
 }
 
 export default async function ApplicationDetailPage({ params }: { params: Promise<Params> }) {

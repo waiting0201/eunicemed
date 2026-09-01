@@ -7,8 +7,11 @@ import { ContactCta } from '@/components/ContactCta';
 import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
 import { BRAND_BANDS } from '@/lib/bands';
+import { pageMetadata } from '@/lib/seo';
 import { ResourcesSubnav } from '@/components/ResourcesSubnav';
 import { SideFilter } from '@/components/SideFilter';
+import { JsonLd } from '@/components/JsonLd';
+import { faqPageSchema } from '@/lib/schema';
 
 /** 樣式逐字取自 `mockup4/FAQ.dc.html`。展開狀態與答案排版在 globals.css。 */
 const S = {
@@ -62,17 +65,14 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
   const c = COPY[locale];
 
-  return {
+  return pageMetadata({
+    locale,
+    path: '/faq',
     title: c.title,
     description: c.lead,
-    alternates: {
-      canonical: `${siteUrl}/${locale}/faq`,
-      languages: { en: `${siteUrl}/en/faq`, 'zh-TW': `${siteUrl}/zh-TW/faq` },
-    },
-  };
+  });
 }
 
 export default async function FaqPage({
@@ -91,6 +91,9 @@ export default async function FaqPage({
 
   return (
     <>
+      {/* FAQPage 只列這一頁真的顯示出來的問題（分類篩選之後），
+          不是整份 FAQ —— 結構化資料要與畫面一致，否則是 Google 明文禁止的 */}
+      <JsonLd data={faqPageSchema(locale, result.items)} />
       <ResourcesSubnav locale={locale} active="/faq" />
       <PageBand image={BRAND_BANDS.pattern01} />
       <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />

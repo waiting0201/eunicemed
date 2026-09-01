@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { css } from '@/lib/css';
+import { breadcrumbSchema } from '@/lib/schema';
+import { JsonLd } from './JsonLd';
 
 /** 樣式逐字取自 mockup4 的麵包屑（產品分類／詳情頁）。 */
 const S = {
@@ -20,6 +22,13 @@ export function Breadcrumb({
 }) {
   return (
     <nav style={S.nav}>
+      {/* 麵包屑的 JSON-LD 就掛在麵包屑上 —— 兩者永遠一致，不會有人改了一邊忘了另一邊 */}
+      <JsonLd
+        data={breadcrumbSchema([
+          ...trail.map((crumb) => ({ name: crumb.label, url: crumb.href })),
+          { name: current },
+        ])}
+      />
       {trail.map((crumb) => (
         <span key={crumb.href}>
           <Link href={crumb.href}>{crumb.label}</Link>

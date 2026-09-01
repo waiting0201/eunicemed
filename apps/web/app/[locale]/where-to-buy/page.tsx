@@ -7,6 +7,9 @@ import { ContactCta } from '@/components/ContactCta';
 import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
 import { BRAND_BANDS } from '@/lib/bands';
+import { pageMetadata } from '@/lib/seo';
+import { JsonLd } from '@/components/JsonLd';
+import { salesLocationsSchema } from '@/lib/schema';
 
 /** 樣式逐字取自 `mockup4/Where to Buy.dc.html`。 */
 const S = {
@@ -73,20 +76,14 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
   const c = COPY[locale];
 
-  return {
+  return pageMetadata({
+    locale,
+    path: '/where-to-buy',
     title: c.title,
     description: c.lead,
-    alternates: {
-      canonical: `${siteUrl}/${locale}/where-to-buy`,
-      languages: {
-        en: `${siteUrl}/en/where-to-buy`,
-        'zh-TW': `${siteUrl}/zh-TW/where-to-buy`,
-      },
-    },
-  };
+  });
 }
 
 export default async function WhereToBuyPage({ params }: { params: Promise<Params> }) {
@@ -99,6 +96,8 @@ export default async function WhereToBuyPage({ params }: { params: Promise<Param
 
   return (
     <>
+      {/* 經銷據點清單。對 AI 搜尋特別有用 —— 「哪裡買得到」是最常被問的一類問題 */}
+      <JsonLd data={salesLocationsSchema(locale, data, '/where-to-buy')} />
       <PageBand image={BRAND_BANDS.pattern08} />
       <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />
 

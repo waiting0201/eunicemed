@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { api } from '@/lib/api';
 import { isLocale, type Locale } from '@/lib/locale';
+import { pageMetadata } from '@/lib/seo';
 import { ArticleListPage } from '@/components/ArticleListPage';
 
 type Params = { locale: string };
@@ -30,20 +31,14 @@ export async function generateMetadata({
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
   const c = COPY[locale];
 
-  return {
+  return pageMetadata({
+    locale,
+    path: '/insights',
     title: c.title,
     description: c.lead,
-    alternates: {
-      canonical: `${siteUrl}/${locale}/insights`,
-      languages: {
-        en: `${siteUrl}/en/insights`,
-        'zh-TW': `${siteUrl}/zh-TW/insights`,
-      },
-    },
-  };
+  });
 }
 
 export default async function InsightsPage({

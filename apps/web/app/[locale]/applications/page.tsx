@@ -9,6 +9,7 @@ import { BodyMap } from '@/components/BodyMap';
 import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
 import { BRAND_BANDS } from '@/lib/bands';
+import { pageMetadata } from '@/lib/seo';
 import { SectionHeading } from '@/components/SectionHeading';
 
 /** 樣式逐字取自 `mockup4/Applications.dc.html`。 */
@@ -53,20 +54,14 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
   const c = COPY[locale];
 
-  return {
+  return pageMetadata({
+    locale,
+    path: '/applications',
     title: c.title,
     description: c.lead,
-    alternates: {
-      canonical: `${siteUrl}/${locale}/applications`,
-      languages: {
-        en: `${siteUrl}/en/applications`,
-        'zh-TW': `${siteUrl}/zh-TW/applications`,
-      },
-    },
-  };
+  });
 }
 
 export default async function ApplicationsPage({ params }: { params: Promise<Params> }) {

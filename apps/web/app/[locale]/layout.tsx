@@ -2,6 +2,9 @@ import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 import { isLocale, LOCALES } from '@/lib/locale';
+import { absoluteUrl, OG_IMAGE_DEFAULT, SITE_URL } from '@/lib/site';
+import { organizationSchema } from '@/lib/schema';
+import { JsonLd } from '@/components/JsonLd';
 import { SiteHeader } from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
 import { FloatingContact } from '@/components/FloatingContact';
@@ -17,10 +20,9 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
 
   return {
-    metadataBase: new URL(siteUrl),
+    metadataBase: new URL(SITE_URL),
     title: {
       default: 'EuniceMed',
       template: '%s · EuniceMed',
@@ -28,9 +30,16 @@ export async function generateMetadata({
     // 品牌 slogan 是品牌符號，不翻譯（docs/08 §5.2 的例外清單）
     description: 'Not Just a Motion — enhancing your quality of life',
     alternates: {
-      languages: Object.fromEntries(LOCALES.map((l) => [l, `${siteUrl}/${l}`])),
+      languages: Object.fromEntries(LOCALES.map((l) => [l, absoluteUrl(l)])),
     },
-    openGraph: { locale, siteName: 'EuniceMed' },
+    // 每一頁都會用 `pageMetadata()` 覆蓋掉這一組（lib/seo.ts）；
+    // 這裡只是保底，讓將來新增的頁面漏設定時仍有一張圖可分享
+    openGraph: {
+      locale,
+      siteName: 'EuniceMed',
+      images: [{ url: OG_IMAGE_DEFAULT, width: 1200, height: 630 }],
+    },
+    twitter: { card: 'summary_large_image', images: [OG_IMAGE_DEFAULT] },
   };
 }
 
@@ -59,6 +68,8 @@ export default async function LocaleLayout({
   return (
     <html lang={locale}>
       <body className="flex min-h-screen flex-col">
+        {/* 全站的 Organization 節點。其他頁面的 JSON-LD 以 @id 指回這裡（docs/06 §6） */}
+        <JsonLd data={organizationSchema(locale)} />
         <SiteHeader locale={locale} />
         <main className="flex-1">{children}</main>
         <SiteFooter locale={locale} />

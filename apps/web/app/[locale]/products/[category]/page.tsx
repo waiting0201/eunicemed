@@ -7,6 +7,7 @@ import { FilterChips, LinkChips } from '@/components/FilterChips';
 import { Pagination } from '@/components/Pagination';
 import { ProductGrid } from '@/components/ProductGrid';
 import { css } from '@/lib/css';
+import { pageMetadata } from '@/lib/seo';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { SiblingNav } from '@/components/SiblingNav';
 import { CategoryOutro } from '@/components/CategoryOutro';
@@ -62,19 +63,14 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const data = await api.category(locale, category);
   if (!data) return {};
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
-  const path = `/products/${category}`;
 
-  return {
+  return pageMetadata({
+    locale,
+    path: `/products/${category}`,
     title: data.seo.title ?? data.name,
-    description: data.seo.description ?? data.description ?? undefined,
-    alternates: {
-      canonical: `${siteUrl}/${locale}${path}`,
-      // 缺該語系時後端會 404，hreflang 仍照列 —— 由對方語系頁自行回 404，
-      // 這比在這裡臆測哪個語系有內容更誠實
-      languages: { en: `${siteUrl}/en${path}`, 'zh-TW': `${siteUrl}/zh-TW${path}` },
-    },
-  };
+    description: data.seo.description ?? data.description,
+    image: data.seo.ogImage ?? data.heroImage?.url ?? data.image?.url,
+  });
 }
 
 export default async function CategoryPage({

@@ -5,6 +5,7 @@ import { api, type MediaRef } from '@/lib/api';
 import { formatDate } from '@/lib/date';
 import { isLocale, type Locale } from '@/lib/locale';
 import { section } from '@/lib/page';
+import { pageMetadata } from '@/lib/seo';
 import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
 
@@ -33,14 +34,9 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
 
   return {
-    title: COPY[locale].title,
-    alternates: {
-      canonical: `${siteUrl}/${locale}/privacy`,
-      languages: { en: `${siteUrl}/en/privacy`, 'zh-TW': `${siteUrl}/zh-TW/privacy` },
-    },
+    ...(await pageMetadata({ locale, path: '/privacy', title: COPY[locale].title })),
     // 法務頁不需要被當成內容頁推廣，但仍須可索引（footer 連結）
     robots: { index: true, follow: true },
   };

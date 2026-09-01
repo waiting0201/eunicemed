@@ -217,9 +217,30 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 手機導覽（新增 `MobileNav`，mockup4 完全沒有）、人體圖 chip、側欄篩選、尺寸表橫向捲動。
 18 頁 × 390／768／1280px 以 CDP 實測**無橫向溢出**，桌機版與照抄結果一致（`mockup:check` 仍 18/18 100%）。
 
+**2026-09-01 SEO 補完 + GEO**（[docs/06](docs/06-sitemap.md) §5／§6／§9）。
+在這之前 19 頁都有 title／description／canonical／hreflang，但 **§6 的 JSON-LD 一支都沒實作、
+只有 3 頁有 Open Graph、全站沒有 Twitter Card、也沒有預設 OG 圖** —— 分享列表頁到社群是一片空白。
+
+- 每頁 metadata 收斂到 `lib/seo.ts` 的 `pageMetadata()`，六項綁在一起（含 OG／Twitter Card）；
+  `SITE_URL` 收進 `lib/site.ts`，不再 19 個檔案各寫一次
+- 預設 OG 圖 `public/brand/og-default.png`（1200×630，`tools/og-image.py` 以品牌字型產生）
+- **hreflang 改為只列真的有內容的語系**（`lib/hreflang.ts` 查 `/sitemap`，5 分鐘快取）。
+  原本頁面層寫死 `{ en, zh-TW }`，缺翻譯時會對搜尋引擎宣告一個 404 的替代版本 ——
+  正是 `app/sitemap.ts` 註解警告過、但沒套到頁面層的那件事。
+  目前 206 個路徑**都是雙語**，所以這一項是防患而非修現況
+- JSON-LD 七種節點：`Organization`／`BreadcrumbList`／`Product`／`NewsArticle`+`Article`／
+  `FAQPage`／`ContactPage`+`ContactPoint`／Where to Buy 的 `ItemList`（`lib/schema.ts`）
+- GEO：`robots.txt` 對 16 支 AI 爬蟲**逐一列名並全部允許**（決定寫在 `app/robots.ts`，要擋很好改）、
+  新增 `/llms.txt`（型錄站不是電商、URL 結構、缺翻譯回 404 等前提 + 分類／應用方案目錄，即時由 API 帶出）
+
+以 prod API 實測 18 頁的輸出（canonical／hreflang／OG／Twitter／JSON-LD 皆正確），
+`mockup:check` 仍 18/18 100%。剩下的是內容缺口：文章沒封面 → `Article.image` 缺席；
+部分產品沒填 summary → `Product.description` 缺席。
+
 前台共通項目：i18n 語系前綴 ✅、`output: 'standalone'` 與 250MB gate ✅（目前 66MB）、
 圖片走 Blob 直連（`unoptimized: true` + 自訂 srcSet）✅、`.swa` 路徑排除 ✅、安全標頭 ✅、
-純 SSR 全路由為 `ƒ Dynamic` ✅、sitemap.xml ✅（含 hreflang）、robots.txt ✅（非正式環境整站 Disallow）、舊網址轉址 ✅（middleware，5 分鐘快取）。
+純 SSR 全路由為 `ƒ Dynamic` ✅、sitemap.xml ✅（含 hreflang）、robots.txt ✅（非正式環境整站 Disallow
+＋ AI 爬蟲逐一列名）、llms.txt ✅、每頁 OG／Twitter Card／JSON-LD ✅、舊網址轉址 ✅（middleware，5 分鐘快取）。
 
 ---
 

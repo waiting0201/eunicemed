@@ -9,8 +9,11 @@ import { ProductCard } from '@/components/ProductCard';
 import { ProductInquiry } from '@/components/ProductInquiry';
 import { ProductGallery } from '@/components/ProductGallery';
 import { css } from '@/lib/css';
+import { pageMetadata } from '@/lib/seo';
 import { NUMERAL, SectionHeading } from '@/components/SectionHeading';
 import { SizeChart } from '@/components/SizeChart';
+import { JsonLd } from '@/components/JsonLd';
+import { breadcrumbSchema, productSchema } from '@/lib/schema';
 
 /** 樣式逐字取自 `mockup4/Product Detail.dc.html`。 */
 const S = {
@@ -180,22 +183,14 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const data = await api.product(locale, category, sub, slug);
   if (!data) return {};
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
-  const path = `/products/${category}/${sub}/${slug}`;
 
-  return {
+  return pageMetadata({
+    locale,
+    path: `/products/${category}/${sub}/${slug}`,
     title: data.seo.title ?? data.name,
-    description: data.seo.description ?? data.summary ?? undefined,
-    alternates: {
-      canonical: `${siteUrl}/${locale}${path}`,
-      languages: { en: `${siteUrl}/en${path}`, 'zh-TW': `${siteUrl}/zh-TW${path}` },
-    },
-    openGraph: {
-      title: data.seo.title ?? data.name,
-      description: data.seo.description ?? data.summary ?? undefined,
-      images: data.seo.ogImage ?? data.images[0]?.url,
-    },
-  };
+    description: data.seo.description ?? data.summary,
+    image: data.seo.ogImage ?? data.images[0]?.url,
+  });
 }
 
 export default async function ProductDetailPage({ params }: { params: Promise<Params> }) {
@@ -215,6 +210,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<Pa
 
   return (
     <>
+      <JsonLd data={productSchema(locale, p, `/products/${category}/${sub}/${slug}`)} />
       <Breadcrumb locale={locale} product={p} productsLabel={c.products} />
 
       {/* 01 圖庫 + 摘要 */}
@@ -488,6 +484,14 @@ function Breadcrumb({
 
   return (
     <nav style={S.breadcrumb}>
+      {/* 這一頁的麵包屑是自己刻的（樣式與共用元件相同但版位不同），
+          JSON-LD 也就要在這裡各掛一份 —— 見 components/Breadcrumb.tsx */}
+      <JsonLd
+        data={breadcrumbSchema([
+          ...crumbs.map((crumb) => ({ name: crumb.label, url: crumb.href })),
+          { name: product.name },
+        ])}
+      />
       {crumbs.map((crumb) => (
         <span key={crumb.href}>
           <Link href={crumb.href}>{crumb.label}</Link>

@@ -106,36 +106,65 @@ Home  /[locale]
 ## 4. robots.txt
 
 由 `app/robots.ts` 產生：
-- 允許所有公開頁；**封鎖** `admin.` 子網域與 `/api/`。
+- 允許所有公開頁；**封鎖** `/admin` 與 `/api/`。
 - 指向 sitemap：`Sitemap: https://www.eunicemed.com/sitemap.xml`。
 - 非正式環境（dev/stg）整站 `Disallow: /` 並加 `noindex`，避免被索引。
+- **AI 爬蟲逐一列名**（第二組 `User-agent`）。名單與理由寫在 `app/robots.ts` 的
+  `AI_CRAWLERS`：檢索型（OAI-SearchBot、Claude-SearchBot、PerplexityBot…）與
+  訓練型（GPTBot、ClaudeBot、CCBot、Google-Extended…）目前**全部允許**。
+  之所以列名而不靠 `User-agent: *` 默認放行，是為了讓「要不要被 LLM 讀」
+  變成一個看得見、改得動的決定 —— 見 §9。
 
 ---
 
 ## 5. 每頁 SEO 要件
 
-每頁透過 `generateMetadata` 輸出：
+每頁透過 `generateMetadata` 輸出，且**一律經過 `lib/seo.ts` 的 `pageMetadata()`**——
+六項綁在同一支，新頁面不會只做到其中幾項（這正是 2026-09-01 之前的狀況：
+19 頁都有 canonical，但只有 3 頁有 Open Graph、全站沒有 Twitter Card）：
+
 - `<title>`、`meta description`（可由 CMS 的 SEO 欄位覆寫，否則用預設範本）
 - `canonical`（自身語系絕對網址）
 - `hreflang`（en / zh-TW / x-default）
-- Open Graph（`og:title`、`og:description`、`og:image`、`og:type`、`og:locale`）
-- Twitter Card
-- 產品/News 缺圖時用全站預設 OG 圖
+- Open Graph（`og:title`、`og:description`、`og:image`、`og:type`、`og:locale`、`og:url`、`og:site_name`）
+- Twitter Card（`summary_large_image`）
+- 缺圖時用全站預設 OG 圖 `public/brand/og-default.png`（1200×630，由 `tools/og-image.py` 產生）
+
+> ⚠️ **hreflang 只列該路徑真的有內容的語系**，與 sitemap.xml 同一份判準 ——
+> 語系清單來自 `lib/hreflang.ts`（查 `GET /sitemap`，5 分鐘快取，與 `lib/redirects.ts`
+> 同一個作法）。**不可以在頁面裡寫死 `{ en, zh-TW }`**：缺翻譯的頁面會 404，
+> 那等於對搜尋引擎宣告一個不存在的替代版本。
+> 唯一的例外是 contact —— 它整份寫在程式碼裡（沒有 `api.page`），但後端的 sitemap
+> 還沒收錄它，所以在該頁以 `locales` 參數明寫。
+
+`SITE_URL` 只有 `lib/site.ts` 一份，頁面不再各自讀 `process.env.NEXT_PUBLIC_SITE_URL`。
 
 ---
 
 ## 6. 結構化資料（JSON-LD）
 
-| 頁面 | Schema |
-|------|--------|
-| 全站（layout） | `Organization`（名稱、logo、地址、電話、社群 `sameAs`，含 LinkedIn） |
-| 麵包屑 | `BreadcrumbList` |
-| 產品詳情 | `Product`（名稱、圖、描述、品牌、分類） |
-| News / Insights 內文 | `Article`（標題、作者、日期、圖） |
-| FAQ | `FAQPage`（Question/Answer） |
-| Contact / Where to Buy | `LocalBusiness` / `Organization` 含 `address`、`telephone` |
+節點一律由 `lib/schema.ts` 組出、由 `components/JsonLd.tsx` 輸出（分開是為了
+每一段都能單獨貼進 Rich Results 測試工具驗證）。
 
-> 醫療相關宣稱用詞需經法務/法規審閱，避免不當療效宣稱。
+| 頁面 | Schema | 掛在哪 |
+|------|--------|--------|
+| 全站（layout） | `Organization`（名稱、logo、地址、電話、母公司、`sameAs`） | `app/[locale]/layout.tsx` |
+| 麵包屑 | `BreadcrumbList` | `components/Breadcrumb.tsx`；產品詳情與文章詳情自己刻了麵包屑，各掛一份 |
+| 產品詳情 | `Product`（名稱、SKU、圖、描述、品牌、分類、規格） | 產品詳情頁 |
+| News / Insights 內文 | `NewsArticle` / `Article` | `components/ArticleDetailPage.tsx` |
+| FAQ | `FAQPage`（Question/Answer） | FAQ 頁，**只列篩選後畫面上真的有的題目** |
+| Contact | `ContactPage` + `ContactPoint`（含 `hoursAvailable`） | Contact 頁 |
+| Where to Buy | `ItemList` of `Organization`（經銷商） | Where to Buy 頁 |
+
+其他頁面共用 layout 的 `Organization`，不再各掛一份；需要指涉品牌的地方一律用
+`@id`（`{SITE_URL}/#organization`）指回去。
+
+> **`Product` 沒有 `offers`** —— 本站不是電商，沒有價格。測試工具會提示缺這一欄，
+> 那是預期的：捏造價格才是真的錯。
+>
+> 醫療相關宣稱用詞需經法務/法規審閱，避免不當療效宣稱。**JSON-LD 的文字一律取自
+> CMS 既有欄位，不在程式裡另外造句** —— 結構化資料會被逐字引用，自行改寫等於
+> 繞過內容端的審閱。
 
 ---
 
@@ -154,9 +183,41 @@ Home  /[locale]
 ---
 
 ## 8. 驗收清單
-- [ ] sitemap.xml 含所有已發布頁與 hreflang，lastmod 正確
-- [ ] robots.txt 正確、非正式環境 noindex
-- [ ] 每頁 canonical / hreflang / OG 完整
-- [ ] JSON-LD 通過 Rich Results 測試
-- [ ] 301 轉址涵蓋舊站主要 URL
+- [x] sitemap.xml 含所有已發布頁與 hreflang，lastmod 正確
+- [x] robots.txt 正確、非正式環境 noindex
+- [x] 每頁 canonical / hreflang / OG / Twitter Card 完整（19 頁，2026-09-01）
+- [x] JSON-LD 七種節點皆已輸出（2026-09-01）
+- [ ] JSON-LD 通過 Rich Results 測試（**要等正式網域上線才驗得了**）
+- [x] 301 轉址涵蓋舊站主要 URL
 - [ ] Search Console 已提交並無重大索引錯誤
+
+**已知的內容缺口**（不是程式問題，但會讓結構化資料少欄位）：
+- 文章沒上封面 → `Article.image` 缺席，Google 的文章複合式結果需要它
+- 產品沒填 summary／SEO 敘述 → `Product.description` 缺席
+
+---
+
+## 9. AI 搜尋（GEO）
+
+搜尋引擎之外，ChatGPT／Claude／Perplexity／Gemini 這類引擎也會來抓，而它們
+「一次只讀幾頁就要回答問題」。針對這件事本站做兩件：
+
+**1. `robots.txt` 對 AI 爬蟲逐一表態**（§4）。目前全部允許 —— 型錄站被摘要引用是曝光，
+站上也沒有付費牆或非公開內容。品牌方若只想被引用、不想被拿去訓練，要擋的是
+`GPTBot`／`ClaudeBot`／`CCBot`／`Bytespider`／`Google-Extended`／`Applebot-Extended`／
+`meta-externalagent`，做法寫在 `app/robots.ts` 的註解。
+
+**2. `/llms.txt`**（`app/llms.txt/route.ts`，格式見 llmstxt.org）。它**不是 sitemap 的替代品**：
+sitemap 給爬蟲列出全部網址，llms.txt 給模型「站台是什麼 + 別講錯什麼」。
+最有價值的是開頭那幾條前提 —— 沒有它們，模型會把型錄站當成電商而編出價格與購買連結：
+
+- 這是型錄站不是電商，沒有價格、購物車、結帳
+- 產品網址的四段結構、三個支撐強度系列（Care／Protect／Advance）
+- 雙語但**缺翻譯回 404 不 fallback**，所以英文網址不保證有中文版
+- 醫療宣稱來自製造商文案，不可被推廣成醫療建議
+
+分類、子分類與應用方案的目錄由 API 即時帶出（純 SSR，後台改了下一次抓取就是新的）；
+後端掛掉時只出骨架，不回 500。
+
+> JSON-LD 對 GEO 同樣重要 —— 模型抽取事實時，結構化資料比散文可靠得多。
+> 特別是 `FAQPage`（問答對）與 Where to Buy 的 `ItemList`（「哪裡買得到」是最常被問的一類）。

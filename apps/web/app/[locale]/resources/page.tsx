@@ -11,6 +11,7 @@ import {
   type PageContent,
 } from '@/lib/page';
 import { css } from '@/lib/css';
+import { pageMetadata } from '@/lib/seo';
 import { ResourcesSubnav } from '@/components/ResourcesSubnav';
 import { SectionCtaLink } from '@/components/SectionCtaLink';
 
@@ -222,16 +223,13 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
 
-  return {
+  return pageMetadata({
+    locale,
+    path: '/resources',
     title: COPY[locale].meta.title,
     description: COPY[locale].hero.lead,
-    alternates: {
-      canonical: `${siteUrl}/${locale}/resources`,
-      languages: { en: `${siteUrl}/en/resources`, 'zh-TW': `${siteUrl}/zh-TW/resources` },
-    },
-  };
+  });
 }
 
 export default async function ResourcesPage({ params }: { params: Promise<Params> }) {

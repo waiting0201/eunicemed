@@ -1,8 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { api } from '@/lib/api';
 import { DEFAULT_LOCALE } from '@/lib/locale';
-
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
+import { SITE_URL as SITE } from '@/lib/site';
 
 /**
  * sitemap.xml。資料來自 `GET /sitemap`（docs/06 §3）。

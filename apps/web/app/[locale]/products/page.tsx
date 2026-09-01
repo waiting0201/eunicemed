@@ -7,6 +7,7 @@ import { isLocale, type Locale } from '@/lib/locale';
 import { section, type SectionCta } from '@/lib/page';
 import { FilterChips } from '@/components/FilterChips';
 import { css } from '@/lib/css';
+import { pageMetadata } from '@/lib/seo';
 import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
 import { ProductGrid } from '@/components/ProductGrid';
@@ -106,16 +107,13 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
 
-  return {
+  return pageMetadata({
+    locale,
+    path: '/products',
     title: COPY[locale].hero.title,
     description: COPY[locale].hero.lead,
-    alternates: {
-      canonical: `${siteUrl}/${locale}/products`,
-      languages: { en: `${siteUrl}/en/products`, 'zh-TW': `${siteUrl}/zh-TW/products` },
-    },
-  };
+  });
 }
 
 export default async function ProductsPage({

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { api } from '@/lib/api';
 import { isLocale, type Locale } from '@/lib/locale';
+import { pageMetadata } from '@/lib/seo';
 import { ArticleDetailPage } from '@/components/ArticleDetailPage';
 
 type Params = { locale: string; slug: string };
@@ -19,24 +20,16 @@ export async function generateMetadata({
   const a = await api.article(locale, 'news', slug);
   if (!a) return {};
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
-  const path = `/news/${slug}`;
 
-  return {
+  return pageMetadata({
+    locale,
+    path: `/news/${slug}`,
     title: a.seo.title ?? a.title,
-    description: a.seo.description ?? a.excerpt ?? a.standfirst ?? undefined,
-    alternates: {
-      canonical: `${siteUrl}/${locale}${path}`,
-      languages: { en: `${siteUrl}/en${path}`, 'zh-TW': `${siteUrl}/zh-TW${path}` },
-    },
-    openGraph: {
-      type: 'article',
-      title: a.seo.title ?? a.title,
-      description: a.seo.description ?? a.excerpt ?? undefined,
-      images: a.seo.ogImage ?? a.cover?.url,
-      publishedTime: a.publishedAt ?? undefined,
-    },
-  };
+    description: a.seo.description ?? a.excerpt ?? a.standfirst,
+    image: a.seo.ogImage ?? a.cover?.url,
+    type: 'article',
+    publishedTime: a.publishedAt,
+  });
 }
 
 export default async function NewsDetailPage({ params }: { params: Promise<Params> }) {

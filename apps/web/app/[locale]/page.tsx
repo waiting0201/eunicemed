@@ -8,6 +8,7 @@ import { isLocale, type Locale } from '@/lib/locale';
 import { section, type SectionCta } from '@/lib/page';
 import { collectionColor } from '@/lib/collection';
 import { css } from '@/lib/css';
+import { pageMetadata } from '@/lib/seo';
 import { HeroSlider } from '@/components/HeroSlider';
 import { NUMERAL, RuledSectionHeading, SectionHeading } from '@/components/SectionHeading';
 
@@ -223,16 +224,12 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
 
-  return {
+  return pageMetadata({
+    locale,
     title: plain(COPY[locale].hero.title),
     description: COPY[locale].hero.lead,
-    alternates: {
-      canonical: `${siteUrl}/${locale}`,
-      languages: { en: `${siteUrl}/en`, 'zh-TW': `${siteUrl}/zh-TW` },
-    },
-  };
+  });
 }
 
 export default async function HomePage({ params }: { params: Promise<Params> }) {

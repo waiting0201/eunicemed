@@ -6,6 +6,7 @@ import { isLocale, type Locale } from '@/lib/locale';
 import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
 import { BRAND_BANDS } from '@/lib/bands';
+import { pageMetadata } from '@/lib/seo';
 import { ResourcesSubnav } from '@/components/ResourcesSubnav';
 import { SideFilter } from '@/components/SideFilter';
 
@@ -68,17 +69,14 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
   const c = COPY[locale];
 
-  return {
+  return pageMetadata({
+    locale,
+    path: '/downloads',
     title: c.title,
     description: c.lead,
-    alternates: {
-      canonical: `${siteUrl}/${locale}/downloads`,
-      languages: { en: `${siteUrl}/en/downloads`, 'zh-TW': `${siteUrl}/zh-TW/downloads` },
-    },
-  };
+  });
 }
 
 export default async function DownloadsPage({

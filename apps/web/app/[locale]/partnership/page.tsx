@@ -6,6 +6,7 @@ import { srcSetOf } from '@/lib/image';
 import { isLocale, type Locale } from '@/lib/locale';
 import { section } from '@/lib/page';
 import { css } from '@/lib/css';
+import { pageMetadata } from '@/lib/seo';
 import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
 import { SectionHeading } from '@/components/SectionHeading';
@@ -111,19 +112,13 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.eunicemed.com';
 
-  return {
+  return pageMetadata({
+    locale,
+    path: '/partnership',
     title: COPY[locale].title,
     description: COPY[locale].lead,
-    alternates: {
-      canonical: `${siteUrl}/${locale}/partnership`,
-      languages: {
-        en: `${siteUrl}/en/partnership`,
-        'zh-TW': `${siteUrl}/zh-TW/partnership`,
-      },
-    },
-  };
+  });
 }
 
 export default async function PartnershipPage({ params }: { params: Promise<Params> }) {
