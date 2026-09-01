@@ -5,6 +5,11 @@ public class User
 {
     public Guid Id { get; set; }
 
+    /// <summary>
+    /// 登入識別，全站唯一。**不保證是 email** —— 純帳號名（如 <c>admin</c>）也合法，
+    /// 兩端都不驗格式。欄位名保留 <c>Email</c> 只是因為改名要動 prod 的欄位與部署設定，
+    /// 划不來（2026-09-01 決議）。系統沒有任何寄信給使用者的流程，所以不填 email 不會壞掉。
+    /// </summary>
     public string Email       { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
 

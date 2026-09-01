@@ -45,11 +45,13 @@ export function Login() {
         <h1 className="page-title mt-4 text-[1.4rem]">內容管理</h1>
 
         <label className="mt-7 block">
-          <span className="form-label">電子郵件</span>
+          <span className="form-label">帳號</span>
           <input
-            type="email"
+            type="text"
             required
             autoComplete="username"
+            autoCapitalize="none"
+            spellCheck={false}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="form-control mono"

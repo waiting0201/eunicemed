@@ -672,6 +672,8 @@ CREATE INDEX IX_Contact_Ip ON ContactSubmission(IpAddress, CreatedAt);
 
 CREATE TABLE [User] (
     Id           UNIQUEIDENTIFIER NOT NULL DEFAULT NEWSEQUENTIALID() PRIMARY KEY,
+    -- 登入識別，全站唯一。**不驗 email 格式**，填 admin 這種純帳號名也可以；
+    -- 欄位名沿用 Email 是為了避開 prod 的欄位改名（2026-09-01）
     Email        NVARCHAR(320) NOT NULL UNIQUE,
     DisplayName  NVARCHAR(200) NOT NULL,
     PasswordHash NVARCHAR(MAX) NOT NULL,

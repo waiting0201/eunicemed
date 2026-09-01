@@ -24,6 +24,7 @@ public static class AdminUserSeeder
     {
         if (await db.Users.AnyAsync(ct)) return;
 
+        // Seed__AdminEmail 填純帳號名（如 admin）也可以 —— 不驗格式
         var email    = cfg["Seed:AdminEmail"];
         var password = cfg["Seed:AdminPassword"];
 

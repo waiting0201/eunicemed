@@ -172,10 +172,11 @@ function UserDialog({
 
         <div className="panel-body">
           <FieldRow>
-            <Field label="電子郵件" required>
+            <Field label="帳號" required hint="登入用的識別，全站唯一。可以是電子郵件，也可以是純帳號名（例如 admin）。">
               <input
                 className="form-control mono"
-                type="email"
+                autoCapitalize="none"
+                spellCheck={false}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />

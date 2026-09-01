@@ -42,7 +42,7 @@ public sealed class AuthHandler(
 
         var body = await req.ReadFromJsonAsync<LoginRequest>();
         if (body is null || string.IsNullOrWhiteSpace(body.Email) || string.IsNullOrWhiteSpace(body.Password))
-            return new BadRequestObjectResult(ApiResponse.Fail("Email and password are required."));
+            return new BadRequestObjectResult(ApiResponse.Fail("Account and password are required."));
 
         var email = body.Email.Trim();
         var user = await db.Users
@@ -54,8 +54,8 @@ public sealed class AuthHandler(
         // 帳號不存在與密碼錯誤回同一個訊息 —— 不洩漏帳號是否存在
         if (user is null)
         {
-            logger.LogWarning("Login failed: unknown email {Email} from {Ip}", email, ip);
-            throw AppException.Unauthorized("Email 或密碼錯誤。");
+            logger.LogWarning("Login failed: unknown account {Account} from {Ip}", email, ip);
+            throw AppException.Unauthorized("帳號或密碼錯誤。");
         }
 
         if (user.LockedUntil is { } until && until > now)
@@ -75,7 +75,7 @@ public sealed class AuthHandler(
             }
             await db.SaveChangesAsync();
 
-            throw AppException.Unauthorized("Email 或密碼錯誤。");
+            throw AppException.Unauthorized("帳號或密碼錯誤。");
         }
 
         if (!user.IsActive)

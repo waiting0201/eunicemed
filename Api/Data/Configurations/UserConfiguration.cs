@@ -12,6 +12,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.ToTable("User");   // docs/05 §1：保留字，需明確指定並由 EF 加引號
         builder.HasKey(u => u.Id);
 
+        // 登入識別，不驗 email 格式（見 Models/Entities/User.cs 的註解）。
+        // 320 是 email 的上限，純帳號名用不到那麼長，但放寬不花成本。
         builder.Property(u => u.Email)
                .IsRequired()
                .HasMaxLength(320);

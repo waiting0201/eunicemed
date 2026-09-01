@@ -45,13 +45,13 @@ public sealed class UserHandler(AppDbContext db, Microsoft.Extensions.Configurat
             return new BadRequestObjectResult(ApiResponse.Fail("Invalid request body."));
 
         if (string.IsNullOrWhiteSpace(body.Email) || string.IsNullOrWhiteSpace(body.DisplayName))
-            return new BadRequestObjectResult(ApiResponse.Fail("email 與 displayName 為必填。"));
+            return new BadRequestObjectResult(ApiResponse.Fail("帳號與顯示名稱為必填。"));
 
         PasswordPolicy.Require(body.Password, config);
 
         var email = body.Email.Trim();
         if (await db.Users.AnyAsync(u => u.Email == email))
-            throw AppException.Conflict($"Email '{email}' 已被使用。");
+            throw AppException.Conflict($"帳號 '{email}' 已被使用。");
 
         var roles = await ResolveRolesAsync(body.Roles);
 
@@ -105,9 +105,9 @@ public sealed class UserHandler(AppDbContext db, Microsoft.Extensions.Configurat
         {
             var email = body.Email.Trim();
 
-            // Email 是登入識別，全站唯一。撞號要擋下來，否則兩個帳號登入時會不確定是哪一個。
+            // 登入識別，全站唯一。撞號要擋下來，否則兩個帳號登入時會不確定是哪一個。
             if (email != user.Email && await db.Users.AnyAsync(u => u.Email == email))
-                throw AppException.Conflict($"Email '{email}' 已被使用。");
+                throw AppException.Conflict($"帳號 '{email}' 已被使用。");
 
             user.Email = email;
         }
