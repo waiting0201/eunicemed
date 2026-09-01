@@ -109,11 +109,11 @@ Home  /[locale]
 - 允許所有公開頁；**封鎖** `/admin` 與 `/api/`。
 - 指向 sitemap：`Sitemap: https://www.eunicemed.com/sitemap.xml`。
 - 非正式環境（dev/stg）整站 `Disallow: /` 並加 `noindex`，避免被索引。
-- **AI 爬蟲逐一列名**（第二組 `User-agent`）。名單與理由寫在 `app/robots.ts` 的
-  `AI_CRAWLERS`：檢索型（OAI-SearchBot、Claude-SearchBot、PerplexityBot…）與
-  訓練型（GPTBot、ClaudeBot、CCBot、Google-Extended…）目前**全部允許**。
-  之所以列名而不靠 `User-agent: *` 默認放行，是為了讓「要不要被 LLM 讀」
-  變成一個看得見、改得動的決定 —— 見 §9。
+- **檢索型 AI 爬蟲逐一列名並允許**（第二組 `User-agent`，見 `app/robots.ts` 的 `AI_CRAWLERS`）。
+  訓練型不在這份檔案裡處理 —— 由 Cloudflare 擋。完整說明見 §9。
+
+> ⚠️ **線上的 robots.txt 不只這一份。** Cloudflare 會在我們這段之前接一段
+> managed content。改完一定要去線上抓一次確認合併結果，`next start` 看不到那一段。
 
 ---
 
@@ -202,10 +202,22 @@ Home  /[locale]
 搜尋引擎之外，ChatGPT／Claude／Perplexity／Gemini 這類引擎也會來抓，而它們
 「一次只讀幾頁就要回答問題」。針對這件事本站做兩件：
 
-**1. `robots.txt` 對 AI 爬蟲逐一表態**（§4）。目前全部允許 —— 型錄站被摘要引用是曝光，
-站上也沒有付費牆或非公開內容。品牌方若只想被引用、不想被拿去訓練，要擋的是
-`GPTBot`／`ClaudeBot`／`CCBot`／`Bytespider`／`Google-Extended`／`Applebot-Extended`／
-`meta-externalagent`，做法寫在 `app/robots.ts` 的註解。
+**1. `robots.txt` 對 AI 爬蟲表態**（§4）。**政策是「可被引用，不可被訓練」**，
+而這件事**由兩個地方合力達成**：
+
+| 誰 | 管哪一半 | 怎麼改 |
+|---|---|---|
+| Cloudflare（AI Crawl Control 的 managed robots.txt） | 訓練／索引型：`GPTBot`、`ClaudeBot`、`CCBot`、`Google-Extended`、`Amazonbot`、`Applebot-Extended`、`Bytespider`、`meta-externalagent` → `Disallow: /`，並附 `Content-Signal: search=yes,ai-train=no,use=reference` | Cloudflare 後台，**不在這個 repo** |
+| `app/robots.ts` 的 `AI_CRAWLERS` | 檢索／回答型：`OAI-SearchBot`、`Claude-SearchBot`、`PerplexityBot`、`ChatGPT-User`… → 明示 `Allow` | 改這支檔案 |
+
+型錄站被摘要引用是曝光而非損失，所以會附出處的那一群全部放行；
+拿去訓練是另一回事，那一半連著一則歐盟著作權指令第 4 條的權利保留聲明。
+
+> **踩坑（2026-09-01）**：第一版把訓練型也寫進 `AI_CRAWLERS` 的 `Allow`，
+> 於是同一支 `GPTBot` 在同一個 robots.txt 裡有兩個相反的群組。依 RFC 9309
+> 同名群組要合併、等長規則取寬鬆者 —— 我們的 `Allow: /` 會蓋過 Cloudflare 的
+> `Disallow: /`，等於一邊聲明保留權利一邊放行。**本機完全看不出來**，
+> Cloudflare 那段是在邊緣加的，`next start` 抓到的只有我們自己那份。
 
 **2. `/llms.txt`**（`app/llms.txt/route.ts`，格式見 llmstxt.org）。它**不是 sitemap 的替代品**：
 sitemap 給爬蟲列出全部網址，llms.txt 給模型「站台是什麼 + 別講錯什麼」。

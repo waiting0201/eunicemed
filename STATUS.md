@@ -230,8 +230,12 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
   目前 206 個路徑**都是雙語**，所以這一項是防患而非修現況
 - JSON-LD 七種節點：`Organization`／`BreadcrumbList`／`Product`／`NewsArticle`+`Article`／
   `FAQPage`／`ContactPage`+`ContactPoint`／Where to Buy 的 `ItemList`（`lib/schema.ts`）
-- GEO：`robots.txt` 對 16 支 AI 爬蟲**逐一列名並全部允許**（決定寫在 `app/robots.ts`，要擋很好改）、
+- GEO：`robots.txt` 對**檢索型** AI 爬蟲逐一列名並允許（`app/robots.ts`）、
   新增 `/llms.txt`（型錄站不是電商、URL 結構、缺翻譯回 404 等前提 + 分類／應用方案目錄，即時由 API 帶出）
+- **政策定為「可被引用，不可被訓練」**：訓練型那一半由 **Cloudflare 的 managed robots.txt**
+  擋掉並附 `Content-Signal: ai-train=no`（歐盟著作權指令第 4 條的權利保留）。
+  ⚠️ 第一版把訓練型也寫成 `Allow`，與 Cloudflare 那段成了同名群組互相矛盾，
+  **本機看不出來**（那段是邊緣加的），上線抓 robots.txt 才發現 —— 已改掉，見 [docs/06](docs/06-sitemap.md) §9
 
 以 prod API 實測 18 頁的輸出（canonical／hreflang／OG／Twitter／JSON-LD 皆正確），
 `mockup:check` 仍 18/18 100%。剩下的是內容缺口：文章沒封面 → `Article.image` 缺席；
@@ -240,7 +244,8 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 前台共通項目：i18n 語系前綴 ✅、`output: 'standalone'` 與 250MB gate ✅（目前 66MB）、
 圖片走 Blob 直連（`unoptimized: true` + 自訂 srcSet）✅、`.swa` 路徑排除 ✅、安全標頭 ✅、
 純 SSR 全路由為 `ƒ Dynamic` ✅、sitemap.xml ✅（含 hreflang）、robots.txt ✅（非正式環境整站 Disallow
-＋ AI 爬蟲逐一列名）、llms.txt ✅、每頁 OG／Twitter Card／JSON-LD ✅、舊網址轉址 ✅（middleware，5 分鐘快取）。
+＋ 檢索型 AI 爬蟲明示允許；訓練型由 Cloudflare 擋）、llms.txt ✅、每頁 OG／Twitter Card／JSON-LD ✅、
+舊網址轉址 ✅（middleware，5 分鐘快取）。
 
 ---
 

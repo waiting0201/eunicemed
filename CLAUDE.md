@@ -239,10 +239,6 @@ EuniceMed/
       後台已可逐產品掛認證，但公開端點忽略它 —— 編輯者掛了會是靜默的無效操作。
       改成逐產品的話，在內容建好之前所有產品頁的標章列會變成空的（目前 `ProductCertification` 0 筆），
       所以先維持現狀等拍板：標章列是「品牌共用」還是「逐產品」？
-- [ ] **AI 爬蟲政策要不要維持全部允許？**（2026-09-01 起 `app/robots.ts` 逐一列名並全部放行）
-      本站是型錄與內容行銷站，被 ChatGPT／Perplexity 這類引擎摘要引用是曝光而非損失，
-      所以預設放行；但「被拿去訓練」與「被引用」是兩件事，品牌方可能只要後者。
-      要擋的話改 `AI_CRAWLERS` 即可（作法寫在該檔註解），見 [docs/06](docs/06-sitemap.md) §9
 - [ ] **`COMPANY.linkedIn` 是推定值，而它現在也進了 JSON-LD 的 `sameAs`**（2026-09-01）。
       footer 上一條連錯的外部連結只是點不到，`sameAs` 連錯卻是在告訴搜尋引擎
       「這個品牌等於那個 LinkedIn 帳號」。品牌方確認正式網址前，這一條的份量比之前重
@@ -267,6 +263,12 @@ EuniceMed/
 
 ### 已封閉
 
+- [x] **AI 爬蟲政策：可被引用，不可被訓練**（2026-09-01）。
+      會附出處的檢索型（OAI-SearchBot、Claude-SearchBot、PerplexityBot…）在
+      `app/robots.ts` 明示允許；訓練型（GPTBot、ClaudeBot、CCBot、Google-Extended…）
+      由 **Cloudflare 的 managed robots.txt** 擋掉並附 `Content-Signal: ai-train=no`。
+      ⚠️ **要改訓練那半邊是改 Cloudflare 後台，不是改這個 repo** —— 兩邊都寫會變成
+      同名群組互相矛盾（RFC 9309 合併後我們的 Allow 會贏）。見 [docs/06](docs/06-sitemap.md) §9
 - [x] CMS 後台管理者驗證：**自建 JWT + Identity**（方案內無 Entra ID 資源）
 - [x] **reCAPTCHA 版本：v3（分數制），門檻 0.5，低分不擋件只標成 `spam`**（2026-08-31 實作）。
       金鑰已於 2026-08-31 設定（GitHub variable + secret，網域含 `eunicemed.4webdemo.com`），正式站生效中。
