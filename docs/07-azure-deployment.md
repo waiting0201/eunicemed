@@ -283,6 +283,14 @@ gh variable set SMTP_TO       --body 'service@comfortplus-medical.com'
    apex 的 MX 指著 GoDaddy（`mailstore1.secureserver.net`）是既有信箱，不要動到。
 3. `SMTP_FROM` 設成 `no-reply@mail.4webdemo.com`（也是 `main.bicep` 的預設值）。
 
+> **實測（2026-09-01，Brevo，`mail.4webdemo.com` 尚未驗證時送一封到自己的信箱）**：
+> 沒驗證**不是不能寄** —— Brevo 收下、信進收件匣、SPF/DKIM/DMARC 三項皆 pass，
+> 但它把 `From` **改寫成自己的共用子網域** `no-reply@7595629.brevosend.com`
+> （拿它自己的網域去簽 DKIM），並附掛追蹤像素與 `List-Unsubscribe`，
+> 內容從 `text/plain` 轉成 HTML。`Reply-To` 有被保留。
+> 所以驗證網域的實際效果是**寄件人顯示成我們設定的位址**，不是「能不能寄」——
+> 但一串亂碼域名很容易被客戶第一封就標成垃圾信，還是要補。
+
 代價與補償：
 
 - 信是寄到客戶**自己的收件匣**當通知用，From 長什麼樣不影響品牌對外的形象。
