@@ -414,7 +414,7 @@ POST /api/contact
     三支表單是這個站的商業目的，為了一個猜出來的門檻丟掉真的詢價，比收下幾封垃圾信貴得多。
   - 沒帶 token（機器人直接打 API）同樣是標記而非拒絕；**驗證服務連不上時放行**，
     未設 `Recaptcha__SecretKey` 時整段跳過（與 SMTP 同一個模式）。
-- 寫入 `ContactSubmission`，**再**以品牌方既有信箱的 **SMTP**（MailKit）寄信通知 `service@comfortplus-medical.com`。
+- 寫入 `ContactSubmission`，**再**以 **SMTP**（MailKit；relay 走 Brevo／Resend，見 [docs/07](07-azure-deployment.md) §6.3）寄信通知 `service@comfortplus-medical.com`。
   - **順序不可顛倒**：先入庫再寄信。SMTP 失敗只記 log 並回 `201`，不得讓端點回錯造成訪客重複送出。
   - 寄件網域需設 SPF（必要時 DKIM），否則通知信易被判垃圾；若信箱有每日寄送量上限，需納入速率限制考量。
 - `type=product` 時由 `productSlug` 解析出 `ProductId`，並把當下的 `Product.Sku` 寫入 `ProductSku` 快照——產品日後改名或換 slug 仍可追溯詢價來源。

@@ -96,7 +96,9 @@ public sealed class ContactHandler(
         // 被標成 spam 的不寄通知信 —— 標記的用意就是把它擋在人的注意力之外。
         // 信箱裡照樣塞滿垃圾的話，這個機制等於沒做。收件匣仍看得到。
         if (verdict.Passed)
-            await email.SendAsync(NotificationSubject(entity), NotificationBody(entity));
+            // 第三個參數是 Reply-To：通知信的 From 是我們自己的寄件網域（docs/07 §6.3），
+            // 沒有它的話，收件匣按「回覆」會回到一個沒人看的 no-reply 信箱
+            await email.SendAsync(NotificationSubject(entity), NotificationBody(entity), entity.Email);
         else
             LogFlagged(entity, verdict);
 

@@ -213,8 +213,13 @@ EuniceMed/
 
 ### 🔴 擋住開發，需優先解決
 
-- [ ] **SMTP 主機／埠／帳密，以及該信箱的每日寄送量上限** —— 上限會回頭決定速率限制的數字。
-      ⚠️ 2026-08-28 起**不再擋上線**：收件匣照常收件，只是不寄通知信（見 docs/15 §6）
+- [ ] **SMTP relay 帳號**：2026-09-01 決議**走 Brevo 或 Resend**（不走客戶信箱的 SMTP AUTH，
+      理由與逐項設定值見 [docs/07](docs/07-azure-deployment.md) §6.3）。Bicep／CI 已接好，
+      只差開帳號、在 Cloudflare 的 `4webdemo.com` 加 `mail.` 子網域的 SPF/DKIM，
+      然後設 `SMTP_HOST`／`SMTP_USERNAME`／`SMTP_PASSWORD`。
+      ⚠️ **寄件網域不能用客戶的** —— `eunicemed.com` 在 Google Cloud DNS、`comfortplus-medical.com`
+      的 SPF 由 eee.tw 代管，兩邊我們都加不了記錄；改帶 `Reply-To` = 送件人來補償。
+      ⚠️ 仍**不擋上線**：`SMTP_HOST` 空著就整組不寫，收件匣照常收件，只是不寄通知信（見 docs/15 §6）
 - [ ] **客戶 Azure SQL 的連線數上限？** 決定 `Max Pool Size` 與 Function App 的 `maximumInstanceCount` —— Flex Consumption 每個實例各有一個連線池
 - [ ] 客戶提供的 Azure SQL：是否可設 Entra 管理員以啟用 Managed Identity 連線？備份保留天數與還原程序為何？
 
@@ -266,8 +271,9 @@ EuniceMed/
 - [x] **媒體變體階梯：採階梯**（2026-08-17）。WebP 出完整階梯、原格式只出 preset 寬度那一張，每次上傳 1–5 個檔。
       階梯定義見 [docs/11-media-specs.md](docs/11-media-specs.md) §2a，機器可讀版在 `Api/Media/media-presets.json` 的 `output` 欄位。
       **連帶決定：Function App 實例需 2048MB**（512MB 會在解碼大圖時 OOM），見 [docs/07](docs/07-azure-deployment.md) §10。
-- [x] 表單送出後寄信通知 + 寫 DB：**兩者都要**。寄信走品牌方既有信箱的 SMTP（無 Azure Communication Services）；先入庫再寄信，寄信失敗不回錯。
-      2026-08-28 起 **SMTP 未設定時跳過寄信但照樣入庫**，所以三支表單不再等帳密 —— 帳密到手只要設 `Smtp__Host`。
+- [x] 表單送出後寄信通知 + 寫 DB：**兩者都要**。寄信走一般 SMTP（無 Azure Communication Services）；先入庫再寄信，寄信失敗不回錯。
+      2026-08-28 起 **SMTP 未設定時跳過寄信但照樣入庫**，所以三支表單不再等帳密 —— 帳密到手只要設 `SMTP_HOST` 那組 GitHub variable/secret。
+      2026-09-01 定案**用 transactional relay（Brevo 或 Resend）而非客戶信箱**：客戶 IT 要為單一信箱開 basic auth 例外太麻煩，而這只是寄給自己的通知信。
 - [x] ~~客戶 SQL 防火牆是否允許 CI 動態增刪 runner IP 規則？~~ **此題已不存在** —— migration 改為在 Function App 啟動時套用，CI 完全不碰資料庫
 - [x] 英文字型 **Myriad Variable Concept**：品牌方已提供下載點，字型檔入庫 `reference/fonts/myriad-variable-concept/`（來源與授權注意見 docs/08-design.md §4）
 - [x] 網站風格：**客戶已定案採 `mockup4/`**（Clinical Airy 淺色版，18 頁）。後台內容模型已依此重新規劃，見 docs/03、05、09。設計準則見 docs/08-design.md §5.1／§5.1a（該文件內對 `mockup/` 的引用尚未更新，另案處理）

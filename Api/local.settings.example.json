@@ -16,6 +16,7 @@
     "Smtp__Port": "587",
     "Smtp__Username": "",
     "Smtp__Password": "",
+    "_Smtp__comment": "空 Host 就跳過寄信（本機預設）。要實測就填 relay：Brevo = smtp-relay.brevo.com / 587 / 登入信箱 / SMTP key；Resend = smtp.resend.com / 587 / resend / API key。見 docs/07 §6.3",
     "Smtp__From": "service@comfortplus-medical.com",
     "Smtp__To": "service@comfortplus-medical.com",
     "Smtp__EnableSsl": "false",

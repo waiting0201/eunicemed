@@ -40,6 +40,14 @@ jobs:
           SQL_CONNECTION_STRING: ${{ secrets.SQL_CONNECTION_STRING }}
           # 未設定就是空字串，Bicep 會整項不寫（見 main.bicep 的 recaptchaSecretKey）
           RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
+          # SMTP relay（Brevo／Resend）。SMTP_HOST 空著就整組不寫，表單照樣入庫、不寄信。
+          # 只有密碼是 secret，其餘放 variables 才看得到現在設的是哪一家。
+          SMTP_HOST: ${{ vars.SMTP_HOST }}
+          SMTP_PORT: ${{ vars.SMTP_PORT }}
+          SMTP_USERNAME: ${{ vars.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM: ${{ vars.SMTP_FROM }}
+          SMTP_TO: ${{ vars.SMTP_TO }}
         run: |
           az deployment group what-if \
             --resource-group EuniceMedUS \
@@ -68,6 +76,14 @@ jobs:
           SQL_CONNECTION_STRING: ${{ secrets.SQL_CONNECTION_STRING }}
           # 未設定就是空字串，Bicep 會整項不寫（見 main.bicep 的 recaptchaSecretKey）
           RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
+          # SMTP relay（Brevo／Resend）。SMTP_HOST 空著就整組不寫，表單照樣入庫、不寄信。
+          # 只有密碼是 secret，其餘放 variables 才看得到現在設的是哪一家。
+          SMTP_HOST: ${{ vars.SMTP_HOST }}
+          SMTP_PORT: ${{ vars.SMTP_PORT }}
+          SMTP_USERNAME: ${{ vars.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM: ${{ vars.SMTP_FROM }}
+          SMTP_TO: ${{ vars.SMTP_TO }}
         run: |
           az deployment group create \
             --resource-group EuniceMedUS \

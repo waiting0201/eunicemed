@@ -314,7 +314,7 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 | 項目 | 說明 |
 |---|---|
 | 自訂網域 `www.eunicemed.com` | 尚未綁定，目前是 `*.azurestaticapps.net` |
-| SMTP | **只剩通知信**：2026-08-28 起未設定就跳過寄信，送件照常入庫、收件匣照常看得到 |
+| SMTP | **只剩通知信**：2026-08-28 起未設定就跳過寄信，送件照常入庫、收件匣照常看得到。2026-09-01 決議走 Brevo／Resend、寄件網域用自家 `mail.4webdemo.com`（客戶 DNS 加不了 SPF/DKIM），Bicep 與 CI 已接好（[docs/07](docs/07-azure-deployment.md) §6.3），只差開帳號與 Cloudflare 那幾筆記錄 |
 | Managed Identity 存取 SQL | 客戶 SQL 尚未設 Entra 管理員，目前用帳密連線字串 |
 | 資料庫層級 | Basic 5 DTU；純 SSR 每頁多次查詢，有流量時需評估升級 |
 | 內容 | 17 個子分類落地頁文案與 5 筆認證文案仍缺；已上線的 zh-TW 譯文未經客戶審閱（見下方§七）|
@@ -332,7 +332,7 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 
 | # | 事項 | 擋住 |
 |---|---|---|
-| 1 | SMTP 主機／帳密／每日寄送上限 | **只擋通知信，不擋收件** —— 2026-08-28 起表單照常入庫（見 [docs/15](docs/15-cms-scope.md) §1）|
+| 1 | SMTP relay 帳號（Brevo／Resend）與 `mail.4webdemo.com` 的 SPF/DKIM | **只擋通知信，不擋收件** —— 2026-08-28 起表單照常入庫（見 [docs/15](docs/15-cms-scope.md) §1）。設定值見 [docs/07](docs/07-azure-deployment.md) §6.3 |
 | 2 | ~~collation~~（已確認 `_CI_`，無問題）；**連線數上限**與**能否設 Entra 管理員**仍待確認 | 部署調校與改用 Managed Identity |
 | 3 | 認證文案（5 筆的 SubLabel 與說明目前是佔位） | About 頁與產品頁上線 |
 | 4 | 17 個子分類落地頁的敘述文案 | 子分類頁發布（缺文案者不應發布，會是薄內容頁） |

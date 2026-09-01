@@ -183,7 +183,7 @@ Flex Consumption **不支援 deployment slot**。API 部署即為就地更新（
 | `Auth__MinPasswordLength` | 選填，預設 12 | |
 | `Maintenance__Key` | 隨機字串 | `POST /admin/maintenance/*` 需要，尚未設定 |
 | `Seed__AdminEmail` / `Seed__AdminPassword` / `Seed__AdminDisplayName` | 選填 | 只在 `User` 表為空時建立第一個管理者。**正式環境目前未設**，需另行建帳號 |
-| `Smtp__Host` / `Smtp__Port` / `Smtp__Username` / `Smtp__Password` / `Smtp__From` / `Smtp__To` | 品牌方提供 | 尚未取得（§6.3）|
+| `Smtp__Host` / `Smtp__Port` / `Smtp__Username` / `Smtp__Password` / `Smtp__From` / `Smtp__To` / `Smtp__EnableSsl` | Brevo 或 Resend（§6.3）| Bicep 已接（`smtpHost` 等參數）。**`SMTP_HOST` 空著就整組不寫**，API 端跳過寄信、表單照常入庫。`Smtp__EnableSsl` 不設參數，由連接埠推導（465 → `true`）|
 | `Recaptcha__SecretKey` | Google | ✅ 2026-08-31 已設。由 **GitHub Secret `RECAPTCHA_SECRET_KEY`** → `infra.yml` → Bicep 參數寫入；留空則整項不寫（未設定時 API 跳過驗證，表單照常運作）|
 | `Recaptcha__MinScore` | 選填，預設 `0.5` | v3 低於此分數者仍入庫，但狀態記成 `spam` 且不寄通知信 |
 | `Recaptcha__Disabled` | 選填 | `true` 時即使有 secret 也不驗（預覽環境用）|
@@ -199,8 +199,8 @@ Flex Consumption **不支援 deployment slot**。API 部署即為就地更新（
 > 覆蓋整個清單 —— 用 `az functionapp config appsettings set` 手動加的鍵，會在下一次
 > `infra.yml` 部署時被**靜靜洗掉**（不會有錯誤，只是那個功能忽然不動了）。
 >
-> 所以拿到金鑰時的正確作法是**加成 Bicep 參數 + GitHub Secret**（reCAPTCHA 已照此接好），
-> 不是下一行 az 指令。SMTP 那組目前還沒接，補的時候要照同一個形狀做。
+> 所以拿到金鑰時的正確作法是**加成 Bicep 參數 + GitHub Secret**（reCAPTCHA 與 SMTP 都已照此接好），
+> 不是下一行 az 指令。
 
 `functionAppConfig` 裡另外三個值也會讓 host 起不來：
 
@@ -243,11 +243,62 @@ MI 需要的角色（`infra/main.bicep` 已寫好，範圍是整個帳戶）：
 
 ### 6.3 寄信：SMTP
 
-無 Azure Communication Services，聯絡表單以 **品牌方既有信箱的 SMTP** 寄送（`MailKit`）。注意：
+無 Azure Communication Services，聯絡表單以一般 SMTP 寄送（`MailKit`，`Api/Services/EmailSender.cs`）。
+**2026-09-01 決議走 transactional relay（Brevo 或 Resend），不走客戶信箱的 SMTP AUTH** ——
+M365／Google Workspace 都要 IT 為單一信箱開 basic auth 例外，而這封信只是寄給
+`service@comfortplus-medical.com` 自己的通知，量是個位數／日。
+
+| | Brevo | Resend |
+|---|---|---|
+| `Smtp__Host` | `smtp-relay.brevo.com` | `smtp.resend.com` |
+| `Smtp__Port` | 587 | 587 |
+| `Smtp__Username` | 帳號登入信箱 | 固定字串 `resend` |
+| `Smtp__Password` | 後台產的 **SMTP key**（不是登入密碼）| API key |
+| 免費額度 | 300 封／日 | 3,000 封／月、100 封／日 |
+
+設定方式（照 reCAPTCHA 的形狀，值由 `infra.yml` → `prod.bicepparam` → `main.bicep` 寫進 App Settings）：
+
+```bash
+gh variable set SMTP_HOST     --body 'smtp-relay.brevo.com'
+gh variable set SMTP_USERNAME --body '<帳號>'
+gh secret   set SMTP_PASSWORD --body '<SMTP key / API key>'
+# 選填，不設就用 main.bicep 的預設值
+gh variable set SMTP_PORT     --body '587'
+gh variable set SMTP_FROM     --body 'no-reply@mail.4webdemo.com'   # 見下方：不能用客戶的網域
+gh variable set SMTP_TO       --body 'service@comfortplus-medical.com'
+```
+
+#### 寄件網域用 `mail.4webdemo.com`，不是客戶的網域
+
+⚠️ relay 只肯替**已完成 SPF/DKIM 驗證的網域**寄信，而客戶那兩個網域的 DNS 我們加不了記錄
+（2026-09-01 實測：`eunicemed.com` 的 NS 在 Google Cloud DNS、無 SPF 無 MX；
+`comfortplus-medical.com` 的 SPF 是 `include:_spf.eee.tw`，郵件由第三方代管）。
+硬把 From 填成 `@comfortplus-medical.com` 的結果是 SPF softfail → 進垃圾桶。
+
+所以**寄件網域用我們自己的 `mail.4webdemo.com`**（NS 在 Cloudflare，同一個帳號，
+即客戶預覽站 `eunicemed.4webdemo.com` 那個 zone）：
+
+1. 在 relay 後台加 sending domain `mail.4webdemo.com`，它會給 3–4 筆記錄（DKIM 的 CNAME／TXT + SPF TXT + DMARC）。
+2. 到 Cloudflare 的 `4webdemo.com` zone 照抄。**只加在 `mail.` 這個子網域上** ——
+   apex 的 MX 指著 GoDaddy（`mailstore1.secureserver.net`）是既有信箱，不要動到。
+3. `SMTP_FROM` 設成 `no-reply@mail.4webdemo.com`（也是 `main.bicep` 的預設值）。
+
+代價與補償：
+
+- 信是寄到客戶**自己的收件匣**當通知用，From 長什麼樣不影響品牌對外的形象。
+- 但「按回覆」不能回到一個沒人看的位址 —— `EmailSender` 因此帶 **`Reply-To` = 送件人的信箱**
+  （`ContactHandler` 傳入），客戶直接回覆就是回給詢問者。
+- 第一次寄達後請客戶把寄件位址加進安全寄件者，避免通知信被自家過濾器歸到垃圾郵件。
+- 客戶哪天願意開放 `eunicemed.com` 的 DNS，改法只有兩件事：在 relay 驗那個網域、把
+  `SMTP_FROM` 換掉。程式與範本都不用動。
+
+其他注意事項：
 
 - SMTP 送信失敗**不得**讓 `POST /contact` 回錯 —— 先寫 `ContactSubmission` 入庫，寄信失敗只記 log，避免訪客重複送出。
-- 寄件網域需有 SPF（必要時 DKIM），否則通知信易進垃圾桶。
-- 若客戶信箱有每日寄送量限制，需在 API 端加簡易速率限制（見 §7.4）。
+- `Smtp__EnableSsl` 由連接埠推導（465 → implicit TLS，其餘 STARTTLS），不另設參數 ——
+  兩者不一致會在連線階段就掛，而寄信失敗是不回錯的，沒人會發現。
+- 免費額度（Brevo 300／日）遠高於表單的速率限制（10 件／10 分鐘／IP，見 §7.4），不需另外加限制。
+- Azure 封鎖對外 port 25，587／465 不受影響。
 
 ### 6.4 SWA / Next.js 環境變數
 

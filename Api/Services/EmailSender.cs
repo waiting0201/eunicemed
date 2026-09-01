@@ -28,7 +28,12 @@ public sealed class EmailSender(IConfiguration config, ILogger<EmailSender> log)
     /// <summary>SMTP 是否已設定。未設定時 <see cref="SendAsync"/> 只記 log。</summary>
     public bool Enabled => Host is not null;
 
-    public async Task SendAsync(string subject, string body, CancellationToken ct = default)
+    /// <param name="replyTo">
+    /// 收件匣按「回覆」時要回給誰。<b>From 不能拿來裝送件人</b> —— 它必須是 relay 已驗證的
+    /// 網域，填別人的信箱會被 SPF/DMARC 擋下（決議見 docs/07 §6.3：客戶網域的 DNS 我們動不了，
+    /// 寄件網域是我們自己的）。所以「回覆詢問者」這件事只能靠 Reply-To。
+    /// </param>
+    public async Task SendAsync(string subject, string body, string? replyTo = null, CancellationToken ct = default)
     {
         if (Host is not { } host)
         {
@@ -51,6 +56,9 @@ public sealed class EmailSender(IConfiguration config, ILogger<EmailSender> log)
             message.From.Add(MailboxAddress.Parse(from));
             foreach (var address in to.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                 message.To.Add(MailboxAddress.Parse(address));
+            if (Nullable(replyTo) is { } reply && MailboxAddress.TryParse(reply, out var replyAddress))
+                message.ReplyTo.Add(replyAddress);
+
             message.Subject = subject;
             message.Body    = new TextPart("plain") { Text = body };
 

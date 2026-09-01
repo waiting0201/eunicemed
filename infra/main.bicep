@@ -84,6 +84,61 @@ ARM 的 `appSettings` 是整批取代：手動加的鍵會在下一次 infra 部
 @secure()
 param recaptchaSecretKey string = ''
 
+@description('''
+表單通知信的 SMTP。走 Brevo 或 Resend 這類 transactional relay
+（客戶信箱的 SMTP AUTH 開不了，決議見 CLAUDE.md §7）。
+
+**`smtpHost` 留空就整組不寫**，`EmailSender` 因此只記一行 log、表單照常入庫
+（`Api/Services/EmailSender.cs`）—— 與 reCAPTCHA 同一個模式。
+
+`Smtp__EnableSsl` 不另設參數：只有 465 是 implicit TLS，其餘（587／2525）
+一律 STARTTLS，所以由 `smtpPort` 推導。兩者不一致的後果是連線階段就掛，
+而寄信失敗是不回錯的 —— 沒人會發現。
+
+各家的值（2026-09 現況）：
+- Brevo：host `smtp-relay.brevo.com`、port 587、username 是帳號登入信箱、
+  password 是後台產的 **SMTP key**（不是登入密碼）
+- Resend：host `smtp.resend.com`、port 587、username 固定字串 `resend`、
+  password 是 API key
+
+⚠️ 兩家都要求 **From 的網域先在 DNS 完成 SPF/DKIM 驗證**，否則不是被退件就是進垃圾桶。
+客戶那兩個網域的 DNS 我們動不了（`eunicemed.com` 在 Google Cloud DNS、
+`comfortplus-medical.com` 的 SPF 由 eee.tw 代管），所以**寄件網域用我們自己的**
+`mail.4webdemo.com`（Cloudflare，同一個帳號）—— 詳見 docs/07 §6.3。
+信是寄給客戶自己的收件匣，From 是誰不影響品牌；要回覆詢問者靠的是 Reply-To
+（`EmailSender` 已帶上送件人的信箱）。
+''')
+param smtpHost string = ''
+
+@description('SMTP 連接埠。465 走 implicit TLS，其餘走 STARTTLS。空字串視同 587。')
+param smtpPort string = '587'
+
+@description('SMTP 帳號。Brevo 是登入信箱、Resend 固定為 `resend`。')
+param smtpUsername string = ''
+
+@description('SMTP 密碼（Brevo 的 SMTP key／Resend 的 API key）。')
+@secure()
+param smtpPassword string = ''
+
+@description('''
+通知信寄件人。空字串視同預設值。
+
+⚠️ **網域必須是在 relay 完成 SPF/DKIM 驗證的那一個**，不是 `@eunicemed.com`
+（客戶的 DNS 我們加不了記錄，docs/07 §6.3）。填錯的症狀是信被退或進垃圾桶，
+而寄信失敗只記 log 不回錯 —— 不會有人發現。
+''')
+param smtpFrom string = 'no-reply@mail.4webdemo.com'
+
+@description('通知信收件人。可用逗號分隔多個位址（`EmailSender` 會拆開）。空字串視同預設值。')
+param smtpTo string = 'service@comfortplus-medical.com'
+
+// ⚠️ 這三個要自己補預設值，不能只靠 param 的預設 —— CI 是用
+// `readEnvironmentVariable` 帶值，未設定的 GitHub variable 會送進**空字串**而不是
+// 「沒帶這個參數」，param 預設值因此不會生效。空的 `Smtp__To` 等於信全部靜靜不寄。
+var smtpPortValue = empty(smtpPort) ? '587' : smtpPort
+var smtpFromValue = empty(smtpFrom) ? 'no-reply@mail.4webdemo.com' : smtpFrom
+var smtpToValue = empty(smtpTo) ? 'service@comfortplus-medical.com' : smtpTo
+
 // Storage 帳戶名稱不可有連字號，且全域唯一
 var storageName = 'st${namePrefix}prod'
 var functionAppName = 'func-${namePrefix}-prod'
@@ -298,18 +353,45 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: insights.properties.ConnectionString
         }
-        // SMTP 的值尚未取得（CLAUDE.md §7）。刻意不放空字串佔位 ——
-        // 空的 Smtp__Host 會讓寄信在執行期才失敗，缺少設定則在啟動時就講清楚。
-        //
-        // ⚠️ 拿到之後**要照下面 reCAPTCHA 的作法加成參數**，不要用
-        // `az functionapp config appsettings set` 手動補：ARM 的 appSettings 是整批取代，
-        // 手動加的鍵會在下一次 infra 部署時被這份範本靜靜洗掉。
       ],
       // 空值就整項不寫（見 recaptchaSecretKey 的說明）
       empty(recaptchaSecretKey) ? [] : [
         {
           name: 'Recaptcha__SecretKey'
           value: recaptchaSecretKey
+        }
+      ],
+      // 同上：host 空著就整組不寫。刻意不放空字串佔位 ——
+      // 空的 Smtp__Host 會讓寄信在執行期才失敗，缺少設定則在啟動時就講清楚。
+      empty(smtpHost) ? [] : [
+        {
+          name: 'Smtp__Host'
+          value: smtpHost
+        }
+        {
+          name: 'Smtp__Port'
+          value: smtpPortValue
+        }
+        {
+          name: 'Smtp__Username'
+          value: smtpUsername
+        }
+        {
+          name: 'Smtp__Password'
+          value: smtpPassword
+        }
+        {
+          name: 'Smtp__From'
+          value: smtpFromValue
+        }
+        {
+          name: 'Smtp__To'
+          value: smtpToValue
+        }
+        {
+          // 由連接埠推導，不另開參數（見 smtpHost 的說明）
+          name: 'Smtp__EnableSsl'
+          value: smtpPortValue == '465' ? 'true' : 'false'
         }
       ])
     }
