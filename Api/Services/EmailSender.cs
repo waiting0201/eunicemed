@@ -70,6 +70,15 @@ public sealed class EmailSender(IConfiguration config, ILogger<EmailSender> log)
                 : SecureSocketOptions.StartTls;
 
             using var client = new SmtpClient();
+
+            // ⚠️ 關掉憑證**撤銷**查詢（CRL/OCSP），不是關掉憑證驗證 ——
+            // 鏈結與主機名照樣驗。MailKit 預設會做撤銷查詢，而容器與 macOS 上這個查詢
+            // 常常無法完成，握手就整個被拒（SslHandshakeException:
+            // "An incomplete certificate revocation check occurred"）。
+            // 2026-09-01 本機對 smtp-relay.brevo.com 實測到，Flex Consumption 同樣是容器。
+            // 寄信失敗是不回錯的，留著它的後果是通知信靜靜地一封都寄不出去。
+            client.CheckCertificateRevocation = false;
+
             await client.ConnectAsync(host, port, secure, ct);
 
             if (Nullable(config["Smtp:Username"]) is { } user)
