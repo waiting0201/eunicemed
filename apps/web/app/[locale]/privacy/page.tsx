@@ -11,7 +11,7 @@ import { PageHero } from '@/components/PageHero';
 
 /** 樣式逐字取自 `mockup4/Privacy.dc.html`。內文排版在 globals.css 的 `.m4-legal`。 */
 const S = {
-  body: css`max-width:820px;margin:0 auto;padding:clamp(48px,6vw,72px) clamp(24px,5vw,64px);`,
+  body: css`max-width:1180px;margin:0 auto;padding:clamp(48px,6vw,72px) clamp(24px,5vw,64px);`,
   /** 「最後更新」那一行是本站補的：mockup4 把日期寫死在頁首 lead 裡 */
   updated: css`font-size:.88rem;color:#66787F;`,
 } as const;
@@ -59,7 +59,7 @@ export default async function PrivacyPage({ params }: { params: Promise<Params> 
 
       <PageHero eyebrow={c.eyebrow} title={c.title} />
 
-      {/* mockup4 這頁的量體是 820px（不是全站的 1180px）—— 法務條文要窄一點才讀得下去 */}
+      {/* mockup4 原本定 820px —— 那讓條文在 1440 螢幕只佔半個版面，改為全站的 1180px（靜態稿同步改） */}
       <section style={S.body}>
         <div>
           {content?.lastUpdated && (
