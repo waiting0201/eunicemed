@@ -1,20 +1,36 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api, ApiError, type MediaItem, type UploadResult } from '@/lib/api';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { api, ApiError, type MediaItem, type MediaPreset } from '@/lib/api';
+import {
+  discardStaged,
+  isStaged,
+  setStagedAlt,
+  stageMedia,
+  stagedAlt,
+  stagedPreviewUrl,
+  useCommitProgress,
+  useServerWarnings,
+  type UploadWarning,
+} from '@/lib/mediaStaging';
 import { Icon } from './Icon';
 
 /**
  * 媒體欄位。
  *
  * <p>
- * **每個欄位就地上傳自己的檔案。** 這裡不列媒體庫、不開挑圖對話框 ——
+ * **每個欄位就地選自己的檔案。** 這裡不列媒體庫、不開挑圖對話框 ——
  * 編輯者在填「產品主圖」時要的是「把這張圖放上去」，不是「去一個放著全站素材的
  * 抽屜裡翻」。舊版把上傳藏在另一個畫面，於是填一個欄位要離開表單再走回來。
  * </p>
  *
  * <p>
- * 流程即 docs/03-cms.md §6：欄位顯示該 preset 的建議尺寸 → 選本機檔 →
- * `POST /admin/media`（多帶 `presetKey`）→ 伺服器依該 preset 縮圖並回 `warnings`。
+ * **選檔案不會上傳。** 選的當下是瀏覽器本機預覽（`URL.createObjectURL`）加上
+ * 當場量得出來的尺寸提醒；檔案要按下儲存才真的送上去（見 `lib/mediaStaging.ts`）。
+ * 沒按儲存就關掉，雲端不會多出任何東西。
+ * </p>
+ *
+ * <p>
+ * 欄位顯示該 preset 的建議尺寸這一項不變，仍是 docs/03-cms.md §6 的流程。
  * </p>
  */
 
@@ -28,20 +44,27 @@ function acceptFor(presetKey: string): string {
 }
 
 /**
- * preset 提示文字。**不在畫面寫死**（docs/03 §5、docs/11 §1.1）——
- * 整句由後端 `MediaPreset.Hint(locale)` 產生，含尺寸、比例、格式、大小上限與縮圖寬度。
- * 改 `Api/Media/media-presets.json` 全後台同步生效。
- *
- * <p>query key 全站共用一把，所以一頁上 N 個欄位只會打一次請求。</p>
+ * 所有 preset。query key 全站共用一把，所以一頁上 N 個欄位只會打一次請求。
+ * 提示文字與選檔時的尺寸檢查都吃這份資料。
  */
-export function PresetHint({ presetKey }: { presetKey: string }) {
+function usePreset(presetKey: string): MediaPreset | undefined {
   const { data } = useQuery({
     queryKey: ['media-presets'],
     queryFn: () => api.mediaPresets(),
     staleTime: 60 * 60_000,
   });
 
-  const preset = data?.presets.find((p) => p.key === presetKey);
+  return data?.presets.find((p) => p.key === presetKey);
+}
+
+/**
+ * preset 提示文字。**不在畫面寫死**（docs/03 §5、docs/11 §1.1）——
+ * 整句由後端 `MediaPreset.Hint(locale)` 產生，含尺寸、比例、格式、大小上限與縮圖寬度。
+ * 改 `Api/Media/media-presets.json` 全後台同步生效。
+ */
+export function PresetHint({ presetKey }: { presetKey: string }) {
+  const preset = usePreset(presetKey);
+
   // 還沒載入就不佔位 —— 提示突然冒出來會讓整張表單跳動
   if (!preset) return null;
 
@@ -49,54 +72,82 @@ export function PresetHint({ presetKey }: { presetKey: string }) {
 }
 
 /**
- * 上傳一個本機檔案並回傳它的 `MediaItem`。
+ * 選檔案（**不上傳**）並回一個 `MediaItem` 形狀的替身。
  *
  * <p>
- * PDF 走 SAS 直傳（不佔用 Function），圖片走 multipart 代傳讓伺服器縮圖 ——
- * 這個分歧本來寫在媒體庫那一頁，現在每個欄位都會用到，所以收在這裡。
+ * 格式不符當場擋下來，尺寸／比例／檔案大小當場提醒 —— 這些原本要等伺服器回話，
+ * 現在伺服器要等到存檔才會看到這個檔案。
  * </p>
  */
-function useFieldUpload(presetKey: string) {
-  const queryClient = useQueryClient();
+function useFieldStaging(presetKey: string) {
+  const preset = usePreset(presetKey);
   const [error, setError] = useState<string | null>(null);
-  const [warnings, setWarnings] = useState<UploadResult['warnings']>(undefined);
+  const [warnings, setWarnings] = useState<UploadWarning[]>([]);
 
-  const mutation = useMutation({
-    mutationFn: async (file: File): Promise<MediaItem> => {
-      if (presetKey === 'document') return api.uploadDocument(file, file.name);
-      return api.uploadMedia(presetKey, file, '');
-    },
-    onSuccess: (media) => {
-      setError(null);
-      setWarnings((media as UploadResult).warnings);
-      queryClient.invalidateQueries({ queryKey: ['media-all'] });
-    },
-    onError: (err) => {
-      setWarnings(undefined);
-      setError(err instanceof ApiError ? err.message : '上傳失敗。');
-    },
-  });
+  /**
+   * @param append 一次選多個檔案時，後面幾個的提醒要加在前面那些後面，
+   *   不然只有最後一個檔案的提醒留得下來 —— 而被提醒的往往是中間那張。
+   */
+  const stage = async (file: File, { append = false } = {}) => {
+    try {
+      const result = await stageMedia(presetKey, file, preset);
+      const labelled = append
+        ? result.warnings.map((w) => ({ ...w, message: `${file.name}：${w.message}` }))
+        : result.warnings;
 
-  return {
-    upload: mutation.mutateAsync,
-    isPending: mutation.isPending,
-    error,
-    warnings,
-    reset: () => {
       setError(null);
-      setWarnings(undefined);
-    },
+      setWarnings((current) => (append ? [...current, ...labelled] : labelled));
+      return result.media;
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : '這個檔案無法使用。');
+      if (!append) setWarnings([]);
+      return null;
+    }
   };
+
+  const reset = () => {
+    setError(null);
+    setWarnings([]);
+  };
+
+  return { stage, error, warnings, reset };
 }
 
-/** 上傳結果的訊息區：紅字是擋下來的，黃字是存進去了但值得知道的。 */
+/** 還沒上傳的提示。存檔時會看到它換成上傳進度。 */
+function StagedBadge({ ids }: { ids: (string | null | undefined)[] }) {
+  const progress = useCommitProgress();
+  const pending = ids.filter(isStaged).length;
+
+  if (pending === 0) return null;
+
+  return (
+    <span className="badge" style={{ color: 'var(--yellow)' }}>
+      {progress ? `上傳中 ${progress.done}/${progress.total}…` : '待上傳'}
+    </span>
+  );
+}
+
+/**
+ * 訊息區：紅字是擋下來的，黃字是可以存但值得知道的。
+ *
+ * <p>
+ * 黃字有兩個來源：選檔時在瀏覽器量出來的，以及存檔上傳後伺服器回的
+ * （docs/11 §4，兩邊同一套門檻）。後者以真正的 mediaId 為 key，
+ * 所以存完檔、欄位換成真 id 之後，提醒仍停在同一個位置。
+ * </p>
+ */
 function UploadFeedback({
   error,
   warnings,
+  mediaIds = [],
 }: {
   error: string | null;
-  warnings: UploadResult['warnings'];
+  warnings: UploadWarning[];
+  mediaIds?: (string | null | undefined)[];
 }) {
+  const fromServer = useServerWarnings(mediaIds);
+  const all = [...warnings, ...fromServer.filter((w) => !warnings.some((x) => x.code === w.code))];
+
   return (
     <>
       {error && (
@@ -104,12 +155,8 @@ function UploadFeedback({
           {error}
         </p>
       )}
-      {/*
-        warnings 是非阻擋的（docs/11 §4）—— 圖已經存進去了。
-        不顯示的話，比例不符與解析度不足會等到前台才被發現。
-      */}
-      {warnings?.map((w) => (
-        <p key={w.code} className="form-hint" style={{ color: 'var(--yellow)' }}>
+      {all.map((w, i) => (
+        <p key={`${w.code}-${i}`} className="form-hint" style={{ color: 'var(--yellow)' }}>
           {w.message}
         </p>
       ))}
@@ -126,14 +173,12 @@ function FileButton({
   label,
   variant = 'btn-secondary',
   multiple = false,
-  disabled,
   onFiles,
 }: {
   presetKey: string;
   label: ReactNode;
   variant?: string;
   multiple?: boolean;
-  disabled?: boolean;
   onFiles: (files: File[]) => void;
 }) {
   const ref = useRef<HTMLInputElement>(null);
@@ -153,12 +198,7 @@ function FileButton({
           if (files.length > 0) onFiles(files);
         }}
       />
-      <button
-        type="button"
-        className={`btn btn-sm ${variant}`}
-        disabled={disabled}
-        onClick={() => ref.current?.click()}
-      >
+      <button type="button" className={`btn btn-sm ${variant}`} onClick={() => ref.current?.click()}>
         {label}
       </button>
     </>
@@ -176,7 +216,7 @@ function useMediaAlt(mediaId: string | null): string | undefined {
     queryFn: () => api.media({}),
     staleTime: 60_000,
     select: (items) => Object.fromEntries(items.map((m) => [m.id, m.altText ?? ''])),
-    enabled: mediaId !== null,
+    enabled: mediaId !== null && !isStaged(mediaId),
   });
 
   return mediaId ? data?.[mediaId] : undefined;
@@ -186,12 +226,35 @@ function useMediaAlt(mediaId: string | null): string | undefined {
  * alt 文字。**這是全後台唯一的 alt 入口**（媒體庫那一頁已移除），
  * 而全站的 `<img alt>` 都取自 `Media.AltText` —— 少了它，
  * 無障礙與 SEO 就只能靠檔名。
- *
- * <p>離開焦點才送出：每打一個字就 PATCH 一次太吵。</p>
  */
-function AltInput({ mediaId, uploaded }: { mediaId: string; uploaded?: string | null }) {
-  const known = useMediaAlt(mediaId);
-  const initial = uploaded ?? known ?? '';
+function AltInput({ mediaId }: { mediaId: string }) {
+  return isStaged(mediaId) ? (
+    <StagedAltInput mediaId={mediaId} />
+  ) : (
+    <SavedAltInput mediaId={mediaId} />
+  );
+}
+
+/** 待上傳的圖沒有 `Media` 那一列可以 PATCH —— 記在暫存裡，上傳時一起送。 */
+function StagedAltInput({ mediaId }: { mediaId: string }) {
+  const [value, setValue] = useState(() => stagedAlt(mediaId));
+
+  return (
+    <input
+      className="form-control"
+      placeholder="alt 文字：描述圖片內容，供螢幕閱讀器與搜尋引擎使用"
+      value={value}
+      onChange={(e) => {
+        setValue(e.target.value);
+        setStagedAlt(mediaId, e.target.value);
+      }}
+    />
+  );
+}
+
+/** 已存在的圖。離開焦點才送出：每打一個字就 PATCH 一次太吵。 */
+function SavedAltInput({ mediaId }: { mediaId: string }) {
+  const initial = useMediaAlt(mediaId) ?? '';
 
   const [value, setValue] = useState(initial);
   const [saved, setSaved] = useState(initial);
@@ -238,15 +301,17 @@ export function ImageField({
   url?: string | null;
   onChange: (media: MediaItem | null) => void;
 }) {
-  const { upload, isPending, error, warnings, reset } = useFieldUpload(presetKey);
-  const [uploadedAlt, setUploadedAlt] = useState<string | null>(null);
+  const { stage, error, warnings, reset } = useFieldStaging(presetKey);
+
+  // 呼叫端把 media.url 記進自己的縮圖表，所以 url 通常已經是預覽網址；
+  // 沒記的呼叫端（例如只存 id 的 schema 欄位）由暫存補上
+  const preview = url ?? stagedPreviewUrl(mediaId);
 
   const pick = async (files: File[]) => {
-    const media = await upload(files[0]).catch(() => null);
-    if (media) {
-      setUploadedAlt(media.altText ?? '');
-      onChange(media);
-    }
+    const media = await stage(files[0]);
+    if (!media) return;
+    discardStaged(mediaId); // 換圖：上一張還沒上傳就不必留著
+    onChange(media);
   };
 
   return (
@@ -256,15 +321,14 @@ export function ImageField({
           className="block h-16 w-16 shrink-0 overflow-hidden rounded-sm"
           style={{ background: 'var(--bg-elevated)' }}
         >
-          {url && <img src={url} alt="" className="h-full w-full object-cover" />}
+          {preview && <img src={preview} alt="" className="h-full w-full object-cover" />}
         </span>
 
         <span className="flex flex-1 flex-col gap-2">
-          <span className="flex gap-2">
+          <span className="flex items-center gap-2">
             <FileButton
               presetKey={presetKey}
-              disabled={isPending}
-              label={isPending ? '上傳中…' : mediaId ? '更換' : '選擇圖片'}
+              label={mediaId ? '更換' : '選擇圖片'}
               onFiles={pick}
             />
             {mediaId && (
@@ -274,23 +338,22 @@ export function ImageField({
                 style={{ color: 'var(--red)' }}
                 onClick={() => {
                   reset();
-                  setUploadedAlt(null);
+                  discardStaged(mediaId);
                   onChange(null);
                 }}
               >
                 移除
               </button>
             )}
+            <StagedBadge ids={[mediaId]} />
           </span>
 
-          {mediaId && (
-            <AltInput key={mediaId} mediaId={mediaId} uploaded={uploadedAlt} />
-          )}
+          {mediaId && <AltInput key={mediaId} mediaId={mediaId} />}
         </span>
       </div>
 
       <PresetHint presetKey={presetKey} />
-      <UploadFeedback error={error} warnings={warnings} />
+      <UploadFeedback error={error} warnings={warnings} mediaIds={[mediaId]} />
     </>
   );
 }
@@ -313,13 +376,12 @@ export function ImageList({
 }: {
   presetKey: string;
   images: { mediaId: string; isPrimary: boolean; sortOrder: number }[];
-  /** mediaId → url。列表端點不回圖片網址，上傳之後才知道 */
+  /** mediaId → url。列表端點不回圖片網址，存檔之後才知道 */
   urls: Record<string, string>;
   onChange: (next: { mediaId: string; isPrimary: boolean; sortOrder: number }[]) => void;
   showPrimary?: boolean;
 }) {
-  const { upload, isPending, error, warnings } = useFieldUpload(presetKey);
-  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const { stage, error, warnings, reset } = useFieldStaging(presetKey);
 
   const move = (from: number, to: number) => {
     if (to < 0 || to >= images.length) return;
@@ -329,29 +391,22 @@ export function ImageList({
     onChange(next.map((img, i) => ({ ...img, sortOrder: i })));
   };
 
-  /**
-   * **一張一張傳，不並行。** Function App 實例只有 2048MB，
-   * 同時解碼多張 2560px 來源圖會 OOM（docs/07 §10）。
-   */
   const add = async (files: File[]) => {
     const added: typeof images = [];
-    setProgress({ done: 0, total: files.length });
+    reset();
 
-    for (const [i, file] of files.entries()) {
-      const media = await upload(file).catch(() => null);
-      if (media) {
-        added.push({
-          mediaId: media.id,
-          // 第一張自動成為主圖 —— 沒有主圖的話前台會取排序第一張，
-          // 但那是隱含行為，明講出來編輯者才知道現在是哪張
-          isPrimary: images.length === 0 && added.length === 0,
-          sortOrder: images.length + added.length,
-        });
-      }
-      setProgress({ done: i + 1, total: files.length });
+    for (const file of files) {
+      const media = await stage(file, { append: true });
+      if (!media) break; // 擋下來的那一個已經寫在 error 上，後面的不再處理
+      added.push({
+        mediaId: media.id,
+        // 第一張自動成為主圖 —— 沒有主圖的話前台會取排序第一張，
+        // 但那是隱含行為，明講出來編輯者才知道現在是哪張
+        isPrimary: images.length === 0 && added.length === 0,
+        sortOrder: images.length + added.length,
+      });
     }
 
-    setProgress(null);
     if (added.length > 0) onChange([...images, ...added]);
   };
 
@@ -364,10 +419,20 @@ export function ImageList({
               className="block aspect-square overflow-hidden"
               style={{ background: 'var(--bg-elevated)' }}
             >
-              {urls[img.mediaId] && (
-                <img src={urls[img.mediaId]} alt="" className="h-full w-full object-cover" />
+              {(urls[img.mediaId] ?? stagedPreviewUrl(img.mediaId)) && (
+                <img
+                  src={urls[img.mediaId] ?? stagedPreviewUrl(img.mediaId)}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
               )}
             </span>
+
+            {isStaged(img.mediaId) && (
+              <div className="px-1.5 pt-1.5">
+                <StagedBadge ids={[img.mediaId]} />
+              </div>
+            )}
 
             <div className="p-1.5">
               <AltInput mediaId={img.mediaId} />
@@ -414,6 +479,7 @@ export function ImageList({
                   style={{ color: 'var(--red)' }}
                   aria-label="移除"
                   onClick={() => {
+                    discardStaged(img.mediaId);
                     const next = images
                       .filter((x) => x.mediaId !== img.mediaId)
                       .map((x, j) => ({ ...x, sortOrder: j }));
@@ -433,22 +499,21 @@ export function ImageList({
       <FileButton
         presetKey={presetKey}
         multiple
-        disabled={isPending}
         label={
-          progress ? (
-            `上傳中 ${progress.done}/${progress.total}…`
-          ) : (
-            <>
-              <Icon name="plus" className="icon icon-sm" />
-              上傳圖片
-            </>
-          )
+          <>
+            <Icon name="plus" className="icon icon-sm" />
+            選擇圖片
+          </>
         }
         onFiles={add}
       />
 
       <PresetHint presetKey={presetKey} />
-      <UploadFeedback error={error} warnings={warnings} />
+      <UploadFeedback
+        error={error}
+        warnings={warnings}
+        mediaIds={images.map((img) => img.mediaId)}
+      />
     </>
   );
 }
@@ -470,11 +535,13 @@ export function FileField({
   fileName?: string | null;
   onChange: (media: MediaItem | null) => void;
 }) {
-  const { upload, isPending, error, warnings, reset } = useFieldUpload('document');
+  const { stage, error, warnings, reset } = useFieldStaging('document');
 
   const pick = async (files: File[]) => {
-    const media = await upload(files[0]).catch(() => null);
-    if (media) onChange(media);
+    const media = await stage(files[0]);
+    if (!media) return;
+    discardStaged(mediaId);
+    onChange(media);
   };
 
   return (
@@ -485,10 +552,11 @@ export function FileField({
             (mediaId ? mediaId : <span style={{ color: 'var(--red)' }}>尚未選擇檔案</span>)}
         </span>
 
+        <StagedBadge ids={[mediaId]} />
+
         <FileButton
           presetKey="document"
-          disabled={isPending}
-          label={isPending ? '上傳中…' : mediaId ? '換檔案' : '選擇檔案'}
+          label={mediaId ? '換檔案' : '選擇檔案'}
           onFiles={pick}
         />
 
@@ -498,6 +566,7 @@ export function FileField({
             className="btn btn-sm btn-ghost"
             onClick={() => {
               reset();
+              discardStaged(mediaId);
               onChange(null);
             }}
           >
@@ -507,7 +576,7 @@ export function FileField({
       </div>
 
       <PresetHint presetKey="document" />
-      <UploadFeedback error={error} warnings={warnings} />
+      <UploadFeedback error={error} warnings={warnings} mediaIds={[mediaId]} />
     </>
   );
 }

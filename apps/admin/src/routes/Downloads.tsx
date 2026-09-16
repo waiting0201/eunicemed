@@ -5,6 +5,7 @@ import { DataTable, FilterGroup, ListPage, MissingCount } from '@/components/Lis
 import { Dialog, DialogActions } from '@/components/Dialog';
 import { Field, FieldRow } from '@/components/form/Field';
 import { FileField } from '@/components/MediaField';
+import { commitStagedMedia } from '@/lib/mediaStaging';
 import { LocaleGauges } from '@/components/Gauge';
 import { StatusSelect } from '@/components/StatusSelect';
 import { StatusTag } from '@/components/StatusTag';
@@ -164,8 +165,10 @@ function DownloadDialog({
 
   const save = useMutation<unknown, Error, void>({
     mutationFn: async () => {
-      if (download) await api.saveDownload(download.id, draft);
-      else await api.createDownload(draft);
+      // 選好的 PDF 到這一刻才真的上傳，並把暫時 id 換成真正的 mediaId
+      const body = await commitStagedMedia(draft);
+      if (download) await api.saveDownload(download.id, body);
+      else await api.createDownload(body);
     },
     onSuccess: onSaved,
     onError: (e) => setError(e instanceof ApiError ? e.message : '儲存失敗。'),

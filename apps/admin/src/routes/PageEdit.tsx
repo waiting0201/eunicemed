@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, ApiError, type AdminPageSection } from '@/lib/api';
 import { SchemaForm } from '@/components/form/SchemaForm';
+import { commitStagedMedia } from '@/lib/mediaStaging';
 import { LocaleTabs, LOCALES, type Locale } from '@/components/LocaleTabs';
 import { Icon } from '@/components/Icon';
 import { sectionTitle } from '@/lib/schema';
@@ -58,8 +59,13 @@ export function PageEdit() {
   const data = drafts[draftKey] ?? serverData;
 
   const save = useMutation({
-    mutationFn: () =>
-      api.saveSection(key, active!, { locale, data, syncInvariantFields: true }),
+    mutationFn: async () =>
+      // 區段裡選好的圖到這一刻才真的上傳，並把暫時 id 換成真正的 mediaId
+      api.saveSection(key, active!, {
+        locale,
+        data: await commitStagedMedia(data),
+        syncInvariantFields: true,
+      }),
     onSuccess: () => {
       setError(null);
       setErrors([]);

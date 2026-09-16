@@ -4,6 +4,7 @@ import { api, ApiError, type AdminCertification } from "@/lib/api";
 import { Dialog, DialogActions } from "@/components/Dialog";
 import { Field, FieldRow } from "@/components/form/Field";
 import { ImageField } from "@/components/MediaField";
+import { commitStagedMedia } from "@/lib/mediaStaging";
 import { TranslationTabs } from "@/components/TranslationTabs";
 import { StatusSelect } from "@/components/StatusSelect";
 import type { Locale } from "@/components/LocaleTabs";
@@ -55,8 +56,9 @@ export function CertificationDialog({
   const all = { ...(mediaUrls.data ?? {}), ...urls };
 
   const save = useMutation({
-    mutationFn: () => {
-      const body = {
+    mutationFn: async () => {
+      // 標章圖到這一刻才真的上傳
+      const body = await commitStagedMedia({
         mark,
         slug,
         sortOrder,
@@ -64,7 +66,7 @@ export function CertificationDialog({
         status,
         clearLogo: logoMediaId === null,
         translations,
-      };
+      });
       return isNew
         ? api.createCertification(body)
         : api.saveCertification(certification.id, body);

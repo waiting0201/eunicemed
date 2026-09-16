@@ -14,6 +14,7 @@ import { MultiSelect } from '@/components/form/MultiSelect';
 import { RelatedProducts } from '@/components/form/RelatedProducts';
 import { SizeChartEditor } from '@/components/form/SizeChartEditor';
 import { ImageField, ImageList } from '@/components/MediaField';
+import { commitStagedMedia } from '@/lib/mediaStaging';
 import { LocaleTabs, LOCALES, type Locale } from '@/components/LocaleTabs';
 import { StatusTag } from '@/components/StatusTag';
 import { Icon } from '@/components/Icon';
@@ -116,7 +117,8 @@ export function ProductEdit() {
   const save = useMutation({
     // 產品本體先存 —— 它帶 rowVersion，撞併發要在改動相關產品之前就停下來
     mutationFn: async (body: unknown) => {
-      const result = await api.saveProduct(id!, body);
+      // 選好的圖到這一刻才真的上傳，並把暫時 id 換成真正的 mediaId
+      const result = await api.saveProduct(id!, await commitStagedMedia(body));
 
       if (relatedDirty && related) {
         await api.saveProductRelated(id!, related.map((r) => r.id));

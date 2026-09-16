@@ -12,6 +12,7 @@ import { RichText } from '@/components/form/RichText';
 import { Repeater } from '@/components/form/Repeater';
 import { MultiSelect } from '@/components/form/MultiSelect';
 import { ImageField } from '@/components/MediaField';
+import { commitStagedMedia } from '@/lib/mediaStaging';
 import { BodyMapPicker, type GhostSpot } from '@/components/BodyMapPicker';
 import { LocaleTabs, LOCALES, type Locale } from '@/components/LocaleTabs';
 import { StatusTag } from '@/components/StatusTag';
@@ -117,8 +118,11 @@ export function ApplicationEdit() {
   }, [data, isNew]);
 
   const save = useMutation({
-    mutationFn: (body: unknown) =>
-      isNew ? api.createApplication(body) : api.saveApplication(id!, body),
+    mutationFn: async (raw: unknown) => {
+      // 選好的圖到這一刻才真的上傳，並把暫時 id 換成真正的 mediaId
+      const body = await commitStagedMedia(raw);
+      return isNew ? api.createApplication(body) : api.saveApplication(id!, body);
+    },
     onSuccess: (result) => {
       setError(null);
       setErrors([]);

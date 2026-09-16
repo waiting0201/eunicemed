@@ -165,6 +165,10 @@ EuniceMed/
   判準與逐項裁決見 [docs/15-cms-scope.md](docs/15-cms-scope.md) §7。
 - **每個上傳欄位下方一律顯示建議尺寸與比例**，文字由 `GET /admin/media-presets` 帶出，
   不在畫面寫死（見 [docs/11](docs/11-media-specs.md) §1.1）。
+- **選檔案不等於上傳**：圖片與 PDF 在按下儲存時才送出（`lib/mediaStaging.ts`）。
+  新增任何有上傳欄位的畫面時，存檔的 `mutationFn` 必須先 `await commitStagedMedia(body)`
+  再打 API —— 漏了這一步送出去的是 `staged:` 假 id，而畫面上圖看得到（本機預覽），
+  不會有人當場發現。理由與流程見 [docs/03](docs/03-cms.md) §6。
 - **樣式一律 Tailwind CSS**，與公開站共用同一份設定與品牌 token。UI 元件用 **shadcn/ui**（Tailwind 基底）。**不使用 Ant Design 或任何自帶設計系統的元件庫** —— 理由見 [docs/03-cms.md](docs/03-cms.md) §8。
 - ⚠️ **任何後台介面工作（新畫面、改版面、調元件）開始前，必須先啟動 `frontend-design` skill。**
   公開站有 `mockup4/` 可照著切，**後台沒有任何設計稿**，是要現場設計的。不得憑感覺直接寫 Tailwind class。

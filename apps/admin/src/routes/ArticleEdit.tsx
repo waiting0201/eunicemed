@@ -12,6 +12,7 @@ import { Field, FieldRow } from '@/components/form/Field';
 import { RichText } from '@/components/form/RichText';
 import { MultiSelect } from '@/components/form/MultiSelect';
 import { ImageField, ImageList } from '@/components/MediaField';
+import { commitStagedMedia } from '@/lib/mediaStaging';
 import { LocaleTabs, LOCALES, type Locale } from '@/components/LocaleTabs';
 import { StatusTag } from '@/components/StatusTag';
 import { Icon } from '@/components/Icon';
@@ -87,8 +88,11 @@ export function ArticleEdit() {
   }, [data, isNew]);
 
   const save = useMutation({
-    mutationFn: async (body: unknown) =>
-      isNew ? api.createArticle(body) : api.saveArticle(id!, body),
+    mutationFn: async (raw: unknown) => {
+      // 封面圖到這一刻才真的上傳，並把暫時 id 換成真正的 mediaId
+      const body = await commitStagedMedia(raw);
+      return isNew ? api.createArticle(body) : api.saveArticle(id!, body);
+    },
     onSuccess: (result) => {
       setError(null);
       setErrors([]);
@@ -737,10 +741,11 @@ function GalleryPanel({ articleId, urls }: { articleId: string; urls: Record<str
   }, [data]);
 
   const save = useMutation({
-    mutationFn: () =>
+    mutationFn: async () =>
       api.saveArticleGallery(
         articleId,
-        images.map((i, n) => ({ mediaId: i.mediaId, sortOrder: n })),
+        // 選好的圖到這一刻才真的上傳
+        await commitStagedMedia(images.map((i, n) => ({ mediaId: i.mediaId, sortOrder: n }))),
       ),
     onSuccess: () => {
       setDirty(false);

@@ -12,6 +12,7 @@ import { ProductTabs } from "@/components/ProductTabs";
 import { Dialog, DialogActions } from "@/components/Dialog";
 import { Field, FieldRow } from "@/components/form/Field";
 import { ImageField } from "@/components/MediaField";
+import { commitStagedMedia } from "@/lib/mediaStaging";
 import { TranslationTabs } from "@/components/TranslationTabs";
 import { LocaleGauges } from "@/components/Gauge";
 import { StatusTag } from "@/components/StatusTag";
@@ -231,7 +232,8 @@ function TaxonomyDialog({
 
   const save = useMutation<unknown, Error, void>({
     mutationFn: async () => {
-      const body = {
+      // 選好的圖到這一刻才真的上傳，並把暫時 id 換成真正的 mediaId
+      const body = await commitStagedMedia({
         slug: draft.slug,
         sortOrder: draft.sortOrder,
         imageMediaId: draft.imageMediaId,
@@ -242,7 +244,7 @@ function TaxonomyDialog({
         translations: draft.translations,
         ...(draft.status !== null && { status: draft.status }),
         rowVersion: draft.rowVersion,
-      };
+      });
       return kind === "category"
         ? api.saveCategory(row.id, body)
         : api.saveSubCategory(row.id, body);

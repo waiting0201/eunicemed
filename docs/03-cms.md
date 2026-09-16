@@ -169,25 +169,47 @@ Draft（草稿） ──提交──► Review（待審，選用） ──發布
 > 元件在 `apps/admin/src/components/MediaField.tsx`：`ImageField`（單張）、
 > `ImageList`（多張＋排序＋主圖）、`FileField`（PDF）。
 
+> ⚠️ **選檔案不等於上傳。上傳發生在按下儲存的那一刻**（2026-09-16 起，
+> `apps/admin/src/lib/mediaStaging.ts`）。先前是選完就傳，於是按取消、關掉對話框、
+> 或改選另一張，前一張都已經在 Blob 與 `Media` 表裡了 —— 而後台沒有媒體庫可以去清
+> （§7.3 的刻意取捨），孤兒圖只會累積。
+
 **圖片（需縮圖，走 API 代傳）**
 
 1. 欄位下方顯示該 preset 的建議尺寸與比例（`<PresetHint>` ← `GET /admin/media-presets`）。
-2. 按「選擇圖片」開系統選檔視窗。**多張的圖庫可一次選多個檔，但一張一張傳** ——
-   Function App 實例 2048MB，同時解碼多張 2560px 來源圖會 OOM（[07](07-azure-deployment.md) §10）。
-3. `POST /api/admin/media`（multipart，帶 `presetKey`）→ 伺服器 SkiaSharp **依 preset 寬等比縮圖（只縮不放）**、輸出 WebP + 原格式、去 EXIF、轉 sRGB、正規化檔名。
-4. 寫入 Blob（master 與 variants）與 `Media` / `MediaVariant`，回傳 `warnings`。
-   **比例不符／解析度不足／檔案過大一律是黃字警示，圖仍然存進去**（[11](11-media-specs.md) §4）。
-   前端不另做 `createImageBitmap` 預檢 —— 後端已回同一組判斷，兩處維護同一條規則只會走鐘。
-5. 上傳成功後欄位就地出現 alt 輸入格，離開焦點時 `PATCH /admin/media/{id}`。
+2. 按「選擇圖片」開系統選檔視窗。**多張的圖庫可一次選多個檔。**
+3. 選完**不上傳**：`stageMedia()` 用 `URL.createObjectURL` 生本機預覽、在瀏覽器量一次
+   尺寸、回一個 `staged:` 開頭的暫時 id。欄位打上「待上傳」標記。
+   - 格式不符當場**擋下來**（伺服器端是 415，等到存檔才說太晚）。
+   - 比例／解析度／檔案大小是**黃字警示、不阻擋**，門檻與 `ImageService.Inspect`
+     逐條相同。⚠️ 這是刻意的兩處實作：伺服器要到存檔才看得到這個檔案，
+     不在前端量就等於整段沒有回饋。改門檻時**兩邊一起改**。
+4. 按下儲存 → `commitStagedMedia(body)` 走過整包 payload，把用到的暫時 id
+   **一張一張**送 `POST /api/admin/media`（multipart，帶 `presetKey`）——
+   Function App 實例 2048MB，同時解碼多張 2560px 來源圖會 OOM（[07](07-azure-deployment.md) §10）——
+   再把暫時 id 換成真正的 `mediaId` 才送出表單。
+   選了又移除的、或別張表單留下的都不會被送上去。
+5. 伺服器 SkiaSharp **依 preset 寬等比縮圖（只縮不放）**、輸出 WebP + 原格式、去 EXIF、
+   轉 sRGB、正規化檔名，寫入 Blob（master 與 variants）與 `Media` / `MediaVariant`，
+   回傳 `warnings`（[11](11-media-specs.md) §4）。這組警示以真正的 `mediaId` 為 key 留著，
+   存檔後仍顯示在同一個欄位下方。
+6. alt 輸入格在選檔當下就出現：**待上傳**時記在暫存裡、上傳時一併送出；
+   **已存在**的圖則是離開焦點時 `PATCH /admin/media/{id}`。
    **這是全後台唯一的 alt 入口**，而全站的 `<img alt>` 都取自 `Media.AltText`。
-6. 圖片由 **Blob 匿名讀取容器直接對外**（無 CDN）；上傳時寫入長 `Cache-Control`，前端以 custom loader 指向已產生的尺寸變體，不經 SWA 圖片優化端點（見 [07-azure-deployment.md](07-azure-deployment.md) §7.3）。
+7. 圖片由 **Blob 匿名讀取容器直接對外**（無 CDN）；上傳時寫入長 `Cache-Control`，前端以 custom loader 指向已產生的尺寸變體，不經 SWA 圖片優化端點（見 [07-azure-deployment.md](07-azure-deployment.md) §7.3）。
 
 **PDF（不縮圖，走 SAS 直傳）**
 
-1. `POST /admin/uploads/sas` 取上傳網址 → 前端直傳 Blob（不佔用 Function）。
+1. 一樣是存檔時才動作：`POST /admin/uploads/sas` 取上傳網址 → 前端直傳 Blob（不佔用 Function）。
 2. 回報 metadata 建立 `Media`（`presetKey = document`）。
 
-兩條路的分歧收在 `useFieldUpload(presetKey)` 裡，呼叫端不需要知道。
+兩條路的分歧收在 `commitStagedMedia()` 裡，呼叫端只要在存檔前把 payload 交給它。
+
+> **新增任何有上傳欄位的畫面時**：存檔的 `mutationFn` 必須是
+> `await commitStagedMedia(body)` 之後才送 API。漏了這一步，送出去的會是
+> `staged:…` 那個假 id，後端找不到那筆 `Media` —— 而畫面上圖是看得到的（本機預覽），
+> 所以不會有人當場發現。目前接上的有：頁面區段、產品、應用方案、文章（含圖庫）、
+> 分類／子分類、認證、下載。
 
 - 限制與拒絕條件（格式白名單、20MB、像素上限、SVG sanitize）見 [11-media-specs.md](11-media-specs.md) §4。**病毒掃描（Defender for Storage）不在本次方案內**（會產生額外費用），因此格式白名單與 SVG sanitize 是唯一防線，務必在 API 端嚴格執行。
 - 原始檔另存同一 Storage Account 的 `media-originals` 容器（**私有，不對外**），供 preset 調整後 `POST /admin/media/{id}/reprocess` 重新輸出。
