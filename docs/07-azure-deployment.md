@@ -180,7 +180,7 @@ Flex Consumption **不支援 deployment slot**。API 部署即為就地更新（
 | `Storage__PublicBaseUrl` | `https://steunicemedprod.blob.core.windows.net/media` | 前台圖片直連用 |
 | `Cors__AllowedOrigins` | `https://www.eunicemed.com` | 給 `/admin` 的瀏覽器 XHR 用 |
 | `Jwt__Issuer` / `Jwt__Audience` / `Jwt__ExpiryMinutes` / `Jwt__RefreshExpiryDays` | 選填 | 有預設值（`eunicemed-api` / `eunicemed-admin` / 15 / 30）|
-| `Auth__MinPasswordLength` | 選填，預設 12 | |
+| `Auth__MinPasswordLength` | 選填，預設 6 | Bicep 明寫 `6`。**這是設定吃得下的最小值**，比它小會被忽略、退回預設 |
 | `Maintenance__Key` | 隨機字串 | `POST /admin/maintenance/*` 需要，尚未設定 |
 | `Seed__AdminEmail` / `Seed__AdminPassword` / `Seed__AdminDisplayName` | 選填 | 只在 `User` 表為空時建立第一個管理者。**正式環境目前未設**，需另行建帳號 |
 | `Smtp__Host` / `Smtp__Port` / `Smtp__Username` / `Smtp__Password` / `Smtp__From` / `Smtp__To` / `Smtp__EnableSsl` | Brevo 或 Resend（§6.3）| Bicep 已接（`smtpHost` 等參數）。**`SMTP_HOST` 空著就整組不寫**，API 端跳過寄信、表單照常入庫。`Smtp__EnableSsl` 不設參數，由連接埠推導（465 → `true`）|

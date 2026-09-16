@@ -6,7 +6,6 @@ public sealed record UserDto(
     string    DisplayName,
     string[]  Roles,
     bool      IsActive,
-    bool      MustChangePassword,
     bool      IsLocked,
     DateTime? LastLoginAt,
     DateTime  CreatedAt);

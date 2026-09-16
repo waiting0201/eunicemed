@@ -6,9 +6,10 @@ namespace EuniceMed.Api.Common;
 /// 密碼長度下限。
 ///
 /// <para>
-/// **預設 12，正式環境不要調低。** 之所以做成可設定，是為了讓本機用短一點的
-/// 開發帳密（`local.settings.json` 設 8）—— 而不是把正式站的下限一起放寬。
-/// 沒有這一層的話，「我本機想用短密碼」就會變成改動全站的安全門檻。
+/// **預設 6** —— 應客戶要求放寬（原為 12）。代價是後台密碼可以很短，而
+/// `/admin` 對全網際網路開放（SWA Free 沒有 IP 限制）；唯一的補償是登入失敗
+/// 5 次鎖 15 分鐘與 IP 速率限制（docs/07 §7.4）。要調嚴就設
+/// `Auth__MinPasswordLength`，那是往上調的，6 是這個設定吃得下的最小值。
 /// </para>
 ///
 /// <para>
@@ -18,10 +19,10 @@ namespace EuniceMed.Api.Common;
 /// </summary>
 public static class PasswordPolicy
 {
-    public const int DefaultMinLength = 12;
+    public const int DefaultMinLength = 6;
 
     public static int MinLength(IConfiguration cfg) =>
-        int.TryParse(cfg["Auth:MinPasswordLength"], out var n) && n >= 8
+        int.TryParse(cfg["Auth:MinPasswordLength"], out var n) && n >= DefaultMinLength
             ? n
             : DefaultMinLength;
 

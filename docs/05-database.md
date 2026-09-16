@@ -750,7 +750,8 @@ CREATE TABLE SettingTranslation (
 
 - **`PageSection`**：由 seed 同步器依 `EuniceMed.Core/PageSchemas` 建立（約 60–70 筆），`SectionKey` 清單見 [09-page-blocks.md](09-page-blocks.md)。
 - **`Setting` / `SettingTranslation`**：公司地址、電話、信箱、營業時間、LinkedIn、SEO 預設。
-- 預設 Admin 帳號（密碼由環境變數注入，首次登入強制改密）。
+- 預設 Admin 帳號（密碼由環境變數注入）。**不強制首次改密**（2026-09-16 起）；
+  `[User].MustChangePassword` 欄位還在但永遠是 `false`，沒有任何程式讀它。
 
 ### 4.1 舊站產品匯入對照
 

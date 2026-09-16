@@ -61,7 +61,6 @@ public sealed class UserHandler(AppDbContext db, Microsoft.Extensions.Configurat
             DisplayName        = body.DisplayName.Trim(),
             PasswordHash       = BCrypt.Net.BCrypt.HashPassword(body.Password),
             IsActive           = true,
-            MustChangePassword = true,   // 由管理者建立的帳號，首次登入必須改密碼
             CreatedAt          = Clock.Now,
         };
         foreach (var role in roles)
@@ -122,9 +121,9 @@ public sealed class UserHandler(AppDbContext db, Microsoft.Extensions.Configurat
         {
             PasswordPolicy.Require(body.Password, config);
 
-            user.PasswordHash       = BCrypt.Net.BCrypt.HashPassword(body.Password);
-            user.MustChangePassword = true;
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(body.Password);
 
+            // 改了密碼就把既有的 session 踢掉，否則舊密碼換來的 token 還能用到過期
             await db.RefreshTokens
                 .Where(t => t.UserId == guid && t.RevokedAt == null)
                 .ExecuteUpdateAsync(s => s.SetProperty(t => t.RevokedAt, DateTime.UtcNow));
@@ -201,7 +200,6 @@ public sealed class UserHandler(AppDbContext db, Microsoft.Extensions.Configurat
         u.DisplayName,
         u.UserRoles.Select(ur => ur.Role!.Name).OrderBy(n => n).ToArray(),
         u.IsActive,
-        u.MustChangePassword,
         u.LockedUntil is { } until && until > DateTime.UtcNow,
         u.LastLoginAt,
         u.CreatedAt);

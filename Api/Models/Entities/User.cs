@@ -28,7 +28,12 @@ public class User
     /// <summary>鎖定至此時間（UTC）；null 表示未鎖定</summary>
     public DateTime? LockedUntil { get; set; }
 
-    /// <summary>首次登入或密碼被重設後為 true，需先改密碼</summary>
+    /// <summary>
+    /// **已停用的旗標，永遠是 false。** 建立帳號與管理者重設密碼都不再強制下次登入改密碼
+    /// （客戶要求），四個寫入點都已拿掉。欄位留著是因為雲端只有一套 prod 資料庫、
+    /// 遷移在 Function App 啟動時套用，為了一個沒人讀的 bit 欄位做破壞性遷移不值得
+    /// （CLAUDE.md §5.4）。要清掉的話走「擴張 → 遷移 → 收縮」那條路。
+    /// </summary>
     public bool MustChangePassword { get; set; }
 
     public ICollection<UserRole>     UserRoles     { get; set; } = [];

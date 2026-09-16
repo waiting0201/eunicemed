@@ -82,11 +82,7 @@ export function Users() {
               <span className="flex flex-col gap-0.5 text-[0.78rem]">
                 {!user.isActive && <span style={{ color: 'var(--red)' }}>已停用</span>}
                 {user.isLocked && <span style={{ color: 'var(--red)' }}>已鎖定</span>}
-                {/* 首次登入須改密碼是常態，不是問題 —— 用中性色 */}
-                {user.mustChangePassword && (
-                  <span style={{ color: 'var(--text-muted)' }}>待改密碼</span>
-                )}
-                {user.isActive && !user.isLocked && !user.mustChangePassword && (
+                {user.isActive && !user.isLocked && (
                   <span style={{ color: 'var(--text-muted)' }}>正常</span>
                 )}
               </span>
@@ -195,8 +191,8 @@ function UserDialog({
             required={!user}
             hint={
               user
-                ? '留空表示不改密碼。改了之後該使用者的所有登入階段會被撤銷，且下次登入須再改一次。'
-                : '長度下限由 Auth__MinPasswordLength 決定（預設 12）。'
+                ? '留空表示不改密碼。改了之後該使用者的所有登入階段會被撤銷，下次用新密碼登入即可。'
+                : '至少 6 個字元（下限由 Auth__MinPasswordLength 決定）。'
             }
           >
             <input

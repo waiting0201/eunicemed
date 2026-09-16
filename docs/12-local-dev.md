@@ -18,10 +18,12 @@
 種子帳號由 `AdminUserSeeder` 在 Function App 啟動時建立，**只在 `User` 表為空時才動作** ——
 所以改了 `local.settings.json` 的帳密**不會**影響既有帳號，那要走 `PUT /admin/users/{id}`。
 
-密碼長度下限由 `Auth__MinPasswordLength` 控制，**預設 12**。
-本機設成 8 以便用短一點的開發帳密；**正式環境不要設這一項**，讓它保持預設。
-四個檢查點（種子、建立使用者、更新使用者、改密碼）讀同一個值，
+密碼長度下限由 `Auth__MinPasswordLength` 控制，**預設 6**（2026-09-16 應客戶要求由 12 放寬）。
+比 6 小的設定值會被忽略。四個檢查點（種子、建立使用者、更新使用者、改密碼）讀同一個值，
 見 `Api/Common/PasswordPolicy.cs`。
+
+**沒有「首次登入強制改密碼」這回事**（同日拿掉）—— 建立帳號與管理者重設密碼都不再
+設旗標，拿到密碼就能一直用。
 
 ## 1. 需要什麼
 
@@ -250,9 +252,10 @@ InvalidOperationException: A parameterless default constructor or one matching s
 | 帳號 | `sa@system.local` |
 | 密碼 | `Admin@123` |
 
-與本機同一組，方便切換。首次登入會要求變更密碼（`mustChangePassword`）。
+與本機同一組，方便切換。
 
 > ⚠️ **這組密碼只有 9 碼，而 `/admin` 對全網際網路開放** ——
 > SWA Free 沒有 IP 限制可用（[07 §7.1](07-azure-deployment.md)），
 > 唯一的補償是登入失敗 5 次鎖 15 分鐘與每分鐘 30 次的 IP 速率限制。
-> 正式對外之前應換成長密碼，並把 `Auth__MinPasswordLength` 調回 12。
+> 下限已放寬到 6 且不再強制改密碼，這兩道就是全部的把關了 ——
+> 正式對外之前應換成長密碼。

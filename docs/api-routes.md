@@ -56,7 +56,7 @@
 | Method | Path | 權限 | 說明 |
 |---|---|---|---|
 | GET | `/admin/users` | Admin | |
-| POST | `/admin/users` | Admin | 建立的帳號一律 `mustChangePassword = true`；密碼下限由 `Auth__MinPasswordLength` 決定（預設 12）|
+| POST | `/admin/users` | Admin | 密碼下限由 `Auth__MinPasswordLength` 決定（**預設 6**）。建立的帳號**不強制首次登入改密碼**（2026-09-16 起，客戶要求）|
 | GET | `/admin/users/{id}` | Admin | |
 | PUT/PATCH | `/admin/users/{id}` | Admin | 可改 email（撞號回 409）／名稱／角色／啟用狀態／重設密碼／`unlock` 解鎖 |
 | DELETE | `/admin/users/{id}` | Admin | 擋：刪自己、刪最後一個 Admin |

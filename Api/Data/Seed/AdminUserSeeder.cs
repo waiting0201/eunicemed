@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 namespace EuniceMed.Api.Data.Seed;
 
 /// <summary>
-/// 建立預設管理者帳號。docs/05-database.md §4：密碼由環境變數注入、強制首次登入變更密碼。
+/// 建立預設管理者帳號。docs/05-database.md §4：密碼由環境變數注入。
 ///
 /// <para>
 /// 不用 <c>HasData</c> 的原因：密碼雜湊必須來自環境變數，而 <c>HasData</c> 是編譯期常數，
@@ -50,7 +50,6 @@ public static class AdminUserSeeder
             DisplayName        = cfg["Seed:AdminDisplayName"] ?? "Administrator",
             PasswordHash       = BCrypt.Net.BCrypt.HashPassword(password),
             IsActive           = true,
-            MustChangePassword = true,
             CreatedAt          = now,
         };
         user.UserRoles.Add(new UserRole { RoleId = RoleIds.Admin });
@@ -58,6 +57,6 @@ public static class AdminUserSeeder
         db.Users.Add(user);
         await db.SaveChangesAsync(ct);
 
-        Console.WriteLine($"[AdminUserSeeder] 已建立預設管理者 {user.Email}（首次登入須變更密碼）。");
+        Console.WriteLine($"[AdminUserSeeder] 已建立預設管理者 {user.Email}。");
     }
 }

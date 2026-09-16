@@ -164,8 +164,7 @@ public sealed class AuthHandler(
         if (!BCrypt.Net.BCrypt.Verify(body.CurrentPassword, user.PasswordHash))
             throw AppException.Unauthorized("目前密碼錯誤。");
 
-        user.PasswordHash       = BCrypt.Net.BCrypt.HashPassword(body.NewPassword);
-        user.MustChangePassword = false;
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(body.NewPassword);
 
         // 改密碼即撤銷所有既有 refresh token，強制其他裝置重新登入
         await db.RefreshTokens
@@ -202,5 +201,5 @@ public sealed class AuthHandler(
     }
 
     private static AuthUserDto ToAuthUser(User u, string[] roles) =>
-        new(u.Id, u.Email, u.DisplayName, roles, u.MustChangePassword);
+        new(u.Id, u.Email, u.DisplayName, roles);
 }

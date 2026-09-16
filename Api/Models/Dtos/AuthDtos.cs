@@ -10,8 +10,7 @@ public sealed record AuthUserDto(
     Guid     Id,
     string   Email,
     string   DisplayName,
-    string[] Roles,
-    bool     MustChangePassword);
+    string[] Roles);
 
 public sealed record LoginResponse(
     string      AccessToken,

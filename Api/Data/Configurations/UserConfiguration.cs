@@ -37,12 +37,13 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         // ── 規格外新增的三欄 ──────────────────────────────────────────────
         // docs/05-database.md §3.12 的 [User] DDL 沒有這三欄，但 docs/03 §7 與
-        // docs/07 §7.4 都明文要求「登入失敗鎖定」，docs/05 §4 要求預設管理者
-        // 「強制首次登入變更密碼」。沒有欄位就做不到，因此在此補上。
+        // docs/07 §7.4 都明文要求「登入失敗鎖定」。沒有欄位就做不到，因此在此補上。
         // 記錄於 CLAUDE.md §7 🟡。
         builder.Property(u => u.FailedLoginCount)
                .HasDefaultValue(0);
 
+        // MustChangePassword 已不再有人寫入（2026-09-16，見 User.cs）。
+        // 仍然對映，是為了不對正式庫做破壞性遷移。
         builder.Property(u => u.MustChangePassword)
                .HasDefaultValue(false);
     }

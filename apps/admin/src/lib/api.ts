@@ -687,7 +687,6 @@ export type AdminUserRow = {
   displayName: string;
   roles: string[];
   isActive: boolean;
-  mustChangePassword: boolean;
   isLocked: boolean;
   lastLoginAt: string | null;
   createdAt: string;
