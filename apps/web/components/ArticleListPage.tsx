@@ -1,4 +1,4 @@
-import type { FacetedResult, ArticleListItem } from '@/lib/api';
+import type { FacetedResult, ArticleListItem, MediaRef } from '@/lib/api';
 import type { Locale } from '@/lib/locale';
 import { ArticleCard } from './ArticleCard';
 import { PageBand } from './PageBand';
@@ -6,7 +6,6 @@ import { PageHero } from './PageHero';
 import { ResourcesSubnav } from './ResourcesSubnav';
 import { SideFilter } from './SideFilter';
 import { css } from '@/lib/css';
-import { BRAND_BANDS } from '@/lib/bands';
 import { Pagination } from './Pagination';
 
 /** 樣式逐字取自 mockup4 的 News／Insights 列表。 */
@@ -30,12 +29,15 @@ export function ArticleListPage({
   kind,
   result,
   activeCategory,
+  band,
   copy,
 }: {
   locale: Locale;
   kind: 'news' | 'insights';
   result: FacetedResult<ArticleListItem>;
   activeCategory: string | undefined;
+  /** 頁頂圖。兩頁各有自己的 `hero.band`，所以由呼叫端解析後傳進來 */
+  band: MediaRef;
   copy: { eyebrow: string; title: string; lead: string; empty: string };
 }) {
   const basePath = `/${locale}/${kind}`;
@@ -51,7 +53,7 @@ export function ArticleListPage({
   return (
     <>
       <ResourcesSubnav locale={locale} active={`/${kind}`} />
-      <PageBand image={BRAND_BANDS.pattern02} />
+      <PageBand image={band} />
       <PageHero eyebrow={copy.eyebrow} title={copy.title} lead={copy.lead} />
 
       <section style={S.section}>

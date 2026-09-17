@@ -114,7 +114,7 @@ EuniceMed/
 │   ├── Data/                  # AppDbContext、Configurations、Migrations、Seed
 │   ├── Models/{Entities,Dtos}/
 │   ├── Common/                # ApiResponse、PagedResult、AppException、LocaleQuery
-│   ├── PageSchemas/           # {pageKey}.{sectionKey}.json（19 支 / 6 個 pageKey，見 docs/15）
+│   ├── PageSchemas/           # {pageKey}.{sectionKey}.json（25 支 / 12 個 pageKey，見 docs/15）
 │   └── http/                  # 各階段 .http 驗收檔
 ├── apps/
 │   ├── web/                   # Next.js 前端（公開網站）— 唯一部署到 SWA 的 app

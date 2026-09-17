@@ -73,14 +73,16 @@ number · date · bool · enum[...] · ref:Entity · repeatable{...}(min–max)
 **全站共用**（不屬任何 Page）：Header 導覽、Footer、Resources 次導覽列、`FloatingContact` 浮動聯絡鈕——皆固定於模板，導覽連結文字走 `MenuItem`（Resources 次導覽除外，見 [05](05-database.md) §3.9 註）。
 
 > ⚠️ **【2026-08-28 後台範圍收斂，見 [15](15-cms-scope.md)】**
-> 實作的區段數是 **19 支，只涵蓋上表的 6 個 pageKey**（home 4、about 5、partnership 4、resources 2、products 2、privacy 2）。
+> 實作的區段數是 **25 支，涵蓋上表的 12 個 pageKey**（home 4、about 5、partnership 4、resources 2、products 2、privacy 2，
+> 以及 2026-09-17 補上的 applications／faq／insights／news／downloads／where-to-buy 各 1 支 `hero`，只有 `band` 一個欄位，見 [15](15-cms-scope.md) §10）。
 >
 > - 版面文案（區段標題、`All news →` 這類標籤、固定 CTA 的按鈕字、品牌宣言）**一律回到前端常數**，
 >   因為改它們等於改 mockup4。逐支裁決與理由見 [15](15-cms-scope.md) §3。
-> - 其餘 12 頁（Product Category / Product Detail / Applications / Application Detail /
->   FAQ / Insights / Article Detail / News / News Detail / Downloads / Where to Buy / Contact）
->   的 `labels`、`cta`、`hero` 等區段**正式定案不做**。那些頁的文案早已寫死並上線運作，
->   下表保留它們是為了記錄版面結構，**不是待辦**。
+> - 其餘 6 頁（Product Category / Product Detail / Application Detail / Article Detail /
+>   News Detail / Contact）的 `labels`、`cta`、`hero` 等區段**正式定案不做**。
+>   那些頁的文案早已寫死並上線運作，下表保留它們是為了記錄版面結構，**不是待辦**。
+> - Applications / FAQ / Insights / News / Downloads / Where to Buy 這 6 頁**只回來一個
+>   `hero.band`**（2026-09-17，§10）—— 版面文案一樣不做，能改的只有頁頂圖。
 
 ---
 
@@ -213,7 +215,7 @@ number · date · bool · enum[...] · ref:Entity · repeatable{...}(min–max)
 
 | sectionKey | 區段 | 來源 | 欄位 |
 |---|---|---|---|
-| `hero` | 頁首 | 區段 | `band` media(`page-band`)、`eyebrow` text、`title` text、`lead` text |
+| `hero` | 頁首 | 區段 + 前端常數 | 區段：`band` media(`page-band`)<br>常數：`eyebrow`、`title`、`lead`（[15](15-cms-scope.md) §3、§10）|
 | `bodyMap` | **01** By body part | 區段 + 動態 | 區段：`title` text<br>動態：`GET /applications/body-map`（僅 `ShowOnBodyMap = 1`，目前 back/knee/ankle/foot）；面板文案 = `MapCopy`、按鈕 = `MapCtaLabel`、產品數 = 自動計算 |
 | `specialCare` | **02** By special needs care | 區段 + 動態 | 區段：`title` text<br>動態：`GET /applications?type=special-care`（卡圖 = `CardImageMediaId`，preset `card-16x10`） |
 
@@ -337,7 +339,7 @@ number · date · bool · enum[...] · ref:Entity · repeatable{...}(min–max)
 
 | sectionKey | 來源 | 欄位 |
 |---|---|---|
-| `hero` | 區段 | `band` media(`page-band`)、`eyebrow`、`title`、`lead` |
+| `hero` | 區段 + 前端常數 | 區段：`band` media(`page-band`)<br>常數：`eyebrow`、`title`、`lead`（[15](15-cms-scope.md) §3、§10）|
 | `list` | 區段 + 動態 | 區段：`categoriesLabel` text<br>動態：`GET /faqs?facets=true` → 分類 tab（名稱 + **筆數 count**）+ 手風琴問答 |
 | `cta` | 區段 | `title`、`body`、`ctaLabel`、`link`（→ `/contact`） |
 
@@ -349,7 +351,7 @@ number · date · bool · enum[...] · ref:Entity · repeatable{...}(min–max)
 
 | sectionKey | 來源 | 欄位 |
 |---|---|---|
-| `hero` | 區段 | `band` media(`page-band`)、`eyebrow`、`title`、`lead` |
+| `hero` | 區段 + 前端常數 | 區段：`band` media(`page-band`)<br>常數：`eyebrow`、`title`、`lead`（[15](15-cms-scope.md) §3、§10）|
 | `list` | 區段 + 動態 | 區段：`categoriesLabel` text、`allLabel` text<br>動態：分類 rail（**帶 count**）+ 清單 + 分頁 |
 
 差異：
@@ -414,7 +416,7 @@ number · date · bool · enum[...] · ref:Entity · repeatable{...}(min–max)
 
 | sectionKey | 來源 | 欄位 |
 |---|---|---|
-| `hero` | 區段 | `band` media(`page-band`)、`eyebrow`、`title`、`lead` |
+| `hero` | 區段 + 前端常數 | 區段：`band` media(`page-band`)<br>常數：`eyebrow`、`title`、`lead`（[15](15-cms-scope.md) §3、§10）|
 | `domestic` | 區段 + 動態 | 區段：`title` text（`Taiwan`）<br>動態：`SalesLocation(LocationType=domestic)` → 卡片（`Name`、`Address`、`Note`、`Phone`、`WebsiteUrl`） |
 | `international` | 區段 + 動態 | 區段：`title` text<br>動態：`SalesLocation(LocationType=international)`，依 `RegionLabel` 分組 → 列（地區、公司名、網站） |
 | `cta` | 區段 | `title`（`Not in your region yet?`）、`body`、`ctaLabel`、`link` |
@@ -452,7 +454,7 @@ number · date · bool · enum[...] · ref:Entity · repeatable{...}(min–max)
 ### 9.1 位置與命名
 
 ```
-Api/PageSchemas/          # 共 19 支（2026-08-28 收斂後，見 15-cms-scope.md）
+Api/PageSchemas/          # 共 25 支（2026-08-28 收斂 + 2026-09-17 補 6 支 hero，見 15-cms-scope.md）
 ├── home.heroSlider.json          home.featuredProducts.json
 ├── home.bodyPartBand.json        home.testimonial.json
 ├── about.hero.json               about.story.json
@@ -462,8 +464,14 @@ Api/PageSchemas/          # 共 19 支（2026-08-28 收斂後，見 15-cms-scope
 ├── partnership.hero.json         partnership.oemOdm.json
 ├── partnership.distributor.json  partnership.becomePartner.json
 ├── resources.quickDownloads.json resources.recentlyPublished.json
-└── privacy.hero.json             privacy.content.json
+├── privacy.hero.json             privacy.content.json
+├── applications.hero.json        faq.hero.json
+├── insights.hero.json            news.hero.json
+└── downloads.hero.json           where-to-buy.hero.json
 ```
+
+> 最後 6 支只有一個 `band` 欄位（2026-09-17，見 [15](15-cms-scope.md) §10）——
+> 那幾頁的版面文案仍寫死在前端，能改的只有頁頂圖。
 
 > `Api/Api.csproj` 以 glob 把整個目錄設為 `EmbeddedResource`，**刪檔即生效**，csproj 不用改。
 > 同步器只比對檔名、看不到欄位，所以收斂一支 schema 時 DB 裡的 `DataJson` 不會跟著變 ——
@@ -539,7 +547,7 @@ Api/PageSchemas/          # 共 19 支（2026-08-28 收斂後，見 15-cms-scope
 | 前版（Weypro 推導） | 本版（mockup4 定案） |
 |---|---|
 | `PageBlock.BlockType` 字彙：`hero` `richtext` `imageText` `iconText` `iconGrid` `timeline` `gallery` `certBadges` `testimonial` `steps` `cta` | **廢除**。改為 `(PageKey, SectionKey)` + JSON Schema 具名欄位 |
-| 可編輯頁 4 個（home / about / partnership / privacy-legal） | 規格 **18 個**（13 單例 + 5 模板共用文案）；**實作 6 個 / 19 支 schema**（2026-08-28 定案，見 [15](15-cms-scope.md)）|
+| 可編輯頁 4 個（home / about / partnership / privacy-legal） | 規格 **18 個**（13 單例 + 5 模板共用文案）；**實作 12 個 / 25 支 schema**（2026-08-28 定案 + 2026-09-17 補 6 支 `hero`，見 [15](15-cms-scope.md)）|
 | 首頁 hero「雙 CTA」 | mockup4 hero **無 CTA**；改為 3 張輪播 + eyebrow/title/lead |
 | 首頁「明星商品輪播」 | **Pinterest 式 masonry：等寬 4 欄、高度不一（版位比例 1:1／4:5／5:4 輪替）+ 底部橫跨全型錄帶**（自動取 `IsFeatured` 共 8 筆；2026-08-14 由「1 直式塔位 + 3 方卡」改版，上傳統一 1:1，落差只由版位比例決定） |
 | Insights 以 `Topic` 列舉分類 | `ArticleCategory` 實體（News/Insights 各一組，rail 帶 count） |

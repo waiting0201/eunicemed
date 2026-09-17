@@ -4,6 +4,7 @@ import { api } from '@/lib/api';
 import { isLocale, type Locale } from '@/lib/locale';
 import { pageMetadata } from '@/lib/seo';
 import { ArticleListPage } from '@/components/ArticleListPage';
+import { BRAND_BANDS, pageBand } from '@/lib/bands';
 
 type Params = { locale: string };
 type Search = { category?: string; page?: string };
@@ -52,7 +53,10 @@ export default async function InsightsPage({
   const q = await searchParams;
   if (!isLocale(locale)) notFound();
 
-  const result = await api.articles(locale, 'insights', q.category, q.page);
+  const [result, page] = await Promise.all([
+    api.articles(locale, 'insights', q.category, q.page),
+    api.page(locale, 'insights'),
+  ]);
 
   return (
     <ArticleListPage
@@ -60,6 +64,7 @@ export default async function InsightsPage({
       kind="insights"
       result={result}
       activeCategory={q.category}
+      band={pageBand(page, BRAND_BANDS.pattern02)}
       copy={COPY[locale]}
     />
   );

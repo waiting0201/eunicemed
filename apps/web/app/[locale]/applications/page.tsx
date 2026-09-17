@@ -8,7 +8,7 @@ import { css } from '@/lib/css';
 import { BodyMap } from '@/components/BodyMap';
 import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
-import { BRAND_BANDS } from '@/lib/bands';
+import { BRAND_BANDS, pageBand } from '@/lib/bands';
 import { pageMetadata } from '@/lib/seo';
 import { SectionHeading } from '@/components/SectionHeading';
 
@@ -68,7 +68,11 @@ export default async function ApplicationsPage({ params }: { params: Promise<Par
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
-  const [spots, all] = await Promise.all([api.bodyMap(locale), api.applications(locale)]);
+  const [spots, all, page] = await Promise.all([
+    api.bodyMap(locale),
+    api.applications(locale),
+    api.page(locale, 'applications'),
+  ]);
   const special = all.filter((a) => a.type === 'special-care');
   const c = COPY[locale];
 
@@ -77,7 +81,7 @@ export default async function ApplicationsPage({ params }: { params: Promise<Par
 
   return (
     <>
-      <PageBand image={BRAND_BANDS.pattern02} />
+      <PageBand image={pageBand(page, BRAND_BANDS.pattern02)} />
       <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />
 
       {spots.length > 0 && (

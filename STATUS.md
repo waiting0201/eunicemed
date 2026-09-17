@@ -6,7 +6,7 @@
 > [docs/api-routes.md](docs/api-routes.md) 是**路由契約**（與 `Api/Routing/AppRouter.cs` 逐條對應）。
 > 三份不要互相抄，各司其職。
 
-**最後更新**：2026-09-16
+**最後更新**：2026-09-17
 
 ---
 
@@ -45,6 +45,12 @@ API 的 Phase 0–7 全數完成，**表單收件匣已於 2026-08-28 補上並�
 刪任一列就把另一列的圖砍成死連結（畫面上只看到破圖）。改為**上傳以檔名去重**
 （雜湊改算「內容 + presetKey」）＋**刪除只刪沒有別列共用的 blob**，並補上
 `POST /admin/media/{id}/reprocess` —— 先前踩到之後沒有退路，只能刪掉整筆重傳。
+
+**2026-09-17 六頁的頁頂圖改為可編輯**（客戶要求）：Applications／FAQ／Insights／News／
+Downloads／Where to Buy 的 band 原本寫死在前端（2026-08-30 的定案），現改回 CMS 供給 ——
+補 6 支只含 `band` 的 `hero` schema，`PageSection` 列由啟動時的同步器自己建（**無 migration**）。
+`BRAND_BANDS` 的三張品牌圖樣降為**預設圖**：沒換圖就照舊顯示，不會變成一條空白。
+後台清單因此由 6 頁變 12 頁。見 [docs/15](docs/15-cms-scope.md) §10。
 
 **2026-09-16 後台兩項調整**（客戶要求）：
 
@@ -276,7 +282,7 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 |---|---|
 | 登入 | ✅ 可運作（含 refresh token 單次使用的併發處理）|
 | Dashboard | — 刻意不做，改由側欄儀表取代 |
-| 頁面內容 | ✅ 可運作 —— 表單由 `GET /admin/page-schema/{key}` 動態生成<br>**19 個區段、6 個 pageKey**（2026-08-28 收斂，見 [docs/15](docs/15-cms-scope.md)）；10 種 `x-fieldType` 全支援；richtext 走 TipTap（lazy chunk）<br>清單只列這 6 頁，其餘 12 頁由 `GET /admin/pages` 濾掉（2026-08-30，見 [docs/15](docs/15-cms-scope.md) §9）—— 那些頁的版面文案與頁頂 band 寫死在前端 |
+| 頁面內容 | ✅ 可運作 —— 表單由 `GET /admin/page-schema/{key}` 動態生成<br>**25 個區段、12 個 pageKey**（2026-08-28 收斂 + 2026-09-17 補 6 支 `hero`，見 [docs/15](docs/15-cms-scope.md)）；10 種 `x-fieldType` 全支援；richtext 走 TipTap（lazy chunk）<br>清單列這 12 頁，其餘 6 頁（Contact 與四支共用版型）由 `GET /admin/pages` 濾掉（2026-08-30，見 [docs/15](docs/15-cms-scope.md) §9）—— 那些頁的版面文案寫死在前端 |
 | 產品列表 | ✅ 可運作（搜尋／狀態篩選／分頁／完整度儀表）|
 | 產品編輯 | 🟡 可運作（雙語分頁、三個 repeater、圖庫＋主圖、使用情境照、部位／認證多選、尺寸表編輯器、發布／取消發布、`rowVersion` 併發、移除語系）<br>2026-08-31 補上**相關產品**：搜尋加入、上下箭頭排序、移除，空著時說明會自動挑選。<br>⚠️ **排序用箭頭不是拖曳** —— 後台沒有任何拖拉互動，為一份最多 8 筆的清單引進 dnd-kit 要付打包體積（[docs/03](docs/03-cms.md) §8.1）；`Repeater` 與圖庫也都是箭頭。<br>待驗：UI 尚未有人在瀏覽器點過（API 端已實測）|
 | 分類 / 子分類 | ✅ 可運作，**在「產品」畫面的分頁上**（分類與子分類同一張表、雙語＋SEO、卡片圖／頁首大圖、子分類狀態、`rowVersion` 併發、移除語系）<br>不提供新增／刪除 —— 那等於改全站 URL 結構。改 slug 或換分類會自動產生轉址 |
