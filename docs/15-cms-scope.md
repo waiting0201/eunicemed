@@ -398,3 +398,45 @@ admin 的轉址端點為此保留，只是沒有 UI。
   現在頁頂圖能改了。新的困惑點也換了位置：**這幾頁點進去只有一張圖**，
   條目本身在側欄各自的項目裡，這才是要講的那句。
 - `Api/PageSchemas/` 19 支 → **25 支**，pageKey 6 → **12**。
+
+---
+
+## 11. 2026-10-12：套用客戶的英文文案定稿
+
+來源：`EuniceMed_官網英文文案_最終版（中文說明）.docx`（含 SEO／GEO 建議）。
+逐條放哪裡沿用 §2 的判準，**沒有新增或移除任何 schema**。
+
+| 文案 | 去處 |
+|---|---|
+| Title、Meta、H1、hero、區段標題、引言、卡片、按鈕 | 各頁 `COPY`（中文由我方依英文定稿新譯） |
+| 型錄橫幅、見證標題、里程碑、製造要點、經銷／OEM／成為夥伴 | 既有 CMS 區段 |
+| 分類名稱與說明、部位 MapCopy、特殊照護 Lead、FDA 認證、產品名 Title Case | DB 實體 |
+| OEM/ODM FAQ | DB `Faq`，**新分類 `oem`**（Partnership 頁讀這個分類） |
+
+推送腳本：`tools/migration/copy-final-2026-10.py`（預設預覽，`--apply` 才寫入）。
+
+### 11.1 連帶的技術決定
+
+- **SEO title 與 H1 分開**：定稿的 title 是完整字串（`… | EuniceMed`），
+  `pageMetadata()` 加了 `absoluteTitle`，不再套 layout 的 `%s · EuniceMed` 樣板。
+  七個主要頁面的 `COPY` 都多了 `meta: { title, description }`。
+- **首頁與 Resources 的 H1 在眉標那一行**，品牌句大標改成 `<p>`、樣式不變。
+- **頁級 JSON-LD**：首頁 `WebSite`、About `AboutPage`、Products／Resources `CollectionPage`、
+  Applications／Partnership `WebPage`（後者另加 `FAQPage`）。Organization 補 `foundingDate`。
+- **合作類型 enum 擴充** `private-label`、`bulk`：schema 是 API 的嵌入資源，**要先部署 API** 才存得進去。
+- **首頁商品卡眉標改顯示子分類名稱**（原為系列）；顏色仍依系列，保留支撐強度的色碼。
+- **產品圖 alt 在前端組句**（`lib/alt.ts`），不再用 `Media.AltText` ——
+  那個欄位不分語系，中文頁會拿到英文 alt。
+- **FDA 認證建成草稿**：認證一發布就出現在**每個**產品頁的標章列，
+  而 FDA 登錄的涵蓋範圍未確認。確認後在後台發布即可，About 已掛好引用。
+- FAQ 的折疊列抽成 `components/FaqList.tsx`，FAQ 頁與 Partnership 共用。
+
+### 11.2 黃底待確認項：沒有上線
+
+見證引言、成功高中贊助、創辦人故事、ISO/CE 取得年份、LYCRA®（先用替代寫法 premium elastic yarn）、
+證號／機構／效期與 FDA 範圍、hyperextension braces（先拿掉）、MOQ 與交期（FAQ 兩題為草稿）、
+回覆天數（兩頁仍各寫 1 天與 2 天）、藥局／網店／海外代理名稱、ISO & CE 證書 PDF。
+處理原則：線上已有內容的維持現狀，沒有的就不顯示。
+
+> 證號／機構／效期**不能放進 `CertificationTranslation.SubLabel`** ——
+> 那一欄已存著「Quality management」這類短標，產品頁在用。資料到手時要另開欄位。

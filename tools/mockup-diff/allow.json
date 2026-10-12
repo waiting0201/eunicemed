@@ -63,6 +63,9 @@
     "transform:scale(1)": "同上，外環／白心的未選中比例。",
     "transform:scale(1.45)": "同上，外環選中放大。",
     "transform:scale(1.2)": "同上，白心選中放大。",
-    "-webkit-overflow-scrolling:touch": "尺寸表在窄螢幕改成橫向捲動（不收欄，收了就不是表了）。iOS 需要這一條才有慣性捲動。mockup4 沒有 RWD，自然也沒有這個需求。"
+    "-webkit-overflow-scrolling:touch": "尺寸表在窄螢幕改成橫向捲動（不收欄，收了就不是表了）。iOS 需要這一條才有慣性捲動。mockup4 沒有 RWD，自然也沒有這個需求。",
+    "margin:-12px 0 36px": "2026-10 文案定稿新增的引言（首頁 Hero Products 副標＋引言、Why Partner 引言、About Manufacturing 引言）。mockup4 標題下直接接內容，沒有引言這一層；負的上距把引言收進標題原本的下距裡，讓標題到內容的總距離維持 mockup4 的值。",
+    "margin:-28px 0 44px": "同上（文案定稿新增的引言）。",
+    "margin:-20px 0 36px": "同上（文案定稿新增的引言）。"
   }
 }

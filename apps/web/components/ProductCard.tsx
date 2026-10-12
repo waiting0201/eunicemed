@@ -26,6 +26,7 @@ const S = {
   sub: css`font-size:.85rem;color:#66787F;`,
 } as const;
 import { SIZES, srcSetOf } from '@/lib/image';
+import { localeOfUrl, productImageAlt } from '@/lib/alt';
 
 /**
  * 產品卡。版型照 mockup4 的產品格：**沒有卡片外框、沒有白底、沒有內距** ——
@@ -54,6 +55,7 @@ export function ProductCard({
   const boxed = variant === 'card';
   // mockup4 的副標在型號與子分類之間擺盪（那是佔位資料）；有型號就用型號
   const sub = item.sku ?? item.subCategory?.name ?? null;
+  const locale = localeOfUrl(item.url);
 
   return (
     <Link
@@ -67,7 +69,7 @@ export function ProductCard({
             src={item.image.url}
             srcSet={srcSetOf(item.image)}
             sizes={SIZES.productGrid}
-            alt={item.image.alt ?? item.name}
+            alt={locale ? productImageAlt(item.name, locale) : item.name}
             loading="lazy"
             decoding="async"
             width={1200}

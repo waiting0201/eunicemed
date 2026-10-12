@@ -10,6 +10,7 @@ import { BRAND_BANDS, pageBand } from '@/lib/bands';
 import { pageMetadata } from '@/lib/seo';
 import { ResourcesSubnav } from '@/components/ResourcesSubnav';
 import { SideFilter } from '@/components/SideFilter';
+import { FaqList } from '@/components/FaqList';
 import { JsonLd } from '@/components/JsonLd';
 import { faqPageSchema } from '@/lib/schema';
 
@@ -17,11 +18,6 @@ import { faqPageSchema } from '@/lib/schema';
 const S = {
   section: css`max-width:1180px;margin:0 auto;padding:clamp(48px,6vw,72px) clamp(24px,5vw,64px);`,
   grid: css`display:grid;grid-template-columns:260px 1fr;gap:clamp(32px,4vw,56px);align-items:start;`,
-  item: css`border-bottom:1px solid #DFE9EC;`,
-  summary: css`display:flex;justify-content:space-between;align-items:center;gap:20px;cursor:pointer;padding:20px 4px;`,
-  question: css`color:#16333B;font-weight:570;font-size:1.08rem;`,
-  icon: css`color:#0092A8;font-size:1.5rem;font-weight:300;line-height:1;transition:transform .3s cubic-bezier(.34,1.56,.64,1);flex:0 0 auto;`,
-  answer: css`overflow:hidden;min-height:0;padding:0 4px 20px;max-width:72ch;`,
   /** 空狀態是本站補的（mockup4 是靜態稿） */
   empty: css`padding:64px 0;text-align:center;color:#8AA0A6;`,
 } as const;
@@ -113,27 +109,7 @@ export default async function FaqPage({
             {result.items.length === 0 ? (
               <p style={S.empty}>{c.empty}</p>
             ) : (
-              result.items.map((faq) => (
-                <details key={faq.id} className="m4-faq" style={S.item}>
-                  {/*
-                    用原生 <details> 而不是 useState 的手風琴：
-                    這頁不需要任何 client JS，且鍵盤操作與無障礙語意瀏覽器已經給了。
-                    marker:hidden 是為了拿掉預設三角形，改用右側的 +/−。
-                  */}
-                  <summary style={S.summary}>
-                    <h3 style={S.question}>{faq.question}</h3>
-                    <span aria-hidden className="m4-faq-icon" style={S.icon}>
-                      +
-                    </span>
-                  </summary>
-                  <div
-                    className="m4-answer"
-                    style={S.answer}
-                    // 已在寫入時以白名單淨化，前端不再淨化一次（見產品詳情頁的說明）
-                    dangerouslySetInnerHTML={{ __html: faq.answer }}
-                  />
-                </details>
-              ))
+              <FaqList items={result.items} />
             )}
 
             <ContactCta locale={locale} title={c.ctaTitle} body={c.ctaBody} />

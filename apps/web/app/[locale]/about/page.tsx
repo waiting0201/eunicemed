@@ -7,6 +7,8 @@ import { srcSetOf } from '@/lib/image';
 import { isLocale, type Locale } from '@/lib/locale';
 import { section, type CertificationRef, type SectionCta } from '@/lib/page';
 import { pageMetadata } from '@/lib/seo';
+import { webPageSchema } from '@/lib/schema';
+import { JsonLd } from '@/components/JsonLd';
 import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
 import { NUMERAL, SectionHeading } from '@/components/SectionHeading';
@@ -45,6 +47,7 @@ const S = {
 
   // 04 MANUFACTURING
   s04: css`max-width:1180px;margin:0 auto;padding:clamp(64px,8vw,96px) clamp(24px,5vw,64px);`,
+  s04Lead: css`max-width:60ch;margin:-20px 0 36px;`,
   s04Title: css`color:#16333B;font-weight:400;font-size:clamp(1.9rem,3.6vw,2.5rem);margin:8px 0 36px;max-width:22ch;`,
   s04Shots: css`display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:40px;`,
   s04Wide: css`position:relative;aspect-ratio:16/9;border-radius:20px;overflow:hidden;background:#F0F6F8;`,
@@ -107,31 +110,37 @@ type CertificatesSection = { items?: { certification?: string }[] };
  * </p>
  *
  * <p>
- * 英文逐字取自 `mockup4/About.dc.html`。`meta.title` 與 h1 分開：
- * h1 是 mockup4 的兩行標語，`<title>` 要的是能在搜尋結果與分頁上辨識的頁名。
+ * 英文取自客戶的文案定稿（2026-10，docs/15 §11）。`meta` 與 h1 分開：
+ * SEO title／description 由定稿逐字指定，與頁面上的 h1 不同字。
  * </p>
  */
 const COPY: Record<
   Locale,
   {
-    meta: { title: string };
+    meta: { title: string; description: string };
     hero: { eyebrow: string; title: [string, string]; lead: string };
     milestones: string;
     values: { title: string; accent: string; lead: string; items: { title: string; body: string }[] };
-    manufacturing: string;
+    manufacturing: { title: string; lead: string };
     certificates: { title: string; lead: string; cta: string };
   }
 > = {
   en: {
-    meta: { title: 'About' },
+    meta: {
+      title: 'ISO 13485 Taiwan Medical Device Manufacturer | EuniceMed',
+      description:
+        'Founded in 2008, Comfort Plus Corporation makes EuniceMed braces and compression ' +
+        'stockings in Taiwan: ISO 13485, CE marked, FDA registered, 11 QC staff.',
+    },
     hero: {
       eyebrow: 'About EuniceMed',
-      title: ['Understood.', 'In good hands.'],
+      title: ['Thoughtfully Crafted Medical Supports,', 'Made in Taiwan'],
       lead:
-        'We deliver clinically trusted, comfort-first medical supports — with the ' +
-        'flexibility, service and precision your patients and business deserve.',
+        'Backed by Comfort Plus Corporation, an ISO 13485 certified Taiwan medical device ' +
+        'manufacturer since 2008, EuniceMed delivers clinically trusted, comfort-first medical ' +
+        'supports — with the flexibility, service and precision your patients and business deserve.',
     },
-    milestones: 'Steady growth. Deep roots.',
+    milestones: 'Steady Growth Since 2008',
     values: {
       title: 'Support feels ',
       accent: 'personal',
@@ -155,29 +164,41 @@ const COPY: Record<
           title: 'Partnership',
           body:
             'A dependable, service-first specialist — expert hands, caring hearts and ' +
-            'lasting partnerships with professionals and distributors worldwide.',
+            'lasting partnerships with professionals and distributors in 18 countries.',
         },
       ],
     },
-    manufacturing: 'Manufacturing & quality excellence',
-    certificates: {
-      title: 'Certified, audited, trusted',
+    manufacturing: {
+      title: 'Manufacturing & Quality Excellence',
       lead:
-        'Every EuniceMed product line is manufactured under an ISO 13485 quality system ' +
-        'and independently certified for its market.',
+        'Every EuniceMed brace and compression stocking is made in Taiwan and checked by ' +
+        '11 dedicated QC staff at every stage.',
+    },
+    certificates: {
+      title: 'Certified, Audited, Trusted',
+      lead:
+        'Every EuniceMed product line is manufactured under an ISO 13485 quality system and ' +
+        'independently certified for its market — CE marked for Europe and FDA registered ' +
+        'for the United States.',
       cta: 'Download certificates →',
     },
   },
   'zh-TW': {
-    meta: { title: '關於我們' },
+    meta: {
+      title: 'ISO 13485 台灣醫療器材製造商 | EuniceMed',
+      description:
+        '康得適 Comfort Plus Corporation 成立於 2008 年，在台灣製造 EuniceMed 護具與醫療彈性襪：' +
+        'ISO 13485、CE 標章、FDA 登錄，11 位專職品管人員。',
+    },
     hero: {
       eyebrow: '關於 EuniceMed',
-      title: ['懂你的需要。', '交給我們，安心。'],
+      title: ['用心打造的醫療護具，', '台灣製造'],
       lead:
-        '我們提供臨床信賴、以舒適為先的醫療支撐產品 —— ' +
+        'EuniceMed 由 2008 年成立、通過 ISO 13485 認證的台灣醫療器材製造商康得適 ' +
+        'Comfort Plus Corporation 支持，提供臨床信賴、以舒適為先的醫療護具 —— ' +
         '並以您的病患與事業應得的彈性、服務與精準度交付。',
     },
-    milestones: '穩健成長，扎根深遠。',
+    milestones: '自 2008 年起穩健成長',
     values: {
       title: '支撐，是很',
       accent: '個人的事',
@@ -197,14 +218,19 @@ const COPY: Record<
           title: '夥伴關係',
           body:
             '可靠、以服務為先的專業夥伴 —— 專業的雙手、關懷的心，' +
-            '以及與全球醫療專業人員和經銷商的長期合作。',
+            '以及與 18 個國家的醫療專業人員和經銷商的長期合作。',
         },
       ],
     },
-    manufacturing: '製造與品質實力',
+    manufacturing: {
+      title: '製造與品質實力',
+      lead: '每一件 EuniceMed 護具與醫療彈性襪皆在台灣製造，並由 11 位專職品管人員在每個環節把關。',
+    },
     certificates: {
       title: '通過認證，定期稽核，值得信賴',
-      lead: '每一條 EuniceMed 產品線都在 ISO 13485 品質系統下生產，並依各市場取得獨立認證。',
+      lead:
+        '每一條 EuniceMed 產品線都在 ISO 13485 品質系統下生產，並依各市場取得獨立認證 —— ' +
+        '歐洲市場具備 CE 標章，美國市場完成 FDA 登錄。',
       cta: '下載認證文件 →',
     },
   },
@@ -219,7 +245,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     locale,
     path: '/about',
     title: COPY[locale].meta.title,
-    description: COPY[locale].hero.lead,
+    absoluteTitle: true,
+    description: COPY[locale].meta.description,
   });
 }
 
@@ -245,6 +272,7 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
 
   return (
     <>
+      <JsonLd data={webPageSchema(locale, '/about', 'AboutPage', copy.meta)} />
       <PageBand image={hero?.band} />
 
       <PageHero
@@ -352,7 +380,8 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
       {manufacturing && (
         <section style={S.s04}>
           <div>
-            <SectionHeading index={next()} title={copy.manufacturing} titleStyle={S.s04Title} />
+            <SectionHeading index={next()} title={copy.manufacturing.title} titleStyle={S.s04Title} />
+            <p style={S.s04Lead}>{copy.manufacturing.lead}</p>
 
             {(manufacturing.imageWide || manufacturing.imageSquare) && (
               <div style={S.s04Shots}>

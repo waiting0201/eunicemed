@@ -182,7 +182,7 @@ public class ContactSubmission
     public string? Company { get; set; }
     public string? Country { get; set; }
 
-    /// <summary>oem | odm | distributor（Partnership 表單的下拉）</summary>
+    /// <summary>oem | odm | distributor | private-label | bulk（Partnership 表單的下拉）</summary>
     public string? PartnershipType { get; set; }
 
     public Guid?    ProductId  { get; set; }

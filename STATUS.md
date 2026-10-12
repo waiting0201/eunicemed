@@ -6,7 +6,7 @@
 > [docs/api-routes.md](docs/api-routes.md) 是**路由契約**（與 `Api/Routing/AppRouter.cs` 逐條對應）。
 > 三份不要互相抄，各司其職。
 
-**最後更新**：2026-09-17
+**最後更新**：2026-10-12
 
 ---
 
@@ -384,6 +384,7 @@ News 與 Insights 的卡被當成同一種、麵包屑最後一節顏色錯。
 
 | 7 | **2026-08-28 新譯的 zh-TW 版面文案**（About / Resources / Products / Partnership / Privacy 五頁，約 90 條）| ⚠️ 與 149 筆產品譯文同樣**未經客戶審閱**。英文逐字取自 mockup4，中文是新譯的 —— 五頁在此之前 DB 是空的，沒有既有中文可沿用 |
 | ~~8~~ | ~~reCAPTCHA~~ | **已解除**（2026-08-31）：v3 已接、金鑰已設（GitHub variable + secret），三支 workflow 皆已部署，正式站生效中 |
+| 9 | **英文文案定稿的黃底待確認項**（2026-10-12，見 [docs/15](docs/15-cms-scope.md) §11.2）：見證引言、創辦人故事、證號與 FDA 範圍、MOQ／交期、回覆天數、通路名稱等 | 這些欄位維持現狀或不顯示。FDA 認證與兩題 OEM FAQ 以**草稿**等著，客戶回覆後到後台補值並發布 |
 
 > **已解除**：媒體變體階梯（2026-08-17 定案採階梯，見 [docs/11](docs/11-media-specs.md) §2a）—— Phase 3 可開工。
 

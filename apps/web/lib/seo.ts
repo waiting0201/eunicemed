@@ -19,6 +19,12 @@ export type PageMetaInput = {
   /** **不含語系前綴**的路徑，首頁傳 `''`。與 sitemap 的 `path` 同一個格式。 */
   path?: string;
   title: string;
+  /**
+   * `title` 已是完整的 `<title>`（如 `… | EuniceMed`）時傳 `true`，
+   * 不再套 layout 的 `%s · EuniceMed` 樣板。主要頁面的 SEO title 由文案定稿，
+   * 與 H1 不同字，所以不能沿用 H1 加樣板的做法。
+   */
+  absoluteTitle?: boolean;
   description?: string | null;
   /** 內容自己的圖（CMS 的 ogImage 或封面）。沒有就用全站預設 OG 圖。 */
   image?: string | null;
@@ -59,7 +65,7 @@ export async function pageMetadata(input: PageMetaInput): Promise<Metadata> {
   const image = input.image ? toAbsolute(input.image) : OG_IMAGE_DEFAULT;
 
   return {
-    title,
+    title: input.absoluteTitle ? { absolute: title } : title,
     description,
     alternates: { canonical: url, languages },
     openGraph: {

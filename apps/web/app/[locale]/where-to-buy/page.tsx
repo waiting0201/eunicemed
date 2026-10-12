@@ -34,6 +34,7 @@ type Params = { locale: string };
 const COPY: Record<
   Locale,
   {
+    meta: { title: string; description: string };
     eyebrow: string;
     title: string;
     lead: string;
@@ -47,11 +48,19 @@ const COPY: Record<
   }
 > = {
   en: {
+    meta: {
+      title: 'Where to Buy EuniceMed | Stores & Distributors',
+      description:
+        'Find EuniceMed braces and compression stockings at pharmacies, stores and authorized ' +
+        'distributors in Taiwan and worldwide, or ask for the nearest partner.',
+    },
     eyebrow: 'Where to Buy',
-    title: 'Find a stockist near you',
-    lead: 'EuniceMed products are available through trusted distributors and retailers worldwide. Browse partners by region.',
+    title: 'Where to Buy EuniceMed',
+    lead:
+      'Find EuniceMed braces and compression stockings at pharmacies, retailers and authorized ' +
+      'EuniceMed distributors in Taiwan and worldwide. Browse partners by region.',
     domestic: 'Taiwan',
-    international: 'International distributors',
+    international: 'International Distributors',
     otherRegions: 'Other regions',
     visit: 'Visit website',
     empty: 'Distributor listings are being updated. Please contact us for the nearest partner.',
@@ -59,9 +68,13 @@ const COPY: Record<
     ctaBody: "Contact us and we'll point you to the nearest partner — or discuss becoming one.",
   },
   'zh-TW': {
+    meta: {
+      title: 'EuniceMed 銷售據點 | 門市與經銷商',
+      description: '在台灣與全球的藥局、門市與授權經銷商購買 EuniceMed 護具與醫療彈性襪，或洽詢最近的合作夥伴。',
+    },
     eyebrow: '銷售據點',
-    title: '尋找鄰近通路',
-    lead: 'EuniceMed 產品透過各地經銷夥伴與零售通路販售，可依地區查詢。',
+    title: 'EuniceMed 銷售據點',
+    lead: '在台灣與全球的藥局、零售通路與 EuniceMed 授權經銷商，都能找到 EuniceMed 護具與醫療彈性襪。可依地區查詢。',
     domestic: '台灣',
     international: '國際經銷夥伴',
     otherRegions: '其他地區',
@@ -81,8 +94,9 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   return pageMetadata({
     locale,
     path: '/where-to-buy',
-    title: c.title,
-    description: c.lead,
+    title: c.meta.title,
+    absoluteTitle: true,
+    description: c.meta.description,
   });
 }
 

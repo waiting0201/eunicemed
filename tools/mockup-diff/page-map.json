@@ -75,7 +75,8 @@
       "apps/web/components/PageHero.tsx",
       "apps/web/components/PartnershipForm.tsx",
       "apps/web/components/SectionHeading.tsx",
-      "apps/web/components/PageBand.tsx"
+      "apps/web/components/PageBand.tsx",
+      "apps/web/components/FaqList.tsx"
     ],
     "Resources": [
       "apps/web/app/[locale]/resources/page.tsx",
@@ -88,7 +89,8 @@
       "apps/web/components/ResourcesSubnav.tsx",
       "apps/web/components/SideFilter.tsx",
       "apps/web/components/ContactCta.tsx",
-      "apps/web/components/PageBand.tsx"
+      "apps/web/components/PageBand.tsx",
+      "apps/web/components/FaqList.tsx"
     ],
     "Insights": [
       "apps/web/app/[locale]/insights/page.tsx",

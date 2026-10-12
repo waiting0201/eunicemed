@@ -12,6 +12,8 @@ import {
 } from '@/lib/page';
 import { css } from '@/lib/css';
 import { pageMetadata } from '@/lib/seo';
+import { webPageSchema } from '@/lib/schema';
+import { JsonLd } from '@/components/JsonLd';
 import { ResourcesSubnav } from '@/components/ResourcesSubnav';
 import { SectionCtaLink } from '@/components/SectionCtaLink';
 
@@ -95,7 +97,7 @@ type Panel = { icon?: string; title: string; body: string; ctaLabel: string; hre
 const COPY: Record<
   Locale,
   {
-    meta: { title: string };
+    meta: { title: string; description: string };
     hero: { eyebrow: string; title: string; lead: string };
     hubs: Panel[];
     recent: { title: string; allLink: string; allHref: string };
@@ -104,19 +106,27 @@ const COPY: Record<
   }
 > = {
   en: {
-    meta: { title: 'Resources' },
+    meta: {
+      title: 'Brace & Compression Stocking Guides, FAQ | EuniceMed',
+      description:
+        'How to put on compression stockings, measure your size, choose a compression class or ' +
+        'knee brace, plus EuniceMed catalogues and ISO 13485/CE certificates.',
+    },
     hero: {
-      eyebrow: 'Resources',
+      // 這一行是 H1；下面的大標只做視覺樣式（文案定稿的 SEO 設定）
+      eyebrow: 'Resources · Braces & Compression Stockings',
       title: 'Everything you need, **in one place**',
       lead:
-        'Answers, documents and stories — for clinicians, distributors and ' +
+        'FAQs, buying guides, certificates and catalogues — for clinicians, distributors and ' +
         'the people who wear our products every day.',
     },
     hubs: [
       {
         icon: 'faq',
         title: 'FAQ',
-        body: 'Sizing, washing, warranty and how to pick the right level of support.',
+        body:
+          'How to put on compression stockings, measure your size, choose a compression class ' +
+          'and care for your brace.',
         ctaLabel: 'Browse questions →',
         href: '/faq',
       },
@@ -124,15 +134,15 @@ const COPY: Record<
         icon: 'insights',
         title: 'Insights',
         body:
-          'Articles on vein health, compression therapy and choosing the right ' +
-          'orthopedic support.',
+          'Guides on choosing a knee brace, compression levels (mmHg), vein health and ' +
+          'B2B sourcing.',
         ctaLabel: 'Read articles →',
         href: '/insights',
       },
       {
         icon: 'downloads',
         title: 'Downloads',
-        body: 'Catalogues, certification documents and product manuals, ready as PDF.',
+        body: 'Catalogues, ISO 13485 and CE certificates and product manuals, ready as PDF.',
         ctaLabel: 'Get documents →',
         href: '/downloads',
       },
@@ -144,8 +154,8 @@ const COPY: Record<
         href: '/news',
       },
     ],
-    recent: { title: 'Recently published', allLink: 'All insights →', allHref: '/insights' },
-    quick: { title: 'Most requested documents', allLink: 'All downloads →', allHref: '/downloads' },
+    recent: { title: 'Recently Published', allLink: 'All insights →', allHref: '/insights' },
+    quick: { title: 'Most Requested Documents', allLink: 'All downloads →', allHref: '/downloads' },
     panels: [
       {
         title: "Still can't find it?",
@@ -157,38 +167,42 @@ const COPY: Record<
       },
       {
         title: 'Looking to distribute?',
-        body: 'OEM / ODM services, distributor support and partner enquiries — all in one place.',
+        body: 'OEM/ODM manufacturing, distributor support and partner inquiries — all in one place.',
         ctaLabel: 'Partnership',
         href: '/partnership',
       },
     ],
   },
   'zh-TW': {
-    meta: { title: '資源中心' },
+    meta: {
+      title: '護具與醫療彈性襪指南、常見問題 | EuniceMed',
+      description:
+        '如何穿上醫療彈性襪、量測尺寸、挑選壓力等級或護膝，以及 EuniceMed 型錄與 ISO 13485／CE 認證文件。',
+    },
     hero: {
-      eyebrow: '資源中心',
+      eyebrow: '資源中心 · 護具與醫療彈性襪',
       title: '你需要的一切，**都在這裡**',
-      lead: '解答、文件與故事 —— 為臨床人員、經銷夥伴，以及每天穿戴我們產品的人而備。',
+      lead: '常見問題、選購指南、認證與型錄 —— 為臨床人員、經銷夥伴，以及每天穿戴我們產品的人而備。',
     },
     hubs: [
       {
         icon: 'faq',
         title: '常見問題',
-        body: '尺寸、清洗、保固，以及如何選擇合適的支撐強度。',
+        body: '如何穿上醫療彈性襪、量測尺寸、挑選壓力等級，以及護具的保養方式。',
         ctaLabel: '瀏覽問題 →',
         href: '/faq',
       },
       {
         icon: 'insights',
         title: '專欄',
-        body: '關於靜脈健康、壓力治療，以及如何挑選矯型護具的文章。',
+        body: '護膝挑選、壓力等級（mmHg）、靜脈健康與 B2B 採購的指南。',
         ctaLabel: '閱讀文章 →',
         href: '/insights',
       },
       {
         icon: 'downloads',
         title: '下載',
-        body: '型錄、認證文件與產品手冊，皆為 PDF。',
+        body: '型錄、ISO 13485 與 CE 認證文件及產品手冊，皆為 PDF。',
         ctaLabel: '取得文件 →',
         href: '/downloads',
       },
@@ -211,7 +225,7 @@ const COPY: Record<
       },
       {
         title: '想成為經銷夥伴？',
-        body: 'OEM / ODM 服務、經銷支援與合作洽詢 —— 全都在這裡。',
+        body: 'OEM/ODM 製造、經銷支援與合作洽詢 —— 全都在這裡。',
         ctaLabel: '合作夥伴',
         href: '/partnership',
       },
@@ -228,7 +242,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     locale,
     path: '/resources',
     title: COPY[locale].meta.title,
-    description: COPY[locale].hero.lead,
+    absoluteTitle: true,
+    description: COPY[locale].meta.description,
   });
 }
 
@@ -260,17 +275,19 @@ export default async function ResourcesPage({ params }: { params: Promise<Params
 
   return (
     <>
+      <JsonLd data={webPageSchema(locale, '/resources', 'CollectionPage', copy.meta)} />
       <ResourcesSubnav locale={locale} active="/resources" />
 
       {/* 淺青漸層頁首，**無 band 圖**（docs/09 §7.1）。
           這頁的標題比通用 PageHero 大一階，所以不共用那支元件。 */}
       <section style={S.hero}>
         <div style={S.heroInner}>
-          <p style={S.heroEyebrow}>{copy.hero.eyebrow}</p>
+          {/* H1 是眉標這一行（SEO 關鍵字）；大標只做視覺樣式，不是標題元素 */}
+          <h1 style={S.heroEyebrow}>{copy.hero.eyebrow}</h1>
           {/* mockup4 把標題後半加粗到 640；沿用首頁的 `**…**` 標記慣例（docs/09 §2） */}
-          <h1 style={S.heroTitle}>
+          <p style={S.heroTitle}>
             <Emphasis text={copy.hero.title} />
-          </h1>
+          </p>
           <p style={S.heroLead}>{copy.hero.lead}</p>
         </div>
       </section>

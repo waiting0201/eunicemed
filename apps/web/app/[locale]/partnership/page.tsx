@@ -11,6 +11,9 @@ import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
 import { SectionHeading } from '@/components/SectionHeading';
 import { PartnershipForm } from '@/components/PartnershipForm';
+import { FaqList } from '@/components/FaqList';
+import { JsonLd } from '@/components/JsonLd';
+import { faqPageSchema, webPageSchema } from '@/lib/schema';
 
 /** 樣式逐字取自 `mockup4/Partnership.dc.html`。 */
 const S = {
@@ -66,22 +69,50 @@ type BecomePartnerSection = {
  * 版面文案 —— 頁首**刻意寫死，不走 CMS**（決議見 docs/15-cms-scope.md）。
  * 英文逐字取自 `mockup4/Partnership.dc.html`。
  */
-const COPY: Record<Locale, { eyebrow: string; title: string; lead: string }> = {
+const COPY: Record<
+  Locale,
+  {
+    meta: { title: string; description: string };
+    eyebrow: string;
+    title: string;
+    lead: string;
+    /** OEM/ODM FAQ 的標題；題目本身是 DB 的 Faq（分類 `oem`），編輯者在後台維護 */
+    faq: string;
+  }
+> = {
   en: {
+    meta: {
+      title: 'Medical Device OEM/ODM Manufacturer in Taiwan | EuniceMed',
+      description:
+        'OEM, ODM and private label orthopedic braces and compression stockings, made in Taiwan ' +
+        'under ISO 13485. Distributors in 18 countries. Send an inquiry.',
+    },
     eyebrow: 'Partnership',
-    title: 'A team you can truly count on',
+    title: 'Medical Device OEM/ODM Manufacturer in Taiwan',
     lead:
-      'From OEM/ODM development to distribution support — partner with a Taiwanese ' +
+      'From private label orthopedic braces and compression stockings OEM/ODM development to ' +
+      'distribution support — partner with an ISO 13485 certified Taiwan medical device ' +
       'manufacturer built on precision, service and trust.',
+    faq: 'OEM / ODM FAQ',
   },
   'zh-TW': {
+    meta: {
+      title: '台灣醫療器材 OEM/ODM 製造商 | EuniceMed',
+      description:
+        '台灣製造、ISO 13485 品質系統下生產的護具與醫療彈性襪 OEM、ODM 與自有品牌代工，' +
+        '合作經銷商遍及 18 個國家。歡迎洽詢。',
+    },
     eyebrow: '合作夥伴',
-    title: '真正值得信賴的團隊',
+    title: '台灣醫療器材 OEM/ODM 製造商',
     lead:
-      '從 OEM/ODM 開發到經銷支援 —— ' +
-      '與一家以精準、服務與信任為本的台灣製造商合作。',
+      '從自有品牌護具與醫療彈性襪的 OEM/ODM 開發到經銷支援 —— ' +
+      '與一家通過 ISO 13485 認證、以精準、服務與信任為本的台灣醫療器材製造商合作。',
+    faq: 'OEM / ODM 常見問題',
   },
 };
+
+/** OEM/ODM FAQ 取用的 FAQ 分類 slug（tools/migration/copy-final-2026-10.py 建立） */
+const OEM_FAQ_CATEGORY = 'oem';
 
 /** mockup4 的送出鈕逐字是 `Submit inquiry`。 */
 const SUBMIT: Record<Locale, string> = { en: 'Submit inquiry', 'zh-TW': '送出洽詢' };
@@ -116,8 +147,9 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   return pageMetadata({
     locale,
     path: '/partnership',
-    title: COPY[locale].title,
-    description: COPY[locale].lead,
+    title: COPY[locale].meta.title,
+    absoluteTitle: true,
+    description: COPY[locale].meta.description,
   });
 }
 
@@ -125,8 +157,14 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
-  const page = await api.page(locale, 'partnership');
+  const [page, oemFaqs] = await Promise.all([
+    api.page(locale, 'partnership'),
+    // 分類不存在或該語系沒有題目時就是空清單，整段不渲染
+    api.faqs(locale, OEM_FAQ_CATEGORY).then((r) => r.items).catch(() => []),
+  ]);
   if (!page) notFound();
+
+  const faqSchema = faqPageSchema(locale, oemFaqs);
 
   const hero = section<HeroSection>(page, 'hero');
   const oem = section<OemOdmSection>(page, 'oemOdm');
@@ -138,6 +176,8 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
 
   return (
     <>
+      <JsonLd data={webPageSchema(locale, '/partnership', 'WebPage', COPY[locale].meta)} />
+      {faqSchema && <JsonLd data={faqSchema} />}
       <PageBand image={hero?.band} />
 
       <PageHero
@@ -204,6 +244,13 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
               )}
             </div>
             {oem.image ? <WideShot image={oem.image} focus={S.focus30} /> : <div style={S.shot} />}
+
+            {oemFaqs.length > 0 && (
+              <div style={S.copy}>
+                <h3 style={S.panelTitle}>{COPY[locale].faq}</h3>
+                <FaqList items={oemFaqs} />
+              </div>
+            )}
           </div>
         </section>
       )}

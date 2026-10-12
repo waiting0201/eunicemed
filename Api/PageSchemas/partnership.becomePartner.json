@@ -67,7 +67,9 @@
             "enum": [
               "oem",
               "odm",
-              "distributor"
+              "distributor",
+              "private-label",
+              "bulk"
             ],
             "x-fieldType": "enum",
             "x-localeInvariant": true

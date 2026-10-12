@@ -10,6 +10,8 @@ import { css } from '@/lib/css';
 import { pageMetadata } from '@/lib/seo';
 import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
+import { JsonLd } from '@/components/JsonLd';
+import { webPageSchema } from '@/lib/schema';
 import { ProductGrid } from '@/components/ProductGrid';
 
 /** 樣式逐字取自 `mockup4/Products.dc.html`。 */
@@ -55,6 +57,7 @@ type CtaSection = { background?: MediaRef };
 const COPY: Record<
   Locale,
   {
+    meta: { title: string; description: string };
     hero: { eyebrow: string; title: string; lead: string };
     cta: { title: string; body: string; primary: string; secondary: string };
     category: string;
@@ -64,15 +67,21 @@ const COPY: Record<
   }
 > = {
   en: {
+    meta: {
+      title: 'Knee, Ankle & Back Braces, Compression Stockings | EuniceMed',
+      description:
+        'Explore EuniceMed knee, ankle and back braces, medical compression stockings and ' +
+        'orthotic insoles, all made in Taiwan and graded Care, Protect and Advance.',
+    },
     hero: {
-      eyebrow: 'Products',
-      title: 'Three ways to support motion',
+      eyebrow: 'Products · Three Specialist Ranges',
+      title: 'Orthopedic Braces, Compression Stockings & Footcare',
       lead:
-        'Specialists in smart support: compression stockings, orthopedic supports and ' +
-        'silicone footcare — every product graded Care · Protect · Advance.',
+        'Specialists in smart support: medical compression stockings, orthopedic braces and ' +
+        'silicone footcare — every product graded Care · Protect · Advance and made in Taiwan.',
     },
     cta: {
-      title: 'Not sure which support you need?',
+      title: 'Not sure which brace or compression level you need?',
       body: 'Explore by body part on our interactive map, or ask our team for a recommendation.',
       primary: 'Find by body part',
       secondary: 'Contact us',
@@ -83,15 +92,21 @@ const COPY: Record<
     count: (n) => `${n} product${n === 1 ? '' : 's'}`,
   },
   'zh-TW': {
+    meta: {
+      title: '護膝、護踝、護腰與醫療彈性襪 | EuniceMed',
+      description:
+        '探索 EuniceMed 的護膝、護踝、護腰、醫療彈性襪與矯正鞋墊，' +
+        '全數台灣製造，並依 Care、Protect、Advance 分級。',
+    },
     hero: {
-      eyebrow: '產品',
-      title: '支撐動作的三種方式',
+      eyebrow: '產品 · 三大專業系列',
+      title: '矯型護具、醫療彈性襪與足部護理',
       lead:
-        '我們專注於智慧支撐：醫療彈性襪、矯型護具與矽膠足部照護 —— ' +
-        '每一件產品都標示 Care · Protect · Advance 強度。',
+        '我們專注於智慧支撐：醫療彈性襪、矯型護具與矽膠足部護理 —— ' +
+        '每一件產品都標示 Care · Protect · Advance 強度，並在台灣製造。',
     },
     cta: {
-      title: '不確定自己需要哪一種支撐？',
+      title: '不確定自己需要哪一種護具或壓力等級？',
       body: '在互動人體圖上依部位探索，或直接詢問我們的團隊。',
       primary: '依部位尋找',
       secondary: '聯絡我們',
@@ -111,8 +126,9 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   return pageMetadata({
     locale,
     path: '/products',
-    title: COPY[locale].hero.title,
-    description: COPY[locale].hero.lead,
+    title: COPY[locale].meta.title,
+    absoluteTitle: true,
+    description: COPY[locale].meta.description,
   });
 }
 
@@ -150,6 +166,7 @@ export default async function ProductsPage({
 
   return (
     <>
+      <JsonLd data={webPageSchema(locale, '/products', 'CollectionPage', c.meta)} />
       <PageBand image={hero?.band} />
 
       <PageHero

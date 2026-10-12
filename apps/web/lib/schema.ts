@@ -52,7 +52,50 @@ export function organizationSchema(locale: Locale): JsonLdNode {
     address: { '@type': 'PostalAddress', ...postal },
     // 母公司：康得適 Comfort Plus Corporation（CLAUDE.md §1）
     parentOrganization: { '@type': 'Organization', name: 'Comfort Plus Corporation' },
+    // 成立年份指的是母公司（2008），品牌誕生於 2010；文案定稿統一寫 2008
+    foundingDate: '2008',
     sameAs: [COMPANY.linkedIn],
+  };
+}
+
+/** 全站的 WebSite 節點，只放在首頁。 */
+export function websiteSchema(locale: Locale): JsonLdNode {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': `${SITE_URL}/#website`,
+    name: BRAND,
+    url: absoluteUrl(locale),
+    inLanguage: locale,
+    publisher: { '@id': ORGANIZATION_ID },
+  };
+}
+
+/**
+ * 主要頁面的頁面節點（AboutPage／CollectionPage／WebPage）。
+ * 名稱與描述沿用該頁的 SEO title / description，不另外造句。
+ */
+export function webPageSchema(
+  locale: Locale,
+  path: string,
+  type: 'WebPage' | 'AboutPage' | 'CollectionPage',
+  meta: { title: string; description: string },
+): JsonLdNode {
+  const url = absoluteUrl(locale, path);
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': type,
+    '@id': `${url}#webpage`,
+    url,
+    name: meta.title,
+    description: meta.description,
+    inLanguage: locale,
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    // AboutPage 講的就是這個組織；其餘頁面只標出版者
+    ...(type === 'AboutPage'
+      ? { about: { '@id': ORGANIZATION_ID } }
+      : { publisher: { '@id': ORGANIZATION_ID } }),
   };
 }
 

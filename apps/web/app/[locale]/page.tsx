@@ -9,6 +9,9 @@ import { section, type SectionCta } from '@/lib/page';
 import { collectionColor } from '@/lib/collection';
 import { css } from '@/lib/css';
 import { pageMetadata } from '@/lib/seo';
+import { websiteSchema } from '@/lib/schema';
+import { productImageAlt } from '@/lib/alt';
+import { JsonLd } from '@/components/JsonLd';
 import { HeroSlider } from '@/components/HeroSlider';
 import { NUMERAL, RuledSectionHeading, SectionHeading } from '@/components/SectionHeading';
 
@@ -27,6 +30,8 @@ const S = {
   // 01 HERO PRODUCTS
   s01: css`max-width:1180px;margin:0 auto;padding:clamp(64px,8vw,96px) clamp(24px,5vw,64px);`,
   s01Head: css`margin-bottom:36px;`,
+  s01Lead: css`max-width:60ch;margin:-12px 0 36px;`,
+  s01Subtitle: css`color:#16333B;font-weight:600;margin-bottom:8px;`,
   masonry: css`columns:4;column-gap:24px;`,
   card: css`display:block;break-inside:avoid;-webkit-column-break-inside:avoid;page-break-inside:avoid;margin:0 0 24px;background:#FFFFFF;border:1px solid #DFE9EC;border-radius:20px;overflow:hidden;`,
   cardMedia: css`position:relative;border-radius:18px;overflow:hidden;background:#F0F6F8;`,
@@ -59,6 +64,7 @@ const S = {
   // 03 WHY PARTNER
   s03: css`max-width:1180px;margin:0 auto;padding:clamp(64px,8vw,96px) clamp(24px,5vw,64px);`,
   s03Title: css`color:#16333B;font-weight:400;font-size:clamp(2rem,4vw,2.6rem);max-width:20ch;margin:8px 0 44px;`,
+  s03Lead: css`max-width:60ch;margin:-28px 0 44px;`,
   s03Grid: css`display:grid;grid-template-columns:repeat(4,1fr);gap:32px;`,
   s03Item: css`border-top:2px solid #00B5CD;padding-top:20px;`,
   s03ItemTitle: css`color:#16333B;font-weight:570;font-size:1.2rem;margin-bottom:8px;`,
@@ -146,76 +152,112 @@ type Tile = { icon: string; title: string; subtitle: string; href: string };
 const COPY: Record<
   Locale,
   {
+    /** SEO title 與 description 由文案定稿，刻意與 H1 不同字（lib/seo.ts `absoluteTitle`） */
+    meta: { title: string; description: string };
     hero: { eyebrow: string; title: string; lead: string };
-    featured: string;
+    featured: { title: string; subtitle: string; lead: string };
     bodyPart: { title: [string, string]; lead: string; cta: string; tiles: Tile[] };
-    whyPartner: { title: string; items: { title: string; body: string }[]; cta: string };
-    latestNews: { title: string; allLink: string };
+    whyPartner: { title: string; lead: string; items: { title: string; body: string }[]; cta: string };
+    latestNews: { title: string; allLink: string; read: string };
   }
 > = {
   en: {
+    meta: {
+      title: 'Orthopedic Braces & Compression Stockings | EuniceMed',
+      description:
+        'Premium Taiwan-made orthopedic braces, compression stockings and footcare by ' +
+        'Comfort Plus Corporation. ISO 13485, CE marked, FDA registered. OEM/ODM.',
+    },
     hero: {
-      eyebrow: 'Not Just a Motion · Made in Taiwan',
+      // 這一行是 H1；下面的大標只做視覺樣式（文案定稿的 SEO 設定）
+      eyebrow: 'EuniceMed · Taiwan-Made Medical Braces & Compression Stockings',
       title: 'Support Feels **Personal**.',
       lead:
-        'We believe the true spirit of motion is about more than just movement — ' +
-        "it's about enhancing your quality of life.",
+        'EuniceMed is a premium Taiwan-made medical braces brand by Comfort Plus Corporation, ' +
+        'designing orthopedic braces, medical compression stockings and silicone footcare — ' +
+        'combining clinical expertise, lasting comfort and dependable quality.',
     },
-    featured: 'Hero products',
-    bodyPart: {
-      title: ['Find support', 'by body part'],
+    featured: {
+      title: 'Hero Products',
+      subtitle: 'Solutions Designed Around Real Life. All in One Premium Promise.',
       lead:
-        'Tap where it hurts or tires on our interactive body map, ' +
-        'or browse solutions for special care needs.',
+        'From knee braces and ankle braces to medical compression stockings and orthotic insoles, ' +
+        'every EuniceMed support is designed for precision, all-day comfort and long-term reliability.',
+    },
+    bodyPart: {
+      title: ['Find Support by Body Part', '& Care Need'],
+      lead:
+        'Tap where it hurts or tires — knee, ankle & foot, back & waist — or explore home care, ' +
+        'long-term care and post-surgery rehabilitation solutions.',
       cta: 'Explore applications →',
       tiles: [
-        { icon: 'knee', title: 'Knee', subtitle: 'Stability & alignment', href: '/applications/knee' },
-        { icon: 'ankle-foot', title: 'Ankle & Foot', subtitle: 'Sprains & plantar relief', href: '/applications/ankle' },
-        { icon: 'back', title: 'Back & Waist', subtitle: 'Posture & lifting support', href: '/applications/back' },
-        { icon: 'special-care', title: 'Special care', subtitle: 'Elderly · bunion relief', href: '/applications' },
+        { icon: 'knee', title: 'Knee', subtitle: 'Knee braces for sports & stability', href: '/applications/knee' },
+        { icon: 'ankle-foot', title: 'Ankle & Foot', subtitle: 'Ankle braces, insoles & plantar support', href: '/applications/ankle' },
+        { icon: 'back', title: 'Back & Waist', subtitle: 'Lumbar support & posture', href: '/applications/back' },
+        { icon: 'special-care', title: 'Special care', subtitle: 'Elderly care · bunion · post-op', href: '/applications' },
       ],
     },
     whyPartner: {
-      title: 'A team your business can truly count on',
+      title: 'A Taiwan OEM/ODM Partner Your Business Can Count On',
+      lead:
+        'Founded in 2008, Comfort Plus Corporation — the maker of EuniceMed — is an ISO 13485 ' +
+        'certified Taiwan medical device manufacturer working with distributors in 18 countries.',
       items: [
-        { title: 'Certified quality', body: 'ISO 13485 system with CE-marked product lines.' },
-        { title: 'OEM / ODM flexibility', body: 'From design and sampling to certification support.' },
-        { title: 'Made in Taiwan', body: 'In-house manufacturing with full traceability.' },
+        { title: 'Certified quality', body: 'ISO 13485 system with CE marked and FDA registered product lines.' },
+        { title: 'OEM / ODM flexibility', body: 'Private label, OEM and ODM — from design and sampling to certification support.' },
+        { title: 'Made in Taiwan', body: 'In-house manufacturing, 11 dedicated QC staff and full traceability.' },
         { title: 'Comfort-first R&D', body: 'Premium materials engineered for all-day wear.' },
       ],
       cta: 'Become a partner',
     },
-    latestNews: { title: 'Latest news', allLink: 'All news →' },
+    latestNews: { title: 'Latest News', allLink: 'All news →', read: 'Read →' },
   },
   'zh-TW': {
-    hero: {
-      eyebrow: 'Not Just a Motion · 台灣製造',
-      title: 'Support Feels **Personal**.',
-      lead: '我們相信「動」的真義不只是移動 —— 而是讓生活品質更好。',
+    meta: {
+      title: '醫療護具與醫療彈性襪｜台灣製造 | EuniceMed',
+      description:
+        '康得適 Comfort Plus Corporation 台灣製造的醫療護具、醫療彈性襪與足部護理產品。' +
+        '通過 ISO 13485、CE 標章、FDA 登錄，提供 OEM/ODM 服務。',
     },
-    featured: '精選產品',
+    hero: {
+      eyebrow: 'EuniceMed · 台灣製造醫療護具與醫療彈性襪',
+      title: 'Support Feels **Personal**.',
+      lead:
+        'EuniceMed 是康得適 Comfort Plus Corporation 旗下的台灣製造醫療護具品牌，' +
+        '設計矯型護具、醫療彈性襪與矽膠足部護理產品 —— 結合臨床專業、持久舒適與可靠品質。',
+    },
+    featured: {
+      title: '明星商品',
+      subtitle: '為真實生活而設計的解決方案，一次滿足的頂級承諾。',
+      lead:
+        '從護膝、護踝到醫療彈性襪與矯正鞋墊，每一件 EuniceMed 護具都為精準、' +
+        '整日舒適與長久可靠而設計。',
+    },
     bodyPart: {
-      title: ['依部位', '尋找支撐'],
-      lead: '在互動人體圖上點選不適或疲勞的部位，或直接瀏覽特殊照護的解決方案。',
+      title: ['依部位與照護需求', '尋找護具'],
+      lead: '點選不適或疲勞的部位 —— 膝、踝與足、腰背 —— 或探索居家照護、長期照護與術後復健的解決方案。',
       cta: '探索應用方案 →',
       tiles: [
-        { icon: 'knee', title: '膝部', subtitle: '穩定與對位', href: '/applications/knee' },
-        { icon: 'ankle-foot', title: '踝部與足部', subtitle: '扭傷與足底舒緩', href: '/applications/ankle' },
-        { icon: 'back', title: '背部與腰部', subtitle: '姿勢與搬提支撐', href: '/applications/back' },
-        { icon: 'special-care', title: '特殊照護', subtitle: '長者照護 · 拇趾外翻舒緩', href: '/applications' },
+        { icon: 'knee', title: '膝部', subtitle: '運動與穩定用護膝', href: '/applications/knee' },
+        { icon: 'ankle-foot', title: '踝部與足部', subtitle: '護踝、鞋墊與足底支撐', href: '/applications/ankle' },
+        { icon: 'back', title: '背部與腰部', subtitle: '腰部支撐與姿勢', href: '/applications/back' },
+        { icon: 'special-care', title: '特殊照護', subtitle: '長者照護 · 拇趾外翻 · 術後', href: '/applications' },
       ],
     },
     whyPartner: {
-      title: '值得您的事業信賴的團隊',
+      title: '值得您的事業信賴的台灣 OEM/ODM 夥伴',
+      lead:
+        'EuniceMed 的製造商康得適 Comfort Plus Corporation 成立於 2008 年，' +
+        '是通過 ISO 13485 認證的台灣醫療器材製造商，合作經銷商遍及 18 個國家。',
       items: [
-        { title: '認證品質', body: '通過 ISO 13485 系統，產品線具備 CE 標章。' },
-        { title: 'OEM / ODM 彈性', body: '從設計、打樣到認證協助，一應俱全。' },
-        { title: '台灣製造', body: '自有工廠生產，全程可追溯。' },
+        { title: '認證品質', body: 'ISO 13485 品質系統，產品線具備 CE 標章並完成 FDA 登錄。' },
+        { title: 'OEM / ODM 彈性', body: '自有品牌、OEM 與 ODM —— 從設計、打樣到認證協助。' },
+        { title: '台灣製造', body: '自有工廠生產、11 位專職品管人員、全程可追溯。' },
         { title: '舒適優先的研發', body: '嚴選材質，為整日穿戴而設計。' },
       ],
       cta: '成為合作夥伴',
     },
-    latestNews: { title: '最新消息', allLink: '所有消息 →' },
+    latestNews: { title: '最新消息', allLink: '所有消息 →', read: '閱讀 →' },
   },
 };
 
@@ -227,8 +269,9 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 
   return pageMetadata({
     locale,
-    title: plain(COPY[locale].hero.title),
-    description: COPY[locale].hero.lead,
+    title: COPY[locale].meta.title,
+    absoluteTitle: true,
+    description: COPY[locale].meta.description,
   });
 }
 
@@ -257,6 +300,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
 
   return (
     <>
+      <JsonLd data={websiteSchema(locale)} />
       {slider?.slides && (
         <HeroSlider slides={slider.slides} intervalSeconds={slider.intervalSeconds} />
       )}
@@ -264,19 +308,24 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
       {/* HERO COPY —— 只有上方留白：下方的留白由「01 精選產品」自己的 padding 給
           （mockup4 的 `padding: … 0`），兩段各自負責的話會疊成兩倍 */}
       <section style={S.intro}>
-        <p style={S.introEyebrow}>{copy.hero.eyebrow}</p>
-        <h1 style={S.introTitle}>
+        {/* H1 是眉標這一行（SEO 關鍵字）；品牌句大標只做視覺樣式，不是標題元素 */}
+        <h1 style={S.introEyebrow}>{copy.hero.eyebrow}</h1>
+        <p style={S.introTitle}>
           <Highlight text={copy.hero.title} />
-        </h1>
+        </p>
         <p style={S.introLead}>{copy.hero.lead}</p>
       </section>
 
       {/* 01 精選產品 —— Pinterest 式瀑布流 */}
       {featured.items.length > 0 && (
         <section style={S.s01}>
-          <RuledSectionHeading index={next()} title={copy.featured} style={S.s01Head} />
+          <RuledSectionHeading index={next()} title={copy.featured.title} style={S.s01Head} />
+          <div style={S.s01Lead}>
+            <p style={S.s01Subtitle}>{copy.featured.subtitle}</p>
+            <p>{copy.featured.lead}</p>
+          </div>
 
-          <FeaturedMasonry items={featured.items} />
+          <FeaturedMasonry items={featured.items} locale={locale} />
 
           {promo && (
             <PromoBand promo={promo}>
@@ -349,6 +398,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
       {/* 03 合作優勢 */}
       <section style={S.s03}>
         <SectionHeading index={next()} title={copy.whyPartner.title} titleStyle={S.s03Title} />
+        <p style={S.s03Lead}>{copy.whyPartner.lead}</p>
         {/* 每欄頂上一條 2px 品牌青（mockup4） */}
         <div style={S.s03Grid} data-r="cols-2">
           {copy.whyPartner.items.map((item) => (
@@ -487,7 +537,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
  */
 const RATIOS = [css`aspect-ratio:1/1;`, css`aspect-ratio:4/5;`, css`aspect-ratio:5/4;`] as const;
 
-function FeaturedMasonry({ items }: { items: ProductListItem[] }) {
+function FeaturedMasonry({ items, locale }: { items: ProductListItem[]; locale: Locale }) {
   return (
     <div style={S.masonry}>
       {items.map((p, i) => (
@@ -498,7 +548,7 @@ function FeaturedMasonry({ items }: { items: ProductListItem[] }) {
                 src={p.image.url}
                 srcSet={srcSetOf(p.image)}
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 245px"
-                alt={p.image.alt ?? p.name}
+                alt={productImageAlt(p.name, locale)}
                 loading="lazy"
                 decoding="async"
                 width={1200}
@@ -508,9 +558,10 @@ function FeaturedMasonry({ items }: { items: ProductListItem[] }) {
             )}
           </div>
           <div style={S.cardBody}>
-            {p.collection && (
-              <span style={{ ...S.cardEyebrow, ...collectionColor(p.collection.slug) }}>
-                {p.collection.name}
+            {/* 眉標是品類（子分類名稱）；顏色仍依系列，保留支撐強度的色碼 */}
+            {p.subCategory && (
+              <span style={{ ...S.cardEyebrow, ...collectionColor(p.collection?.slug) }}>
+                {p.subCategory.name}
               </span>
             )}
             <h3 style={S.cardName}>{p.name}</h3>
@@ -530,7 +581,7 @@ function NewsRow({ item, locale }: { item: ArticleListItem; locale: Locale }) {
         {item.publishedAt ? formatDate(item.publishedAt, locale).slice(0, 9) : ''}
       </span>
       <h3 style={S.rowTitle}>{item.title}</h3>
-      <span style={S.rowRead}>{locale === 'en' ? 'Read →' : '閱讀 →'}</span>
+      <span style={S.rowRead}>{COPY[locale].latestNews.read}</span>
     </Link>
   );
 }
@@ -679,11 +730,6 @@ function Highlight({ text }: { text: string }) {
       )}
     </>
   );
-}
-
-/** metadata 的 title 不能帶標記。 */
-function plain(text: string): string {
-  return text.replace(/\*\*(.+?)\*\*/g, '$1');
 }
 
 /** 標籤若已自帶箭頭就不再補一個 —— 後台的文案常常已經寫成「All news →」。 */

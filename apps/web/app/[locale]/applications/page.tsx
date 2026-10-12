@@ -10,6 +10,8 @@ import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
 import { BRAND_BANDS, pageBand } from '@/lib/bands';
 import { pageMetadata } from '@/lib/seo';
+import { webPageSchema } from '@/lib/schema';
+import { JsonLd } from '@/components/JsonLd';
 import { SectionHeading } from '@/components/SectionHeading';
 
 /** 樣式逐字取自 `mockup4/Applications.dc.html`。 */
@@ -26,27 +28,56 @@ const S = {
   cardBody: css`padding:20px 22px 24px;`,
   cardTitle: css`color:#16333B;font-weight:570;font-size:1.15rem;`,
   cardLead: css`font-size:.9rem;margin-top:4px;`,
+  b2b: css`display:inline-block;margin-top:32px;color:#0092A8;font-weight:600;`,
 } as const;
 
 type Params = { locale: string };
 
 const COPY: Record<
   Locale,
-  { eyebrow: string; title: string; lead: string; byBodyPart: string; bySpecial: string }
+  {
+    meta: { title: string; description: string };
+    eyebrow: string;
+    title: string;
+    lead: string;
+    byBodyPart: string;
+    bySpecial: string;
+    /** B2B 導流句，連到 Partnership（連結在渲染時組） */
+    b2b: string;
+  }
 > = {
   en: {
-    eyebrow: 'Applications',
-    title: 'Where does it hurt or tire?',
-    lead: 'Tap a body part to see the supports designed for it — or browse solutions for special care needs.',
-    byBodyPart: 'By body part',
-    bySpecial: 'By special needs care',
+    meta: {
+      title: 'Support by Body Part, Elderly & Post-Op Care | EuniceMed',
+      description:
+        'Find the right knee, ankle or back brace by body part, or explore EuniceMed solutions ' +
+        'for elderly care, bunions, post-surgery rehab and long-term care.',
+    },
+    eyebrow: 'Applications · Where does it hurt or tire?',
+    title: 'Braces & Compression Solutions by Body Part and Care Need',
+    lead:
+      'Life places different demands on every body. Tap a body part to find the right knee brace, ' +
+      'ankle support or back brace — or explore integrated braces and compression stocking ' +
+      'solutions for home care, long-term care and home rehabilitation.',
+    byBodyPart: 'By Body Part',
+    bySpecial: 'By Special Needs Care',
+    b2b: 'Sourcing for a hospital or care facility? Ask about bulk and wholesale supply →',
   },
   'zh-TW': {
-    eyebrow: '應用方案',
-    title: '哪裡不舒服？',
-    lead: '點選部位查看對應的支撐產品，或瀏覽特殊照護需求的解決方案。',
+    meta: {
+      title: '依部位找護具、長者與術後照護 | EuniceMed',
+      description:
+        '依部位找到合適的護膝、護踝或護腰，或探索 EuniceMed 針對長者照護、拇趾外翻、' +
+        '術後復健與長期照護的解決方案。',
+    },
+    eyebrow: '應用方案 · 哪裡不舒服？',
+    title: '依部位與照護需求的護具與彈性襪解決方案',
+    lead:
+      '每個人的身體承受著不同的負擔。點選部位，找到合適的護膝、護踝或護腰 —— ' +
+      '或探索適用於居家照護、長期照護與居家復健的護具與醫療彈性襪整合方案。',
     byBodyPart: '依部位',
     bySpecial: '特殊照護需求',
+    b2b: '為醫院或照護機構採購？洽詢大量與批發供應 →',
   },
 };
 
@@ -59,8 +90,9 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   return pageMetadata({
     locale,
     path: '/applications',
-    title: c.title,
-    description: c.lead,
+    title: c.meta.title,
+    absoluteTitle: true,
+    description: c.meta.description,
   });
 }
 
@@ -81,6 +113,7 @@ export default async function ApplicationsPage({ params }: { params: Promise<Par
 
   return (
     <>
+      <JsonLd data={webPageSchema(locale, '/applications', 'WebPage', c.meta)} />
       <PageBand image={pageBand(page, BRAND_BANDS.pattern02)} />
       <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />
 
@@ -120,6 +153,9 @@ export default async function ApplicationsPage({ params }: { params: Promise<Par
                 </Link>
               ))}
             </div>
+            <Link href={`/${locale}/partnership`} style={S.b2b}>
+              {c.b2b}
+            </Link>
           </div>
         </section>
       )}
