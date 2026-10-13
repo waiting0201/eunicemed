@@ -66,6 +66,8 @@
     "-webkit-overflow-scrolling:touch": "尺寸表在窄螢幕改成橫向捲動（不收欄，收了就不是表了）。iOS 需要這一條才有慣性捲動。mockup4 沒有 RWD，自然也沒有這個需求。",
     "margin:-12px 0 36px": "2026-10 文案定稿新增的引言（首頁 Hero Products 副標＋引言、Why Partner 引言、About Manufacturing 引言）。mockup4 標題下直接接內容，沒有引言這一層；負的上距把引言收進標題原本的下距裡，讓標題到內容的總距離維持 mockup4 的值。",
     "margin:-28px 0 44px": "同上（文案定稿新增的引言）。",
-    "margin:-20px 0 36px": "同上（文案定稿新增的引言）。"
+    "margin:-20px 0 36px": "同上（文案定稿新增的引言）。",
+    "max-width:22ch": "About Manufacturing 標題。mockup4 的佔位標題夠短，22ch 塞得下；2026-10 文案定稿的「Manufacturing & Quality Excellence」34 字元會被折成兩行，客戶要求標題不斷行。首頁 Why Partner 標題的 max-width:20ch 同理拿掉（該宣告仍被首頁見證引言使用，所以不會出現在這裡）。",
+    "max-width:760px": "Resources 頁首大標，理由同上：定稿文案「Everything you need, in one place」在最大字級下超過 760px，最後幾個字會掉到第二行。"
   }
 }

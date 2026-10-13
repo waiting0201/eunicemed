@@ -48,7 +48,7 @@ const S = {
   // 04 MANUFACTURING
   s04: css`max-width:1180px;margin:0 auto;padding:clamp(64px,8vw,96px) clamp(24px,5vw,64px);`,
   s04Lead: css`max-width:60ch;margin:-20px 0 36px;`,
-  s04Title: css`color:#16333B;font-weight:400;font-size:clamp(1.9rem,3.6vw,2.5rem);margin:8px 0 36px;max-width:22ch;`,
+  s04Title: css`color:#16333B;font-weight:400;font-size:clamp(1.9rem,3.6vw,2.5rem);margin:8px 0 36px;`,
   s04Shots: css`display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:40px;`,
   s04Wide: css`position:relative;aspect-ratio:16/9;border-radius:20px;overflow:hidden;background:#F0F6F8;`,
   s04Square: css`position:relative;aspect-ratio:1/1;border-radius:20px;overflow:hidden;background:#F0F6F8;`,

@@ -63,7 +63,7 @@ const S = {
 
   // 03 WHY PARTNER
   s03: css`max-width:1180px;margin:0 auto;padding:clamp(64px,8vw,96px) clamp(24px,5vw,64px);`,
-  s03Title: css`color:#16333B;font-weight:400;font-size:clamp(2rem,4vw,2.6rem);max-width:20ch;margin:8px 0 44px;`,
+  s03Title: css`color:#16333B;font-weight:400;font-size:clamp(2rem,4vw,2.6rem);margin:8px 0 44px;`,
   s03Lead: css`max-width:60ch;margin:-28px 0 44px;`,
   s03Grid: css`display:grid;grid-template-columns:repeat(4,1fr);gap:32px;`,
   s03Item: css`border-top:2px solid #00B5CD;padding-top:20px;`,

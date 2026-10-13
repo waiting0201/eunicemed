@@ -22,7 +22,7 @@ const S = {
   hero: css`background:linear-gradient(160deg,#F4FAFC 0%,#E3F2F6 46%,#CFE9EF 100%);padding:clamp(52px,6vw,84px) clamp(24px,5vw,64px) clamp(40px,5vw,60px);`,
   heroInner: css`max-width:1180px;margin:0 auto;text-align:center;`,
   heroEyebrow: css`color:#0092A8;font-weight:680;letter-spacing:.16em;text-transform:uppercase;font-size:.78rem;`,
-  heroTitle: css`font-weight:400;font-size:clamp(2.1rem,4vw,3.1rem);margin:12px auto 0;max-width:760px;`,
+  heroTitle: css`font-weight:400;font-size:clamp(2.1rem,4vw,3.1rem);margin:12px auto 0;`,
   heroStrong: css`font-weight:640;`,
   heroLead: css`margin:16px auto 0;max-width:620px;font-size:1.1rem;`,
 
