@@ -454,15 +454,28 @@ def run_faqs():
 SMALL = {'a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'in', 'of', 'on', 'or', 'the', 'to', 'with'}
 
 
+# 舊站匯入時就打錯的字，順便修掉
+TYPOS = {'spport': 'support'}
+
+
 def title_case(name):
-    """只動「全小寫」的字：已含大寫或數字的（型號、TL、Auxi+、AerGo）原樣保留。"""
-    words = name.split(' ')
-    out = []
-    for i, w in enumerate(words):
-        if w and re.fullmatch(r"[a-z][a-z'’-]*", w) and not (i > 0 and w in SMALL):
-            w = '-'.join(p[:1].upper() + p[1:] for p in w.split('-'))
-        out.append(w)
-    return ' '.join(out)
+    """
+    只動「全小寫」的字：已含大寫或數字的（型號、TL、Auxi+、AerGo、mmHg）原樣保留。
+    字的邊界不只空白 —— `Golf/tennis`、`(roll)`、`anti-embolism` 斜線、括號與連字號後面也算新字。
+    連續空白收成一個（舊站匯入的資料有雙空白）。
+    """
+    name = re.sub(r'\s+', ' ', name).strip()
+    first = True
+
+    def fix(m):
+        nonlocal first
+        w = TYPOS.get(m.group(0), m.group(0))
+        is_first, first = first, False
+        if not re.fullmatch(r"[a-z][a-z'’]*", w) or (not is_first and w in SMALL):
+            return w
+        return w[:1].upper() + w[1:]
+
+    return re.sub(r"[A-Za-z][A-Za-z'’]*", fix, name)
 
 
 def run_products():
@@ -499,7 +512,13 @@ if __name__ == '__main__':
                      ('Aergo toe splint for hallux valgus', 'Aergo Toe Splint for Hallux Valgus'),
                      ('Ankle Support Auxi+', 'Ankle Support Auxi+'),
                      ('Aergo Knee Support TL', 'Aergo Knee Support TL'),
-                     ('anti-embolism stockings', 'Anti-Embolism Stockings')]:
+                     ('anti-embolism stockings', 'Anti-Embolism Stockings'),
+                     ('Golf/tennis elbow support strap', 'Golf/Tennis Elbow Support Strap'),
+                     ('Gel toe pads / Gel toe pads (roll)', 'Gel Toe Pads / Gel Toe Pads (Roll)'),
+                     ('High heel  Silicone heel pads', 'High Heel Silicone Heel Pads'),
+                     ("Silicone tailor's bunion protector", "Silicone Tailor's Bunion Protector"),
+                     ('Knee high travel stockings 18-21 mmHg', 'Knee High Travel Stockings 18-21 mmHg'),
+                     ('Wrist sleeve spport', 'Wrist Sleeve Support')]:
             assert title_case(a) == b, (a, title_case(a))
         print('title_case OK')
         sys.exit(0)
