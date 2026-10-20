@@ -8,7 +8,7 @@
 
 重建 **EuniceMed** 醫療器材品牌官方網站 <https://www.eunicemed.com/>。
 
-- **品牌方／母公司**：康得適 Comfort Plus Corporation
+- **品牌方／母公司**：康譜企業有限公司 Comfort Plus Corporation（中文名依 2026-10 客戶中文定稿）
   - 地址：24158 新北市三重區興德路 123-9 號 11 樓
   - 電話：+886 2 8511 3758　信箱：service@comfortplus-medical.com
   - 營業時間：週一至週五 09:00–18:00（UTC+8）

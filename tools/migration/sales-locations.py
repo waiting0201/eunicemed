@@ -56,7 +56,7 @@ LOCATIONS = [
         'phone': '+886 2 8511 3758',
         'en': {'name': 'Comfort Plus Flagship',
                'address': '11F, No. 123-9, Xingde Rd, Sanchong Dist, New Taipei City'},
-        'zh': {'name': '康得適旗艦門市',
+        'zh': {'name': '康譜旗艦門市',
                'address': '24158 新北市三重區興德路 123-9 號 11 樓'},
     },
     {

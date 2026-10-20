@@ -30,15 +30,10 @@ const S = {
   rule: css`border-top:1px solid #2C3E44;margin-top:36px;padding-top:22px;font-size:.8rem;color:#74868C;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;`,
 } as const;
 
-const COPY: Record<Locale, { rights: string; company: string }> = {
-  en: {
-    rights: 'All rights reserved.',
-    company: 'Comfort Plus Corporation',
-  },
-  'zh-TW': {
-    rights: '版權所有。',
-    company: '康得適股份有限公司',
-  },
+/** 版權列整句由語系決定：中文不加英文的句點分隔（中文文案定稿：「© 2026 康譜企業有限公司 版權所有」） */
+const COPYRIGHT: Record<Locale, (year: number) => string> = {
+  en: (year) => `© ${year} Comfort Plus Corporation. All rights reserved.`,
+  'zh-TW': (year) => `© ${year} 康譜企業有限公司 版權所有`,
 };
 
 const NAV: Record<Locale, { href: string; label: string }[]> = {
@@ -57,7 +52,6 @@ const NAV: Record<Locale, { href: string; label: string }[]> = {
 };
 
 export function SiteFooter({ locale }: { locale: Locale }) {
-  const c = COPY[locale];
   const items = NAV[locale];
 
   return (
@@ -82,9 +76,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
         </div>
 
         <div style={S.rule}>
-          <span>
-            © {new Date().getFullYear()} {c.company}. {c.rights}
-          </span>
+          <span>{COPYRIGHT[locale](new Date().getFullYear())}</span>
           {/* 品牌主張是品牌符號，兩種語系都不翻譯（docs/08 §5.2 例外清單） */}
           <span>Not Just a Motion</span>
         </div>

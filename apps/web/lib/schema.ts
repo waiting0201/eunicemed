@@ -50,7 +50,7 @@ export function organizationSchema(locale: Locale): JsonLdNode {
     email: COMPANY.email,
     telephone: COMPANY.phone,
     address: { '@type': 'PostalAddress', ...postal },
-    // 母公司：康得適 Comfort Plus Corporation（CLAUDE.md §1）
+    // 母公司：康譜企業 Comfort Plus Corporation（CLAUDE.md §1）
     parentOrganization: { '@type': 'Organization', name: 'Comfort Plus Corporation' },
     // 成立年份指的是母公司（2008），品牌誕生於 2010；文案定稿統一寫 2008
     foundingDate: '2008',

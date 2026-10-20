@@ -61,7 +61,7 @@ ZH = {
    'body': '<p>在越南河內舉行的第 9 屆亞洲有氧體操錦標賽中，台灣代表隊再傳捷報，共奪下 1 金 1 銀 1 銅。其中就讀臺北市立麗山國中的王霏筑，於女子 12–14 歲組單人項目奪冠。</p>'},
  'suzuki-world-cup-struck-gold':
   {'title': 'Suzuki 世界盃奪金',
-   'body': '<p>恭喜！由康得適（Comfort Plus Corporation，品牌 EuniceMed®）贊助的中華隊選手闕梓誠，在 2024 年有氧體操 FIG Suzuki 世界盃第一年齡組奪下金牌。我們由衷為他高興，也期待他未來有更精彩的表現。</p>'},
+   'body': '<p>恭喜！由康譜企業（Comfort Plus Corporation，品牌 EuniceMed®）贊助的中華隊選手闕梓誠，在 2024 年有氧體操 FIG Suzuki 世界盃第一年齡組奪下金牌。我們由衷為他高興，也期待他未來有更精彩的表現。</p>'},
 }
 
 arts = call('GET', '/admin/articles?pageSize=50')['data']['items']

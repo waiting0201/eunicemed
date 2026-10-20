@@ -109,7 +109,7 @@ SECTIONS = [
      'explains what information we collect through this website and how we use it. '
      'This is placeholder legal copy for design purposes.',
      None,
-     '康得適股份有限公司（以下稱「EuniceMed」、「我們」）尊重您的隱私。'
+     '康譜企業有限公司（以下稱「EuniceMed」、「我們」）尊重您的隱私。'
      '本政策說明我們透過本網站蒐集哪些資訊，以及如何使用這些資訊。'
      '本文為版型設計用的示意條文。'),
 

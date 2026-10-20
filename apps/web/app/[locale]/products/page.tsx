@@ -93,28 +93,28 @@ const COPY: Record<
   },
   'zh-TW': {
     meta: {
-      title: '護膝、護踝、護腰與醫療彈性襪 | EuniceMed',
+      title: '護膝・護踝・護腰與醫療彈性襪｜EuniceMed 康譜',
       description:
-        '探索 EuniceMed 的護膝、護踝、護腰、醫療彈性襪與矯正鞋墊，' +
-        '全數台灣製造，並依 Care、Protect、Advance 分級。',
+        'EuniceMed 康譜產品包含護膝、護踝、護腰、護腕等骨科護具，一到三級醫療彈性襪、靜脈曲張襪，' +
+        '以及矽膠鞋墊，全系列台灣製造。',
     },
     hero: {
-      eyebrow: '產品 · 三大專業系列',
-      title: '矯型護具、醫療彈性襪與足部護理',
+      eyebrow: '產品｜三大專業系列',
+      title: '骨科護具、醫療彈性襪與足部照護',
       lead:
-        '我們專注於智慧支撐：醫療彈性襪、矯型護具與矽膠足部護理 —— ' +
-        '每一件產品都標示 Care · Protect · Advance 強度，並在台灣製造。',
+        '專注智慧支撐的醫療護具：醫療彈性襪、骨科護具與矽膠足部照護。' +
+        '每件產品都依 Care・Protect・Advance 分級，全部在台灣製造。',
     },
     cta: {
-      title: '不確定自己需要哪一種護具或壓力等級？',
-      body: '在互動人體圖上依部位探索，或直接詢問我們的團隊。',
-      primary: '依部位尋找',
+      title: '不知道該選哪種護具或壓力等級？',
+      body: '用互動人體圖依部位查詢，或直接請我們的團隊推薦。',
+      primary: '依部位查詢',
       secondary: '聯絡我們',
     },
     category: '分類',
     collection: '系列',
     bodyPart: '適用部位',
-    count: (n) => `${n} 項產品`,
+    count: (n) => `共 ${n} 項產品`,
   },
 };
 

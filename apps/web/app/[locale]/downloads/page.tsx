@@ -56,7 +56,7 @@ const COPY: Record<
     download: 'Download',
   },
   'zh-TW': {
-    eyebrow: '資料下載',
+    eyebrow: '下載中心',
     title: '型錄與文件',
     lead: '產品型錄、認證文件與穿戴說明，皆可直接下載。',
     categories: '分類',

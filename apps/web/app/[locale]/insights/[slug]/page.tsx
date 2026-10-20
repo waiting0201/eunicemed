@@ -7,7 +7,7 @@ import { ArticleDetailPage } from '@/components/ArticleDetailPage';
 
 type Params = { locale: string; slug: string };
 
-const LIST_LABEL: Record<Locale, string> = { en: 'Insights', 'zh-TW': '專欄文章' };
+const LIST_LABEL: Record<Locale, string> = { en: 'Insights', 'zh-TW': '知識文章' };
 
 export async function generateMetadata({
   params,

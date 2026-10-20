@@ -17,7 +17,7 @@ const COPY: Record<Locale, { eyebrow: string; title: string; lead: string; empty
     empty: 'No articles in this category yet.',
   },
   'zh-TW': {
-    eyebrow: '專欄文章',
+    eyebrow: '知識文章',
     title: '觀點與故事',
     lead: '關於醫療創新、永續發展，以及我們支持的社群。',
     empty: '這個分類目前還沒有文章。',

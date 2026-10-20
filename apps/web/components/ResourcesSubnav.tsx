@@ -27,8 +27,8 @@ const ITEMS: Record<Locale, { href: string; label: string }[]> = {
   'zh-TW': [
     { href: '/resources', label: '總覽' },
     { href: '/faq', label: '常見問題' },
-    { href: '/insights', label: '專欄文章' },
-    { href: '/downloads', label: '資料下載' },
+    { href: '/insights', label: '知識文章' },
+    { href: '/downloads', label: '下載中心' },
     { href: '/news', label: '最新消息' },
   ],
 };

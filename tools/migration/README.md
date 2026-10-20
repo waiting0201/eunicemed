@@ -16,6 +16,7 @@
 | `sales-locations.py` | Where to Buy 的 6 個據點（en + zh-TW）| `mockup4/Where to Buy.dc.html` + 新譯，**除自家門市外皆為示意資料** |
 | `resources-downloads.py` | Resources 頁「Most requested documents」引用的三份文件（en + zh-TW）| 舊站 `/downloadpage01` + 新譯 |
 | `copy-final-2026-10.py` | 英文文案定稿（2026-10）在 CMS 與 DB 的那一半：區段、分類、應用方案、FDA 認證、OEM FAQ、產品名 Title Case（en + zh-TW）。**預設預覽，`--apply` 才寫入** | 客戶的「官網英文文案最終版」+ 新譯，見 [docs/15](../../docs/15-cms-scope.md) §11 |
+| `copy-zh-2026-10.py` | 中文文案定稿（2026-10）在 CMS 與 DB 的那一半，**只動 zh-TW**：區段、分類、應用方案、認證說明、OEM FAQ、最新消息標題、旗艦門市。產品中文名不在內。**預設預覽，`--apply` 才寫入** | 客戶的「官網中文文案｜中英對照」，見 [docs/15](../../docs/15-cms-scope.md) §12 |
 | 產品 149 筆 | — | 用既有的 `POST /admin/products/import`，見下 |
 
 ## 用法

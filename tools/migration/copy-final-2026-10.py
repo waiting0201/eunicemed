@@ -1,6 +1,10 @@
 """
 套用「EuniceMed 官網英文文案｜最終版」（2026-10）裡**存在 CMS 與 DB 的那一半**。
 
+⚠️ 2026-10-20 起**只寫 en**：中文改由客戶定稿 `copy-zh-2026-10.py` 負責。
+下面表格裡的中文值是當時的我方新譯，留著只是紀錄 —— 重跑這支不會再把它們寫回去。
+（新建 FAQ 與 FDA 認證時仍會一併帶中文，因為那兩筆只在不存在時才建立。）
+
 用法：
     python3 tools/migration/copy-final-2026-10.py <token 檔>            # 預覽（不寫入）
     python3 tools/migration/copy-final-2026-10.py <token 檔> --apply    # 真的寫入
@@ -212,7 +216,7 @@ def section_edits(locale):
 def run_sections():
     print('\n══ CMS 區段')
     pages = {}
-    for locale in ('en', 'zh-TW'):
+    for locale in ('en',):   # zh-TW 交給 copy-zh-2026-10.py
         for (page_key, section_key), edit in section_edits(locale).items():
             if page_key not in pages:
                 r = call('GET', f'/admin/pages/{page_key}')
@@ -274,6 +278,8 @@ def run_categories():
         trs = row.get('translations') or {}
         patch = {}
         for locale, (name, desc) in want.items():
+            if locale != 'en':   # zh-TW 交給 copy-zh-2026-10.py
+                continue
             cur = trs.get(locale)
             if not cur:
                 print(f'  – {row["slug"]} [{locale}]：沒有該語系翻譯，略過')
@@ -328,7 +334,7 @@ def run_applications():
         row = call('GET', f'/admin/applications/{summary["id"]}').get('data') or {}
         trs = row.get('translations') or {}
         patch = {}
-        for locale, text in (('en', en), ('zh-TW', zh)):
+        for locale, text in (('en', en),):   # zh-TW 交給 copy-zh-2026-10.py
             cur = trs.get(locale)
             if not cur:
                 print(f'  – {summary["slug"]} [{locale}]：沒有該語系翻譯，略過')
