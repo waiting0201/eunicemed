@@ -279,7 +279,8 @@ public class ProductApplicationConfiguration : IEntityTypeConfiguration<ProductA
 }
 
 /// <summary>
-/// 7 筆應用方案（docs/05 §4）。人體圖座標取自 mockup4/Applications.dc.html 的 SVG viewBox。
+/// 7 筆應用方案（docs/05 §4）。人體圖座標是 viewBox 260×560 內的值，對準客戶提供的插圖
+/// （apps/web/public/brand/body-map.webp，2026-10-21 換掉 mockup4 的 SVG 剪影）。
 /// </summary>
 internal static class ApplicationSeed
 {
@@ -289,10 +290,10 @@ internal static class ApplicationSeed
 
     private static readonly Row[] All =
     [
-        new("back",  ApplicationType.BodyPart, BodyPartIds.Back,  true, 1, "Back & Waist", "背部與腰部", """{"hotspot":{"cx":130,"cy":195},"chip":{"cx":130,"cy":204}}"""),
-        new("knee",  ApplicationType.BodyPart, BodyPartIds.Knee,  true, 2, "Knee",         "膝部",       """{"hotspot":{"cx":152,"cy":395},"chip":{"cx":154,"cy":334}}"""),
-        new("ankle", ApplicationType.BodyPart, BodyPartIds.Ankle, true, 3, "Ankle",        "踝部",       """{"hotspot":{"cx":108,"cy":505},"chip":{"cx":107,"cy":470}}"""),
-        new("foot",  ApplicationType.BodyPart, BodyPartIds.Foot,  true, 4, "Foot",         "足部",       """{"hotspot":{"cx":165,"cy":538},"chip":{"cx":168,"cy":504}}"""),
+        new("back",  ApplicationType.BodyPart, BodyPartIds.Back,  true, 1, "Back & Waist", "背部與腰部", """{"hotspot":{"cx":131,"cy":209},"chip":{"cx":131,"cy":248}}"""),
+        new("knee",  ApplicationType.BodyPart, BodyPartIds.Knee,  true, 2, "Knee",         "膝部",       """{"hotspot":{"cx":158,"cy":396},"chip":{"cx":159,"cy":340}}"""),
+        new("ankle", ApplicationType.BodyPart, BodyPartIds.Ankle, true, 3, "Ankle",        "踝部",       """{"hotspot":{"cx":100,"cy":492},"chip":{"cx":100,"cy":456}}"""),
+        new("foot",  ApplicationType.BodyPart, BodyPartIds.Foot,  true, 4, "Foot",         "足部",       """{"hotspot":{"cx":165,"cy":521},"chip":{"cx":170,"cy":488}}"""),
 
         new("elderly-care",           ApplicationType.SpecialCare, null, false, 5, "Elderly care",           "銀髮照護",   null),
         new("bunion-relief",          ApplicationType.SpecialCare, null, false, 6, "Bunion relief",          "拇趾外翻",   null),

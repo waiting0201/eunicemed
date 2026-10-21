@@ -11,13 +11,14 @@ import type { Locale } from '@/lib/locale';
  * 人體圖。點熱區／膠囊／卡片都會切換右側資訊面板。
  *
  * <p>
- * **人形是版型素材，不是內容** —— 路徑照 mockup4 抄，寫死在這裡。
- * 會動的只有熱區座標：那是每個應用方案自己的 `mapPosition`，由後台維護
+ * **人形是版型素材，不是內容** —— 客戶提供的插圖（`public/brand/body-map.webp`），
+ * 寫死在這裡。會動的只有熱區座標：那是每個應用方案自己的 `mapPosition`，由後台維護
  * （docs/09 §人體圖互動規格）。
  * </p>
  *
  * <p>
- * ⚠️ 座標是 **viewBox 260×560 內的值**，與 mockup4 同一組。膠囊是 HTML 而非 SVG
+ * ⚠️ 座標是 **viewBox 260×560 內的值**。插圖已裁成同比例（780×1680）鋪滿整個 viewBox，
+ * 換圖時必須維持這個比例，否則既有座標全部偏掉。膠囊是 HTML 而非 SVG
  * （文字要跟著站台字級走），所以用百分比疊在 SVG 上 —— 前提是外框沒有 padding，
  * 否則 SVG 的 box 與疊層對不齊。padding 放在外面那一層。
  * </p>
@@ -99,17 +100,6 @@ export function BodyMap({ spots, locale }: { spots: BodyMapSpot[]; locale: Local
             style={S.svg}
           >
             <defs>
-              <linearGradient
-                id="bm-skin"
-                x1="0"
-                y1="0"
-                x2="0"
-                y2={VB.h}
-                gradientUnits="userSpaceOnUse"
-              >
-                <stop offset="0" stopColor="#D9EBF0" />
-                <stop offset="1" stopColor="#B7D5DE" />
-              </linearGradient>
               <filter id="bm-soft" x="-60%" y="-60%" width="220%" height="220%">
                 <feGaussianBlur stdDeviation="10" />
               </filter>
@@ -240,39 +230,25 @@ export function BodyMap({ spots, locale }: { spots: BodyMapSpot[]; locale: Local
   );
 }
 
-/** 人形。純版型素材，路徑照 mockup4 抄。 */
+/**
+ * 人形。純版型素材。
+ *
+ * <p>
+ * 插圖是白底 JPG 轉出來的，底色不透明 —— 用 multiply 疊在外框的漸層上，
+ * 白色就會吃進背景，不會浮出一塊白色方框。
+ * </p>
+ */
 function Figure() {
   return (
-    <g fill="url(#bm-skin)" stroke="url(#bm-skin)" strokeLinecap="round">
-      <circle cx="130" cy="52" r="33" stroke="none" />
-      <path stroke="none" d="M120 82 L140 82 L142 104 L118 104 Z" />
-      <path
-        stroke="none"
-        d="M130 100 C 106 100 90 108 84 126 C 79 142 80 165 84 190 C 87 210 89 228 89 248 L 171 248 C 171 228 173 210 176 190 C 180 165 181 142 176 126 C 170 108 154 100 130 100 Z"
-      />
-      <path
-        fill="none"
-        strokeWidth="18"
-        d="M83 128 C 73 160 68 196 66 228 C 65 246 64 258 63 270"
-      />
-      <path
-        fill="none"
-        strokeWidth="18"
-        d="M177 128 C 187 160 192 196 194 228 C 195 246 196 258 197 270"
-      />
-      <path
-        fill="none"
-        strokeWidth="26"
-        d="M110 248 C 108 302 106 352 108 395 C 110 440 110 482 110 515"
-      />
-      <path
-        fill="none"
-        strokeWidth="26"
-        d="M150 248 C 152 302 154 352 152 395 C 150 440 150 482 150 515"
-      />
-      <path stroke="none" d="M96 243 L164 243 L160 268 L100 268 Z" />
-      <path fill="none" strokeWidth="16" d="M110 520 L 86 532" />
-      <path fill="none" strokeWidth="16" d="M150 520 L 174 532" />
-    </g>
+    <image
+      href="/brand/body-map.webp"
+      x={0}
+      y={0}
+      width={VB.w}
+      height={VB.h}
+      preserveAspectRatio="xMidYMid meet"
+      style={{ mixBlendMode: 'multiply' }}
+      aria-hidden="true"
+    />
   );
 }

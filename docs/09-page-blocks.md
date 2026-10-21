@@ -285,11 +285,11 @@ number · date · bool · enum[...] · ref:Entity · repeatable{...}(min–max)
 
 **呈現**
 
-- inline SVG 實心柔和剪影人形（正面），**4 個部位**：`back`（腰背）、`knee`（膝）、`ankle`（踝）、`foot`（足）。
+- 人形為客戶提供的正面插圖 `apps/web/public/brand/body-map.webp`（780×1680，裁成與 viewBox 260×560 同比例；2026-10-21 取代 mockup4 的 SVG 剪影），以 SVG `<image>` 鋪滿 viewBox、`mix-blend-mode: multiply` 吃掉白底。**換圖必須維持此比例**，否則既有座標全部偏移。後台選點器（`apps/admin/src/assets/body-map.webp`）用同一張圖。**4 個部位**：`back`（腰背）、`knee`（膝）、`ankle`（踝）、`foot`（足）。
 - 每部位有：**熱點標記**（白心 + teal 環 + 漣漪 pulse）與**浮動 chip 標籤**。座標存於 `Application.MapPositionJson`：
 
   ```json
-  { "hotspot": { "cx": 152, "cy": 395 }, "chip": { "cx": 154, "cy": 334 } }
+  { "hotspot": { "cx": 158, "cy": 396 }, "chip": { "cx": 159, "cy": 340 } }
   ```
 
   seed 值見 [05-database.md](05-database.md) §4。

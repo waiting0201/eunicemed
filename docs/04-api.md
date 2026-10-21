@@ -248,7 +248,7 @@ GET /api/applications/{slug}?locale=en         # 含關聯產品、concerns、su
 ```json
 [ { "slug": "knee", "name": "Knee", "productCount": 16,
     "copy": "Wear knee supports to prevent injury…", "ctaLabel": "See knee solutions",
-    "map": { "hotspot": { "cx": 152, "cy": 395 }, "chip": { "cx": 154, "cy": 334 } },
+    "map": { "hotspot": { "cx": 158, "cy": 396 }, "chip": { "cx": 159, "cy": 340 } },
     "url": "/en/applications/knee" } ]
 ```
 

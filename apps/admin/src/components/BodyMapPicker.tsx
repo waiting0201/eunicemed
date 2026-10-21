@@ -1,12 +1,14 @@
 import { useRef, useState } from 'react';
+import figure from '@/assets/body-map.webp';
 
 /**
  * 人體圖座標選取器。
  *
  * <p>
  * 座標是 viewBox **260×560** 內的值，與前台 `apps/web/components/BodyMap.tsx`
- * 同一組。人形路徑是從那支複製過來的 —— 兩份必須一致，
- * 否則後台放的位置與訪客看到的位置會對不上（改人形時兩邊一起改）。
+ * 同一組。人形插圖也是同一張（這裡是 `assets/body-map.webp`，前台是
+ * `public/brand/body-map.webp`）—— 兩份必須一致，否則後台放的位置與訪客看到的
+ * 位置會對不上（換圖時兩邊一起換）。
  * </p>
  *
  * <p>
@@ -128,13 +130,6 @@ export function BodyMapPicker({
             onPointerUp={() => setDragging(null)}
             onPointerLeave={() => setDragging(null)}
           >
-            <defs>
-              <linearGradient id="pick-skin" x1="0" y1="0" x2="0" y2={VB.h} gradientUnits="userSpaceOnUse">
-                <stop offset="0" stopColor="#D9EBF0" />
-                <stop offset="1" stopColor="#B7D5DE" />
-              </linearGradient>
-            </defs>
-
             <Figure />
 
             {/* 其他方案 —— 只為了看見「別放在這裡」，所以不可點也不搶注意力 */}
@@ -296,33 +291,20 @@ function truncate(s: string) {
 }
 
 /**
- * 人形。**與 `apps/web/components/BodyMap.tsx` 的 `Figure` 必須一致** ——
- * 它是版型素材（照 mockup4 抄），不是內容。
+ * 人形。**與 `apps/web/components/BodyMap.tsx` 的 `Figure` 必須是同一張圖** ——
+ * 它是版型素材，不是內容。白底用 multiply 吃進外框漸層。
  */
 function Figure() {
   return (
-    <g fill="url(#pick-skin)" stroke="url(#pick-skin)" strokeLinecap="round" pointerEvents="none">
-      <circle cx="130" cy="52" r="33" stroke="none" />
-      <path stroke="none" d="M120 82 L140 82 L142 104 L118 104 Z" />
-      <path
-        stroke="none"
-        d="M130 100 C 106 100 90 108 84 126 C 79 142 80 165 84 190 C 87 210 89 228 89 248 L 171 248 C 171 228 173 210 176 190 C 180 165 181 142 176 126 C 170 108 154 100 130 100 Z"
-      />
-      <path fill="none" strokeWidth="18" d="M83 128 C 73 160 68 196 66 228 C 65 246 64 258 63 270" />
-      <path fill="none" strokeWidth="18" d="M177 128 C 187 160 192 196 194 228 C 195 246 196 258 197 270" />
-      <path
-        fill="none"
-        strokeWidth="26"
-        d="M110 248 C 108 302 106 352 108 395 C 110 440 110 482 110 515"
-      />
-      <path
-        fill="none"
-        strokeWidth="26"
-        d="M150 248 C 152 302 154 352 152 395 C 150 440 150 482 150 515"
-      />
-      <path stroke="none" d="M96 243 L164 243 L160 268 L100 268 Z" />
-      <path fill="none" strokeWidth="16" d="M110 520 L 86 532" />
-      <path fill="none" strokeWidth="16" d="M150 520 L 174 532" />
-    </g>
+    <image
+      href={figure}
+      x={0}
+      y={0}
+      width={VB.w}
+      height={VB.h}
+      preserveAspectRatio="xMidYMid meet"
+      pointerEvents="none"
+      style={{ mixBlendMode: 'multiply' }}
+    />
   );
 }

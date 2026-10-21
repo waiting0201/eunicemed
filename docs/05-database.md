@@ -727,14 +727,14 @@ CREATE TABLE SettingTranslation (
 - **`Certification`**（5）：`iso-13485`、`ce`、`oeko-tex-100`、`patented`、`mit`。
 - **`BodyPart`**（7）：knee、ankle、elbow、wrist、back、foot、leg；其中 `ShowOnBodyMap = 1` 僅 **back、knee、ankle、foot**。
 - **`Application`**：
-  - `Type = bodyPart`（4，與人體圖一致）：`back`、`knee`、`ankle`、`foot`，`ShowOnBodyMap = 1`，`MapPositionJson` 取自 `mockup4/Applications.dc.html`（SVG viewBox 座標）：
+  - `Type = bodyPart`（4，與人體圖一致）：`back`、`knee`、`ankle`、`foot`，`ShowOnBodyMap = 1`，`MapPositionJson` 為 viewBox 260×560 內的座標，對準客戶提供的人體插圖 `apps/web/public/brand/body-map.webp`（2026-10-21 取代 mockup4 的 SVG 剪影，見 09 §5.3）：
 
     | slug | hotspot (cx, cy) | chip (cx, cy) |
     |---|---|---|
-    | back | 130, 195 | 130, 204 |
-    | knee | 152, 395 | 154, 334 |
-    | ankle | 108, 505 | 107, 470 |
-    | foot | 165, 538 | 168, 504 |
+    | back | 131, 209 | 131, 248 |
+    | knee | 158, 396 | 159, 340 |
+    | ankle | 100, 492 | 100, 456 |
+    | foot | 165, 521 | 170, 488 |
 
   - `Type = specialCare`（3）：`elderly-care`、`bunion-relief`、`post-operative-recovery`。
 - **`ArticleCategory`**：`Kind = news` → `exhibitions`、`sponsorship`、`company`；`Kind = insight` → `medical`、`esg`、`sponsorship`。
