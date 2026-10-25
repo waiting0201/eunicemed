@@ -1,12 +1,13 @@
 import { css } from '@/lib/css';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { api, type MediaRef } from '@/lib/api';
+import { api } from '@/lib/api';
 import { formatDate } from '@/lib/date';
 import { isLocale, type Locale } from '@/lib/locale';
 import { section } from '@/lib/page';
 import { pageMetadata } from '@/lib/seo';
 import { PageBand } from '@/components/PageBand';
+import { pageBand } from '@/lib/bands';
 import { PageHero } from '@/components/PageHero';
 
 /** 樣式逐字取自 `mockup4/Privacy.dc.html`。內文排版在 globals.css 的 `.m4-legal`。 */
@@ -18,7 +19,6 @@ const S = {
 
 type Params = { locale: string };
 
-type HeroSection = { band?: MediaRef };
 type ContentSection = { lastUpdated?: string; body?: string };
 
 // 標點也是語系的一部分：英文用半形冒號 + 空格，中文用全形冒號。
@@ -49,13 +49,12 @@ export default async function PrivacyPage({ params }: { params: Promise<Params> 
   const page = await api.page(locale, 'privacy');
   if (!page) notFound();
 
-  const hero = section<HeroSection>(page, 'hero');
   const content = section<ContentSection>(page, 'content');
   const c = COPY[locale];
 
   return (
     <>
-      <PageBand image={hero?.band} />
+      <PageBand image={pageBand(page)} />
 
       <PageHero eyebrow={c.eyebrow} title={c.title} />
 

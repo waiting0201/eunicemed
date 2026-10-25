@@ -6,7 +6,7 @@ import { isLocale, type Locale } from '@/lib/locale';
 import { ContactCta } from '@/components/ContactCta';
 import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
-import { BRAND_BANDS, pageBand } from '@/lib/bands';
+import { pageBand } from '@/lib/bands';
 import { pageMetadata } from '@/lib/seo';
 import { ResourcesSubnav } from '@/components/ResourcesSubnav';
 import { SideFilter } from '@/components/SideFilter';
@@ -91,7 +91,7 @@ export default async function FaqPage({
           不是整份 FAQ —— 結構化資料要與畫面一致，否則是 Google 明文禁止的 */}
       <JsonLd data={faqPageSchema(locale, result.items)} />
       <ResourcesSubnav locale={locale} active="/faq" />
-      <PageBand image={pageBand(page, BRAND_BANDS.pattern01)} />
+      <PageBand image={pageBand(page)} />
       <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />
 
       <section style={S.section}>

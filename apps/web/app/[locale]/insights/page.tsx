@@ -4,7 +4,7 @@ import { api } from '@/lib/api';
 import { isLocale, type Locale } from '@/lib/locale';
 import { pageMetadata } from '@/lib/seo';
 import { ArticleListPage } from '@/components/ArticleListPage';
-import { BRAND_BANDS, pageBand } from '@/lib/bands';
+import { pageBand } from '@/lib/bands';
 
 type Params = { locale: string };
 type Search = { category?: string; page?: string };
@@ -64,7 +64,7 @@ export default async function InsightsPage({
       kind="insights"
       result={result}
       activeCategory={q.category}
-      band={pageBand(page, BRAND_BANDS.pattern02)}
+      band={pageBand(page)}
       copy={COPY[locale]}
     />
   );

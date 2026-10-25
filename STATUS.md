@@ -52,6 +52,11 @@ Downloads／Where to Buy 的 band 原本寫死在前端（2026-08-30 的定案�
 `BRAND_BANDS` 的三張品牌圖樣降為**預設圖**：沒換圖就照舊顯示，不會變成一條空白。
 後台清單因此由 6 頁變 12 頁。見 [docs/15](docs/15-cms-scope.md) §10。
 
+**2026-10-25 沒傳圖的 banner 一律隱藏**（客戶要求）：10 頁的頁頂 band 不再退回品牌圖樣預設圖，
+`hero.band` 沒設就整段不渲染（`public/brand/bands/` 三張預設圖一併移除）；
+分類／子分類 hero 沒有 `heroImage` 時不再留空的 16:10 灰框，文字改單欄。首頁輪播原本就是如此。
+⚠️ 正式站上那 6 頁若沒在後台傳過圖，頁頂 band 會直接消失。見 [docs/15](docs/15-cms-scope.md) §11。
+
 **2026-09-16 後台兩項調整**（客戶要求）：
 
 - **密碼下限 12 → 6，且不再強制首次登入改密碼。** `MustChangePassword` 的三個寫入點
@@ -206,14 +211,14 @@ facet 篩選、standalone 產物 66MB／250MB。
 | Product Category | `/[locale]/products/{category}` | ✅ **已切版可運作** |
 | Sub-category | `/[locale]/products/{category}/{sub}` | ✅ **已切版可運作** |
 | Product Detail | `/[locale]/products/{category}/{sub}/{slug}` | ✅ **可運作**（§08 詢價面板送出已恢復）|
-| Applications／Detail | `/[locale]/applications[/{slug}]` | ✅ **已切版可運作**（含人體圖 SVG 互動；頁頂 band 為靜態品牌圖樣）|
+| Applications／Detail | `/[locale]/applications[/{slug}]` | ✅ **已切版可運作**（含人體圖 SVG 互動；頁頂 band 後台沒傳圖即隱藏）|
 | Partnership | `/[locale]/partnership` | ✅ **可運作**（§03 洽詢表單送出已恢復；hero 文案改為前端常數）|
 | Resources | `/[locale]/resources` | ✅ **可運作**（含 `ref:Article` / `ref:Download` 解析）<br>2026-08-28 前線上是**完全空白**的 —— 五個區段都沒填，其中三個已定案改為前端常數 |
-| FAQ | `/[locale]/faq` | ✅ **已切版可運作**（分類篩選 + 原生 details 手風琴；頁頂 band 為靜態品牌圖樣）|
-| Insights／Article Detail | `/[locale]/insights[/{slug}]` | ✅ **已切版可運作**（含伺服器端 TOC；列表頁頂 band 為靜態品牌圖樣）|
-| News／News Detail | `/[locale]/news[/{slug}]` | ✅ **已切版可運作**（含活動面板、圖庫、prev/next；列表頁頂 band 為靜態品牌圖樣）|
-| Downloads | `/[locale]/downloads` | ✅ **已切版可運作**（類型篩選；頁頂 band 為靜態品牌圖樣）|
-| Where to Buy | `/[locale]/where-to-buy` | ✅ **已切版可運作**（伺服器端分組；頁頂 band 為靜態品牌圖樣）<br>2026-08-31 灌入 6 筆據點（en + zh-TW，本機與正式站）—— mockup4 的示意資料，網址全為 `#` 故留空 |
+| FAQ | `/[locale]/faq` | ✅ **已切版可運作**（分類篩選 + 原生 details 手風琴；頁頂 band 後台沒傳圖即隱藏）|
+| Insights／Article Detail | `/[locale]/insights[/{slug}]` | ✅ **已切版可運作**（含伺服器端 TOC；列表頁頂 band 後台沒傳圖即隱藏）|
+| News／News Detail | `/[locale]/news[/{slug}]` | ✅ **已切版可運作**（含活動面板、圖庫、prev/next；列表頁頂 band 後台沒傳圖即隱藏）|
+| Downloads | `/[locale]/downloads` | ✅ **已切版可運作**（類型篩選；頁頂 band 後台沒傳圖即隱藏）|
+| Where to Buy | `/[locale]/where-to-buy` | ✅ **已切版可運作**（伺服器端分組；頁頂 band 後台沒傳圖即隱藏）<br>2026-08-31 灌入 6 筆據點（en + zh-TW，本機與正式站）—— mockup4 的示意資料，網址全為 `#` 故留空 |
 | Contact | `/[locale]/contact` | ✅ **可運作**，送出已恢復（2026-08-28）；2026-08-31 接上 reCAPTCHA v3（無 widget，表單下方為 Google 要求的聲明）|
 | Privacy | `/[locale]/privacy` | ✅ **可運作**（Legal 淨化 profile）<br>2026-08-28 前線上是**完全空白**的；條文仍留在 CMS，頁首文案改為前端常數<br>2026-08-31 灌入 band 與 6 節條文（en + zh-TW，本機與正式站）—— **mockup4 的示意文案，待法務定稿** |
 

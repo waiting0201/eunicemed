@@ -6,7 +6,7 @@ import { isLocale, type Locale } from '@/lib/locale';
 import { ContactCta } from '@/components/ContactCta';
 import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
-import { BRAND_BANDS, pageBand } from '@/lib/bands';
+import { pageBand } from '@/lib/bands';
 import { pageMetadata } from '@/lib/seo';
 import { JsonLd } from '@/components/JsonLd';
 import { salesLocationsSchema } from '@/lib/schema';
@@ -117,7 +117,7 @@ export default async function WhereToBuyPage({ params }: { params: Promise<Param
     <>
       {/* 經銷據點清單。對 AI 搜尋特別有用 —— 「哪裡買得到」是最常被問的一類問題 */}
       <JsonLd data={salesLocationsSchema(locale, data, '/where-to-buy')} />
-      <PageBand image={pageBand(page, BRAND_BANDS.pattern08)} />
+      <PageBand image={pageBand(page)} />
       <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />
 
       <section style={S.section}>

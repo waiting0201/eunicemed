@@ -7,6 +7,8 @@ import { SIZES, srcSetOf } from '@/lib/image';
 const S = {
   section: css`max-width:1180px;margin:0 auto;padding:0 clamp(24px,5vw,64px) clamp(40px,5vw,56px);`,
   grid: css`display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(32px,4vw,56px);align-items:center;`,
+  /** 沒有圖時文字獨佔一欄，寬度沿用 PageHero 的 760px，不讓敘述拉成一整行 */
+  gridSolo: css`max-width:760px;`,
   eyebrow: css`color:#0092A8;font-weight:680;letter-spacing:.16em;text-transform:uppercase;font-size:.78rem;`,
   title: css`font-weight:400;font-size:clamp(2rem,3.6vw,2.8rem);letter-spacing:-.02em;margin:10px 0 0;`,
   lead: css`margin-top:14px;font-size:1.1rem;`,
@@ -30,6 +32,12 @@ const EYEBROW: Record<Locale, { category: string; subCategory: string }> = {
  * **上方沒有留白** —— 麵包屑的 18px 就是這一段的上緣（mockup4 的 `padding: 0 … `）。
  * </p>
  *
+ * <p>
+ * **後台沒傳 `heroImage` 就不渲染右側圖框**（2026-10-25 客戶要求）——
+ * 先前是留一格空的 16:10 灰底。
+ * </p>
+ *
+ * <p>
  * `stats` 由 API 回傳，其中 `value` 為 `"auto"` 者後端已代入實際產品數（docs/04 §4），
  * 前端不需要也不應該自己算。
  */
@@ -44,7 +52,7 @@ export function CategoryHero({
 }) {
   return (
     <section style={S.section}>
-      <div style={S.grid}>
+      <div style={data.heroImage ? S.grid : S.gridSolo}>
         <div>
           <p style={S.eyebrow}>
             {kind === 'category' ? EYEBROW[locale].category : EYEBROW[locale].subCategory}
@@ -67,8 +75,8 @@ export function CategoryHero({
           )}
         </div>
 
-        <div style={S.media}>
-          {data.heroImage ? (
+        {data.heroImage && (
+          <div style={S.media}>
             <img
               src={data.heroImage.url}
               srcSet={srcSetOf(data.heroImage)}
@@ -78,8 +86,8 @@ export function CategoryHero({
               height={750}
               style={S.img}
             />
-          ) : null}
-        </div>
+          </div>
+        )}
       </div>
     </section>
   );

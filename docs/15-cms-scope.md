@@ -460,3 +460,21 @@ admin 的轉址端點為此保留，只是沒有 UI。
 | 回覆天數、MOQ／交期數字 | 維持線上現值／草稿 | 定稿留白 |
 | 產品中文名（英文型號＋中文品名） | **未做** | 文件只列 11 個例子；品名要以「產品資料表（客戶回覆）」整批套 |
 
+---
+
+## 11. 2026-10-25：沒傳圖的 banner 一律隱藏（客戶要求）
+
+§10.1 讓那 6 頁在沒換圖時退回 `BRAND_BANDS` 的品牌圖樣。**這一項推翻**：
+前台所有 banner，後台沒傳圖就整段不渲染。
+
+- `lib/bands.ts` 的 `pageBand(page)` 不再收 fallback，取不出 `url` 就回 `null`，
+  `PageBand` 收到 `null` 本來就不渲染。10 頁一律走這支（about／products／partnership／privacy
+  原本直接傳 `hero?.band`，順便收進來 —— 那樣碰到非 uuid 字串會渲染破圖，見 §10.1 最後一點）。
+- `BRAND_BANDS` 與 `public/brand/bands/` 三張圖樣移除。要用那三張，從 git 歷史
+  （或 mockup4 的 A4 母檔）取出後在後台上傳。
+- 分類／子分類的 `CategoryHero`：沒有 `heroImage` 就不渲染右側 16:10 圖框，
+  文字改為單欄（`max-width:760px`，與 `PageHero` 同寬）。
+- 首頁 `HeroSlider` 早已是「沒有任何一張有圖就整段 `null`」，不動。
+- 首頁的 `bodyPartBand` 背景與 products 的 `cta` 背景**不算 banner**——
+  那兩段承載內容（人體圖、CTA），沒圖時維持純色底而不是隱藏整段。
+

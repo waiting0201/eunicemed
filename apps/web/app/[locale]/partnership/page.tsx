@@ -8,6 +8,7 @@ import { section } from '@/lib/page';
 import { css } from '@/lib/css';
 import { pageMetadata } from '@/lib/seo';
 import { PageBand } from '@/components/PageBand';
+import { pageBand } from '@/lib/bands';
 import { PageHero } from '@/components/PageHero';
 import { SectionHeading } from '@/components/SectionHeading';
 import { PartnershipForm } from '@/components/PartnershipForm';
@@ -49,7 +50,6 @@ const S = {
 
 type Params = { locale: string };
 
-type HeroSection = { band?: MediaRef };
 type OemOdmSection = {
   title?: string;
   body?: string;
@@ -166,7 +166,6 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
 
   const faqSchema = faqPageSchema(locale, oemFaqs);
 
-  const hero = section<HeroSection>(page, 'hero');
   const oem = section<OemOdmSection>(page, 'oemOdm');
   const distributor = section<DistributorSection>(page, 'distributor');
   const become = section<BecomePartnerSection>(page, 'becomePartner');
@@ -178,7 +177,7 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
     <>
       <JsonLd data={webPageSchema(locale, '/partnership', 'WebPage', COPY[locale].meta)} />
       {faqSchema && <JsonLd data={faqSchema} />}
-      <PageBand image={hero?.band} />
+      <PageBand image={pageBand(page)} />
 
       <PageHero
         eyebrow={COPY[locale].eyebrow}

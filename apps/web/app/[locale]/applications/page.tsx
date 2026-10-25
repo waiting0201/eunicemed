@@ -8,7 +8,7 @@ import { css } from '@/lib/css';
 import { BodyMap } from '@/components/BodyMap';
 import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
-import { BRAND_BANDS, pageBand } from '@/lib/bands';
+import { pageBand } from '@/lib/bands';
 import { pageMetadata } from '@/lib/seo';
 import { webPageSchema } from '@/lib/schema';
 import { JsonLd } from '@/components/JsonLd';
@@ -114,7 +114,7 @@ export default async function ApplicationsPage({ params }: { params: Promise<Par
   return (
     <>
       <JsonLd data={webPageSchema(locale, '/applications', 'WebPage', c.meta)} />
-      <PageBand image={pageBand(page, BRAND_BANDS.pattern02)} />
+      <PageBand image={pageBand(page)} />
       <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />
 
       {spots.length > 0 && (

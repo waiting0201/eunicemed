@@ -5,7 +5,7 @@ import { api, type DownloadFile } from '@/lib/api';
 import { isLocale, type Locale } from '@/lib/locale';
 import { PageBand } from '@/components/PageBand';
 import { PageHero } from '@/components/PageHero';
-import { BRAND_BANDS, pageBand } from '@/lib/bands';
+import { pageBand } from '@/lib/bands';
 import { pageMetadata } from '@/lib/seo';
 import { ResourcesSubnav } from '@/components/ResourcesSubnav';
 import { SideFilter } from '@/components/SideFilter';
@@ -99,7 +99,7 @@ export default async function DownloadsPage({
   return (
     <>
       <ResourcesSubnav locale={locale} active="/downloads" />
-      <PageBand image={pageBand(page, BRAND_BANDS.pattern08)} />
+      <PageBand image={pageBand(page)} />
       <PageHero eyebrow={c.eyebrow} title={c.title} lead={c.lead} />
 
       <section style={S.section}>

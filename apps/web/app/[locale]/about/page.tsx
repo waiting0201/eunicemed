@@ -10,6 +10,7 @@ import { pageMetadata } from '@/lib/seo';
 import { webPageSchema } from '@/lib/schema';
 import { JsonLd } from '@/components/JsonLd';
 import { PageBand } from '@/components/PageBand';
+import { pageBand } from '@/lib/bands';
 import { PageHero } from '@/components/PageHero';
 import { NUMERAL, SectionHeading } from '@/components/SectionHeading';
 
@@ -87,7 +88,6 @@ type Params = { locale: string };
  * 所以每一塊都是 `s && (...)`，且區段序號在渲染時才發 —— 與產品詳情頁同一套做法。
  * </p>
  */
-type HeroSection = { band?: MediaRef };
 type StorySection = { title?: string; body?: string; portrait?: MediaRef };
 type MilestonesSection = {
   background?: MediaRef;
@@ -258,7 +258,6 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
   if (!page) notFound();
 
   const copy = COPY[locale];
-  const hero = section<HeroSection>(page, 'hero');
   const story = section<StorySection>(page, 'story');
   const milestones = section<MilestonesSection>(page, 'milestones');
   const manufacturing = section<ManufacturingSection>(page, 'manufacturing');
@@ -272,7 +271,7 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
   return (
     <>
       <JsonLd data={webPageSchema(locale, '/about', 'AboutPage', copy.meta)} />
-      <PageBand image={hero?.band} />
+      <PageBand image={pageBand(page)} />
 
       <PageHero
         eyebrow={copy.hero.eyebrow}

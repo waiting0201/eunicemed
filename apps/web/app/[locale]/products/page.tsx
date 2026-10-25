@@ -9,6 +9,7 @@ import { FilterChips } from '@/components/FilterChips';
 import { css } from '@/lib/css';
 import { pageMetadata } from '@/lib/seo';
 import { PageBand } from '@/components/PageBand';
+import { pageBand } from '@/lib/bands';
 import { PageHero } from '@/components/PageHero';
 import { JsonLd } from '@/components/JsonLd';
 import { webPageSchema } from '@/lib/schema';
@@ -47,7 +48,6 @@ const S = {
 type Params = { locale: string };
 type Search = { category?: string; collection?: string; bodyPart?: string };
 
-type HeroSection = { band?: MediaRef };
 type CtaSection = { background?: MediaRef };
 
 /**
@@ -157,7 +157,6 @@ export default async function ProductsPage({
     }),
   ]);
 
-  const hero = page ? section<HeroSection>(page, 'hero') : null;
   const cta = page ? section<CtaSection>(page, 'cta') : null;
 
   const c = COPY[locale];
@@ -167,7 +166,7 @@ export default async function ProductsPage({
   return (
     <>
       <JsonLd data={webPageSchema(locale, '/products', 'CollectionPage', c.meta)} />
-      <PageBand image={hero?.band} />
+      <PageBand image={pageBand(page)} />
 
       <PageHero
         eyebrow={c.hero.eyebrow}

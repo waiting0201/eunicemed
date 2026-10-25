@@ -37,7 +37,7 @@ export function ArticleListPage({
   result: FacetedResult<ArticleListItem>;
   activeCategory: string | undefined;
   /** 頁頂圖。兩頁各有自己的 `hero.band`，所以由呼叫端解析後傳進來 */
-  band: MediaRef;
+  band: MediaRef | null;
   copy: { eyebrow: string; title: string; lead: string; empty: string };
 }) {
   const basePath = `/${locale}/${kind}`;
