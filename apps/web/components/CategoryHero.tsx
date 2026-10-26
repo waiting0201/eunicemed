@@ -7,8 +7,8 @@ import { SIZES, srcSetOf } from '@/lib/image';
 const S = {
   section: css`max-width:1180px;margin:0 auto;padding:0 clamp(24px,5vw,64px) clamp(40px,5vw,56px);`,
   grid: css`display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(32px,4vw,56px);align-items:center;`,
-  /** 沒有圖時文字獨佔一欄，寬度沿用 PageHero 的 760px，不讓敘述拉成一整行 */
-  gridSolo: css`max-width:760px;`,
+  /** 沒有圖時文字獨佔一欄，寬度沿用 PageHero 的 820px，不讓敘述拉成一整行 */
+  gridSolo: css`max-width:820px;`,
   eyebrow: css`color:#0092A8;font-weight:680;letter-spacing:.16em;text-transform:uppercase;font-size:.78rem;`,
   title: css`font-weight:400;font-size:clamp(2rem,3.6vw,2.8rem);letter-spacing:-.02em;margin:10px 0 0;`,
   lead: css`margin-top:14px;font-size:1.1rem;`,

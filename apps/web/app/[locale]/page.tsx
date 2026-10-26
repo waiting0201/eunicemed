@@ -25,7 +25,7 @@ const S = {
   introEyebrow: css`color:#0092A8;font-weight:680;letter-spacing:.2em;text-transform:uppercase;font-size:clamp(.7rem,.9vw,.82rem);`,
   introTitle: css`font-weight:400;line-height:1.12;letter-spacing:-.02em;font-size:clamp(2rem,3.8vw,3.4rem);margin:14px 0 0;`,
   introHighlight: css`color:#0092A8;`,
-  introLead: css`font-size:clamp(.95rem,1.3vw,1.15rem);max-width:760px;margin:18px auto 0;`,
+  introLead: css`font-size:clamp(.95rem,1.3vw,1.15rem);max-width:820px;margin:18px auto 0;`,
 
   // 01 HERO PRODUCTS
   s01: css`max-width:1180px;margin:0 auto;padding:clamp(64px,8vw,96px) clamp(24px,5vw,64px);`,
