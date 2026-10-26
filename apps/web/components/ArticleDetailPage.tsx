@@ -169,7 +169,7 @@ export function ArticleDetailPage({
 
       <ResourcesSubnav locale={locale} active={`/${kind}`} />
 
-      <nav style={S.breadcrumb}>
+      <nav style={S.breadcrumb} data-r="crumbs">
         <Link href={`/${locale}/${kind}`}>{listLabel}</Link>
         {a.category && (
           <>

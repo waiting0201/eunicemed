@@ -21,7 +21,7 @@ export function Breadcrumb({
   current: string;
 }) {
   return (
-    <nav style={S.nav}>
+    <nav style={S.nav} data-r="crumbs">
       {/* 麵包屑的 JSON-LD 就掛在麵包屑上 —— 兩者永遠一致，不會有人改了一邊忘了另一邊 */}
       <JsonLd
         data={breadcrumbSchema([

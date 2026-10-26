@@ -32,6 +32,7 @@
 | `hide` | 窄螢幕隱藏（桌機導覽、Where to Buy 藥丸、語系切換） |
 | `only-mobile` | 只在窄螢幕出現（漢堡鈕） |
 | `hide-narrow` | ≤780px 隱藏（人體圖 chip） |
+| `crumbs` | 觸控裝置上把麵包屑連結的點擊範圍撐到 ≥24px（用 `::after`，排版不動） |
 | `figure` | ≤640px 縮到 128px 並置中（尺寸表旁的量測部位圖，換行後會靠左孤懸） |
 | `unstick` | 取消 `position:sticky` |
 | `scroll` | 改成橫向捲動（Resources 次導覽） |

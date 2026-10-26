@@ -447,6 +447,31 @@
 }
 
 /**
+ * 表單欄位在觸控裝置上至少 16px。mockup4 的欄位是 `.95rem`（15.2px），
+ * iOS Safari 遇到 16px 以下的欄位會在 focus 時自動放大整頁，而且不會縮回來。
+ * 用 `pointer: coarse` 而不是寬度：橫放的 iPad 寬過 1024px，但一樣會放大。
+ */
+@media (pointer: coarse) {
+  form input,
+  form select,
+  form textarea {
+    font-size: 16px !important;
+  }
+
+  /* 麵包屑連結只有 13px 高（`.85rem` 的一行字），手指很難點中。
+     用 `::after` 往外撐到約 25px —— 不動排版；上下只撐 6px，
+     因為手機上麵包屑常折成兩行，撐太多會跟上下行的連結重疊。 */
+  [data-r~='crumbs'] a {
+    position: relative;
+  }
+  [data-r~='crumbs'] a::after {
+    content: '';
+    position: absolute;
+    inset: -6px -4px;
+  }
+}
+
+/**
  * 手機版導覽。mockup4 沒有這一塊 —— 它 18 頁都只有桌機那一列導覽 ——
  * 所以 `MobileNav` 是現場設計的，這裡負責在兩種尺寸間切換誰出現。
  */
