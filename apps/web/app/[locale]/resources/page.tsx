@@ -24,7 +24,7 @@ const S = {
   heroEyebrow: css`color:#0092A8;font-weight:680;letter-spacing:.16em;text-transform:uppercase;font-size:.78rem;`,
   heroTitle: css`font-weight:400;font-size:clamp(2.1rem,4vw,3.1rem);margin:12px auto 0;`,
   heroStrong: css`font-weight:640;`,
-  heroLead: css`margin:16px auto 0;max-width:620px;font-size:1.1rem;`,
+  heroLead: css`margin:16px auto 0;max-width:760px;font-size:1.1rem;`,
 
   hubs: css`max-width:1180px;margin:0 auto;padding:clamp(48px,6vw,72px) clamp(24px,5vw,64px) clamp(24px,3vw,36px);`,
   hubGrid: css`display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:24px;`,
