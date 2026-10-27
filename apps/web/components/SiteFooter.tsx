@@ -78,7 +78,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
         <div style={S.rule}>
           <span>{COPYRIGHT[locale](new Date().getFullYear())}</span>
           {/* 品牌主張是品牌符號，兩種語系都不翻譯（docs/08 §5.2 例外清單） */}
-          <span>Not Just a Motion</span>
+          <span>Support feels personal</span>
         </div>
       </div>
     </footer>
