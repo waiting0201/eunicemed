@@ -25,7 +25,7 @@ export const ORGANIZATION_ID = `${SITE_URL}/#organization`;
 const BRAND = 'EuniceMed';
 
 /** 品牌標語是品牌符號，不隨語系翻譯（docs/08 §5.2 的例外清單）。 */
-const SLOGAN = 'Not Just a Motion — enhancing your quality of life';
+const SLOGAN = 'Support feels personal';
 
 /**
  * 全站的 Organization。放在 `[locale]/layout.tsx`，每一頁都有。

@@ -28,7 +28,7 @@ export async function generateMetadata({
       template: '%s · EuniceMed',
     },
     // 品牌 slogan 是品牌符號，不翻譯（docs/08 §5.2 的例外清單）
-    description: 'Not Just a Motion — enhancing your quality of life',
+    description: 'Support feels personal',
     alternates: {
       languages: Object.fromEntries(LOCALES.map((l) => [l, absoluteUrl(l)])),
     },

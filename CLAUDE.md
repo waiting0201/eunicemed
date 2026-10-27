@@ -12,7 +12,7 @@
   - 地址：24158 新北市三重區興德路 123-9 號 11 樓
   - 電話：+886 2 8511 3758　信箱：service@comfortplus-medical.com
   - 營業時間：週一至週五 09:00–18:00（UTC+8）
-- **品牌主張**：*Not Just a Motion — enhancing your quality of life*
+- **品牌主張**：*Support feels personal*（2026-10-27 起取代舊站的 Not Just a Motion）
 - **網站性質**：企業形象 + 產品型錄 + 內容行銷（非電商，無線上金流；以諮詢／經銷導流為主）
 - **語系**：多語系，英文（`en`）為主、繁體中文（`zh-TW`）次之，架構保留擴充其他語系空間
 

@@ -22,7 +22,7 @@
 | 品牌價值 | Excellence 卓越 · Care 關懷 · Partnership 夥伴關係 |
 | 品牌個性 | Precise 精準講究 · Diligent 細心盡責 · Approachable 溫暖親切 |
 | 品牌語調 | Purposeful 使命導向 · Considerate 同理關懷 |
-| Slogan | **Not Just a Motion**（字標單色 Pantone 7466c） |
+| Slogan | **Support feels personal**（字標單色 Pantone 7466c） |
 | Campaign 標語 | Support Feels Personal |
 
 > 文案撰寫（含 UI 字串、SEO 描述）依上述語調：專業精準但溫暖親切，避免誇大療效宣稱。
@@ -141,7 +141,7 @@ collection: {
 ### 5.2 文案語言純度（每語系單一語言）
 
 - **英文版頁面不得出現中文、中文版頁面不得出現英文**——所有 UI 字串、導覽標籤、按鈕、tooltip、表單欄位、錯誤訊息、alt 文字皆須是該 locale 的單一語言，**不做中英並列標籤**（如「About 關於我們」這種併排寫法僅限內部文件，不進 UI）。
-- 例外（視為品牌符號，不算外語）：logo「EUNICEMED」、子品牌 AerGo/motif、slogan「Not Just a Motion」字標、系列名 **CARE / PROTECT / ADVANCE**（註冊分級名，中文版保留原文，可於首次出現時加中文說明）、認證縮寫（ISO 13485、CE）、產品型號（CPO-XXXX）。
+- 例外（視為品牌符號，不算外語）：logo「EUNICEMED」、子品牌 AerGo/motif、slogan「Support feels personal」、系列名 **CARE / PROTECT / ADVANCE**（註冊分級名，中文版保留原文，可於首次出現時加中文說明）、認證縮寫（ISO 13485、CE）、產品型號（CPO-XXXX）。
 - CMS 內容（產品描述、文章）同樣遵守：zh-TW 翻譯欄位不得以英文原文充數；未翻譯完成的內容在該語系**不顯示**（fallback 隱藏，而非露出英文）。
 
 ---

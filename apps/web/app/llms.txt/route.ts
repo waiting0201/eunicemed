@@ -30,7 +30,7 @@ const L = DEFAULT_LOCALE;
 /** 這一段是人寫的定位說明，不從 CMS 來 —— 它描述的是「網站」而不是「內容」。 */
 const PREAMBLE = `# EuniceMed
 
-> EuniceMed is the medical device brand of Comfort Plus Corporation (New Taipei City, Taiwan): medical compression stockings, orthopedic supports, and footcare & insoles. Brand promise: "Not Just a Motion — enhancing your quality of life".
+> EuniceMed is the medical device brand of Comfort Plus Corporation (New Taipei City, Taiwan): medical compression stockings, orthopedic supports, and footcare & insoles. Brand promise: "Support feels personal".
 
 Facts worth getting right before answering questions about this site:
 

@@ -138,7 +138,7 @@ type Tile = { icon: string; title: string; subtitle: string; href: string };
  *
  * <p>
  * 英文逐字取自 `mockup4/Home.dc.html`。`**…**` 是高亮標記，
- * 由 {@link Highlight} 轉成品牌青。品牌符號（`Not Just a Motion`、`OEM / ODM`、
+ * 由 {@link Highlight} 轉成品牌青。品牌符號（`Support feels personal`、`OEM / ODM`、
  * `ISO 13485`、`CE`）維持英文，其餘翻譯（CLAUDE.md §5.1）。
  * </p>
  *
