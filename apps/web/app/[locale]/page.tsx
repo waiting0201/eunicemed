@@ -42,7 +42,6 @@ const S = {
   cardBlurb: css`font-size:.86rem;`,
   promo: css`display:flex;align-items:center;justify-content:space-between;gap:28px;margin-top:36px;border-radius:20px;background:linear-gradient(120deg,#00B5CD,#007D95);padding:30px 36px;`,
   promoLeft: css`display:flex;align-items:center;gap:26px;`,
-  promoSvg: css`width:78px;opacity:.85;flex:none;`,
   promoEyebrow: css`color:rgba(255,255,255,.85);font-size:.85rem;font-weight:620;letter-spacing:.12em;text-transform:uppercase;`,
   promoTitle: css`color:#fff;font-weight:500;font-size:1.5rem;margin-top:6px;`,
   promoArrow: css`color:#fff;font-weight:620;font-size:1.4rem;flex:none;`,
@@ -75,8 +74,7 @@ const S = {
   s04: css`background:#F5FAFB;padding:clamp(64px,8vw,96px) 0;`,
   s04Inner: css`max-width:1180px;margin:0 auto;padding:0 clamp(24px,5vw,64px);display:grid;grid-template-columns:1.02fr .98fr;gap:clamp(40px,6vw,72px);align-items:center;`,
   s04Title: css`color:#16333B;font-weight:400;font-size:clamp(2rem,4vw,2.6rem);line-height:1.08;margin:8px 0 0;`,
-  s04Marks: css`display:block;margin:36px 0 20px;`,
-  s04Quote: css`color:#16333B;font-weight:440;font-stretch:108%;font-size:clamp(1.5rem,2.5vw,2.05rem);line-height:1.3;letter-spacing:-.01em;max-width:20ch;`,
+  s04Quote: css`margin-top:36px;color:#16333B;font-weight:440;font-stretch:108%;font-size:clamp(1.5rem,2.5vw,2.05rem);line-height:1.3;letter-spacing:-.01em;max-width:20ch;`,
   s04Attr: css`margin-top:16px;font-size:.9rem;color:#44565D;font-weight:600;`,
   s04AttrRegion: css`color:#66787F;font-weight:500;`,
   s04Mini: css`margin-top:38px;border-top:1px solid #DFE9EC;`,
@@ -332,16 +330,6 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
           {promo && (
             <PromoBand promo={promo}>
               <div style={S.promoLeft}>
-                {/* 動線標記：三條同心的「起身」曲線，取自 mockup4。
-                    純裝飾，不進無障礙樹。 */}
-                <svg viewBox="0 0 190 140" aria-hidden="true" style={S.promoSvg}>
-                  <g fill="none" stroke="#fff" strokeWidth="9">
-                    <path d="M 40 140 V 75 Q 40 40 75 40 H 190" />
-                    <path d="M 62 140 V 97 Q 62 62 97 62 H 190" />
-                    <path d="M 84 140 V 119 Q 84 84 119 84 H 190" />
-                  </g>
-                </svg>
-
                 <div>
                   {promo.eyebrow && <p style={S.promoEyebrow}>{promo.eyebrow}</p>}
                   {promo.title && <h3 style={S.promoTitle}>{promo.title}</h3>}
@@ -427,14 +415,6 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
                 numeralStyle={NUMERAL.accent}
                 titleStyle={S.s04Title}
               />
-
-              {/* 起引號記號，純裝飾 */}
-              <svg viewBox="0 0 92 62" width="56" aria-hidden style={S.s04Marks}>
-                <g fill="none" stroke="#0092A8" strokeWidth="11" strokeLinecap="round">
-                  <path d="M33 9 Q13 9 13 31 V53" />
-                  <path d="M80 9 Q60 9 60 31 V53" />
-                </g>
-              </svg>
 
               {testimonial.quote && <blockquote style={S.s04Quote}>{testimonial.quote}</blockquote>}
               {testimonial.attribution?.name && (

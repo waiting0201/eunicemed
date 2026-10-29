@@ -70,6 +70,9 @@
     "max-width:22ch": "About Manufacturing 標題。mockup4 的佔位標題夠短，22ch 塞得下；2026-10 文案定稿的「Manufacturing & Quality Excellence」34 字元會被折成兩行，客戶要求標題不斷行。首頁 Why Partner 標題的 max-width:20ch 同理拿掉（該宣告仍被首頁見證引言使用，所以不會出現在這裡）。",
     "max-width:760px": "Resources 頁首大標，理由同上：定稿文案「Everything you need, in one place」在最大字級下超過 760px，最後幾個字會掉到第二行。",
     "max-width:52ch": "首頁頁首「Support Feels Personal.」底下的敘述。mockup4 的佔位文案短，52ch 剛好；2026-10 定稿文案 237 字元在 52ch（約 490px）下折成 5 行，客戶要求放寬。改用 PageHero 的 820px，與其他頁的頁首敘述同寬。Products CTA 仍用 52ch，所以這一條只對首頁有效。",
-    "max-width:620px": "Resources 頁首敘述。客戶要求頁首敘述放寬，統一成其他頁 PageHero 的 820px。"
+    "max-width:620px": "Resources 頁首敘述。客戶要求頁首敘述放寬，統一成其他頁 PageHero 的 820px。",
+    "width:78px": "首頁完整型錄橫幅左側的三條動線裝飾圖。客戶 2026-10-29 要求拿掉。",
+    "opacity:0.85": "同上，那張裝飾圖的透明度。",
+    "margin:36px 0 20px": "首頁 04 見證區標題下的引號裝飾圖。客戶 2026-10-29 要求拿掉；原本它撐開的上距改由 blockquote 的 margin-top:36px 承接。"
   }
 }
