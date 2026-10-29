@@ -120,7 +120,10 @@ const SUBMIT: Record<Locale, string> = { en: 'Submit inquiry', 'zh-TW': '送出�
 /** 這頁的區段標題比預設大一階（mockup4：clamp(1.8rem,3.4vw,2.4rem)）。 */
 const PART_H2 = 'text-[clamp(1.8rem,3.4vw,2.4rem)]';
 
-/** §01 / §02 共用的 21:9 大圖，圓角 22px 加一層柔和落影（mockup4）。 */
+/**
+ * §01 / §02 共用的 21:9 大圖，圓角 22px 加一層柔和落影（mockup4）。
+ * 沒傳圖就不渲染 —— 空的落影框看起來像壞掉（判斷看 `url`，理由同 `lib/bands.ts`）。
+ */
 function WideShot({ image, focus }: { image: MediaRef; focus: CSSProperties }) {
   return (
     <div style={S.shot}>
@@ -204,11 +207,7 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
                 />
               )}
             </div>
-            {distributor.image ? (
-              <WideShot image={distributor.image} focus={S.focus25} />
-            ) : (
-              <div style={S.shot} />
-            )}
+            {distributor.image?.url && <WideShot image={distributor.image} focus={S.focus25} />}
           </div>
         </section>
       )}
@@ -242,7 +241,7 @@ export default async function PartnershipPage({ params }: { params: Promise<Para
                 </div>
               )}
             </div>
-            {oem.image ? <WideShot image={oem.image} focus={S.focus30} /> : <div style={S.shot} />}
+            {oem.image?.url && <WideShot image={oem.image} focus={S.focus30} />}
 
             {oemFaqs.length > 0 && (
               <div style={S.copy}>
