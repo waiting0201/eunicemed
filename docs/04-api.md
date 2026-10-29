@@ -143,6 +143,9 @@ POST /api/auth/logout       (撤銷 refresh token)
 
 `facets` 的計數**不受同維度篩選影響**（選了 Medical 之後，其他分類仍顯示各自總數），但受其他維度篩選影響。
 
+`subCategories` 與 `bodyParts` 是**多值維度**：一個產品可掛多個子分類（主＋次要，見 [05](05-database.md) §3.2），
+所以這兩組的計數總和會大於 `total`。
+
 ---
 
 ### 產品
@@ -156,6 +159,8 @@ GET /api/products/by-slug/{slug}?locale=en             # 扁平查詢：預覽�
 
 - `featured=true` 時依 `Product.FeaturedSortOrder` 排序（首頁 01 Hero products）；回應含 `towerImage`。
 - 路徑三段（category / sub / slug）皆會驗證歸屬；不符時回 404（不做寬鬆比對，避免重複內容）。
+  `sub` 只認**主**子分類 —— 次要子分類組出來的路徑同樣 404。
+- `subCategory={slug}` 篩選命中主**或**次要子分類；回傳項目的 `subCategory` 與 `url` 一律是主子分類。
 
 `ProductListItemDto`（列表卡／精選卡）：
 ```json
@@ -232,7 +237,7 @@ GET /api/certifications?locale=en                   # About 認證帶與產品�
 }
 ```
 
-> `stats[].value` 為 `"auto"` 時由 API 代入實際產品數。
+> `stats[].value` 為 `"auto"` 時由 API 代入實際產品數（不重複計算掛了多個子分類的產品）。
 >
 > `image` 是總覽頁分類卡的方形圖（`ImageMediaId`，preset `square`），
 > `heroImage` 是落地頁的 16:10 大圖（`HeroImageMediaId`）—— 兩張不同用途，別互相代用。

@@ -38,6 +38,7 @@ public sealed record AdminProductDto(
     string?                                     Sku,
     Guid                                        CategoryId,
     Guid?                                       SubCategoryId,
+    Guid[]                                      SecondarySubCategoryIds,
     Guid?                                       CollectionId,
     byte                                        Status,
     bool                                        IsFeatured,
@@ -86,6 +87,8 @@ public sealed record UpsertProductRequest(
     string?                                      Sku                 = null,
     Guid?                                        CategoryId          = null,
     Guid?                                        SubCategoryId       = null,
+    // 次要子分類：產品也列在這些子分類頁上，不影響網址。null = 不動，空陣列 = 清空
+    Guid[]?                                      SecondarySubCategoryIds = null,
     Guid?                                        CollectionId        = null,
     bool?                                        IsFeatured          = null,
     int?                                         FeaturedSortOrder   = null,

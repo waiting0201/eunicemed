@@ -263,7 +263,11 @@ export function ProductEdit() {
                     onChange={(e) =>
                       // 換分類時一併清掉子分類 —— 子分類必須屬於該分類，
                       // 留著舊的會在存檔時被後端以 400 退回
-                      patch({ categoryId: e.target.value, subCategoryId: null })
+                      patch({
+                        categoryId: e.target.value,
+                        subCategoryId: null,
+                        secondarySubCategoryIds: [],
+                      })
                     }
                   >
                     {(taxonomy.data?.categories ?? []).map((c) => (
@@ -275,13 +279,20 @@ export function ProductEdit() {
                 </Field>
 
                 <Field
-                  label="子分類"
-                  hint="決定產品網址的第三段。留空的話產品沒有可分享的三段網址。"
+                  label="主要子分類"
+                  hint="決定產品網址的第三段與麵包屑。留空的話產品沒有可分享的三段網址。"
                 >
                   <select
                     className="form-control"
                     value={draft.subCategoryId ?? ''}
-                    onChange={(e) => patch({ subCategoryId: e.target.value || null })}
+                    onChange={(e) => {
+                      const next = e.target.value || null;
+                      // 升為主要的那一個要從「也列在」拿掉 —— 後端也會濾，這裡先讓畫面一致
+                      patch({
+                        subCategoryId: next,
+                        secondarySubCategoryIds: draft.secondarySubCategoryIds.filter((x) => x !== next),
+                      });
+                    }}
                   >
                     <option value="">（不指定）</option>
                     {subCategories.map((s) => (
@@ -292,6 +303,16 @@ export function ProductEdit() {
                   </select>
                 </Field>
               </FieldRow>
+
+              <MultiSelect
+                label="也列在這些子分類"
+                options={subCategories.filter((s) => s.id !== draft.subCategoryId)}
+                selected={draft.secondarySubCategoryIds}
+                onChange={(secondarySubCategoryIds) => patch({ secondarySubCategoryIds })}
+                keyOf={(s) => s.id}
+                labelOf={(s) => s.translations['zh-TW']?.name ?? s.slug}
+                hint="產品會同時出現在這些子分類頁與篩選結果裡，網址仍以主要子分類為準。"
+              />
 
               <FieldRow>
                 <Field label="系列">
@@ -635,6 +656,7 @@ function toRequest(draft: AdminProduct, removed: string[]) {
     sku: draft.sku,
     categoryId: draft.categoryId,
     subCategoryId: draft.subCategoryId,
+    secondarySubCategoryIds: draft.secondarySubCategoryIds,
     collectionId: draft.collectionId,
     isFeatured: draft.isFeatured,
     featuredSortOrder: draft.featuredSortOrder,

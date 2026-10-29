@@ -100,6 +100,17 @@ public sealed class ProductReadService(IDbConnection db) : IProductReadService
                         FOR XML PATH('')), 1, 1, '') AS BodyPartCsv
         """;
 
+    /// <summary>
+    /// 子分類篩選：主子分類**或**次要子分類（<c>ProductSubCategories</c>）命中即算。
+    /// 列表卡的網址仍由主子分類組成 —— 從「水腫」頁點進去，落在的是產品唯一的那個網址。
+    /// </summary>
+    private const string InSubCategory = """
+        (sc.Slug = @subCategory
+         OR EXISTS (SELECT 1 FROM ProductSubCategories psc
+                    INNER JOIN SubCategories s2 ON s2.Id = psc.SubCategoryId AND s2.IsDeleted = 0
+                    WHERE psc.ProductId = p.Id AND s2.Slug = @subCategory))
+        """;
+
     private sealed record ListRow(
         string Slug, string Name, string? Sku,
         string? CategorySlug, string? CategoryName,
@@ -114,7 +125,7 @@ public sealed class ProductReadService(IDbConnection db) : IProductReadService
         var where = new List<string>();
 
         if (filter.Category    is not null) { where.Add("c.Slug   = @category");    p.Add("@category",    filter.Category,    DbType.String, size: 120); }
-        if (filter.SubCategory is not null) { where.Add("sc.Slug  = @subCategory"); p.Add("@subCategory", filter.SubCategory, DbType.String, size: 120); }
+        if (filter.SubCategory is not null) { where.Add(InSubCategory); p.Add("@subCategory", filter.SubCategory, DbType.String, size: 120); }
         if (filter.Collection  is not null) { where.Add("col.Slug = @collection");  p.Add("@collection",  filter.Collection,  DbType.String, size: 120); }
         if (filter.BodyPart    is not null)
         {
@@ -162,6 +173,9 @@ public sealed class ProductReadService(IDbConnection db) : IProductReadService
         const string sql = """
             SELECT c.Slug AS CategorySlug,
                    sc.Slug AS SubCategorySlug,
+                   STUFF((SELECT ',' + s2.Slug FROM ProductSubCategories psc
+                            INNER JOIN SubCategories s2 ON s2.Id = psc.SubCategoryId AND s2.IsDeleted = 0
+                            WHERE psc.ProductId = p.Id FOR XML PATH('')), 1, 1, '') AS SecondarySubCategoryCsv,
                    col.Slug AS CollectionSlug,
                    STUFF((SELECT ',' + bp.Slug FROM ProductBodyParts pbp
                             INNER JOIN BodyParts bp ON bp.Id = pbp.BodyPartId
@@ -174,8 +188,12 @@ public sealed class ProductReadService(IDbConnection db) : IProductReadService
             WHERE  p.IsDeleted = 0 AND p.Status = 1
             """;
 
-        var rows = await db.QueryAsync<(string CategorySlug, string? SubCategorySlug, string? CollectionSlug, string? BodyPartCsv)>(sql, Params(locale));
-        return rows.Select(r => new FacetRow(r.CategorySlug, r.SubCategorySlug, r.CollectionSlug, Split(r.BodyPartCsv))).ToList();
+        var rows = await db.QueryAsync<(string CategorySlug, string? SubCategorySlug, string? SecondarySubCategoryCsv, string? CollectionSlug, string? BodyPartCsv)>(sql, Params(locale));
+        return rows.Select(r => new FacetRow(
+            r.CategorySlug,
+            r.SubCategorySlug is { } primary ? [primary, .. Split(r.SecondarySubCategoryCsv)] : Split(r.SecondarySubCategoryCsv),
+            r.CollectionSlug,
+            Split(r.BodyPartCsv))).ToList();
     }
 
     private const string DetailSelect = """
@@ -215,6 +233,7 @@ public sealed class ProductReadService(IDbConnection db) : IProductReadService
     /// <summary>
     /// 相關產品：先取人工指定的 <c>ProductRelated</c>；不足時依
     /// 同 SubCategory → 同 Category → 同 BodyPart 的順序遞補（docs/05 §3.2）。
+    /// 「同 SubCategory」看的是主＋次要的聯集，任一個重疊就算。
     /// </summary>
     public async Task<IReadOnlyList<ProductListItemDto>> GetRelatedAsync(Guid productId, string locale, int take)
     {
@@ -236,17 +255,17 @@ public sealed class ProductReadService(IDbConnection db) : IProductReadService
         }
 
         // 自動遞補。ORDER BY 的三段就是規格的優先序。
-        const string auto = """
+        var auto = $"""
             AND p.Id <> @pid
-            AND (   p.SubCategoryId = (SELECT SubCategoryId FROM Products WHERE Id = @pid)
+            AND (   {SharesSubCategory}
                  OR p.CategoryId    = (SELECT CategoryId    FROM Products WHERE Id = @pid)
                  OR EXISTS (SELECT 1 FROM ProductBodyParts a
                             INNER JOIN ProductBodyParts b ON b.BodyPartId = a.BodyPartId
                             WHERE a.ProductId = @pid AND b.ProductId = p.Id))
             """;
 
-        const string autoOrder = """
-            ORDER BY CASE WHEN p.SubCategoryId = (SELECT SubCategoryId FROM Products WHERE Id = @pid) THEN 0
+        var autoOrder = $"""
+            ORDER BY CASE WHEN {SharesSubCategory} THEN 0
                           WHEN p.CategoryId    = (SELECT CategoryId    FROM Products WHERE Id = @pid) THEN 1
                           ELSE 2 END,
                      p.SortOrder, pt.Name
@@ -297,6 +316,17 @@ public sealed class ProductReadService(IDbConnection db) : IProductReadService
     }
 
     // ── 內部 ───────────────────────────────────────────────────────────────
+
+    /// <summary>候選產品 p 與 @pid 至少共用一個子分類（主或次要皆算）。</summary>
+    private const string SharesSubCategory = """
+        EXISTS (SELECT 1
+                FROM  (SELECT p.SubCategoryId AS Id
+                       UNION SELECT SubCategoryId FROM ProductSubCategories WHERE ProductId = p.Id) a
+                INNER JOIN
+                      (SELECT SubCategoryId AS Id FROM Products WHERE Id = @pid
+                       UNION SELECT SubCategoryId FROM ProductSubCategories WHERE ProductId = @pid) b
+                      ON b.Id = a.Id)
+        """;
 
     /// <summary>⚠️ locale 必須以 AnsiString 送出（欄位是 varchar(10)），否則索引失效。</summary>
     private static DynamicParameters Params(string locale)

@@ -5,7 +5,8 @@ public enum FacetDimension { Category, SubCategory, Collection, BodyPart }
 /// <summary>投影出來的最小候選列 —— 只帶折算 facet 需要的欄位。</summary>
 public sealed record FacetRow(
     string   CategorySlug,
-    string?  SubCategorySlug,
+    /// <summary>主子分類在前、次要子分類在後（docs/05 §3.2 的 ProductSubCategory）</summary>
+    string[] SubCategorySlugs,
     string?  CollectionSlug,
     string[] BodyPartSlugs);
 
@@ -27,7 +28,7 @@ public sealed record ProductFilter(
 
     public bool Matches(FacetRow r) =>
         (Category    is null || r.CategorySlug    == Category)
-     && (SubCategory is null || r.SubCategorySlug == SubCategory)
+     && (SubCategory is null || r.SubCategorySlugs.Contains(SubCategory))
      && (Collection  is null || r.CollectionSlug  == Collection)
      && (BodyPart    is null || r.BodyPartSlugs.Contains(BodyPart));
 }
@@ -54,7 +55,7 @@ public sealed record FacetCount(string Slug, string Label, int Count);
 ///
 /// <para>
 /// 兩個容易被當成 bug 的正確行為：
-/// <c>bodyParts</c> 是多值欄位，其計數總和**會大於** <c>total</c>；
+/// <c>subCategories</c> 與 <c>bodyParts</c> 是多值欄位，其計數總和**會大於** <c>total</c>；
 /// 而且所有 facet 計數都**完全忽略分頁**。
 /// </para>
 /// </summary>
@@ -71,13 +72,13 @@ public static class FacetFolder
         return new Dictionary<string, FacetCount[]>
         {
             ["categories"]    = Single(rows, filter, FacetDimension.Category,    r => r.CategorySlug,    categoryLabels),
-            ["subCategories"] = Single(rows, filter, FacetDimension.SubCategory, r => r.SubCategorySlug, subCategoryLabels),
+            ["subCategories"] = Multi (rows, filter, FacetDimension.SubCategory, r => r.SubCategorySlugs, subCategoryLabels),
             ["collections"]   = Single(rows, filter, FacetDimension.Collection,  r => r.CollectionSlug,  collectionLabels),
             ["bodyParts"]     = Multi (rows, filter, FacetDimension.BodyPart,    r => r.BodyPartSlugs,   bodyPartLabels),
         };
     }
 
-    /// <summary>單值維度（分類／子分類／系列）。</summary>
+    /// <summary>單值維度（分類／系列）。</summary>
     private static FacetCount[] Single(
         IReadOnlyList<FacetRow>             rows,
         ProductFilter                       filter,
@@ -96,7 +97,7 @@ public static class FacetFolder
                    .ToArray();
     }
 
-    /// <summary>多值維度（適用部位）。一筆產品可落在多個 slug，計數總和會大於 total。</summary>
+    /// <summary>多值維度（子分類、適用部位）。一筆產品可落在多個 slug，計數總和會大於 total。</summary>
     private static FacetCount[] Multi(
         IReadOnlyList<FacetRow>             rows,
         ProductFilter                       filter,

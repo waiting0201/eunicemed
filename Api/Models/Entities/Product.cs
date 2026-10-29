@@ -13,7 +13,10 @@ public class Product : ITranslatable<ProductTranslation>
     public Guid      CategoryId { get; set; }
     public Category? Category   { get; set; }
 
-    /// <summary>決定 URL 第三段 /products/{category}/{sub}/{slug}</summary>
+    /// <summary>
+    /// **主**子分類：決定 URL 第三段 /products/{category}/{sub}/{slug}、麵包屑與 canonical。
+    /// 產品同時屬於其他子分類時，那些放在 <see cref="SecondarySubCategories"/>。
+    /// </summary>
     public Guid?        SubCategoryId { get; set; }
     public SubCategory? SubCategory   { get; set; }
 
@@ -51,6 +54,7 @@ public class Product : ITranslatable<ProductTranslation>
 
     public ICollection<ProductTranslation>   Translations   { get; set; } = [];
     public ICollection<ProductImage>         Images         { get; set; } = [];
+    public ICollection<ProductSubCategory>   SecondarySubCategories { get; set; } = [];
     public ICollection<ProductBodyPart>      BodyParts      { get; set; } = [];
     public ICollection<ProductCertification> Certifications { get; set; } = [];
     public ICollection<ProductTag>           Tags           { get; set; } = [];
@@ -116,6 +120,23 @@ public class ProductRelated
     public Product? RelatedProduct   { get; set; }
 
     public int SortOrder { get; set; }
+}
+
+/// <summary>
+/// 次要子分類：產品**也**列在這些子分類頁上（例如同一雙彈性襪兼具靜脈曲張、水腫、日常三種用途）。
+///
+/// <para>
+/// 只影響「出現在哪些列表」，**不影響網址** —— 網址只有一個，由 <see cref="Product.SubCategoryId"/>
+/// 決定，否則同一個產品會有多個可索引 URL。不含主子分類本身，且必須與主分類同屬一個 Category
+/// （由 AdminProductHandler 保證）。
+/// </para>
+/// </summary>
+public class ProductSubCategory
+{
+    public Guid         ProductId     { get; set; }
+    public Product?     Product       { get; set; }
+    public Guid         SubCategoryId { get; set; }
+    public SubCategory? SubCategory   { get; set; }
 }
 
 public class ProductBodyPart

@@ -36,7 +36,8 @@ public sealed class TaxonomyReadService(IDbConnection db) : ITaxonomyReadService
         string Slug, string Name, string? Description,
         Guid? ImageMediaId, string? ImageUrl, string? ImageAlt,
         Guid? HeroMediaId, string? HeroUrl, string? HeroAlt,
-        string? StatsJson, string? SupportLevelsJson, string? SeoTitle, string? SeoDescription);
+        string? StatsJson, string? SupportLevelsJson, string? SeoTitle, string? SeoDescription,
+        int ProductCount);
 
     private const string CatSelect = """
         SELECT c.Slug, ct.Name, ct.Description,
@@ -46,7 +47,9 @@ public sealed class TaxonomyReadService(IDbConnection db) : ITaxonomyReadService
                c.HeroImageMediaId AS HeroMediaId,
                (SELECT BlobUrl FROM Media WHERE Id = c.HeroImageMediaId) AS HeroUrl,
                (SELECT AltText FROM Media WHERE Id = c.HeroImageMediaId) AS HeroAlt,
-               ct.StatsJson, ct.SupportLevelsJson, ct.SeoTitle, ct.SeoDescription
+               ct.StatsJson, ct.SupportLevelsJson, ct.SeoTitle, ct.SeoDescription,
+               (SELECT COUNT(*) FROM Products pr
+                  WHERE pr.CategoryId = c.Id AND pr.IsDeleted = 0 AND pr.Status = 1) AS ProductCount
         FROM   Categories c
                INNER JOIN CategoryTranslations ct ON ct.CategoryId = c.Id AND ct.Locale = @locale
         WHERE  c.IsDeleted = 0
@@ -91,7 +94,10 @@ public sealed class TaxonomyReadService(IDbConnection db) : ITaxonomyReadService
         var rows = await db.QueryAsync<SubCategoryRefDto>($"""
             SELECT sc.Slug, sct.Name,
                    (SELECT COUNT(*) FROM Products pr
-                      WHERE pr.SubCategoryId = sc.Id AND pr.IsDeleted = 0 AND pr.Status = 1) AS Count
+                      WHERE (pr.SubCategoryId = sc.Id
+                             OR EXISTS (SELECT 1 FROM ProductSubCategories psc
+                                        WHERE psc.ProductId = pr.Id AND psc.SubCategoryId = sc.Id))
+                        AND pr.IsDeleted = 0 AND pr.Status = 1) AS Count
             FROM   SubCategories sc
                    INNER JOIN SubCategoryTranslations sct ON sct.SubCategoryId = sc.Id AND sct.Locale = @locale
                    INNER JOIN Categories c ON c.Id = sc.CategoryId AND c.IsDeleted = 0
@@ -118,7 +124,12 @@ public sealed class TaxonomyReadService(IDbConnection db) : ITaxonomyReadService
                    (SELECT BlobUrl FROM Media WHERE Id = sc.HeroImageMediaId) AS HeroUrl,
                    (SELECT AltText FROM Media WHERE Id = sc.HeroImageMediaId) AS HeroAlt,
                    sct.StatsJson, CAST(NULL AS nvarchar(max)) AS SupportLevelsJson,
-                   sct.SeoTitle, sct.SeoDescription
+                   sct.SeoTitle, sct.SeoDescription,
+                   (SELECT COUNT(*) FROM Products pr
+                      WHERE (pr.SubCategoryId = sc.Id
+                             OR EXISTS (SELECT 1 FROM ProductSubCategories psc
+                                        WHERE psc.ProductId = pr.Id AND psc.SubCategoryId = sc.Id))
+                        AND pr.IsDeleted = 0 AND pr.Status = 1) AS ProductCount
             FROM   SubCategories sc
                    INNER JOIN SubCategoryTranslations sct ON sct.SubCategoryId = sc.Id AND sct.Locale = @locale
                    INNER JOIN Categories c ON c.Id = sc.CategoryId AND c.IsDeleted = 0
@@ -185,14 +196,18 @@ public sealed class TaxonomyReadService(IDbConnection db) : ITaxonomyReadService
         JsonField.Parse(r.StatsJson),
         JsonField.Parse(r.SupportLevelsJson),
         subs,
-        new SeoDto(r.SeoTitle, r.SeoDescription, null));
+        new SeoDto(r.SeoTitle, r.SeoDescription, null),
+        r.ProductCount);
 
     private async Task<Dictionary<string, SubCategoryRefDto[]>> SubCategoryRefsByCategoryAsync(string locale)
     {
         var rows = await db.QueryAsync<(string CategorySlug, string Slug, string Name, int Count)>("""
             SELECT c.Slug AS CategorySlug, sc.Slug, sct.Name,
                    (SELECT COUNT(*) FROM Products pr
-                      WHERE pr.SubCategoryId = sc.Id AND pr.IsDeleted = 0 AND pr.Status = 1) AS Count
+                      WHERE (pr.SubCategoryId = sc.Id
+                             OR EXISTS (SELECT 1 FROM ProductSubCategories psc
+                                        WHERE psc.ProductId = pr.Id AND psc.SubCategoryId = sc.Id))
+                        AND pr.IsDeleted = 0 AND pr.Status = 1) AS Count
             FROM   SubCategories sc
                    INNER JOIN SubCategoryTranslations sct ON sct.SubCategoryId = sc.Id AND sct.Locale = @locale
                    INNER JOIN Categories c ON c.Id = sc.CategoryId AND c.IsDeleted = 0

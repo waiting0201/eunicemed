@@ -25,7 +25,8 @@
 ## 2. 實體關聯（ER 摘要）
 
 ```
-Category 1───* SubCategory 1───* Product *───1 Collection
+Category 1───* SubCategory 1───* Product *───1 Collection   (SubCategory = 主子分類，決定 URL)
+Product *───* SubCategory     (ProductSubCategory，次要子分類：只影響列表，不影響 URL)
 Product 1───* ProductImage
 Product 1───* ProductTranslation        (Locale)
 Product *───* BodyPart        (ProductBodyPart)
@@ -151,7 +152,7 @@ CREATE TABLE Product (
     Slug          NVARCHAR(160) NOT NULL,
     Sku           NVARCHAR(60) NULL,             -- 型號，如 CPO-1603（產品頁顯示）
     CategoryId    UNIQUEIDENTIFIER NOT NULL REFERENCES Category(Id),
-    SubCategoryId UNIQUEIDENTIFIER NULL REFERENCES SubCategory(Id),  -- 決定 URL 第三段
+    SubCategoryId UNIQUEIDENTIFIER NULL REFERENCES SubCategory(Id),  -- 主子分類：決定 URL 第三段、麵包屑、canonical
     CollectionId  UNIQUEIDENTIFIER NULL REFERENCES Collection(Id),
     Status        TINYINT NOT NULL DEFAULT 0,    -- 0 Draft 1 Published 2 Archived
     IsFeatured    BIT NOT NULL DEFAULT 0,        -- 首頁 01 Hero products 自動取用
@@ -229,7 +230,27 @@ CREATE TABLE ProductBodyPart (
     BodyPartId UNIQUEIDENTIFIER NOT NULL REFERENCES BodyPart(Id),
     PRIMARY KEY (ProductId, BodyPartId)
 );
+
+-- 次要子分類（2026-10-29，migration AddProductSecondarySubCategories）
+CREATE TABLE ProductSubCategory (
+    ProductId     UNIQUEIDENTIFIER NOT NULL REFERENCES Product(Id) ON DELETE CASCADE,
+    SubCategoryId UNIQUEIDENTIFIER NOT NULL REFERENCES SubCategory(Id),
+    PRIMARY KEY (ProductId, SubCategoryId)
+);
+CREATE INDEX IX_ProductSubCategory_Sub ON ProductSubCategory(SubCategoryId);
 ```
+
+> **一個產品可同時屬於多個子分類，但只有一個網址**（2026-10-29 客戶需求：
+> 醫療彈性襪依壓力等級區分，但同一雙兼具靜脈曲張、水腫、日常穿搭等用途）。
+>
+> - `Product.SubCategoryId` 是**主**子分類，唯一決定 `/products/{category}/{sub}/{slug}`、麵包屑與 canonical。
+>   次要子分類的路徑（`/…/{次要 sub}/{slug}`）一律 404 —— 同一產品多個可索引 URL 就是重複內容。
+> - `ProductSubCategory` 只放**次要**的那些：不含主子分類本身，且必須與 `Product.CategoryId` 同分類
+>   （跨分類會讓產品出現在別的分類的子分類頁、卻不在那個分類頁本身）。兩條都由 `AdminProductHandler` 保證。
+> - 「出現在哪些列表」看主＋次要的聯集：子分類頁列表與篩選、`subCategories` facet、子分類 `count`、
+>   相關產品自動遞補的「同 SubCategory」層。列表卡的連結仍指向主子分類的網址。
+> - 分類頁 `stats` 的 `"auto"` 是**不重複**產品數，不再是子分類 count 加總（加總會重複計算）。
+> - 刪除子分類只擋「被當成主子分類」的產品；次要連結會一併移除。
 
 > **`BodyPart` seed 7 筆 vs 人體圖 4 部位**：兩者刻意不同。7 筆供產品篩選列（Knee / Ankle / Back & Waist / Elbow / Wrist…）使用；人體圖只渲染 `ShowOnBodyMap = 1` 的 4 筆（back / knee / ankle / foot），與 [09-page-blocks.md](09-page-blocks.md) §5.3 一致。
 

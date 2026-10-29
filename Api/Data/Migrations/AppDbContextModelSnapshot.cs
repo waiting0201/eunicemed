@@ -2516,6 +2516,22 @@ namespace EuniceMed.Api.Data.Migrations
                     b.ToTable("ProductRelated");
                 });
 
+            modelBuilder.Entity("EuniceMed.Api.Models.Entities.ProductSubCategory", b =>
+                {
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SubCategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("ProductId", "SubCategoryId");
+
+                    b.HasIndex("SubCategoryId")
+                        .HasDatabaseName("IX_ProductSubCategory_Sub");
+
+                    b.ToTable("ProductSubCategories");
+                });
+
             modelBuilder.Entity("EuniceMed.Api.Models.Entities.ProductTag", b =>
                 {
                     b.Property<Guid>("ProductId")
@@ -3948,6 +3964,25 @@ namespace EuniceMed.Api.Data.Migrations
                     b.Navigation("RelatedProduct");
                 });
 
+            modelBuilder.Entity("EuniceMed.Api.Models.Entities.ProductSubCategory", b =>
+                {
+                    b.HasOne("EuniceMed.Api.Models.Entities.Product", "Product")
+                        .WithMany("SecondarySubCategories")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EuniceMed.Api.Models.Entities.SubCategory", "SubCategory")
+                        .WithMany()
+                        .HasForeignKey("SubCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("SubCategory");
+                });
+
             modelBuilder.Entity("EuniceMed.Api.Models.Entities.ProductTag", b =>
                 {
                     b.HasOne("EuniceMed.Api.Models.Entities.Product", "Product")
@@ -4160,6 +4195,8 @@ namespace EuniceMed.Api.Data.Migrations
                     b.Navigation("Images");
 
                     b.Navigation("Related");
+
+                    b.Navigation("SecondarySubCategories");
 
                     b.Navigation("Tags");
 

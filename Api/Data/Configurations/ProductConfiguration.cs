@@ -109,6 +109,21 @@ public class ProductRelatedConfiguration : IEntityTypeConfiguration<ProductRelat
     }
 }
 
+public class ProductSubCategoryConfiguration : IEntityTypeConfiguration<ProductSubCategory>
+{
+    public void Configure(EntityTypeBuilder<ProductSubCategory> b)
+    {
+        b.HasKey(x => new { x.ProductId, x.SubCategoryId });
+        b.HasOne(x => x.Product).WithMany(p => p.SecondarySubCategories)
+         .HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Cascade);
+        b.HasOne(x => x.SubCategory).WithMany()
+         .HasForeignKey(x => x.SubCategoryId).OnDelete(DeleteBehavior.Restrict);
+
+        // 子分類頁列產品時是「由子分類找產品」，PK 的順序幫不上
+        b.HasIndex(x => x.SubCategoryId).HasDatabaseName("IX_ProductSubCategory_Sub");
+    }
+}
+
 public class ProductBodyPartConfiguration : IEntityTypeConfiguration<ProductBodyPart>
 {
     public void Configure(EntityTypeBuilder<ProductBodyPart> b)

@@ -915,6 +915,8 @@ export type AdminProduct = {
   sku: string | null;
   categoryId: string;
   subCategoryId: string | null;
+  /** 也列在這些子分類頁上；不影響網址。必須同分類、不含主子分類 */
+  secondarySubCategoryIds: string[];
   collectionId: string | null;
   status: number;
   isFeatured: boolean;

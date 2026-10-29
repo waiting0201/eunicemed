@@ -23,6 +23,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ProductTranslation>   ProductTranslations  { get; set; }
     public DbSet<ProductImage>         ProductImages        { get; set; }
     public DbSet<ProductRelated>       ProductRelated       { get; set; }
+    public DbSet<ProductSubCategory>   ProductSubCategories { get; set; }
     public DbSet<ProductBodyPart>      ProductBodyParts     { get; set; }
     public DbSet<ProductCertification> ProductCertifications { get; set; }
     public DbSet<ProductTag>           ProductTags          { get; set; }

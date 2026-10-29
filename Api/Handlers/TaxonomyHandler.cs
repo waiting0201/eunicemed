@@ -62,10 +62,10 @@ public sealed class TaxonomyHandler(ITaxonomyReadService reader)
 
     /// <summary>
     /// docs/04-api.md §4：<c>stats[].value</c> 為 <c>"auto"</c> 時由 API 代入實際產品數。
-    /// 這裡的「產品數」取該分類底下所有子分類的 count 總和 —— 子分類的 count
-    /// 已經是「已發布且未刪除」的口徑，與列表頁的數字一致。
+    /// 「產品數」是**不重複**的已發布產品數（<see cref="Models.Dtos.CategoryDto.ProductCount"/>）。
+    /// 早期取子分類 count 的總和，但產品可同時掛多個子分類之後，總和會重複計算。
     /// </summary>
     private static Models.Dtos.CategoryDto WithAutoStats(Models.Dtos.CategoryDto c) =>
         c with { Stats = JsonField.SubstituteAutoStats(c.Stats as System.Text.Json.Nodes.JsonNode,
-                                                  c.SubCategories.Sum(s => s.Count)) };
+                                                  c.ProductCount) };
 }

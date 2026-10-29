@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using EuniceMed.Api.Common;
 
 namespace EuniceMed.Api.Models.Dtos;
@@ -92,7 +93,10 @@ public sealed record CategoryDto(
     object?         Stats,
     object?         SupportLevels,
     SubCategoryRefDto[] SubCategories,
-    SeoDto          Seo);
+    SeoDto          Seo,
+    // stats 的 "auto" 代入值：**不重複**的已發布產品數。不能用子分類 count 加總 ——
+    // 一個產品可掛多個子分類（ProductSubCategory），加總會重複計算
+    [property: JsonIgnore] int ProductCount = 0);
 
 public sealed record SubCategoryRefDto(string Slug, string Name, int Count);
 

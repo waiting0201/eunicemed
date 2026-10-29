@@ -17,7 +17,7 @@ namespace EuniceMed.Api.Handlers;
 /// 但多了三件 Collection 沒有的事，其餘內容模組會重複遇到：
 /// </para>
 /// <list type="number">
-/// <item><b>關聯表整批取代</b>：BodyPart / Certification / Tag / Image。
+/// <item><b>關聯表整批取代</b>：次要子分類 / BodyPart / Certification / Tag / Image。
 ///       null = 不動，空陣列 = 清空 —— 兩者必須分得出來。</item>
 /// <item><b>發布分權</b>：Author 可存草稿但不可發布。權限由 AppRouter 把關，
 ///       這裡只負責狀態轉換與「發布前資料是否完整」。</item>
@@ -52,7 +52,8 @@ public sealed class AdminProductHandler(
             q = q.Where(p => p.Category!.Slug == category);
 
         if (ProductHandler.Nullable(req.Query["subCategory"]) is { } sub)
-            q = q.Where(p => p.SubCategory!.Slug == sub);
+            q = q.Where(p => p.SubCategory!.Slug == sub
+                          || p.SecondarySubCategories.Any(s => s.SubCategory!.Slug == sub));
 
         // docs/04 §6：search 同時比對 Name 與 Sku。Name 在翻譯表，任一語系命中即可 ——
         // 編輯者搜「膝」時不該因為當前介面語系是 en 就查不到。
@@ -335,6 +336,7 @@ public sealed class AdminProductHandler(
         await db.Products
             .Include(p => p.Translations)
             .Include(p => p.Images)
+            .Include(p => p.SecondarySubCategories)
             .Include(p => p.BodyParts)
             .Include(p => p.Certifications)
             .Include(p => p.Tags)
@@ -376,6 +378,7 @@ public sealed class AdminProductHandler(
         if (entity.Translations.Count == 0)
             throw AppException.BadRequest("至少要保留一個語系的翻譯。");
 
+        await ApplySecondarySubCategoriesAsync(entity, body.SecondarySubCategoryIds);
         if (body.Images is { } images)          await ApplyImagesAsync(entity, images);
         if (body.BodyPartIds is { } bodyParts)  await ApplyBodyPartsAsync(entity, bodyParts);
         if (body.CertificationIds is { } certs) await ApplyCertificationsAsync(entity, certs);
@@ -467,6 +470,42 @@ public sealed class AdminProductHandler(
         }
     }
 
+    /// <summary>
+    /// 次要子分類。兩條規則守住「列表與網址一致」：
+    /// <list type="number">
+    /// <item>必須與產品同一個 Category —— 跨分類的話，產品會出現在別的分類的子分類頁，
+    ///       卻不出現在那個分類頁本身，數字兜不攏。</item>
+    /// <item>不含主子分類 —— 它已經是主歸屬，重複一列只會讓計數和排序多一種狀況要想。</item>
+    /// </list>
+    /// 沒帶 <paramref name="ids"/>（null = 不動）時仍要清掉「不再成立」的列：
+    /// 換了分類、或把某個次要子分類升為主子分類。不清的話這些列會靜默失效又留在資料裡。
+    /// </summary>
+    private async Task ApplySecondarySubCategoriesAsync(Product entity, Guid[]? ids)
+    {
+        if (ids is null)
+        {
+            var valid = await db.SubCategories.Where(s => s.CategoryId == entity.CategoryId)
+                                              .Select(s => s.Id).ToListAsync();
+            foreach (var stale in entity.SecondarySubCategories
+                         .Where(x => x.SubCategoryId == entity.SubCategoryId || !valid.Contains(x.SubCategoryId))
+                         .ToList())
+                entity.SecondarySubCategories.Remove(stale);
+            return;
+        }
+
+        var distinct = ids.Where(id => id != entity.SubCategoryId).Distinct().ToArray();
+        var owners = await db.SubCategories.Where(s => distinct.Contains(s.Id))
+                                           .Select(s => s.CategoryId).ToListAsync();
+
+        if (owners.Count != distinct.Length)
+            throw AppException.BadRequest($"有 {distinct.Length - owners.Count} 筆 secondarySubCategoryId 不存在或已刪除。");
+        if (owners.Any(c => c != entity.CategoryId))
+            throw AppException.BadRequest("次要子分類必須與產品屬於同一個分類。");
+
+        entity.SecondarySubCategories.Clear();
+        foreach (var id in distinct) entity.SecondarySubCategories.Add(new ProductSubCategory { SubCategoryId = id });
+    }
+
     private async Task ApplyBodyPartsAsync(Product entity, Guid[] ids)
     {
         var distinct = ids.Distinct().ToArray();
@@ -525,7 +564,9 @@ public sealed class AdminProductHandler(
 
     private static AdminProductDto ToDto(Product p) => new(
         p.Id, p.Slug, p.Sku,
-        p.CategoryId, p.SubCategoryId, p.CollectionId,
+        p.CategoryId, p.SubCategoryId,
+        p.SecondarySubCategories.Select(s => s.SubCategoryId).ToArray(),
+        p.CollectionId,
         p.Status, p.IsFeatured, p.FeaturedSortOrder,
         p.UseCaseImageMediaId, p.SizeChartDiagramMediaId, p.SortOrder, p.PublishedAt,
         p.Images.OrderBy(i => i.SortOrder)

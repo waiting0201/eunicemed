@@ -256,6 +256,10 @@ public sealed class AdminTaxonomyHandler(
         if (products > 0)
             throw AppException.Conflict($"子分類仍被 {products} 筆產品引用，請先改掉引用再刪除。");
 
+        // 次要歸屬不擋刪除（產品的網址不靠它），但連結要一併拿掉，
+        // 否則產品表單會留著一個選單裡已經不存在的選項
+        await db.ProductSubCategories.Where(x => x.SubCategoryId == guid).ExecuteDeleteAsync();
+
         entity.IsDeleted = true;
         entity.UpdatedAt = Clock.Now;
         await db.SaveChangesAsync();
