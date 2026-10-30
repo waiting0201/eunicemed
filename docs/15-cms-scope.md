@@ -496,7 +496,7 @@ CMS/DB 那一半直接改 `tools/migration/copy-zh-2026-10.py` 的定稿值後�
 
 | 定稿 | 實作 | 理由 |
 |---|---|---|
-| 頁尾標語 `Not Just a Motion` | 維持 `Support feels personal` | 2026-10-27 起品牌主張已換（CLAUDE.md §1）；定稿這格看起來是沿用舊版，**待客戶確認** |
+| 頁尾標語 `Not Just a Motion` | 維持 `Support feels personal` | 2026-10-27 起品牌主張已換（CLAUDE.md §1），定稿這格是沿用舊版；**2026-10-30 確認用 Support feels personal** |
 | About 第 1 段的創辦人 Jeffery Lan 故事 | 不放，從「立志幫助更多人……」接起 | 使用授權仍在待確認清單 |
 | 成功高中標題的「EuniceMed 贊助的」 | 拿掉 | 同 §12.1，贊助關係仍待確認 |
 | 分類名稱 `足部照護與鞋墊` | 照定稿 | 1030 版卡片標題與篩選標籤已一致；資料表寫「足部照護」，待確認清單第 9 項拍板後再改 |
