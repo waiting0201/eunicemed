@@ -37,7 +37,7 @@ ISO/CE 取得年份、LYCRA®、證號／效期、MOQ 與交期的數字、回�
 寫入一律是「讀整列 → 改目標欄位 → 送回」，因為翻譯物件是整筆取代，
 只送一個欄位會把其他欄位清成 null。
 """
-import json, os, sys, urllib.error, urllib.parse, urllib.request
+import json, os, sys, urllib.error, urllib.request
 
 API = os.environ.get('EM_API', 'https://func-eunicemed-prod.azurewebsites.net/api')
 TOKEN = ''
@@ -348,9 +348,11 @@ NEWS_TITLES = {
 
 def run_news():
     print('\n══ 最新消息標題')
+    # `search` 只比對標題、不比對 slug，所以整批列出來自己對
+    r = call('GET', '/admin/articles?type=news&pageSize=100').get('data') or {}
+    by_slug = {a.get('slug'): a for a in r.get('items') or []}
     for slug, title in NEWS_TITLES.items():
-        r = call('GET', f'/admin/articles?type=news&search={urllib.parse.quote(slug)}&pageSize=20').get('data') or {}
-        hit = next((a for a in r.get('items') or [] if a.get('slug') == slug), None)
+        hit = by_slug.get(slug)
         if hit is None:
             print(f'  ✗ {slug}：找不到')
             continue
