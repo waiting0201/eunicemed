@@ -177,41 +177,41 @@ const COPY: Record<
     meta: {
       title: '護具與壓力襪 FAQ・選購指南｜EuniceMed 康譜',
       description:
-        '壓力襪怎麼穿、尺寸怎麼量、一級和二級差在哪、護膝怎麼選，' +
+        '壓力襪怎麼穿、尺寸怎麼量、壓力等級與護膝怎麼選，' +
         '以及 EuniceMed 產品型錄與 ISO 13485／CE 證書下載。',
     },
     hero: {
       eyebrow: '資源中心｜護具與壓力襪',
-      title: '您需要的資訊，**都在這裡**',
-      lead: '常見問題、選購指南、認證文件與產品型錄，給醫療人員、代理商，也給每天穿戴的使用者。',
+      title: '所需資訊，**一次備齊**',
+      lead: '常見問題、選購指南、認證文件與產品型錄，提供醫療人員、經銷商，以及每日穿戴 EuniceMed 的人參考。',
     },
     hubs: [
       {
         icon: 'faq',
         title: '常見問題',
-        body: '壓力襪怎麼穿、壓力襪尺寸怎麼量、壓力襪一級二級差別、護膝尺寸怎麼挑，以及護具怎麼清洗、護具保養。',
-        ctaLabel: '看常見問題 →',
+        body: '壓力襪的穿著方式、尺寸測量與壓力等級選擇，以及護具的保養方法。',
+        ctaLabel: '瀏覽常見問題 →',
         href: '/faq',
       },
       {
         icon: 'insights',
         title: '知識文章',
-        body: '護膝怎麼選、靜脈曲張襪怎麼選、壓力等級（mmHg）怎麼看，以及 B2B 採購趨勢。',
+        body: '護膝選購、壓力等級（mmHg）、腿部靜脈保健與 B2B 採購指南。',
         ctaLabel: '閱讀文章 →',
         href: '/insights',
       },
       {
         icon: 'downloads',
         title: '下載中心',
-        body: '產品型錄、ISO 13485 與 CE 證書、使用說明書，一律提供 PDF。',
+        body: '產品型錄、ISO 13485 與 CE 證書、產品說明書，提供 PDF 下載。',
         ctaLabel: '下載文件 →',
         href: '/downloads',
       },
       {
         icon: 'news',
         title: '最新消息',
-        body: '展覽活動、新品上市與公司公告。',
-        ctaLabel: '看最新消息 →',
+        body: 'EuniceMed 的展會活動、新品上市與公司公告。',
+        ctaLabel: '查看最新消息 →',
         href: '/news',
       },
     ],
@@ -219,15 +219,15 @@ const COPY: Record<
     quick: { title: '熱門下載', allLink: '所有下載 →', allHref: '/downloads' },
     panels: [
       {
-        title: '還是找不到答案？',
+        title: '仍未找到所需資訊？',
         // 回覆天數待客戶確認（文案留白），沿用線上現值
-        body: '技術、尺寸與法規問題，我們的團隊會在一個工作天內回覆。',
+        body: '技術、尺寸與法規相關問題，我們的團隊會在一個工作天內回覆。',
         ctaLabel: '聯絡我們',
         href: '/contact',
       },
       {
-        title: '想成為經銷或代工夥伴？',
-        body: 'OEM／ODM 代工、經銷支援與合作洽詢，都在這裡。',
+        title: '有意經銷 EuniceMed？',
+        body: 'OEM／ODM 製造、經銷支援與合作洽詢，都在這裡。',
         ctaLabel: '合作夥伴',
         href: '/partnership',
       },

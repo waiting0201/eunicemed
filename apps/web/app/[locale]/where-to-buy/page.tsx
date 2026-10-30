@@ -69,21 +69,21 @@ const COPY: Record<
   },
   'zh-TW': {
     meta: {
-      title: 'EuniceMed 哪裡買｜台灣門市・藥局與海外代理',
+      title: 'EuniceMed 哪裡買｜台灣門市・藥局與海外經銷',
       description:
-        '查詢 EuniceMed 康譜護具與壓力襪的台灣門市、藥局、網路商店與海外代理商；' +
-        '找不到您所在的地區，也歡迎與我們聯繫。',
+        '在台灣的藥局、門市與海外授權經銷商，都能買到 EuniceMed 護具與壓力襪；' +
+        '也可以詢問離您最近的據點。',
     },
     eyebrow: '銷售據點',
     title: 'EuniceMed 哪裡買',
-    lead: '在台灣的藥局、門市、網路商店，以及海外授權代理商，都買得到 EuniceMed 康譜護具與壓力襪。請依地區查詢。',
+    lead: '在台灣與全球各地的藥局、零售通路及 EuniceMed 授權經銷商，都能買到 EuniceMed 護具與壓力襪。請依地區瀏覽。',
     domestic: '台灣',
-    international: '海外代理',
+    international: '海外經銷商',
     otherRegions: '其他地區',
     visit: '前往官網',
-    empty: '代理商資訊更新中，請直接與我們聯繫，我們會介紹離您最近的合作夥伴。',
-    ctaTitle: '您所在的地區還沒有據點嗎？',
-    ctaBody: '歡迎與我們聯繫，我們會介紹離您最近的合作夥伴，也可以洽談成為代理商。',
+    empty: '經銷商資訊更新中，請直接與我們聯繫，我們將為您介紹鄰近的合作夥伴。',
+    ctaTitle: '您的地區尚未設點？',
+    ctaBody: '歡迎與我們聯繫，我們將為您介紹鄰近的合作夥伴，也可洽談成為經銷商。',
   },
 };
 

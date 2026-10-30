@@ -56,7 +56,7 @@ LOCATIONS = [
         'phone': '+886 2 8511 3758',
         'en': {'name': 'Comfort Plus Flagship',
                'address': '11F, No. 123-9, Xingde Rd, Sanchong Dist, New Taipei City'},
-        'zh': {'name': '康譜旗艦門市',
+        'zh': {'name': '康譜旗艦店',
                'address': '24158 新北市三重區興德路 123-9 號 11 樓'},
     },
     {
@@ -69,7 +69,7 @@ LOCATIONS = [
     {
         'type': DOMESTIC, 'country': 'TW', 'sort': 2,
         'en': {'name': 'Online medical store', 'note': 'Ships within Taiwan'},
-        'zh': {'name': '網路醫材商城', 'note': '限台灣境內配送'},
+        'zh': {'name': '網路醫材商城', 'note': '限台灣配送'},
     },
 
     # ── 國際經銷 ────────────────────────────────────────────────────────────

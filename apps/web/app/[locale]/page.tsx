@@ -215,45 +215,45 @@ const COPY: Record<
       title: '台灣製骨科護具與醫療壓力襪｜EuniceMed 康譜',
       description:
         'EuniceMed 康譜是康譜企業的台灣製高階護具品牌，提供骨科護具、醫療壓力襪與足部照護，' +
-        '通過 ISO 13485、CE 及美國 FDA 登錄。',
+        '通過 ISO 13485 與 CE 認證，並完成美國 FDA 登錄。',
     },
     hero: {
-      eyebrow: 'EuniceMed 康譜｜台灣製高階護具品牌',
+      eyebrow: 'EuniceMed 康譜｜台灣製醫療護具與壓力襪',
       title: 'Support Feels **Personal**.',
       lead:
-        'EuniceMed 康譜是康譜企業（Comfort Plus）打造的台灣製高階護具品牌，' +
-        '專做骨科護具、醫療壓力襪與矽膠足部照護，兼顧臨床專業、整天穿戴的舒適與穩定品質。',
+        'EuniceMed 康譜是康譜企業（Comfort Plus）旗下的台灣製高階醫療護具品牌，' +
+        '專注設計骨科護具、醫療壓力襪與矽膠足部照護產品，融合臨床專業，帶來持久的舒適與可靠的品質。',
     },
     featured: {
       title: '明星商品',
-      subtitle: '為真實生活而設計，做不像護具的護具。All in One Premium Promise.',
+      subtitle: '從日常生活出發的支撐方案。All in One Premium Promise.',
       lead:
-        '從護膝、護踝、護腰到康譜壓力襪與矽膠鞋墊，每一件都講究精準支撐，' +
-        '整天穿戴也舒服，而且經久耐用。',
+        '從護膝、護踝，到醫療壓力襪與機能鞋墊，每一件 EuniceMed 產品，' +
+        '都為精準支撐、全天舒適與長久可靠而設計。',
     },
     bodyPart: {
-      title: ['依部位、依照護需求', '找護具'],
+      title: ['依部位與照護需求，', '找到合適的支撐'],
       lead:
-        '哪裡痠、哪裡累？點選膝蓋、腳踝與足部、腰背，' +
-        '或直接查看居家照護輔具、長照輔具與術後護具方案。',
-      cta: '看應用方案 →',
+        '請點選感到痠痛或疲憊的部位：膝部、足踝、腰背；' +
+        '也可依居家照護、長期照護與術後復健，查詢合適的照護方案。',
+      cta: '查看應用方案 →',
       tiles: [
-        { icon: 'knee', title: '膝', subtitle: '運動護膝・穩定支撐', href: '/applications/knee' },
-        { icon: 'ankle-foot', title: '踝與足', subtitle: '護踝・矽膠鞋墊・足底支撐', href: '/applications/ankle' },
-        { icon: 'back', title: '腰背', subtitle: '護腰・姿勢支撐', href: '/applications/back' },
-        { icon: 'special-care', title: '特殊照護', subtitle: '長輩照護・拇指外翻・術後', href: '/applications' },
+        { icon: 'knee', title: '膝部', subtitle: '運動與穩定用護膝', href: '/applications/knee' },
+        { icon: 'ankle-foot', title: '足踝', subtitle: '護踝、鞋墊與足底支撐', href: '/applications/ankle' },
+        { icon: 'back', title: '腰背', subtitle: '腰部支撐與姿勢', href: '/applications/back' },
+        { icon: 'special-care', title: '特殊照護', subtitle: '長者照護・拇趾外翻・術後', href: '/applications' },
       ],
     },
     whyPartner: {
-      title: '值得信賴的台灣 OEM／ODM 合作夥伴',
+      title: '值得您信賴的台灣 OEM／ODM 夥伴',
       lead:
-        '康譜企業成立於 2008 年，是通過 ISO 13485 的台灣醫療器材製造商，' +
-        '也是 EuniceMed 的母公司，目前與 18 國代理商合作。',
+        'EuniceMed 由康譜企業製造。康譜企業成立於 2008 年，' +
+        '是通過 ISO 13485 認證的台灣醫療器材製造商，目前與 18 國經銷商合作。',
       items: [
-        { title: '國際認證', body: 'ISO 13485 品質系統，產品取得 CE 認證與美國 FDA 登錄。' },
-        { title: 'OEM／ODM 彈性', body: '醫療器材 OEM、ODM 與貼牌代工都能做，從設計、打樣到認證協助一次到位。' },
-        { title: '台灣製造', body: '自有產線、11 位專職品管，全程可追溯。' },
-        { title: '舒適研發', body: '選用高品質材料，整天穿戴也舒服。' },
+        { title: '品質認證', body: 'ISO 13485 品質系統，產品線具 CE 標誌，並完成美國 FDA 登錄。' },
+        { title: 'OEM／ODM 彈性', body: '貼牌、OEM 與 ODM 皆可承接，從設計、打樣到認證協助。' },
+        { title: '台灣製造', body: '自有工廠生產，11 位專職品管，全程可追溯。' },
+        { title: '舒適優先的研發', body: '嚴選材料，專為全天穿戴而設計。' },
       ],
       cta: '成為合作夥伴',
     },
