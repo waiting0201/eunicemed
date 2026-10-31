@@ -30,8 +30,11 @@ const S = {
   s02Scrim: css`position:absolute;inset:0;background:linear-gradient(90deg,rgba(9,36,45,.74) 0%,rgba(9,36,45,.5) 52%,rgba(9,36,45,.14) 100%);`,
   s02Inner: css`position:relative;max-width:1180px;margin:0 auto;padding:0 clamp(24px,5vw,64px);`,
   s02Title: css`color:#fff;font-weight:400;font-size:clamp(1.9rem,3.6vw,2.5rem);margin:8px 0 44px;`,
-  s02Grid: css`display:grid;grid-template-columns:repeat(5,1fr);gap:0;border-top:1px solid rgba(255,255,255,.16);`,
-  s02Cell: css`padding:28px 24px 0;border-left:1px solid rgba(255,255,255,.16);`,
+  // mockup4 draws the top rule on the grid, which only covers the first row; once
+  // the list wraps (>5 on desktop, any count on tablet) rows had no divider and touched.
+  // Each cell carries its own rule instead, plus a row gap.
+  s02Grid: css`display:grid;grid-template-columns:repeat(5,1fr);gap:40px 0;`,
+  s02Cell: css`padding:28px 24px 0;border-top:1px solid rgba(255,255,255,.16);border-left:1px solid rgba(255,255,255,.16);`,
   s02Year: css`color:#7FE0EC;font-weight:680;font-size:1.6rem;letter-spacing:-.02em;`,
   s02Event: css`color:rgba(255,255,255,.78);margin-top:8px;font-size:.92rem;`,
 
