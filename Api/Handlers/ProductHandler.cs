@@ -80,7 +80,7 @@ public sealed class ProductHandler(
         var certs     = await taxonomy.GetCertificationsAsync(locale);
         var related   = await reader.GetRelatedAsync(r.Id, locale, take: 4);
         var images    = await reader.GetImagesAsync(r.Id);
-        var bodyParts = await reader.GetBodyPartSlugsAsync(r.Id);
+        var bodyParts = await reader.GetBodyPartsAsync(r.Id, locale);
         // 掛在這個產品上的檔案（ProductDownload）。列表頁不需要，只有詳情頁的下載區塊用。
         var downloads = await content.GetDownloadsAsync(locale, type: null, productSlug: r.Slug);
 

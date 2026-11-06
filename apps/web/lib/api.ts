@@ -170,7 +170,8 @@ export type ProductDetail = {
   category: SlugName | null;
   subCategory: SlugName | null;
   collection: SlugName | null;
-  bodyParts: string[];
+  /** 詳情帶該語系的名稱（chip 要顯示）；列表卡的 bodyParts 只有 slug */
+  bodyParts: SlugName[];
   conditions: string[] | null;
   summary: string | null;
   description: string | null;

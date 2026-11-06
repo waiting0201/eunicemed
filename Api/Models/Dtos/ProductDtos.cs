@@ -54,7 +54,7 @@ public sealed record ProductDto(
     SlugName?     Category,
     SlugName?     SubCategory,
     SlugName?     Collection,
-    string[]      BodyParts,
+    SlugName[]    BodyParts,
     object?       Conditions,
     string?       Summary,
     string?       Description,

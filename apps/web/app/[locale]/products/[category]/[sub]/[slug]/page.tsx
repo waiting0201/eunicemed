@@ -506,7 +506,8 @@ function Breadcrumb({
 
 /** 部位 + 症狀合成一排 chips（mockup4 的 §01 就是混在一起的） */
 function Chips({ product }: { product: ProductDetail }) {
-  const chips = [...product.bodyParts, ...(product.conditions ?? [])].filter(
+  // 部位印名稱不印 slug —— slug 是英文，印在中文頁就破了語言純度
+  const chips = [...product.bodyParts.map((b) => b?.name), ...(product.conditions ?? [])].filter(
     (x): x is string => typeof x === 'string' && x.length > 0,
   );
 

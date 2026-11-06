@@ -202,7 +202,7 @@ POST {{host}}/admin/products/{{pid}}/publish
 Authorization: Bearer {{at}}
 
 ### 5c. 公開詳情。**Phase 4 剩餘的重點**：
-#   bodyParts 應為 ["knee"]（先前一律回空陣列）
+#   bodyParts 應為 [{"slug":"knee","name":"Knee"}]（先前一律回空陣列；2026-11 起帶語系名稱）
 #   images 應有內容，每張帶 isPrimary 與 variants[]（無 CDN，尺寸是實體檔）
 #   images[0].isPrimary 必須為 true，且與列表卡的那張是同一張
 GET {{host}}/products/orthopedic-support/knee-support/qa-test-knee-brace?locale=en

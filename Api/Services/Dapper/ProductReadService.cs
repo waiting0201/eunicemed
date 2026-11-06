@@ -25,8 +25,11 @@ public interface IProductReadService
     /// <summary>詳情頁的圖庫。已依「主圖優先 → SortOrder」排序，且帶 variants。</summary>
     Task<IReadOnlyList<ProductImageDto>> GetImagesAsync(Guid productId);
 
-    /// <summary>詳情頁的適用部位 slug（docs/04 §4 的 <c>bodyParts</c> 是 slug 陣列）。</summary>
-    Task<IReadOnlyList<string>> GetBodyPartSlugsAsync(Guid productId);
+    /// <summary>
+    /// 詳情頁的適用部位，帶該語系的名稱 —— 產品頁要把它印成 chip，只給 slug 的話
+    /// 中文頁會出現 <c>knee</c>（語言純度）。列表卡只拿來篩選，仍維持 slug 陣列。
+    /// </summary>
+    Task<IReadOnlyList<SlugName>> GetBodyPartsAsync(Guid productId, string locale);
 }
 
 /// <summary>詳情查詢的原始列（JSON 欄位維持字串，由 Handler 解析）。</summary>
@@ -301,16 +304,22 @@ public sealed class ProductReadService(IDbConnection db) : IProductReadService
             r.BlobUrl, r.AltText, r.IsPrimary, variants.GetValueOrDefault(r.MediaId))).ToList();
     }
 
-    public async Task<IReadOnlyList<string>> GetBodyPartSlugsAsync(Guid productId)
+    public async Task<IReadOnlyList<SlugName>> GetBodyPartsAsync(Guid productId, string locale)
     {
-        var rows = await db.QueryAsync<string>(
+        // BodyPart 沒有翻譯表，名稱是固定兩欄（同 TaxonomyReadService 的 facet 標籤）
+        var p = new DynamicParameters();
+        p.Add("@pid", productId);
+        p.Add("@locale", locale, DbType.AnsiString, size: 10);
+
+        var rows = await db.QueryAsync<SlugName>(
             """
-            SELECT bp.Slug
+            SELECT bp.Slug,
+                   CASE WHEN @locale = 'zh-TW' THEN bp.NameZhTw ELSE bp.NameEn END AS Name
             FROM   ProductBodyParts pbp
                    INNER JOIN BodyParts bp ON bp.Id = pbp.BodyPartId
             WHERE  pbp.ProductId = @pid
             ORDER  BY bp.SortOrder
-            """, new { pid = productId });
+            """, p);
 
         return rows.AsList();
     }

@@ -185,7 +185,7 @@ GET /api/products/by-slug/{slug}?locale=en             # 扁平查詢：預覽�
   "category":    { "slug": "orthopedic-support", "name": "…" },
   "subCategory": { "slug": "knee-support", "name": "…" },
   "collection":  { "slug": "protect", "name": "Protect" },
-  "bodyParts": ["knee"],
+  "bodyParts": [ { "slug": "knee", "name": "膝" } ],   // 詳情帶語系名稱（chip 用）；列表卡仍是 slug 陣列
   "conditions": ["Sports strain", "Ligament support"],
   "summary": "…", "description": "<html>",
   "images": [ { "url": "…", "alt": "…", "isPrimary": true } ],
