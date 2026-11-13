@@ -13,6 +13,7 @@ import { pageBand } from '@/lib/bands';
 import { PageHero } from '@/components/PageHero';
 import { JsonLd } from '@/components/JsonLd';
 import { webPageSchema } from '@/lib/schema';
+import { Pagination } from '@/components/Pagination';
 import { ProductGrid } from '@/components/ProductGrid';
 
 /** 樣式逐字取自 `mockup4/Products.dc.html`。 */
@@ -46,7 +47,7 @@ const S = {
 } as const;
 
 type Params = { locale: string };
-type Search = { category?: string; collection?: string; bodyPart?: string };
+type Search = { category?: string; collection?: string; bodyPart?: string; page?: string };
 
 type CtaSection = { background?: MediaRef };
 
@@ -154,6 +155,8 @@ export default async function ProductsPage({
       bodyPart: q.bodyPart,
       facets: 'true',
       pageSize: '24',
+      // 頁碼可以被人手改：非數字或小於 2 就不帶，API 當第一頁
+      page: Number(q.page) > 1 ? String(Math.floor(Number(q.page))) : undefined,
     }),
   ]);
 
@@ -226,6 +229,16 @@ export default async function ProductsPage({
           <div style={S.gridWrap}>
             <ProductGrid items={result.items} locale={locale} />
           </div>
+
+          {/* 這頁原本只取前 24 件而沒有分頁器 —— 不篩選的話其餘的產品從這裡到不了。
+              版型與分類頁同一支（mockup4 的型錄分頁） */}
+          <Pagination
+            page={result.page}
+            totalPages={result.totalPages}
+            basePath={basePath}
+            query={q}
+            variant="catalogue"
+          />
         </div>
       </section>
 

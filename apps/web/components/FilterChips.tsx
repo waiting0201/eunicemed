@@ -55,7 +55,8 @@ export function FilterChips({
 
   const href = (value?: string) => {
     const q = new URLSearchParams();
-    for (const [k, v] of Object.entries(query)) if (v && k !== param) q.set(k, v);
+    // 換篩選條件就回第一頁 —— 帶著 `page=3` 去一個只有一頁的結果會是空的
+    for (const [k, v] of Object.entries(query)) if (v && k !== param && k !== 'page') q.set(k, v);
     if (value) q.set(param, value);
     const s = q.toString();
     return s ? `${basePath}?${s}` : basePath;
