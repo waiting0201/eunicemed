@@ -8,7 +8,8 @@ namespace EuniceMed.Api.Services.Dapper;
 public interface IArticleReadService
 {
     Task<(IReadOnlyList<ArticleListItemDto> Items, int Total)> GetListAsync(
-        byte type, string locale, string? category, string? tag, int page, int pageSize);
+        byte type, string locale, string? category, string? tag, int page, int pageSize,
+        bool latestFirst = false);
 
     /// <summary>分類 facet。單一維度，因此「不受同維度篩選影響」＝計數時忽略 category。</summary>
     Task<IReadOnlyList<FacetCount>> GetCategoryFacetsAsync(byte type, string locale, string? tag);
@@ -91,7 +92,8 @@ public sealed class ArticleReadService(IDbConnection db) : IArticleReadService
         short? ReadMinutes, bool IsFeatured, string? CoverUrl, string? CoverAlt, Guid? CoverMediaId);
 
     public async Task<(IReadOnlyList<ArticleListItemDto>, int)> GetListAsync(
-        byte type, string locale, string? category, string? tag, int page, int pageSize)
+        byte type, string locale, string? category, string? tag, int page, int pageSize,
+        bool latestFirst = false)
     {
         var p = P(locale);
         p.Add("@type", type, DbType.Byte);
@@ -104,9 +106,17 @@ public sealed class ArticleReadService(IDbConnection db) : IArticleReadService
         var total = await db.ExecuteScalarAsync<int>($"SELECT COUNT(*) {PublishedFrom}{filterSql}", p);
 
         // 精選在前，其餘依發布日新到舊。IsFeatured 只影響 News 的大卡版位。
+        //
+        // `latestFirst` 拿掉精選置頂 —— 首頁的「最新消息」與資源中心的「最新文章」
+        // 要的是字面上的最新。共用列表頁的排序時，一篇舊的精選會永遠佔住第一列。
+        // 兩段都是常數字串，不是使用者輸入。
+        var order = latestFirst
+            ? "a.PublishedAt DESC, a.CreatedAt DESC"
+            : "a.IsFeatured DESC, a.PublishedAt DESC, a.CreatedAt DESC";
+
         var rows = (await db.QueryAsync<ListRow>($"""
             {ListSelect} {PublishedFrom}{filterSql}
-            ORDER BY a.IsFeatured DESC, a.PublishedAt DESC, a.CreatedAt DESC
+            ORDER BY {order}
             OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY
             """, p)).AsList();
 

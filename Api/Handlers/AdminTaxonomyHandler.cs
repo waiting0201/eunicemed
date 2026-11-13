@@ -464,11 +464,11 @@ public sealed class AdminTaxonomyHandler(
             }
 
             tr.Name              = value.Name.Trim();
-            tr.Description       = value.Description;
+            tr.Description       = AdminWrite.Blank(value.Description);
             tr.StatsJson         = value.Stats?.ToJsonString();
             tr.SupportLevelsJson = value.SupportLevels?.ToJsonString();
-            tr.SeoTitle          = value.SeoTitle;
-            tr.SeoDescription    = value.SeoDescription;
+            tr.SeoTitle          = AdminWrite.Blank(value.SeoTitle);
+            tr.SeoDescription    = AdminWrite.Blank(value.SeoDescription);
         }
     }
 
@@ -495,10 +495,10 @@ public sealed class AdminTaxonomyHandler(
             }
 
             tr.Name           = value.Name.Trim();
-            tr.Description    = value.Description;
+            tr.Description    = AdminWrite.Blank(value.Description);
             tr.StatsJson      = value.Stats?.ToJsonString();
-            tr.SeoTitle       = value.SeoTitle;
-            tr.SeoDescription = value.SeoDescription;
+            tr.SeoTitle       = AdminWrite.Blank(value.SeoTitle);
+            tr.SeoDescription = AdminWrite.Blank(value.SeoDescription);
         }
     }
 
@@ -526,8 +526,8 @@ public sealed class AdminTaxonomyHandler(
             }
 
             // 認證沒有 Name —— 標章文字 Mark 在主表且不翻譯（docs/05 §3.3）
-            tr.SubLabel    = value.SubLabel;
-            tr.Description = value.Description;
+            tr.SubLabel    = AdminWrite.Blank(value.SubLabel);
+            tr.Description = AdminWrite.Blank(value.Description);
         }
     }
 

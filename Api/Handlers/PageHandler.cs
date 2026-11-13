@@ -514,13 +514,16 @@ public sealed class PageHandler(
 
         if (certSlugs.Length > 0)
         {
+            // 只解析已發布的：後台的狀態欄寫明「草稿或封存會同時從 About 認證帶與
+            // 產品標章列消失」，產品那條查詢有濾（TaxonomyReadService），這裡原本沒有。
             var certs = await db.Set<Certification>()
-                .Where(c => certSlugs.Contains(c.Slug))
+                .Where(c => certSlugs.Contains(c.Slug) && c.Status == ContentStatus.Published)
                 .Select(c => new
                 {
                     c.Slug, c.Mark,
                     Tr = c.Translations.FirstOrDefault(t => t.Locale == locale),
-                    LogoUrl = db.Media.Where(m => m.Id == c.LogoMediaId).Select(m => m.BlobUrl).FirstOrDefault(),
+                    Logo = db.Media.Where(m => m.Id == c.LogoMediaId)
+                                   .Select(m => new { m.BlobUrl, m.AltText }).FirstOrDefault(),
                 })
                 .ToListAsync();
 
@@ -531,7 +534,15 @@ public sealed class PageHandler(
                     ["mark"]        = c.Mark,
                     ["subLabel"]    = c.Tr?.SubLabel,
                     ["description"] = c.Tr?.Description,
-                    ["logo"]        = c.LogoUrl,
+                    // 與產品頁的 CertificationDto.Logo 同一個形狀（MediaRef）。
+                    // 這裡原本回的是網址字串，而前台讀的是 `logo.url` ——
+                    // 標章圖一上傳，About 就是一張沒有 src 的 <img>。
+                    ["logo"]        = c.Logo is null ? null : new JsonObject
+                    {
+                        ["url"]      = c.Logo.BlobUrl,
+                        ["alt"]      = c.Logo.AltText,
+                        ["variants"] = null,
+                    },
                 };
         }
 
@@ -641,49 +652,133 @@ public sealed class PageHandler(
             });
         }
 
+        // 含有 invariant 欄位的 repeatable：長度以本次儲存的為準（docs/09 §9.3）。
+        // 不對齊的話，英文刪掉第三張輪播，中文那一張會永遠留著。
+        var arrays = paths
+            .SelectMany(ArrayPrefixes)
+            .Distinct()
+            .OrderBy(p => p.Length)   // 外層先於內層
+            .ToArray();
+
         foreach (var other in section.Translations.Where(t => t.Locale != sourceLocale))
         {
             var target = JsonNode.Parse(other.DataJson) as JsonObject ?? [];
-            var changed = false;
+
+            foreach (var arrayPath in arrays)
+            {
+                if (ReadPath(sourceData, arrayPath) is not JsonArray source) continue;
+                if (ReadPath(target, arrayPath) is not JsonArray existing) continue;
+                while (existing.Count > source.Count) existing.RemoveAt(existing.Count - 1);
+            }
 
             foreach (var path in paths)
             {
                 var value = ReadPath(sourceData, path);
                 if (value is null) continue;
-                if (WritePath(target, path, value.DeepClone())) changed = true;
+                WritePath(target, path, value.DeepClone());
             }
 
-            if (changed) other.DataJson = target.ToJsonString();
+            // 補齊長度。某一項若沒有任何 invariant 值可寫（例如只填了 alt 的輪播），
+            // 上面的寫入不會碰到它，另一語系就會短少或留下 null 洞。
+            foreach (var arrayPath in arrays)
+            {
+                if (ReadPath(sourceData, arrayPath) is not JsonArray source) continue;
+                if (ReadPath(target, arrayPath) is not JsonArray existing) continue;
+
+                while (existing.Count < source.Count) existing.Add(null);
+                for (var i = 0; i < source.Count; i++)
+                    if (existing[i] is null && source[i] is JsonObject) existing[i] = new JsonObject();
+            }
+
+            other.DataJson = target.ToJsonString();
         }
+    }
+
+    /// <summary><c>a.b[2].c[0].d</c> → <c>a.b</c>、<c>a.b[2].c</c>：路徑上每一個陣列本身的位置。</summary>
+    private static IEnumerable<string> ArrayPrefixes(string path)
+    {
+        for (var i = path.IndexOf('['); i >= 0; i = path.IndexOf('[', i + 1))
+            yield return path[..i];
+    }
+
+    /// <summary>
+    /// <c>a.b[2].c</c> 拆成 <c>a</c>、<c>b</c>、<c>2</c>、<c>c</c>。
+    /// 與 <see cref="SectionWalker"/> 產生路徑的格式相同（<c>WalkCore</c>）。
+    /// </summary>
+    private static List<object> Segments(string path)
+    {
+        var segs = new List<object>();
+        foreach (var chunk in path.Split('.'))
+        {
+            var open = chunk.IndexOf('[');
+            segs.Add(open < 0 ? chunk : chunk[..open]);
+
+            while (open >= 0)
+            {
+                var close = chunk.IndexOf(']', open);
+                if (close < 0) break;
+                segs.Add(int.Parse(chunk[(open + 1)..close]));
+                open = chunk.IndexOf('[', close);
+            }
+        }
+        return segs;
     }
 
     private static JsonNode? ReadPath(JsonNode? root, string path)
     {
-        foreach (var seg in path.Split('.'))
+        foreach (var seg in Segments(path))
         {
+            root = seg switch
+            {
+                string name when root is JsonObject o                    => o[name],
+                int index when root is JsonArray a && index < a.Count    => a[index],
+                _                                                        => null,
+            };
             if (root is null) return null;
-            root = root is JsonObject o ? o[seg] : null;
         }
         return root;
     }
 
-    private static bool WritePath(JsonObject root, string path, JsonNode value)
+    /// <summary>
+    /// 沿路徑寫入，缺的容器一路補建。
+    ///
+    /// <para>
+    /// ⚠️ 陣列索引必須處理 —— 這一支原本只認 <c>JsonObject</c>，於是
+    /// <c>slides[0].image</c> 這類 repeatable 裡的 invariant 欄位**一個都同步不到**，
+    /// 而後台在那些欄位底下寫著「所有語系共用，改動會同時套用到另一個語系」。
+    /// 另一語系缺的項目以空物件補上（docs/09 §9.3），文字欄位留給編輯者填。
+    /// </para>
+    /// </summary>
+    private static void WritePath(JsonObject root, string path, JsonNode value)
     {
-        var segs = path.Split('.');
-        JsonObject? cur = root;
+        var segs = Segments(path);
+        JsonNode cur = root;
 
-        for (var i = 0; i < segs.Length - 1; i++)
+        for (var i = 0; i < segs.Count; i++)
         {
-            if (cur![segs[i]] is not JsonObject next)
-            {
-                next = [];
-                cur[segs[i]] = next;
-            }
-            cur = next;
-        }
+            var last = i == segs.Count - 1;
+            // 下一層是陣列還是物件，由下一段是索引還是名稱決定
+            JsonNode Container() => segs[i + 1] is int ? new JsonArray() : new JsonObject();
 
-        cur![segs[^1]] = value;
-        return true;
+            switch (segs[i])
+            {
+                case string name when cur is JsonObject o:
+                    if (last) { o[name] = value; return; }
+                    if (o[name] is not (JsonObject or JsonArray)) o[name] = Container();
+                    cur = o[name]!;
+                    break;
+
+                case int index when cur is JsonArray a:
+                    while (a.Count <= index) a.Add(null);
+                    if (last) { a[index] = value; return; }
+                    if (a[index] is not (JsonObject or JsonArray)) a[index] = Container();
+                    cur = a[index]!;
+                    break;
+
+                default:
+                    return;   // 形狀對不上 schema —— 不寫，交給下一次儲存的驗證去擋
+            }
+        }
     }
 
     /// <summary>依 <c>x-mediaPreset</c> 展開尺寸與提示，供後台顯示。</summary>

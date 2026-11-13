@@ -22,3 +22,18 @@ export function formatDate(iso: string, locale: Locale): string {
     ? `${y} 年 ${Number(m)} 月 ${Number(d)} 日`
     : `${y} · ${m} · ${d}`;
 }
+
+/**
+ * 只到月份。首頁「最新消息」那一列用（mockup4：`2026 · 06`）。
+ *
+ * <p>
+ * 這一列原本是 `formatDate(...).slice(0, 9)` —— 英文剛好切在月份後面，
+ * 中文切出來的是 `2025 年 2 `（「月」被切掉）或 `2024 年 11`。
+ * </p>
+ */
+export function formatYearMonth(iso: string, locale: Locale): string {
+  const [y, m] = iso.slice(0, 10).split('-');
+  if (!y || !m) return iso;
+
+  return locale === 'zh-TW' ? `${y} 年 ${Number(m)} 月` : `${y} · ${m}`;
+}

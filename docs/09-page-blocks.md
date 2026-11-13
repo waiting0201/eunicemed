@@ -90,7 +90,7 @@ number · date · bool · enum[...] · ref:Entity · repeatable{...}(min–max)
 
 | sectionKey | 區段 | 來源 | 欄位 |
 |---|---|---|---|
-| `heroSlider` | Hero 輪播 | 區段 | `slides` repeatable(1–5){ `image` media(`hero-slide`)、`alt` text、`link` link? }；`intervalSeconds` number（預設 6） |
+| `heroSlider` | Hero 輪播 | 區段 | `slides` repeatable(1–5){ `image` media(`hero-slide`)、`alt` text }（~~`link`~~ 2026-11-13 移除：mockup4 的 hero 沒有 CTA，前台從未渲染過它）；`intervalSeconds` number（預設 6） |
 | `featuredProducts` | **01** Hero products | 區段 + 動態 | 區段：`promo`{ `eyebrow` text、`title` text、`link` link }（全型錄漸層帶）<br>動態：`GET /products?featured=true&pageSize=8`，依 `FeaturedSortOrder`；**Pinterest 式 masonry：等寬 4 欄、卡片高度不一、往下堆疊**，版位比例依序輪替 `1:1 / 4:5 / 5:4`，全部用產品主圖（`ProductImage` 的 `IsPrimary`，preset `square`）；卡片文案取 `ProductTranslation.FeaturedBlurb` |
 | `bodyPartBand` | **02** Find support by body part | 區段 + 前端常數 | 區段：`background` media(`section-bg`)<br>常數：標題（兩行）、`lead`、CTA、四個 tiles（`icon`／標題／副標／連結） |
 | `whyPartner` | **03** A team your business can truly count on | **前端常數** | 標題、四個賣點、CTA。~~區段~~ |
@@ -549,13 +549,17 @@ Api/PageSchemas/          # 共 25 支（2026-08-28 收斂 + 2026-09-17 補 6 �
 - 文字欄位不同步。
 - repeatable 陣列以**索引**對應；長度不同時以本次儲存的長度為準（另一語系多出的項目刪除、缺少的以空字串補）。
 
-> ⚠️ **已知限制**：`SyncInvariant` 的 `ReadPath`/`WritePath` 只走 `JsonObject`，
-> 所以**陣列項目裡的 `x-localeInvariant` 欄位其實同步不到**。目前沒有使用者
-> （唯一踩到的是 `tiles[].link.url`，而連結已不進 CMS），未修，記在 [15](15-cms-scope.md) §5。
+> **【2026-11-13 修正】** `SyncInvariant` 原本只走 `JsonObject`，陣列項目裡的
+> `x-localeInvariant` 欄位一個都同步不到 —— 而「目前沒有使用者」是錯的：
+> `home.heroSlider.slides[].image`、`about.milestones.items[].year`、
+> `partnership.becomePartner.partnershipTypes[].key` 都是。現在照上面三條規則運作
+> （缺少的項目補的是**空物件**，文字留給編輯者填）。
 >
-> ⚠️ 另外：**把 `x-localeInvariant` 用在 URL 上是設計錯誤**。它讓中文內容匯入把英文版的
+> ⚠️ **把 `x-localeInvariant` 用在 URL 上是設計錯誤**。它讓中文內容匯入把英文版的
 > 連結蓋成 `/zh-TW/…`，正式站的英文首頁 CTA 因此全部跳到中文頁。
 > 現行作法是**連結不進 CMS**、一律在渲染時組 `/${locale}/…`。
+> 仍留在 schema 裡的連結欄位（`home.featuredProducts.promo.link`）由前台以
+> `localizeHref()` 在渲染時換成目前語系 —— 存什麼前綴都不算數。
 
 ---
 

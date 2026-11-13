@@ -16,15 +16,7 @@
             "type": "string", "format": "uuid",
             "x-fieldType": "media", "x-mediaPreset": "hero-slide", "x-localeInvariant": true
           },
-          "alt": { "type": "string", "maxLength": 160, "x-fieldType": "text" },
-          "link": {
-            "type": "object", "additionalProperties": false, "x-fieldType": "link",
-            "properties": {
-              "label":    { "type": "string", "maxLength": 60, "x-fieldType": "text" },
-              "url":      { "type": "string", "maxLength": 400, "x-fieldType": "text", "x-localeInvariant": true },
-              "external": { "type": "boolean", "x-fieldType": "bool", "x-localeInvariant": true }
-            }
-          }
+          "alt": { "type": "string", "maxLength": 160, "x-fieldType": "text" }
         }
       }
     },

@@ -239,10 +239,6 @@ EuniceMed/
       建議後者 —— 因分類漏翻而整個產品消失，是不會有人發現的靜默內容錯誤
 - [ ] `ProductRelated` 空陣列在 [04](docs/04-api.md) §6 定義為「回到自動計算」，因此編輯者**無法**表達「這裡不要顯示相關產品」。若需要，`Product` 得加 `RelatedMode`（auto / manual / none）。
       2026-08-31 起後台至少會**說出**這件事：清單空著時寫明「目前自動挑選」，有內容時寫明「只顯示這幾張，不會自動補」
-- [ ] **產品詳情的 `certifications` 目前回全站 5 筆，不看 `ProductCertification`**（2026-08-18 發現）。
-      後台已可逐產品掛認證，但公開端點忽略它 —— 編輯者掛了會是靜默的無效操作。
-      改成逐產品的話，在內容建好之前所有產品頁的標章列會變成空的（目前 `ProductCertification` 0 筆），
-      所以先維持現狀等拍板：標章列是「品牌共用」還是「逐產品」？
 - [ ] **`COMPANY.linkedIn` 是推定值，而它現在也進了 JSON-LD 的 `sameAs`**（2026-09-01）。
       footer 上一條連錯的外部連結只是點不到，`sameAs` 連錯卻是在告訴搜尋引擎
       「這個品牌等於那個 LinkedIn 帳號」。品牌方確認正式網址前，這一條的份量比之前重
@@ -267,6 +263,10 @@ EuniceMed/
 
 ### 已封閉
 
+- [x] **產品頁的認證標章列：有掛就只顯示掛的，沒掛就顯示全站清單**（2026-11-13）。
+      之前公開端點完全不看 `ProductCertification`，後台逐產品掛認證是靜默的無效操作；
+      直接改成「只看掛的」又會讓沒掛過的產品標章列變空。現在與相關產品同一個模型
+      （空 = 自動），後台欄位下方有寫明。見 `TaxonomyReadService.GetCertificationsAsync`
 - [x] **AI 爬蟲政策：可被引用，不可被訓練**（2026-09-01）。
       會附出處的檢索型（OAI-SearchBot、Claude-SearchBot、PerplexityBot…）在
       `app/robots.ts` 明示允許；訓練型（GPTBot、ClaudeBot、CCBot、Google-Extended…）

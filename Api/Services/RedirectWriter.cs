@@ -97,6 +97,17 @@ public sealed class RedirectWriter(AppDbContext db)
 
     // ── 內部 ───────────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// 應用方案：<c>/{locale}/applications/{slug}</c>。
+    ///
+    /// <para>
+    /// 首頁「依部位找支撐」那四格的連結是寫死的 slug（docs/15 §3B），
+    /// 沒有這條轉址，改一個方案的 slug 就是首頁上一格 404。
+    /// </para>
+    /// </summary>
+    public Task ApplicationSlugChangedAsync(string oldSlug, string newSlug) =>
+        AddAsync(l => $"/{l}/applications/{oldSlug}", l => $"/{l}/applications/{newSlug}");
+
     private static string ArticlePath(string locale, byte type, string slug) =>
         $"/{locale}/{(type == ArticleType.Insight ? "insights" : "news")}/{slug}";
 

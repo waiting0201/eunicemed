@@ -423,12 +423,12 @@ public sealed class AdminProductHandler(
             }
 
             tr.Name          = value.Name.Trim();
-            tr.Summary       = value.Summary;
+            tr.Summary       = AdminWrite.Blank(value.Summary);
             // 後台的編輯器不是安全邊界 —— 任何人都能直接打這支 API（Services/HtmlSanitizers.cs）
             tr.Description   = string.IsNullOrWhiteSpace(value.Description)
                 ? null
                 : sanitizers.Sanitize(value.Description, RichTextProfile.Section);
-            tr.FeaturedBlurb = value.FeaturedBlurb;
+            tr.FeaturedBlurb = AdminWrite.Blank(value.FeaturedBlurb);
 
             tr.FeaturesJson   = value.Features?.ToJsonString();
             tr.UseCasesJson   = value.UseCases?.ToJsonString();
@@ -436,8 +436,8 @@ public sealed class AdminProductHandler(
             tr.SizeChartJson  = value.SizeChart?.ToJsonString();
             tr.ConditionsJson = value.Conditions?.ToJsonString();
 
-            tr.SeoTitle       = value.SeoTitle;
-            tr.SeoDescription = value.SeoDescription;
+            tr.SeoTitle       = AdminWrite.Blank(value.SeoTitle);
+            tr.SeoDescription = AdminWrite.Blank(value.SeoDescription);
             tr.OgImageMediaId = value.OgImageMediaId;
         }
     }

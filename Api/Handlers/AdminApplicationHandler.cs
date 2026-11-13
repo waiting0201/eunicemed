@@ -23,7 +23,8 @@ namespace EuniceMed.Api.Handlers;
 public sealed class AdminApplicationHandler(
     AppDbContext     db,
     MediaUsageWriter mediaUsage,
-    HtmlSanitizers   sanitizers)
+    HtmlSanitizers   sanitizers,
+    RedirectWriter   redirects)
 {
     /// <summary>GET /admin/applications?type=&amp;status=&amp;bodyPart=</summary>
     public async Task<IActionResult> GetListAsync(HttpRequest req)
@@ -122,6 +123,8 @@ public sealed class AdminApplicationHandler(
 
         AdminWrite.ApplyRowVersion(db.Entry(entity).Property(a => a.RowVer), body.RowVersion);
 
+        var slugBefore = entity.Slug;
+
         if (!string.IsNullOrWhiteSpace(body.Slug))
         {
             var slug = Slugify.Make(body.Slug.Trim());
@@ -158,6 +161,9 @@ public sealed class AdminApplicationHandler(
         await EnsureMediaAsync(entity);
 
         entity.UpdatedAt = Clock.Now;
+        if (entity.Slug != slugBefore)
+            await redirects.ApplicationSlugChangedAsync(slugBefore, entity.Slug);
+
         await db.SaveChangesAsync();
 
         if (body.ProductIds is { } products) await ApplyProductsAsync(entity.Id, products);
@@ -291,21 +297,21 @@ public sealed class AdminApplicationHandler(
             }
 
             tr.Name        = value.Name.Trim();
-            tr.Lead        = value.Lead;
+            tr.Lead        = AdminWrite.Blank(value.Lead);
             tr.Body        = string.IsNullOrWhiteSpace(value.Body)
                 ? null
                 : sanitizers.Sanitize(value.Body, RichTextProfile.Section);
-            tr.MapCopy     = value.MapCopy;
-            tr.MapCtaLabel = value.MapCtaLabel;
+            tr.MapCopy     = AdminWrite.Blank(value.MapCopy);
+            tr.MapCtaLabel = AdminWrite.Blank(value.MapCtaLabel);
 
             tr.StatsJson         = value.Stats?.ToJsonString();
             tr.ConcernsJson      = value.Concerns?.ToJsonString();
             tr.SupportLevelsJson = value.SupportLevels?.ToJsonString();
             tr.HowToJson         = value.HowTo?.ToJsonString();
 
-            tr.Disclaimer     = value.Disclaimer;
-            tr.SeoTitle       = value.SeoTitle;
-            tr.SeoDescription = value.SeoDescription;
+            tr.Disclaimer     = AdminWrite.Blank(value.Disclaimer);
+            tr.SeoTitle       = AdminWrite.Blank(value.SeoTitle);
+            tr.SeoDescription = AdminWrite.Blank(value.SeoDescription);
         }
     }
 

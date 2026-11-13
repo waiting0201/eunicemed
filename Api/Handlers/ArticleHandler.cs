@@ -20,7 +20,10 @@ public sealed class ArticleHandler(IArticleReadService reader)
     public Task<IActionResult> GetNewsAsync(HttpRequest req, string slug)     => DetailAsync(req, ArticleType.News, slug);
     public Task<IActionResult> GetInsightAsync(HttpRequest req, string slug)  => DetailAsync(req, ArticleType.Insight, slug);
 
-    /// <summary>GET /news|/insights?locale=&amp;category=&amp;tag=&amp;facets=&amp;page=&amp;pageSize=</summary>
+    /// <summary>
+    /// GET /news|/insights?locale=&amp;category=&amp;tag=&amp;sort=&amp;facets=&amp;page=&amp;pageSize=
+    /// <para><c>sort=latest</c>：純依發布日，不讓精選置頂（首頁「最新消息」用）。</para>
+    /// </summary>
     private async Task<IActionResult> ListAsync(HttpRequest req, byte type)
     {
         var locale   = Locales.Normalize(req.Query["locale"]);
@@ -28,7 +31,9 @@ public sealed class ArticleHandler(IArticleReadService reader)
         var tag      = ProductHandler.Nullable(req.Query["tag"]);
         var (page, pageSize) = ProductHandler.Paging(req);
 
-        var (items, total) = await reader.GetListAsync(type, locale, category, tag, page, pageSize);
+        var latest   = string.Equals(req.Query["sort"], "latest", StringComparison.OrdinalIgnoreCase);
+
+        var (items, total) = await reader.GetListAsync(type, locale, category, tag, page, pageSize, latest);
 
         Dictionary<string, FacetCount[]>? facets = null;
         if (string.Equals(req.Query["facets"], "true", StringComparison.OrdinalIgnoreCase))

@@ -11,7 +11,7 @@ public interface ITaxonomyReadService
     Task<CategoryDto?> GetCategoryAsync(string slug, string locale);
     Task<IReadOnlyList<SubCategoryRefDto>> GetSubCategoriesAsync(string locale, string? categorySlug);
     Task<CategoryDto?> GetSubCategoryAsync(string categorySlug, string subSlug, string locale);
-    Task<IReadOnlyList<CertificationDto>> GetCertificationsAsync(string locale);
+    Task<IReadOnlyList<CertificationDto>> GetCertificationsAsync(string locale, Guid? productId = null);
 
     /// <summary>facet 標籤用的 slug → name 對照（依語系）。</summary>
     Task<FacetLabels> GetFacetLabelsAsync(string locale);
@@ -139,8 +139,22 @@ public sealed class TaxonomyReadService(IDbConnection db) : ITaxonomyReadService
         return row is null ? null : ToDto(row, [], await VariantsAsync([row]));
     }
 
-    public async Task<IReadOnlyList<CertificationDto>> GetCertificationsAsync(string locale)
+    /// <summary>
+    /// 認證清單。帶 <paramref name="productId"/> 時：這個產品**有掛**認證就只回掛的那幾筆，
+    /// **一筆都沒掛**就回全站清單。
+    ///
+    /// <para>
+    /// 之前產品頁一律回全站清單、不看 <c>ProductCertifications</c> ——
+    /// 後台逐產品掛認證是個靜默的無效操作。直接改成「只看掛的」又會讓
+    /// 還沒掛過的產品（當時是全部）標章列變空，所以用與相關產品同一個模型：
+    /// 空 = 自動，有內容 = 只顯示這幾筆。
+    /// </para>
+    /// </summary>
+    public async Task<IReadOnlyList<CertificationDto>> GetCertificationsAsync(string locale, Guid? productId = null)
     {
+        var p = P(locale);
+        p.Add("@productId", productId, DbType.Guid);
+
         var rows = await db.QueryAsync<CertRow>("""
             SELECT ce.Slug, ce.Mark, cet.SubLabel, cet.Description,
                    (SELECT BlobUrl FROM Media WHERE Id = ce.LogoMediaId) AS LogoUrl,
@@ -149,8 +163,15 @@ public sealed class TaxonomyReadService(IDbConnection db) : ITaxonomyReadService
                    INNER JOIN CertificationTranslations cet
                        ON cet.CertificationId = ce.Id AND cet.Locale = @locale
             WHERE  ce.Status = 1
+              AND (@productId IS NULL
+                   OR NOT EXISTS (SELECT 1 FROM ProductCertifications pc
+                                         INNER JOIN Certifications live
+                                                 ON live.Id = pc.CertificationId AND live.Status = 1
+                                  WHERE  pc.ProductId = @productId)
+                   OR EXISTS     (SELECT 1 FROM ProductCertifications pc
+                                  WHERE  pc.ProductId = @productId AND pc.CertificationId = ce.Id))
             ORDER  BY ce.SortOrder
-            """, P(locale));
+            """, p);
 
         return rows.Select(r => new CertificationDto(
             r.Slug, r.Mark, r.SubLabel, r.Description,

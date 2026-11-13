@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { api, type ArticleListItem, type MediaRef, type ProductListItem } from '@/lib/api';
-import { formatDate } from '@/lib/date';
+import { formatYearMonth } from '@/lib/date';
 import { srcSetOf } from '@/lib/image';
-import { isLocale, type Locale } from '@/lib/locale';
+import { isLocale, localizeHref, type Locale } from '@/lib/locale';
 import { section, type SectionCta } from '@/lib/page';
 import { collectionColor } from '@/lib/collection';
 import { css } from '@/lib/css';
@@ -284,7 +284,8 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
   const [page, featured, news] = await Promise.all([
     api.page(locale, 'home'),
     api.products(locale, { featured: 'true', pageSize: '8' }),
-    api.articles(locale, 'news'),
+    // sort=latest：這一段叫「最新消息」，不能讓列表頁的精選置頂排進來
+    api.articles(locale, 'news', undefined, undefined, 'latest'),
   ]);
 
   if (!page) notFound();
@@ -328,7 +329,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
           <FeaturedMasonry items={featured.items} locale={locale} />
 
           {promo && (
-            <PromoBand promo={promo}>
+            <PromoBand promo={promo} locale={locale}>
               <div style={S.promoLeft}>
                 <div>
                   {promo.eyebrow && <p style={S.promoEyebrow}>{promo.eyebrow}</p>}
@@ -456,7 +457,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
                 )}
                 {/* 播放鈕。影片來源未定（CLAUDE.md §7），先只放記號不接播放器。
                     外圈是 mockup4 的漣漪環，`prefers-reduced-motion` 時由 globals.css 關掉 */}
-                <span style={S.s04PlayWrap}>
+                <PlayMark source={testimonial.video?.source} label={testimonial.title}>
                   <span style={S.s04Ripple} aria-hidden />
                   <span style={S.s04Play}>
                     <svg
@@ -470,7 +471,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
                       <path d="M8 5v14l11-7z" />
                     </svg>
                   </span>
-                </span>
+                </PlayMark>
               </div>
 
               {/* 浮出左緣的深色標籤（mockup4：`left:-22px`） */}
@@ -555,12 +556,41 @@ function FeaturedMasonry({ items, locale }: { items: ProductListItem[]; locale: 
   );
 }
 
+/**
+ * 見證影片的播放鈕。後台填了影片來源（`video.source`）就是一條開新分頁的連結，
+ * 沒填就維持 mockup4 的靜態記號。
+ *
+ * <p>
+ * 這個欄位原本沒有任何消費者 —— 編輯者貼了網址，播放鈕照樣點不動。
+ * 影片要自架 mp4 還是 YouTube 嵌入仍未定（CLAUDE.md §7），而開連結兩者都成立，
+ * 所以先做這個不需要拍板的版本。只認 http(s)，其餘字串當成沒填。
+ * </p>
+ */
+function PlayMark({
+  source,
+  label,
+  children,
+}: {
+  source?: string;
+  label?: string;
+  children: React.ReactNode;
+}) {
+  const href = source && /^https?:\/\//i.test(source.trim()) ? source.trim() : null;
+  if (!href) return <span style={S.s04PlayWrap}>{children}</span>;
+
+  return (
+    <a href={href} target="_blank" rel="noopener" aria-label={label} style={S.s04PlayWrap}>
+      {children}
+    </a>
+  );
+}
+
 /** 首頁 §05 的一列：固定寬度的日期、佔滿剩餘寬度的標題、右端的 Read →（mockup4）。 */
 function NewsRow({ item, locale }: { item: ArticleListItem; locale: Locale }) {
   return (
     <Link href={item.url} style={S.row}>
       <span style={S.rowDate}>
-        {item.publishedAt ? formatDate(item.publishedAt, locale).slice(0, 9) : ''}
+        {item.publishedAt ? formatYearMonth(item.publishedAt, locale) : ''}
       </span>
       <h3 style={S.rowTitle}>{item.title}</h3>
       <span style={S.rowRead}>{COPY[locale].latestNews.read}</span>
@@ -591,13 +621,18 @@ function TileLink({ tile, locale }: { tile: Tile; locale: Locale }) {
  */
 function PromoBand({
   promo,
+  locale,
   children,
 }: {
   promo: NonNullable<FeaturedSection['promo']>;
+  locale: Locale;
   children: React.ReactNode;
 }) {
   const cta = promo.link;
   if (!cta?.url) return <div style={S.promo}>{children}</div>;
+
+  // 站內連結一律換成目前語系 —— 這個欄位兩個語系共用同一個值（lib/locale.ts）
+  const href = cta.external ? cta.url : localizeHref(cta.url, locale);
 
   return cta.external ? (
     <a
@@ -611,7 +646,7 @@ function PromoBand({
       {children}
     </a>
   ) : (
-    <Link href={cta.url} aria-label={cta.label ?? undefined} style={S.promo} data-hover="lift-3">
+    <Link href={href} aria-label={cta.label ?? undefined} style={S.promo} data-hover="lift-3">
       {children}
     </Link>
   );

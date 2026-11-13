@@ -69,7 +69,10 @@ public sealed record ProductDto(
     DownloadDto[]       Downloads,
     ProductRelatedDto[] RelatedProducts,
     SeoDto        Seo,
-    DateTime?     PublishedAt);
+    DateTime?     PublishedAt,
+    // 子分類的落地頁是否上線。草稿子分類底下的產品照常顯示（產品網址仍含那一段），
+    // 但落地頁是 404 —— 前台據此不把麵包屑連過去。
+    bool          SubCategoryListed);
 
 public sealed record ProductRelatedDto(string Slug, string Name, MediaRefDto? Image, string Url);
 

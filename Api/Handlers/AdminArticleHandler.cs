@@ -268,9 +268,17 @@ public sealed class AdminArticleHandler(
         if (body.ClearCover)                          entity.CoverMediaId = null;
         else if (body.CoverMediaId is { } cover)      entity.CoverMediaId = cover;
 
-        if (body.ReadMinutes is { } minutes) entity.ReadMinutes = minutes;
+        if (body.ClearReadMinutes)                entity.ReadMinutes = null;
+        else if (body.ReadMinutes is { } minutes) entity.ReadMinutes = minutes;
+
         if (body.IsFeatured  is { } featured) entity.IsFeatured = featured;
-        if (body.PublishedAt is not null)     entity.PublishedAt = NormalizePublishedAt(body.PublishedAt);
+
+        // 清掉排程時間 = 「不要等了」。已發布的文章改成現在上線（它需要一個日期來排序
+        // 與顯示）；草稿則回到 null，等按下發布時由 PublishAsync 的 ??= 補上。
+        if (body.ClearPublishedAt)
+            entity.PublishedAt = entity.Status == ContentStatus.Published ? Clock.Now : null;
+        else if (body.PublishedAt is not null)
+            entity.PublishedAt = NormalizePublishedAt(body.PublishedAt);
 
         ApplyTranslations(entity, body.Translations);
         AdminWrite.EnsureAnyTranslation(entity.Translations);
@@ -543,17 +551,17 @@ public sealed class AdminArticleHandler(
             }
 
             tr.Title      = value.Title.Trim();
-            tr.Standfirst = value.Standfirst;
+            tr.Standfirst = AdminWrite.Blank(value.Standfirst);
             // 文章內文用 Article profile（允許 h2/h3/blockquote/figure/img），
             // TOC 就是靠這些 H2 在讀取時推導的（Services/TocBuilder.cs）。
             tr.Body       = string.IsNullOrWhiteSpace(value.Body)
                 ? null
                 : sanitizers.Sanitize(value.Body, RichTextProfile.Article);
-            tr.Excerpt        = value.Excerpt;
-            tr.AuthorName     = value.AuthorName;
-            tr.Disclaimer     = value.Disclaimer;
-            tr.SeoTitle       = value.SeoTitle;
-            tr.SeoDescription = value.SeoDescription;
+            tr.Excerpt        = AdminWrite.Blank(value.Excerpt);
+            tr.AuthorName     = AdminWrite.Blank(value.AuthorName);
+            tr.Disclaimer     = AdminWrite.Blank(value.Disclaimer);
+            tr.SeoTitle       = AdminWrite.Blank(value.SeoTitle);
+            tr.SeoDescription = AdminWrite.Blank(value.SeoDescription);
         }
     }
 
@@ -574,10 +582,10 @@ public sealed class AdminArticleHandler(
                 ev.Translations.Add(tr);
             }
 
-            tr.DatesLabel = value.DatesLabel;
-            tr.Venue      = value.Venue;
-            tr.Booth      = value.Booth;
-            tr.CtaLabel   = value.CtaLabel;
+            tr.DatesLabel = AdminWrite.Blank(value.DatesLabel);
+            tr.Venue      = AdminWrite.Blank(value.Venue);
+            tr.Booth      = AdminWrite.Blank(value.Booth);
+            tr.CtaLabel   = AdminWrite.Blank(value.CtaLabel);
         }
     }
 

@@ -87,8 +87,8 @@ public sealed class CollectionHandler(AppDbContext db, ICollectionReadService re
         var entity = new Collection
         {
             Slug      = slug,
-            Strength  = body.Strength,
-            SortOrder = body.SortOrder,
+            Strength  = body.Strength  ?? 0,
+            SortOrder = body.SortOrder ?? 0,
             CreatedAt = now,
             UpdatedAt = now,
         };
@@ -123,8 +123,8 @@ public sealed class CollectionHandler(AppDbContext db, ICollectionReadService re
             entity.Slug = slug;
         }
 
-        if (body.Strength  != 0) entity.Strength  = body.Strength;
-        if (body.SortOrder != 0) entity.SortOrder = body.SortOrder;
+        if (body.Strength  is { } strength)  entity.Strength  = strength;
+        if (body.SortOrder is { } sortOrder) entity.SortOrder = sortOrder;
         entity.UpdatedAt = Clock.Now;
 
         ApplyTranslations(entity, body.Translations);
@@ -190,7 +190,7 @@ public sealed class CollectionHandler(AppDbContext db, ICollectionReadService re
             else
             {
                 tr.Name        = value.Name.Trim();
-                tr.Description = value.Description;
+                tr.Description = AdminWrite.Blank(value.Description);
             }
         }
     }

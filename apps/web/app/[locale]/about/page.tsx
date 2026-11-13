@@ -502,7 +502,8 @@ function CertCard({
 
   return (
     <div style={hero ? S.s05Hero : S.s05Card} data-hover={hero ? undefined : 'edge'}>
-      {cert.logo && (
+      {/* 判斷看 `url`（理由同 lib/bands.ts）：API 在 2026-11 之前這裡回的是網址字串 */}
+      {cert.logo?.url && (
         <img
           src={cert.logo.url}
           alt={cert.logo.alt ?? cert.mark}

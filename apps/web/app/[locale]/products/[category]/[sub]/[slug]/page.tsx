@@ -475,7 +475,9 @@ function Breadcrumb({
       href: `/${locale}/products/${product.category.slug}`,
       label: product.category.name,
     },
+    // 草稿子分類：產品照常顯示，但落地頁不存在 —— 不放一條通往 404 的麵包屑
     product.subCategory &&
+      product.subCategoryListed !== false &&
       product.category && {
         href: `/${locale}/products/${product.category.slug}/${product.subCategory.slug}`,
         label: product.subCategory.name,

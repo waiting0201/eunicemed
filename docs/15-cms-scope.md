@@ -129,9 +129,11 @@
 
 ## 5. 已知殘留
 
-- **`SyncInvariant` 走不進陣列**：`ReadPath`/`WritePath` 只處理 `JsonObject`，所以 `tiles[].link.url` 這類陣列內的 invariant 欄位其實同步不到。本次沒修 —— 連結已不在 CMS 裡，這條路徑目前沒有使用者。
+- ~~**`SyncInvariant` 走不進陣列**~~：2026-11-13 修掉。當時判斷「這條路徑沒有使用者」是錯的，輪播圖、里程碑年份、合作類型 key 都走這條，見 [09](09-page-blocks.md) §9.3。
 - **頁面內容的完整度儀表語意變弱**：`sectionLevels` 的判準之一是 `已填欄位數 >= required.length + 1`，`required` 變短之後會更容易滿分。要精準需改成逐 schema 計算，本次不動（會在同一個 PR 裡混進第二件事）。
 - **`x-localeInvariant` 用在 URL 上是設計錯誤**，本次以「連結不進 CMS」規避而非修復。
+  ⚠️ 漏了一格：`home.featuredProducts.promo.link.url` 還在 schema 裡，英文首頁的型錄卡因此一直連到
+  `/zh-TW/products`（2026-11-13 稽核實測）。改由前台 `localizeHref()` 在渲染時校正語系前綴。
 
 ## 6. 這次沒有做的
 

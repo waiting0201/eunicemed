@@ -86,6 +86,10 @@ public sealed record UpsertArticleRequest(
 {
     public bool ClearCategory { get; init; }
     public bool ClearCover    { get; init; }
+
+    // null 與「未帶到」分不出來，所以清空要另外講（同上面兩個）。
+    public bool ClearReadMinutes { get; init; }
+    public bool ClearPublishedAt { get; init; }
 }
 
 // ── News 活動面板（與 Article 共用主鍵的 1:1）──────────────────────────────

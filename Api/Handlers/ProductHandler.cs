@@ -77,7 +77,8 @@ public sealed class ProductHandler(
             return new NotFoundObjectResult(ApiResponse.Fail(
                 "Product not found.", $"No published product '{slug}' in locale '{locale}'."));
 
-        var certs     = await taxonomy.GetCertificationsAsync(locale);
+        // 有掛就只回掛的，沒掛就回全站清單（見 GetCertificationsAsync）
+        var certs     = await taxonomy.GetCertificationsAsync(locale, r.Id);
         var related   = await reader.GetRelatedAsync(r.Id, locale, take: 4);
         var images    = await reader.GetImagesAsync(r.Id);
         var bodyParts = await reader.GetBodyPartsAsync(r.Id, locale);
@@ -103,7 +104,8 @@ public sealed class ProductHandler(
             downloads.ToArray(),
             related.Select(p => new ProductRelatedDto(p.Slug, p.Name, p.Image, p.Url)).ToArray(),
             new SeoDto(r.SeoTitle, r.SeoDescription, r.OgImageUrl),
-            r.PublishedAt);
+            r.PublishedAt,
+            r.SubCategoryStatus == ContentStatus.Published);
 
         return new OkObjectResult(ApiResponse.Ok(dto));
     }

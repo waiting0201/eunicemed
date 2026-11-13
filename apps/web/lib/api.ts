@@ -169,6 +169,8 @@ export type ProductDetail = {
   name: string;
   category: SlugName | null;
   subCategory: SlugName | null;
+  /** 子分類落地頁是否上線。`false` 時麵包屑不連過去（那一頁是 404） */
+  subCategoryListed?: boolean;
   collection: SlugName | null;
   /** 詳情帶該語系的名稱（chip 要顯示）；列表卡的 bodyParts 只有 slug */
   bodyParts: SlugName[];
@@ -415,9 +417,12 @@ export const api = {
     kind: 'news' | 'insights',
     category?: string,
     page?: string,
+    /** `latest`：純依發布日，不讓精選置頂（首頁與資源中心的「最新」用） */
+    sort?: 'latest',
   ) => {
     const q = new URLSearchParams({ locale, facets: 'true' });
     if (category) q.set('category', category);
+    if (sort) q.set('sort', sort);
     // 頁碼由 query string 帶進來，非數字或小於 1 就當第一頁（網址可以被人手改）
     const n = Number(page);
     if (Number.isFinite(n) && n > 1) q.set('page', String(Math.floor(n)));
@@ -435,6 +440,7 @@ export const api = {
   categories: (locale: string) =>
     get<CategoryDetail[]>(`/categories?locale=${enc(locale)}&include=subCategories`),
 
+  /** `page` 由 query string 帶進來，非數字或小於 1 就當第一頁（同 `articles`） */
   products: (locale: string, params: Record<string, string | undefined>) => {
     const q = new URLSearchParams({ locale });
     for (const [k, v] of Object.entries(params)) if (v) q.set(k, v);

@@ -114,6 +114,18 @@ internal static class AdminWrite
     }
 
     /// <summary>
+    /// 選填文字欄位：空白一律存成 <c>null</c>。
+    /// </summary>
+    /// <remarks>
+    /// 後台的 input 清空後送來的是 <c>""</c> 而不是 <c>null</c>，而前台的預設值
+    /// 全部寫成 <c>value ?? fallback</c> —— 空字串會穿過去，於是「打了字再清空」
+    /// 得到的是空白的按鈕與空的 SEO 標題，而不是提示文字承諾的預設值。
+    /// 內容本身不 trim：多行文字的前後空白是編輯者的事。
+    /// </remarks>
+    public static string? Blank(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value;
+
+    /// <summary>
     /// <c>null</c> = 刪除該語系。回傳 true 表示這一輪已處理完，呼叫端該 continue。
     /// </summary>
     public static bool DropTranslation<T, TValue>(

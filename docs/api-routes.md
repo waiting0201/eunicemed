@@ -195,7 +195,7 @@
 
 | Method | Path | 權限 | 說明 |
 |---|---|---|---|
-| GET | `/news?locale=&category=&tag=&facets=&page=&pageSize=` | 公開 | |
+| GET | `/news?locale=&category=&tag=&sort=&facets=&page=&pageSize=` | 公開 | `sort=latest` 純依發布日（預設精選置頂）；`/insights` 同 |
 | GET | `/news/{slug}?locale=` | 公開 | 含 event / gallery / prev / next |
 | GET | `/insights?locale=&category=&tag=&facets=&page=&pageSize=` | 公開 | |
 | GET | `/insights/{slug}?locale=` | 公開 | `event`/`gallery`/`prev`/`next` 恆為 null |

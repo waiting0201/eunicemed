@@ -18,7 +18,7 @@ import { StatusTag } from '@/components/StatusTag';
 import { Icon } from '@/components/Icon';
 import { levelOf } from '@/lib/completeness';
 import type { GaugeLevel } from '@/components/Gauge';
-import { formatDateTime } from '@/lib/format';
+import { formatDateTime, toDate } from '@/lib/format';
 
 /**
  * 文章編輯（News 與 Insights 共用）。骨架沿用產品編輯頁。
@@ -284,7 +284,7 @@ export function ArticleEdit() {
                 onChange={(tagIds) => patch({ tagIds })}
                 keyOf={(t) => t.id}
                 labelOf={(t) => t.nameZhTw ?? t.nameEn}
-                hint="標籤是前台的篩選按鈕。沒有中文名稱的標籤在中文站顯示英文名。"
+                hint="顯示在文章內頁底部（純文字，不能點）。沒有該語系名稱的標籤在那個語系不顯示。"
               />
 
               <label className="flex items-center gap-2 text-[0.9rem]">
@@ -335,7 +335,7 @@ export function ArticleEdit() {
                 />
               </Field>
 
-              <Field label="前言 standfirst" hint="標題底下那一段。列表卡沒有它時改用摘要。">
+              <Field label="前言 standfirst" hint="內頁標題底下那一段。留空時內頁改用摘要；列表卡不使用它。">
                 <textarea
                   className="form-control"
                   rows={2}
@@ -356,7 +356,7 @@ export function ArticleEdit() {
               </Field>
 
               <FieldRow>
-                <Field label="摘要" hint="列表卡的文字。留空時前台取內文開頭。">
+                <Field label="摘要" hint="列表卡的文字。留空時卡片就不顯示這一段，不會自動取內文。">
                   <textarea
                     className="form-control"
                     rows={2}
@@ -826,9 +826,11 @@ function toRequest(draft: AdminArticle, removed: string[]) {
     coverMediaId: draft.coverMediaId,
     clearCover: draft.coverMediaId === null,
     readMinutes: draft.readMinutes,
+    clearReadMinutes: draft.readMinutes === null,
     isFeatured: draft.isFeatured,
     tagIds: draft.tagIds,
     publishedAt: draft.publishedAt,
+    clearPublishedAt: draft.publishedAt === null,
     translations: {
       ...draft.translations,
       ...Object.fromEntries(removed.map((l) => [l, null])),
@@ -849,13 +851,27 @@ function articleLevel(tr?: ArticleTranslation): GaugeLevel {
   ]);
 }
 
-/** `datetime-local` 要的是無時區的本地字串，而 API 回的是 ISO。 */
+/**
+ * `datetime-local` 顯示與收的都是**編輯者電腦的本地時間**，而 API 進出一律是 UTC。
+ *
+ * <p>
+ * 這兩支原本只是切字串 —— 於是輸入框裡其實是 UTC，台北的編輯者填「09:00」，
+ * 文章要到 17:00 才上線；旁邊的「更新時間」走 `formatDateTime` 顯示的卻是本地時間，
+ * 同一個側欄兩個時間差八小時。
+ * </p>
+ */
 function toLocalInput(iso: string | null) {
-  return iso ? iso.slice(0, 16) : '';
+  if (!iso) return '';
+  const d = toDate(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+/** 沒有時區的字串交給 `new Date()` 就是本地時間，`toISOString()` 換回帶 Z 的 UTC。 */
 function fromLocalInput(value: string) {
-  return value ? `${value}:00` : null;
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
 }
 
 function Meta({ label, value }: { label: string; value: string }) {

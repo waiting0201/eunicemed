@@ -345,8 +345,22 @@ export function ProductEdit() {
                   checked={draft.isFeatured}
                   onChange={(e) => patch({ isFeatured: e.target.checked })}
                 />
-                首頁精選（依「精選排序」決定版位順序）
+                放上首頁精選
               </label>
+
+              {/* 沒勾精選時這個數字沒有任何作用，所以跟著勾選框出現 */}
+              {draft.isFeatured && (
+                <div className="mt-3 max-w-[16rem]">
+                  <Field label="精選排序" hint="數字小的排前面。首頁只顯示前 8 件，數字相同時依產品名稱。">
+                    <input
+                      type="number"
+                      className="form-control mono"
+                      value={draft.featuredSortOrder}
+                      onChange={(e) => patch({ featuredSortOrder: Number(e.target.value) })}
+                    />
+                  </Field>
+                </div>
+              )}
             </div>
           </div>
 
@@ -412,6 +426,7 @@ export function ProductEdit() {
                 onChange={(certificationIds) => patch({ certificationIds })}
                 keyOf={(c) => c.id}
                 labelOf={(c) => c.mark}
+                hint="一項都不選時，產品頁顯示全站所有認證。選了任何一項，就只顯示選的這幾項。"
               />
 
               <RelatedProducts
@@ -463,7 +478,7 @@ export function ProductEdit() {
                 />
               </Field>
 
-              <Field label="摘要" hint="列表卡與產品頁上方的一段話。">
+              <Field label="摘要" hint="產品頁上方的一段話（列表卡不顯示）。沒填 SEO 敘述時，搜尋結果也用這一段。">
                 <textarea
                   className="form-control"
                   rows={3}

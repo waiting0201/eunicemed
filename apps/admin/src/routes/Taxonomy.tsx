@@ -308,7 +308,7 @@ function TaxonomyDialog({
       {isSub && draft.status !== null && (
         <Field
           label="狀態"
-          hint="草稿或封存的子分類，連同它的落地頁一起從前台與 sitemap 消失。"
+          hint="草稿或封存只收起這個子分類的落地頁（前台、篩選與 sitemap）。底下的產品照常顯示；要下架產品請到各產品取消發布。"
         >
           <StatusSelect
             value={draft.status}

@@ -71,3 +71,25 @@ export function switchLocalePath(pathname: string, target: Locale): string {
   segments[1] = target;
   return segments.join('/');
 }
+
+/**
+ * 把後台存的站內連結校正成目前這個語系。站外網址與 `#`、`mailto:` 原樣回傳。
+ *
+ * <p>
+ * 區段裡的連結欄位是**跨語系共用**的（`x-localeInvariant`）—— 兩個語系存的是
+ * 同一個字串。編輯者在中文分頁填 `/zh-TW/products`，英文頁拿到的也是它，
+ * 於是英文首頁的型錄卡跳到中文頁（正式站 2026-11 實測）。
+ * 所以存什麼前綴都不算數：`/zh-TW/products`、`/en/products`、`/products`
+ * 一律改成 `/{locale}/products`。
+ * </p>
+ */
+export function localizeHref(url: string, locale: Locale): string {
+  // 只處理站內的絕對路徑；`//host` 是協定相對網址，屬站外
+  if (!url.startsWith('/') || url.startsWith('//')) return url;
+
+  const segments = url.split('/');
+  if (isLocale(segments[1])) segments.splice(1, 1);
+
+  const rest = segments.slice(1).join('/');
+  return rest ? `/${locale}/${rest}` : `/${locale}`;
+}

@@ -56,7 +56,8 @@ public sealed record ProductRow(
     string?   CollectionName,
     string?   UseCaseImageUrl,
     string?   SizeChartDiagramUrl,
-    DateTime? PublishedAt);
+    DateTime? PublishedAt,
+    byte?     SubCategoryStatus);
 
 public sealed class ProductReadService(IDbConnection db) : IProductReadService
 {
@@ -209,7 +210,8 @@ public sealed class ProductReadService(IDbConnection db) : IProductReadService
                col.Slug AS CollectionSlug, colt.Name AS CollectionName,
                (SELECT BlobUrl FROM Media WHERE Id = p.UseCaseImageMediaId) AS UseCaseImageUrl,
                (SELECT BlobUrl FROM Media WHERE Id = p.SizeChartDiagramMediaId) AS SizeChartDiagramUrl,
-               p.PublishedAt
+               p.PublishedAt,
+               sc.Status AS SubCategoryStatus
         """;
 
     public async Task<ProductRow?> GetByPathAsync(string category, string sub, string slug, string locale)

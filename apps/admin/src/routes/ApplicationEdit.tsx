@@ -25,7 +25,7 @@ import { formatDateTime } from '@/lib/format';
  * 應用方案編輯。
  *
  * <p>
- * 兩種型態走同一頁：**依部位**（`type=1`，會出現在首頁人體圖上）與
+ * 兩種型態走同一頁：**依部位**（`type=1`，會出現在應用方案頁的人體圖上）與
  * **特殊照護**（`type=2`，卡片列表）。差別在畫面上要看得出來 ——
  * 只有依部位有部位關聯與人體圖座標，只有特殊照護用得到卡片圖。
  * </p>
@@ -241,7 +241,7 @@ export function ApplicationEdit() {
             </div>
             <div className="panel-body">
               <FieldRow>
-                <Field label="型態" required hint="依部位會出現在首頁人體圖；特殊照護是卡片列表。">
+                <Field label="型態" required hint="依部位會出現在應用方案頁的人體圖；特殊照護是卡片列表。">
                   <select
                     className="form-control"
                     value={draft.type}
@@ -353,7 +353,7 @@ export function ApplicationEdit() {
                 onChange={(productIds) => patch({ productIds })}
                 keyOf={(p) => p.id}
                 labelOf={(p) => p.nameEn ?? p.nameZhTw ?? p.slug}
-                hint="不足時前台會自動以同部位的產品遞補，所以這裡留空也不會是空區塊。"
+                hint="留空時前台自動列出同部位的產品。只要指定了任何一張，就只顯示指定的這幾張，不會自動補。"
               />
             </div>
           </div>
@@ -361,7 +361,7 @@ export function ApplicationEdit() {
           {byBodyPart && (
             <div className="panel mb-5">
               <div className="panel-header">
-                <h2 className="text-[0.95rem] font-semibold">首頁人體圖</h2>
+                <h2 className="text-[0.95rem] font-semibold">人體圖（應用方案頁）</h2>
                 <label className="flex items-center gap-2 text-[0.85rem]">
                   <input
                     type="checkbox"
@@ -391,7 +391,7 @@ export function ApplicationEdit() {
                   />
                 ) : (
                   <p className="form-hint">
-                    這個方案不顯示在人體圖上。內頁仍然存在，只是首頁那張圖上沒有它的熱區。
+                    這個方案不顯示在人體圖上。內頁仍然存在，只是應用方案頁那張圖上沒有它的熱區。
                   </p>
                 )}
               </div>
@@ -430,7 +430,7 @@ export function ApplicationEdit() {
 
               {byBodyPart && (
                 <FieldRow>
-                  <Field label="人體圖面板文案" hint="首頁點到這個熱區時，右側面板顯示的一段話。">
+                  <Field label="人體圖面板文案" hint="在應用方案頁點到這個熱區時，右側面板顯示的一段話。">
                     <textarea
                       className="form-control"
                       rows={2}
@@ -571,8 +571,14 @@ export function ApplicationEdit() {
                 <RichText value={tr.body} onChange={(body) => patchTr({ body })} />
               </Field>
 
-              <Field label="醫療免責" hint="留空時套用共用區段的全站預設文字。">
-                <RichText value={tr.disclaimer} onChange={(disclaimer) => patchTr({ disclaimer })} />
+              <Field label="醫療免責" hint="留空時前台顯示固定的預設聲明（寫在程式裡，後台改不到）。">
+                {/* 純文字：前台把它印在一個 <p> 裡，富文字編輯器送出的標籤會原樣露出來 */}
+                <textarea
+                  className="form-control"
+                  rows={3}
+                  value={tr.disclaimer ?? ''}
+                  onChange={(e) => patchTr({ disclaimer: e.target.value })}
+                />
               </Field>
 
               <FieldRow>

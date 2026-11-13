@@ -494,7 +494,7 @@ public sealed class AdminContentHandler(
             }
 
             tr.Title       = value.Title.Trim();
-            tr.Description = value.Description;
+            tr.Description = AdminWrite.Blank(value.Description);
         }
     }
 
@@ -515,9 +515,9 @@ public sealed class AdminContentHandler(
             }
 
             tr.Name        = value.Name.Trim();
-            tr.Address     = value.Address;
-            tr.RegionLabel = value.RegionLabel;
-            tr.Note        = value.Note;
+            tr.Address     = AdminWrite.Blank(value.Address);
+            tr.RegionLabel = AdminWrite.Blank(value.RegionLabel);
+            tr.Note        = AdminWrite.Blank(value.Note);
         }
     }
 

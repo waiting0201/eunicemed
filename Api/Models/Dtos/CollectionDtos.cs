@@ -26,6 +26,7 @@ public sealed record AdminCollectionDto(
 
 public sealed record UpsertCollectionRequest(
     string?                                          Slug         = null,
-    byte                                             Strength     = 0,
-    int                                              SortOrder    = 0,
+    // nullable：0 是合法的排序值，用「!= 0」分辨有沒有帶會把它吃掉
+    byte?                                            Strength     = null,
+    int?                                             SortOrder    = null,
     Dictionary<string, CollectionTranslationInput?>? Translations = null);

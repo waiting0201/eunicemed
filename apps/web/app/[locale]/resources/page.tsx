@@ -263,7 +263,10 @@ export default async function ResourcesPage({ params }: { params: Promise<Params
   // 只為了這一個版位並不划算。
   const auto = recent?.mode !== 'manual';
   const [news, insights] = auto
-    ? await Promise.all([api.articles(locale, 'news'), api.articles(locale, 'insights')])
+    ? await Promise.all([
+        api.articles(locale, 'news', undefined, undefined, 'latest'),
+        api.articles(locale, 'insights', undefined, undefined, 'latest'),
+      ])
     : [null, null];
 
   const copy = COPY[locale];
