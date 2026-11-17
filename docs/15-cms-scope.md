@@ -577,9 +577,16 @@ CMS/DB 那一半直接改 `tools/migration/copy-zh-2026-10.py` 的定稿值後�
 ### 14.3 回填：讓後台看得到現在顯示的字
 
 不回填前台也不會變，但後台欄位會是空的，編輯者看不到「現在顯示的是什麼」。
-`tools/migration/page-copy-2026-11.mjs` 直接從三支 `page.tsx` 的 `COPY` 讀定稿（不另抄一份），
-**只填空欄位**（冪等；編輯者改過的不會被蓋回去）。預設預覽，`--apply` 才寫入。
-要先部署 API（新 schema），否則 PUT 會撞 `additionalProperties:false`。
+EF migration `BackfillPageCopy`（20261117）把當日各頁 `COPY` 的定稿**快照**寫進去，隨部署在啟動時自動套用：
+
+- **只填空欄位**（缺鍵、空白、空陣列），已有值一律不動 —— 對已經手動填過的庫也安全。
+- migration 跑在區段同步器**之前**（`Program.cs`），新區段的 `PageSections` 列可能還不存在，所以 migration 自己建；
+  同步器之後看到已存在就不動。
+- 有 `required` 的區段（milestones／manufacturing／certificates）**不新建語系列**：只有標題的列過不了 schema 驗證，
+  後台會卡在存不進去。
+- 之後改 `COPY` **不會**回頭影響這支 migration，兩者從此各走各的：DB 是現值，`COPY` 是清空時的退路。
+- 最初寫成 `tools/migration/` 的 API 腳本，同日改為 migration：腳本要拿正式站 token、要記得手動跑，
+  而這只是約 30 列純文字（不經 API 驗證也無風險），不違反 CLAUDE.md §5.4「大型回填不得寫進 migration」。
 
 ### 14.4 連帶
 
