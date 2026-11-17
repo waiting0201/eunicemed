@@ -82,14 +82,19 @@ function SchemaField({
   onPickMedia: (media: { id: string; url: string }) => void;
   richTextProfile: RichTextProfile;
 }) {
-  const label = fieldLabel(name);
+  // schema 有逐欄位的 `title` 就用它（文案欄位要講清楚是哪一行），否則退回對照表
+  const label = node.title ?? fieldLabel(name);
   const type = node['x-fieldType'];
 
   // 跨語系同步的欄位：改一邊等於改兩邊。不標出來的話，
   // 編輯者會在英文頁改了圖，然後困惑中文頁的圖為什麼也變了。
-  const hint = node['x-localeInvariant']
-    ? '這個欄位所有語系共用，改動會同時套用到另一個語系。'
-    : undefined;
+  const hint =
+    [
+      node.description,
+      node['x-localeInvariant'] ? '這個欄位所有語系共用，改動會同時套用到另一個語系。' : undefined,
+    ]
+      .filter(Boolean)
+      .join(' ') || undefined;
 
   switch (type) {
     case 'media':
@@ -221,6 +226,7 @@ function SchemaField({
       return (
         <RepeatableField
           label={label}
+          hint={node.description}
           node={node}
           value={(value as unknown[]) ?? []}
           onChange={onChange}
@@ -342,6 +348,7 @@ function RefField({
 
 function RepeatableField({
   label,
+  hint,
   node,
   value,
   onChange,
@@ -349,6 +356,7 @@ function RepeatableField({
   onPickMedia,
 }: {
   label: string;
+  hint?: string;
   node: SchemaNode;
   value: unknown[];
   onChange: (next: unknown) => void;
@@ -381,6 +389,7 @@ function RepeatableField({
         </span>
       </div>
 
+      {hint && <p className="form-hint mb-2">{hint}</p>}
       {refsCertification && <CertificationRefNotice />}
 
       {value.map((entry, i) => (

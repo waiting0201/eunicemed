@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Home · Hero 輪播",
+  "x-order": 0,
   "description": "CSS 自動輪播 + 圓點指示；prefers-reduced-motion 時停在第一張。",
   "type": "object",
   "additionalProperties": false,

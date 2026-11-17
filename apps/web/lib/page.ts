@@ -71,3 +71,34 @@ export function section<T extends object>(page: PageContent, key: string): T | n
   if (data._enabled === false) return null;
   return data as T;
 }
+
+/**
+ * 後台可覆寫的版面文案：有填（去掉空白後非空）就用後台的，否則退回程式碼裡的定稿。
+ *
+ * <p>
+ * 2026-11-17 起首頁／About／Products 的標題、引言與 SEO 開放後台編輯（docs/15 §14）。
+ * 程式碼裡的 `COPY` 從「唯一來源」降為預設值 —— 編輯者清空一格，前台回到定稿，
+ * 而不是一行空白；某語系沒有那一列也一樣（語言純度：預設值本身就是該語系的）。
+ * </p>
+ */
+export function copyText(value: unknown, fallback: string): string {
+  return typeof value === 'string' && value.trim() ? value : fallback;
+}
+
+/**
+ * 依位置覆寫一組固定數量的項目（四個部位格子、三項核心價值…）。
+ * 數量以預設值為準 —— 版型就是那幾欄；後台每一格各自覆寫，沒填的格子沿用定稿。
+ */
+export function copyItems<T extends Record<string, unknown>>(
+  value: unknown,
+  fallback: readonly T[],
+  fields: readonly (keyof T & string)[],
+): T[] {
+  const cms = Array.isArray(value) ? value : [];
+  return fallback.map((base, i) => {
+    const row = (cms[i] ?? {}) as Record<string, unknown>;
+    const merged: Record<string, unknown> = { ...base };
+    for (const f of fields) merged[f] = copyText(row[f], base[f] as string);
+    return merged as T;
+  });
+}

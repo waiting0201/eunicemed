@@ -505,3 +505,86 @@ CMS/DB 那一半直接改 `tools/migration/copy-zh-2026-10.py` 的定稿值後�
 | 應用方案選配第 4 張「循環照護」 | **未做** | 沒有對應的 `Application`，要新增一列（含英文與產品掛載），另案 |
 | 熱門下載的檔名列（`2025 完整產品型錄・英文版・PDF・11.2 MB`） | 不動 | 由 `Download` 資料組出，語言與大小是欄位，不是文案 |
 | 旗艦店名稱 `康譜旗艦店` | 照定稿 | 正式中文名稱仍待確認（定稿暫寫） |
+
+---
+
+## 14. 2026-11-17：首頁／About／Products 的版面文案開回後台（客戶要求）
+
+客戶在後台找不到首頁 H1 與引言、About 與 Products 頁首等處的編輯位置。這些字是
+§2「區段標題、版面標籤、品牌宣言回程式碼」那條判準移出去的。**這一項對這三頁推翻**；
+其餘 9 頁（Partnership、Resources、FAQ…）維持 §2 不動。
+
+### 14.1 做法：CMS 覆寫，`COPY` 當預設值
+
+不是把文案搬進 DB，而是**疊一層**：各頁的 `resolveCopy(locale, page)` 逐欄
+`copyText(後台值, COPY 定稿)`（`apps/web/lib/page.ts`），有填用後台、空白或沒有那一列就用定稿。
+
+- **上線當下畫面一個字都不變**：後台全空也照樣渲染定稿，不需要搬資料才能部署。
+- **語言純度不受影響**：退回的預設值本身就是該語系的。
+- **清空＝還原**：編輯者把欄位清空就回到定稿，不會出現一行空白。
+- 固定數量的清單（四個部位格子、合作優勢四欄、核心價值三張）以 `copyItems()` **依位置**覆寫，
+  數量以預設值為準 —— 版型就是那幾欄。圖示與連結不開放。
+- **連結仍不進 CMS**（§2 不變），只開按鈕文字。
+- 停用區段（`_enabled: false`）視同沒填，回到預設值。
+
+| 頁 | 區段 | 開放的欄位 |
+|---|---|---|
+| Home | `intro`（新） | 眉標（H1）、大標（`**…**` 標品牌青）、引言 |
+| | `featuredProducts` | 區段標題、副標、引言 |
+| | `bodyPartBand` | 標題兩行、引言、按鈕文字、四個格子的名稱與說明 |
+| | `partner`（新） | 標題、引言、四個優勢、按鈕文字 |
+| | `news`（新） | 標題、「全部消息」「閱讀全文」文字 |
+| | `seo`（新） | SEO title／description |
+| About | `hero` | 眉標、H1 兩行、引言 |
+| | `milestones`／`manufacturing`／`certificates` | 區段標題（＋引言、按鈕文字） |
+| | `coreValues`（新） | 標題、強調字、引言、三項承諾 |
+| | `seo`（新） | SEO title／description |
+| Products | `hero` | 眉標、H1、引言 |
+| | `cta` | 標題、內文、兩顆按鈕文字 |
+| | `seo`（新） | SEO title／description |
+
+不開放：Products 的篩選列標籤與筆數、產品內頁與分類頁的固定標籤（「產品特色」「規格與尺寸」…）——
+那些是介面字，不是文案。產品、分類本身的內容本來就在「產品」裡改。
+
+`Api/PageSchemas/` 25 支 → **32 支**（新增 7 支）；pageKey 數不變。
+
+### 14.2 ⚠️ 欄位名刻意不用 `title`／`lead`／`eyebrow`
+
+**新區段不沿用舊區段名，既有區段的新欄位也不沿用舊欄位名**，否則舊內容會復活：
+
+- **區段**：`home.heroIntro`／`whyPartner`／`latestNews`、`about.values` 的列還停用著留在 DB
+  （§3A，同步器永不硬刪）。同名的 schema 一放回來，同步器會**重新啟用並帶回原內容** ——
+  而其中兩支正是 §1 說的填錯過的那兩支。所以新區段叫 `intro`／`partner`／`news`／`coreValues`。
+- **欄位**：§3B／§3C 拿掉欄位時，DB 的 DataJson 沒有跟著改，只是讀取時被 `PruneUnknown` 剪掉（§4.1）。
+  欄位名一回到 schema，剪裁就不再生效。本機實測 `home.bodyPartBand` 的英文列還留著 mockup4 時期的
+  `title`／`lead`／`tiles`，**格子順序還是「腰背、膝部、足踝」**，照位置覆寫會把 Back & Waist 掛到膝蓋圖示上。
+
+因此文字欄位一律改用從未出現在 git 歷史裡的名稱：
+
+| 意思 | 欄位名 |
+|---|---|
+| 眉標 | `kicker` |
+| 標題／第二行 | `heading`／`headingLine2` |
+| 副標 | `subheading` |
+| 引言 | `intro` |
+| 內文 | `bodyText` |
+| 部位格子 | `tileCopy` |
+| 按鈕文字 | `ctaLabel`／`primaryLabel`／`secondaryLabel`／`allLabel`／`readLabel` |
+
+編輯者看不到欄位名 —— 後台標籤取自 schema 的逐欄位 `title`（2026-11-17 起 `SchemaForm` 支援，
+`description` 顯示為欄位提示）。SEO 區段與清單內層（`items[].title／body`）在全新區段裡，沒有舊資料，維持直白命名。
+
+### 14.3 回填：讓後台看得到現在顯示的字
+
+不回填前台也不會變，但後台欄位會是空的，編輯者看不到「現在顯示的是什麼」。
+`tools/migration/page-copy-2026-11.mjs` 直接從三支 `page.tsx` 的 `COPY` 讀定稿（不另抄一份），
+**只填空欄位**（冪等；編輯者改過的不會被蓋回去）。預設預覽，`--apply` 才寫入。
+要先部署 API（新 schema），否則 PUT 會撞 `additionalProperties:false`。
+
+### 14.4 連帶
+
+- **後台區段順序改依 schema 的 `x-order`**（= 前台版面順序）。DB 的 `SortOrder` 是同步器依檔名字母序建列時給的，
+  About 原本列成「認證、頁首、製造、里程碑、故事」；新區段一加進來會更亂。只有這三頁的 schema 標了 `x-order`，
+  沒標的排在後面、維持伺服器順序。
+- **SEO 由後台蓋過時**，`generateMetadata` 與頁面各打一次 `GET /pages/{key}` —— 同一請求內 Next 會記憶化同網址的 GET，實際只打一次。
+- 頁級 JSON-LD（`webPageSchema(…, copy.meta)`）跟著用覆寫後的 SEO 值。

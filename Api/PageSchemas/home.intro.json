@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Home · 00 品牌開場（H1）",
+  "x-order": 1,
+  "description": "輪播下方那一段：眉標是全頁的 H1（SEO 關鍵字），大標是品牌句。欄位留空時，前台顯示程式碼裡的定稿文字（apps/web 各頁的 COPY），不會變成空白。",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "kicker": {
+      "type": "string",
+      "maxLength": 160,
+      "x-fieldType": "text",
+      "title": "眉標（H1）"
+    },
+    "heading": {
+      "type": "string",
+      "maxLength": 160,
+      "x-fieldType": "text",
+      "title": "大標",
+      "description": "用 **兩個星號** 包住的字會顯示成品牌青，例如 Support Feels **Personal**."
+    },
+    "intro": {
+      "type": "string",
+      "maxLength": 600,
+      "x-fieldType": "text",
+      "title": "引言"
+    }
+  }
+}

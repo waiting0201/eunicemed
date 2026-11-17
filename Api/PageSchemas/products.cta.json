@@ -1,13 +1,41 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Products · 頁尾 CTA 帶",
-  "description": "標題、內文與兩顆按鈕與版型綁死，寫在前端（docs/15）。這裡只留背景圖。",
+  "x-order": 1,
+  "description": "頁尾 CTA 帶：標題、內文、兩顆按鈕的文字與背景圖。按鈕連結固定（依部位查詢 → 應用方案、聯絡我們 → 聯絡頁）。欄位留空時，前台顯示程式碼裡的定稿文字，不會變成空白。",
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "heading": {
+      "type": "string",
+      "maxLength": 160,
+      "x-fieldType": "text",
+      "title": "標題"
+    },
+    "bodyText": {
+      "type": "string",
+      "maxLength": 400,
+      "x-fieldType": "text",
+      "title": "內文"
+    },
+    "primaryLabel": {
+      "type": "string",
+      "maxLength": 60,
+      "x-fieldType": "text",
+      "title": "主要按鈕文字"
+    },
+    "secondaryLabel": {
+      "type": "string",
+      "maxLength": 60,
+      "x-fieldType": "text",
+      "title": "次要按鈕文字"
+    },
     "background": {
-      "type": "string", "format": "uuid",
-      "x-fieldType": "media", "x-mediaPreset": "section-bg", "x-localeInvariant": true
+      "type": "string",
+      "format": "uuid",
+      "x-fieldType": "media",
+      "x-mediaPreset": "section-bg",
+      "x-localeInvariant": true
     }
   }
 }

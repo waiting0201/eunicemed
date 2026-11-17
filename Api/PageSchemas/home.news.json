@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Home · 05 最新消息標題",
+  "x-order": 6,
+  "description": "消息本身自動取最新三篇（側欄「文章」）。這裡只改標題與連結文字。欄位留空時，前台顯示程式碼裡的定稿文字（apps/web 各頁的 COPY），不會變成空白。",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "heading": {
+      "type": "string",
+      "maxLength": 120,
+      "x-fieldType": "text",
+      "title": "區段標題"
+    },
+    "allLabel": {
+      "type": "string",
+      "maxLength": 60,
+      "x-fieldType": "text",
+      "title": "「全部消息」連結文字"
+    },
+    "readLabel": {
+      "type": "string",
+      "maxLength": 40,
+      "x-fieldType": "text",
+      "title": "「閱讀全文」文字"
+    }
+  }
+}

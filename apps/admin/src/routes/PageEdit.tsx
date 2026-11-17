@@ -46,7 +46,12 @@ export function PageEdit() {
     select: (items) => Object.fromEntries(items.map((m) => [m.id, m.url])),
   });
 
-  const sections = page.data?.sections ?? [];
+  // 順序以 schema 的 `x-order` 為準（= 前台版面順序）。DB 的 SortOrder 是同步器
+  // 依檔名字母序建列時給的，新區段加進來就會插在奇怪的位置。沒有 x-order 的排在最後。
+  const sections = useMemo(() => {
+    const order = (k: string) => schema.data?.sections[k]?.['x-order'] ?? Number.MAX_SAFE_INTEGER;
+    return [...(page.data?.sections ?? [])].sort((a, b) => order(a.sectionKey) - order(b.sectionKey));
+  }, [page.data, schema.data]);
 
   useEffect(() => {
     if (!active && sections.length > 0) setActive(sections[0].sectionKey);

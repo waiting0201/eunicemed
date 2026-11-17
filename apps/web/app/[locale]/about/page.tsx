@@ -5,7 +5,14 @@ import { api, type MediaRef } from '@/lib/api';
 import { css } from '@/lib/css';
 import { srcSetOf } from '@/lib/image';
 import { isLocale, type Locale } from '@/lib/locale';
-import { section, type CertificationRef, type SectionCta } from '@/lib/page';
+import {
+  copyItems,
+  copyText,
+  section,
+  type CertificationRef,
+  type PageContent,
+  type SectionCta,
+} from '@/lib/page';
 import { pageMetadata } from '@/lib/seo';
 import { webPageSchema } from '@/lib/schema';
 import { JsonLd } from '@/components/JsonLd';
@@ -104,12 +111,13 @@ type ManufacturingSection = {
 type CertificatesSection = { items?: { certification?: string }[] };
 
 /**
- * 版面文案 —— **刻意寫死，不走 CMS**（決議見 docs/15-cms-scope.md）。
+ * 版面文案的**預設值**。後台可逐欄覆寫，沒填的欄位沿用這裡（docs/15 §14，2026-11-17）。
  *
  * <p>
- * 頁首、三段區段標題與核心價值整段都是版型的一部分：改它要動的是 mockup4。
- * 留在 CMS 的是真的會換的東西 —— 品牌故事的內文、里程碑年份、廠區照、
- * 掛哪幾張認證。
+ * 頁首在 `about.hero`、區段標題與引言在各自的區段（milestones／manufacturing／
+ * certificates）、核心價值在 `about.coreValues`、SEO 在 `about.seo`。
+ * ⚠️ 核心價值**不沿用**舊的 `about.values` 區段名 —— 那一列停用著留在 DB 裡，
+ * 同名會被同步器連同舊內容一起復活。
  * </p>
  *
  * <p>
@@ -237,17 +245,65 @@ const COPY: Record<
   },
 };
 
+/**
+ * 把後台的覆寫疊到 {@link COPY} 上，形狀與 `COPY[locale]` 相同。
+ * 停用的區段視同沒填 —— 但 milestones／manufacturing／certificates 停用時整段本來就不渲染。
+ */
+function resolveCopy(locale: Locale, page: PageContent | null) {
+  const base = COPY[locale];
+  const get = (key: string) => (page ? section<Record<string, unknown>>(page, key) : null) ?? {};
+
+  const hero = get('hero');
+  const milestones = get('milestones');
+  const values = get('coreValues');
+  const manufacturing = get('manufacturing');
+  const certificates = get('certificates');
+  const seo = get('seo');
+
+  return {
+    meta: {
+      title: copyText(seo.title, base.meta.title),
+      description: copyText(seo.description, base.meta.description),
+    },
+    hero: {
+      eyebrow: copyText(hero.kicker, base.hero.eyebrow),
+      title: [
+        copyText(hero.heading, base.hero.title[0]),
+        copyText(hero.headingLine2, base.hero.title[1]),
+      ] as [string, string],
+      lead: copyText(hero.intro, base.hero.lead),
+    },
+    milestones: copyText(milestones.heading, base.milestones),
+    values: {
+      title: copyText(values.heading, base.values.title),
+      accent: copyText(values.accent, base.values.accent),
+      lead: copyText(values.intro, base.values.lead),
+      items: copyItems(values.items, base.values.items, ['title', 'body']),
+    },
+    manufacturing: {
+      title: copyText(manufacturing.heading, base.manufacturing.title),
+      lead: copyText(manufacturing.intro, base.manufacturing.lead),
+    },
+    certificates: {
+      title: copyText(certificates.heading, base.certificates.title),
+      lead: copyText(certificates.intro, base.certificates.lead),
+      cta: copyText(certificates.ctaLabel, base.certificates.cta),
+    },
+  };
+}
+
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
 
+  const { meta } = resolveCopy(locale, await api.page(locale, 'about'));
   return pageMetadata({
     locale,
     path: '/about',
-    title: COPY[locale].meta.title,
+    title: meta.title,
     absoluteTitle: true,
-    description: COPY[locale].meta.description,
+    description: meta.description,
   });
 }
 
@@ -259,7 +315,7 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
   // 整頁沒有任何該語系內容時回 404，而不是渲染一個空殼 —— 語言純度
   if (!page) notFound();
 
-  const copy = COPY[locale];
+  const copy = resolveCopy(locale, page);
   const story = section<StorySection>(page, 'story');
   const milestones = section<MilestonesSection>(page, 'milestones');
   const manufacturing = section<ManufacturingSection>(page, 'manufacturing');

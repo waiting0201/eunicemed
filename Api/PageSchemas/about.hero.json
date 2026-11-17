@@ -1,13 +1,41 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "About · 頁首",
-  "description": "eyebrow／標題／導言與版型綁死，寫在前端（docs/15）。這裡只留 16:3 的頁首圖帶。",
+  "x-order": 0,
+  "description": "頁首：16:3 圖帶、眉標、H1 與引言。欄位留空時，前台顯示程式碼裡的定稿文字，不會變成空白。",
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "kicker": {
+      "type": "string",
+      "maxLength": 120,
+      "x-fieldType": "text",
+      "title": "眉標"
+    },
+    "heading": {
+      "type": "string",
+      "maxLength": 120,
+      "x-fieldType": "text",
+      "title": "標題第一行（H1）"
+    },
+    "headingLine2": {
+      "type": "string",
+      "maxLength": 120,
+      "x-fieldType": "text",
+      "title": "標題第二行"
+    },
+    "intro": {
+      "type": "string",
+      "maxLength": 600,
+      "x-fieldType": "text",
+      "title": "引言"
+    },
     "band": {
-      "type": "string", "format": "uuid",
-      "x-fieldType": "media", "x-mediaPreset": "page-band", "x-localeInvariant": true
+      "type": "string",
+      "format": "uuid",
+      "x-fieldType": "media",
+      "x-mediaPreset": "page-band",
+      "x-localeInvariant": true
     }
   }
 }

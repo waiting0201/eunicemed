@@ -1,21 +1,52 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "About · 05 Certified, audited, trusted",
-  "description": "標章文字取自 Certification 實體，與產品頁共用同一份；此處只存引用。區段標題、導言與 CTA 與版型綁死，寫在前端（docs/15）。",
+  "x-order": 5,
+  "description": "標章文字取自 Certification 實體，與產品頁共用同一份；此處存引用與這一段的標題、引言、按鈕文字。標題、引言、按鈕留空時，前台顯示程式碼裡的定稿文字，不會變成空白。",
   "type": "object",
   "additionalProperties": false,
-  "required": ["items"],
+  "required": [
+    "items"
+  ],
   "properties": {
+    "heading": {
+      "type": "string",
+      "maxLength": 120,
+      "x-fieldType": "text",
+      "title": "區段標題"
+    },
+    "intro": {
+      "type": "string",
+      "maxLength": 600,
+      "x-fieldType": "text",
+      "title": "引言"
+    },
+    "ctaLabel": {
+      "type": "string",
+      "maxLength": 60,
+      "x-fieldType": "text",
+      "title": "按鈕文字",
+      "description": "連結固定到下載頁。"
+    },
     "items": {
-      "type": "array", "minItems": 3, "maxItems": 8, "x-fieldType": "repeatable",
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 8,
+      "x-fieldType": "repeatable",
       "x-localeInvariant": true,
       "items": {
-        "type": "object", "additionalProperties": false,
-        "required": ["certification"],
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "certification"
+        ],
         "properties": {
           "certification": {
-            "type": "string", "maxLength": 80,
-            "x-fieldType": "ref", "x-refEntity": "Certification", "x-localeInvariant": true
+            "type": "string",
+            "maxLength": 80,
+            "x-fieldType": "ref",
+            "x-refEntity": "Certification",
+            "x-localeInvariant": true
           }
         }
       }

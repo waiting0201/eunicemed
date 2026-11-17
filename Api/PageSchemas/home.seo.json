@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Home · SEO 標題與描述",
+  "x-order": 99,
+  "description": "搜尋結果上顯示的標題與摘要，刻意與頁面上的 H1 不同字（docs/15 §11.1）。欄位留空時，前台顯示程式碼裡的定稿文字（apps/web 各頁的 COPY），不會變成空白。",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "title": {
+      "type": "string",
+      "maxLength": 120,
+      "x-fieldType": "text",
+      "title": "SEO 標題（<title>）",
+      "description": "完整字串，不會再自動加「· EuniceMed」。建議 60 字元內。"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 320,
+      "x-fieldType": "text",
+      "title": "SEO 描述（meta description）",
+      "description": "建議英文 160 字元、中文 80 字內。"
+    }
+  }
+}

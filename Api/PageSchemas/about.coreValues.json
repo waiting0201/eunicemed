@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "About · 03 核心價值",
+  "x-order": 3,
+  "description": "欄位留空時，前台顯示程式碼裡的定稿文字（apps/web 各頁的 COPY），不會變成空白。",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "heading": {
+      "type": "string",
+      "maxLength": 160,
+      "x-fieldType": "text",
+      "title": "區段標題",
+      "description": "最後一個字之前的部分，例如「Support feels 」（含結尾空格）。"
+    },
+    "accent": {
+      "type": "string",
+      "maxLength": 60,
+      "x-fieldType": "text",
+      "title": "標題強調字",
+      "description": "接在標題後面、顯示成品牌青的字，例如「personal」。"
+    },
+    "intro": {
+      "type": "string",
+      "maxLength": 600,
+      "x-fieldType": "text",
+      "title": "引言"
+    },
+    "items": {
+      "type": "array",
+      "maxItems": 3,
+      "x-fieldType": "repeatable",
+      "title": "三項承諾",
+      "description": "依位置對應前台三張卡；沒填的項目顯示定稿文字。",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 80,
+            "x-fieldType": "text",
+            "title": "標題"
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 400,
+            "x-fieldType": "text",
+            "title": "說明"
+          }
+        }
+      }
+    }
+  }
+}

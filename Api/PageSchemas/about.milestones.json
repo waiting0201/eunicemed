@@ -1,24 +1,51 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "About · 02 Steady growth. Deep roots.",
-  "description": "區段標題與版型綁死，寫在前端（docs/15）。這裡是會增加的年份清單與背景圖。",
+  "x-order": 2,
+  "description": "區段標題、會增加的年份清單與背景圖。標題留空時，前台顯示程式碼裡的定稿文字，不會變成空白。",
   "type": "object",
   "additionalProperties": false,
-  "required": ["items"],
+  "required": [
+    "items"
+  ],
   "properties": {
+    "heading": {
+      "type": "string",
+      "maxLength": 120,
+      "x-fieldType": "text",
+      "title": "區段標題"
+    },
     "background": {
-      "type": "string", "format": "uuid",
-      "x-fieldType": "media", "x-mediaPreset": "section-bg", "x-localeInvariant": true
+      "type": "string",
+      "format": "uuid",
+      "x-fieldType": "media",
+      "x-mediaPreset": "section-bg",
+      "x-localeInvariant": true
     },
     "items": {
-      "type": "array", "minItems": 3, "maxItems": 12, "x-fieldType": "repeatable",
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 12,
+      "x-fieldType": "repeatable",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["year", "event"],
+        "required": [
+          "year",
+          "event"
+        ],
         "properties": {
-          "year":  { "type": "string", "maxLength": 20,  "x-fieldType": "text", "x-localeInvariant": true },
-          "event": { "type": "string", "maxLength": 300, "x-fieldType": "text" }
+          "year": {
+            "type": "string",
+            "maxLength": 20,
+            "x-fieldType": "text",
+            "x-localeInvariant": true
+          },
+          "event": {
+            "type": "string",
+            "maxLength": 300,
+            "x-fieldType": "text"
+          }
         }
       }
     }

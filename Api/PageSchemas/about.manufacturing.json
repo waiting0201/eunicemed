@@ -1,28 +1,63 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "About · 04 Manufacturing & quality excellence",
-  "description": "區段標題與版型綁死，寫在前端（docs/15）。這裡是兩張廠區照與品質重點。",
+  "x-order": 4,
+  "description": "區段標題、引言、兩張廠區照與品質重點。標題與引言留空時，前台顯示程式碼裡的定稿文字，不會變成空白。",
   "type": "object",
   "additionalProperties": false,
-  "required": ["points"],
+  "required": [
+    "points"
+  ],
   "properties": {
+    "heading": {
+      "type": "string",
+      "maxLength": 120,
+      "x-fieldType": "text",
+      "title": "區段標題"
+    },
+    "intro": {
+      "type": "string",
+      "maxLength": 600,
+      "x-fieldType": "text",
+      "title": "引言"
+    },
     "imageWide": {
-      "type": "string", "format": "uuid",
-      "x-fieldType": "media", "x-mediaPreset": "wide-16x9", "x-localeInvariant": true
+      "type": "string",
+      "format": "uuid",
+      "x-fieldType": "media",
+      "x-mediaPreset": "wide-16x9",
+      "x-localeInvariant": true
     },
     "imageSquare": {
-      "type": "string", "format": "uuid",
-      "x-fieldType": "media", "x-mediaPreset": "square", "x-localeInvariant": true
+      "type": "string",
+      "format": "uuid",
+      "x-fieldType": "media",
+      "x-mediaPreset": "square",
+      "x-localeInvariant": true
     },
     "points": {
-      "type": "array", "minItems": 3, "maxItems": 3, "x-fieldType": "repeatable",
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "x-fieldType": "repeatable",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["title", "body"],
+        "required": [
+          "title",
+          "body"
+        ],
         "properties": {
-          "title": { "type": "string", "maxLength": 80,  "x-fieldType": "text" },
-          "body":  { "type": "string", "maxLength": 300, "x-fieldType": "text" }
+          "title": {
+            "type": "string",
+            "maxLength": 80,
+            "x-fieldType": "text"
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 300,
+            "x-fieldType": "text"
+          }
         }
       }
     }

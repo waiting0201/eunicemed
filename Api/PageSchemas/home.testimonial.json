@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Home · 04 Trusted worldwide",
+  "x-order": 5,
   "description": "video.source 目前為自由字串（自架 mp4 網址或 YouTube/Vimeo 連結），型別待客戶拍板後收斂（CLAUDE.md §7）。",
   "type": "object",
   "additionalProperties": false,

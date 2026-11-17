@@ -39,6 +39,8 @@ export type SchemaNode = {
   'x-mediaPreset'?: string;
   'x-refEntity'?: string;
   'x-localeInvariant'?: boolean;
+  /** 區段在後台清單的順序（= 前台版面順序）。只用在區段根節點。 */
+  'x-order'?: number;
 };
 
 export type PageSchema = { key: string; sections: Record<string, SchemaNode> };

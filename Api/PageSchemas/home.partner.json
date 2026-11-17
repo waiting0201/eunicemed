@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Home · 03 合作優勢",
+  "x-order": 4,
+  "description": "欄位留空時，前台顯示程式碼裡的定稿文字（apps/web 各頁的 COPY），不會變成空白。",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "heading": {
+      "type": "string",
+      "maxLength": 160,
+      "x-fieldType": "text",
+      "title": "區段標題"
+    },
+    "intro": {
+      "type": "string",
+      "maxLength": 600,
+      "x-fieldType": "text",
+      "title": "引言"
+    },
+    "items": {
+      "type": "array",
+      "maxItems": 4,
+      "x-fieldType": "repeatable",
+      "title": "四個優勢",
+      "description": "依位置對應前台四欄；只填前兩項的話，後兩項顯示定稿文字。",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 80,
+            "x-fieldType": "text",
+            "title": "標題"
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 300,
+            "x-fieldType": "text",
+            "title": "說明"
+          }
+        }
+      }
+    },
+    "ctaLabel": {
+      "type": "string",
+      "maxLength": 60,
+      "x-fieldType": "text",
+      "title": "按鈕文字",
+      "description": "連結固定到合作夥伴頁。"
+    }
+  }
+}

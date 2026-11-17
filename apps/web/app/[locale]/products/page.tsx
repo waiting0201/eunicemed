@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { api, type CategoryDetail, type MediaRef } from '@/lib/api';
 import { srcSetOf } from '@/lib/image';
 import { isLocale, type Locale } from '@/lib/locale';
-import { section, type SectionCta } from '@/lib/page';
+import { copyText, section, type PageContent, type SectionCta } from '@/lib/page';
 import { FilterChips } from '@/components/FilterChips';
 import { css } from '@/lib/css';
 import { pageMetadata } from '@/lib/seo';
@@ -52,8 +52,9 @@ type Search = { category?: string; collection?: string; bodyPart?: string; page?
 type CtaSection = { background?: MediaRef };
 
 /**
- * 版面文案 —— 頁首與頁尾 CTA 帶**刻意寫死，不走 CMS**（決議見 docs/15-cms-scope.md）。
- * 英文逐字取自 `mockup4/Products.dc.html`；篩選列的標籤本來就在這裡。
+ * 版面文案的**預設值**。頁首（`products.hero`）、頁尾 CTA 帶（`products.cta`）與 SEO
+ * （`products.seo`）後台可逐欄覆寫，沒填的沿用這裡（docs/15 §14，2026-11-17）。
+ * 篩選列的標籤與筆數是介面字，不開放。
  */
 const COPY: Record<
   Locale,
@@ -119,17 +120,47 @@ const COPY: Record<
   },
 };
 
+/** 把後台的覆寫疊到 {@link COPY} 上，形狀與 `COPY[locale]` 相同。 */
+function resolveCopy(locale: Locale, page: PageContent | null) {
+  const base = COPY[locale];
+  const get = (key: string) => (page ? section<Record<string, unknown>>(page, key) : null) ?? {};
+
+  const hero = get('hero');
+  const cta = get('cta');
+  const seo = get('seo');
+
+  return {
+    ...base,
+    meta: {
+      title: copyText(seo.title, base.meta.title),
+      description: copyText(seo.description, base.meta.description),
+    },
+    hero: {
+      eyebrow: copyText(hero.kicker, base.hero.eyebrow),
+      title: copyText(hero.heading, base.hero.title),
+      lead: copyText(hero.intro, base.hero.lead),
+    },
+    cta: {
+      title: copyText(cta.heading, base.cta.title),
+      body: copyText(cta.bodyText, base.cta.body),
+      primary: copyText(cta.primaryLabel, base.cta.primary),
+      secondary: copyText(cta.secondaryLabel, base.cta.secondary),
+    },
+  };
+}
+
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
 
+  const { meta } = resolveCopy(locale, await api.page(locale, 'products'));
   return pageMetadata({
     locale,
     path: '/products',
-    title: COPY[locale].meta.title,
+    title: meta.title,
     absoluteTitle: true,
-    description: COPY[locale].meta.description,
+    description: meta.description,
   });
 }
 
@@ -162,7 +193,7 @@ export default async function ProductsPage({
 
   const cta = page ? section<CtaSection>(page, 'cta') : null;
 
-  const c = COPY[locale];
+  const c = resolveCopy(locale, page);
   const basePath = `/${locale}/products`;
   const facets = result.facets ?? {};
 
@@ -242,7 +273,7 @@ export default async function ProductsPage({
         </div>
       </section>
 
-      {/* 頁尾 CTA 帶 —— 文案是常數，CMS 只管背景圖，所以整段無條件渲染 */}
+      {/* 頁尾 CTA 帶 —— 文案有預設值（COPY），所以整段無條件渲染 */}
       <section style={S.cta}>
           {cta?.background ? (
             <>

@@ -114,7 +114,7 @@ EuniceMed/
 │   ├── Data/                  # AppDbContext、Configurations、Migrations、Seed
 │   ├── Models/{Entities,Dtos}/
 │   ├── Common/                # ApiResponse、PagedResult、AppException、LocaleQuery
-│   ├── PageSchemas/           # {pageKey}.{sectionKey}.json（25 支 / 12 個 pageKey，見 docs/15）
+│   ├── PageSchemas/           # {pageKey}.{sectionKey}.json（32 支 / 12 個 pageKey，見 docs/15）
 │   └── http/                  # 各階段 .http 驗收檔
 ├── apps/
 │   ├── web/                   # Next.js 前端（公開網站）— 唯一部署到 SWA 的 app
@@ -156,6 +156,9 @@ EuniceMed/
 - **版面文案不進 CMS**：區段標題、按鈕文字、`All news →` 這類標籤與 mockup4 綁死，
   一律寫成該頁的 `COPY: Record<Locale, …>` 常數（英文逐字取自 mockup4）。
   CMS 只管會換的東西 —— 圖片、引用清單、檔期文案。判準與逐支裁決見 [docs/15-cms-scope.md](docs/15-cms-scope.md)。
+  ⚠️ **例外：首頁／About／Products**（2026-11-17 客戶要求）—— `COPY` 降為預設值，
+  後台逐欄覆寫（`resolveCopy()` + `copyText()`）。新欄位**不得沿用** `title`／`lead`／`eyebrow` 等舊名，
+  DB 裡還留著舊內容會復活，見 docs/15 §14.2
   **連結一律在渲染時就地組 `/${locale}/…`**，不存進 CMS 也不存進常數表。
 - 元件庫集中於 `apps/web/components`。
 

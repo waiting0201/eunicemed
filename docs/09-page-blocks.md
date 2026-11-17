@@ -73,7 +73,7 @@ number · date · bool · enum[...] · ref:Entity · repeatable{...}(min–max)
 **全站共用**（不屬任何 Page）：Header 導覽、Footer、Resources 次導覽列、`FloatingContact` 浮動聯絡鈕——皆固定於模板，導覽連結文字走 `MenuItem`（Resources 次導覽除外，見 [05](05-database.md) §3.9 註）。
 
 > ⚠️ **【2026-08-28 後台範圍收斂，見 [15](15-cms-scope.md)】**
-> 實作的區段數是 **25 支，涵蓋上表的 12 個 pageKey**（home 4、about 5、partnership 4、resources 2、products 2、privacy 2，
+> 實作的區段數是 **32 支，涵蓋上表的 12 個 pageKey**（2026-11-17 起 home 8、about 7、products 3，見 [15](15-cms-scope.md) §14；以下為收斂當時的數字：home 4、about 5、partnership 4、resources 2、products 2、privacy 2，
 > 以及 2026-09-17 補上的 applications／faq／insights／news／downloads／where-to-buy 各 1 支 `hero`，只有 `band` 一個欄位，見 [15](15-cms-scope.md) §10）。
 >
 > - 版面文案（區段標題、`All news →` 這類標籤、固定 CTA 的按鈕字、品牌宣言）**一律回到前端常數**，
@@ -471,7 +471,7 @@ number · date · bool · enum[...] · ref:Entity · repeatable{...}(min–max)
 ### 9.1 位置與命名
 
 ```
-Api/PageSchemas/          # 共 25 支（2026-08-28 收斂 + 2026-09-17 補 6 支 hero，見 15-cms-scope.md）
+Api/PageSchemas/          # 共 32 支（2026-08-28 收斂 + 2026-09-17 補 6 支 hero + 2026-11-17 補 7 支文案區段，見 15-cms-scope.md）
 ├── home.heroSlider.json          home.featuredProducts.json
 ├── home.bodyPartBand.json        home.testimonial.json
 ├── about.hero.json               about.story.json
@@ -568,7 +568,7 @@ Api/PageSchemas/          # 共 25 支（2026-08-28 收斂 + 2026-09-17 補 6 �
 | 前版（Weypro 推導） | 本版（mockup4 定案） |
 |---|---|
 | `PageBlock.BlockType` 字彙：`hero` `richtext` `imageText` `iconText` `iconGrid` `timeline` `gallery` `certBadges` `testimonial` `steps` `cta` | **廢除**。改為 `(PageKey, SectionKey)` + JSON Schema 具名欄位 |
-| 可編輯頁 4 個（home / about / partnership / privacy-legal） | 規格 **18 個**（13 單例 + 5 模板共用文案）；**實作 12 個 / 25 支 schema**（2026-08-28 定案 + 2026-09-17 補 6 支 `hero`，見 [15](15-cms-scope.md)）|
+| 可編輯頁 4 個（home / about / partnership / privacy-legal） | 規格 **18 個**（13 單例 + 5 模板共用文案）；**實作 12 個 / 32 支 schema**（2026-08-28 定案 + 2026-09-17 補 6 支 `hero` + 2026-11-17 補 7 支，見 [15](15-cms-scope.md) §14）|
 | 首頁 hero「雙 CTA」 | mockup4 hero **無 CTA**；改為 3 張輪播 + eyebrow/title/lead |
 | 首頁「明星商品輪播」 | **Pinterest 式 masonry：等寬 4 欄、高度不一（版位比例 1:1／4:5／5:4 輪替）+ 底部橫跨全型錄帶**（自動取 `IsFeatured` 共 8 筆；2026-08-14 由「1 直式塔位 + 3 方卡」改版，上傳統一 1:1，落差只由版位比例決定） |
 | Insights 以 `Topic` 列舉分類 | `ArticleCategory` 實體（News/Insights 各一組，rail 帶 count） |

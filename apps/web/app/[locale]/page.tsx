@@ -5,7 +5,7 @@ import { api, type ArticleListItem, type MediaRef, type ProductListItem } from '
 import { formatYearMonth } from '@/lib/date';
 import { srcSetOf } from '@/lib/image';
 import { isLocale, localizeHref, type Locale } from '@/lib/locale';
-import { section, type SectionCta } from '@/lib/page';
+import { copyItems, copyText, section, type PageContent, type SectionCta } from '@/lib/page';
 import { collectionColor } from '@/lib/collection';
 import { css } from '@/lib/css';
 import { pageMetadata } from '@/lib/seo';
@@ -124,14 +124,13 @@ type TestimonialSection = {
 type Tile = { icon: string; title: string; subtitle: string; href: string };
 
 /**
- * 版面文案 —— **刻意寫死，不走 CMS**（決議見 docs/15-cms-scope.md）。
+ * 版面文案的**預設值**。後台可逐欄覆寫，沒填的欄位沿用這裡（docs/15 §14，2026-11-17）。
  *
  * <p>
- * HERO 那三行原本是 `home.heroIntro` 區段，2026-08-28 移出；其餘四段（01 標題、
- * 02 整段、03 整段、05 標題）這次一併移出。判準都一樣：這些字與版型綁死，
- * 改它要動的是 mockup4 而不是後台。留在 CMS 只是給了它走鐘的機會 ——
- * heroIntro 被填成舊站文案、`whyPartner` 被填成 Company Profile 的核心價值，
- * 都已經各發生過一次。
+ * 2026-08-28 曾把這些字整批移出 CMS（docs/15 §3），2026-11-17 應客戶要求開回後台：
+ * `home.intro`／`featuredProducts`／`bodyPartBand`／`partner`／`news`／`seo`。
+ * ⚠️ 區段名刻意**不沿用**舊的 `heroIntro`／`whyPartner`／`latestNews` ——
+ * 那幾列還停用著躺在 DB 裡，內容是填錯的；同名的話同步器會把它們連同錯誤內容一起復活。
  * </p>
  *
  * <p>
@@ -262,16 +261,71 @@ const COPY: Record<
 };
 
 
+/**
+ * 把後台的覆寫疊到 {@link COPY} 上，形狀與 `COPY[locale]` 相同 —— 模板不需要知道字是哪來的。
+ * 停用的區段（`_enabled: false`）視同沒填，回到預設值。
+ */
+function resolveCopy(locale: Locale, page: PageContent | null) {
+  const base = COPY[locale];
+  const get = (key: string) => (page ? section<Record<string, unknown>>(page, key) : null) ?? {};
+
+  const intro = get('intro');
+  const featured = get('featuredProducts');
+  const band = get('bodyPartBand');
+  const partner = get('partner');
+  const news = get('news');
+  const seo = get('seo');
+
+  return {
+    meta: {
+      title: copyText(seo.title, base.meta.title),
+      description: copyText(seo.description, base.meta.description),
+    },
+    hero: {
+      eyebrow: copyText(intro.kicker, base.hero.eyebrow),
+      title: copyText(intro.heading, base.hero.title),
+      lead: copyText(intro.intro, base.hero.lead),
+    },
+    featured: {
+      title: copyText(featured.heading, base.featured.title),
+      subtitle: copyText(featured.subheading, base.featured.subtitle),
+      lead: copyText(featured.intro, base.featured.lead),
+    },
+    bodyPart: {
+      title: [
+        copyText(band.heading, base.bodyPart.title[0]),
+        copyText(band.headingLine2, base.bodyPart.title[1]),
+      ] as [string, string],
+      lead: copyText(band.intro, base.bodyPart.lead),
+      cta: copyText(band.ctaLabel, base.bodyPart.cta),
+      // 圖示與連結固定，只覆寫字
+      tiles: copyItems(band.tileCopy, base.bodyPart.tiles, ['title', 'subtitle']),
+    },
+    whyPartner: {
+      title: copyText(partner.heading, base.whyPartner.title),
+      lead: copyText(partner.intro, base.whyPartner.lead),
+      items: copyItems(partner.items, base.whyPartner.items, ['title', 'body']),
+      cta: copyText(partner.ctaLabel, base.whyPartner.cta),
+    },
+    latestNews: {
+      title: copyText(news.heading, base.latestNews.title),
+      allLink: copyText(news.allLabel, base.latestNews.allLink),
+      read: copyText(news.readLabel, base.latestNews.read),
+    },
+  };
+}
+
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
 
 
+  const { meta } = resolveCopy(locale, await api.page(locale, 'home'));
   return pageMetadata({
     locale,
-    title: COPY[locale].meta.title,
+    title: meta.title,
     absoluteTitle: true,
-    description: COPY[locale].meta.description,
+    description: meta.description,
   });
 }
 
@@ -290,7 +344,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
 
   if (!page) notFound();
 
-  const copy = COPY[locale];
+  const copy = resolveCopy(locale, page);
   const slider = section<HeroSliderSection>(page, 'heroSlider');
   const promo = section<FeaturedSection>(page, 'featuredProducts')?.promo;
   const band = section<BodyPartBandSection>(page, 'bodyPartBand');
@@ -342,7 +396,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
         </section>
       )}
 
-      {/* 02 依部位找支撐 —— 文案是常數，CMS 只管背景圖，所以整段無條件渲染 */}
+      {/* 02 依部位找支撐 —— 文案有預設值（COPY），所以整段無條件渲染 */}
       <section style={S.s02}>
           {band?.background && (
             <>
@@ -501,7 +555,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
             style={S.s05Head}
           />
           {news.items.slice(0, 3).map((item) => (
-            <NewsRow key={item.slug} item={item} locale={locale} />
+            <NewsRow key={item.slug} item={item} locale={locale} read={copy.latestNews.read} />
           ))}
         </section>
       )}
@@ -586,14 +640,14 @@ function PlayMark({
 }
 
 /** 首頁 §05 的一列：固定寬度的日期、佔滿剩餘寬度的標題、右端的 Read →（mockup4）。 */
-function NewsRow({ item, locale }: { item: ArticleListItem; locale: Locale }) {
+function NewsRow({ item, locale, read }: { item: ArticleListItem; locale: Locale; read: string }) {
   return (
     <Link href={item.url} style={S.row}>
       <span style={S.rowDate}>
         {item.publishedAt ? formatYearMonth(item.publishedAt, locale) : ''}
       </span>
       <h3 style={S.rowTitle}>{item.title}</h3>
-      <span style={S.rowRead}>{COPY[locale].latestNews.read}</span>
+      <span style={S.rowRead}>{read}</span>
     </Link>
   );
 }

@@ -1,13 +1,67 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Home · 02 Find support by body part",
-  "description": "標題、導言、CTA 與四個格子都與版型綁死，寫在前端（docs/15）。這裡只留背景圖 —— 換圖不會撞壞版面，preset 已鎖住比例。",
+  "x-order": 3,
+  "description": "標題、引言、按鈕與四個格子的文字。格子的圖示與連結固定（對應應用方案的部位），只改字。欄位留空時，前台顯示程式碼裡的定稿文字，不會變成空白。",
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "heading": {
+      "type": "string",
+      "maxLength": 120,
+      "x-fieldType": "text",
+      "title": "標題（第一行）"
+    },
+    "headingLine2": {
+      "type": "string",
+      "maxLength": 120,
+      "x-fieldType": "text",
+      "title": "標題（第二行）"
+    },
+    "intro": {
+      "type": "string",
+      "maxLength": 600,
+      "x-fieldType": "text",
+      "title": "引言"
+    },
+    "ctaLabel": {
+      "type": "string",
+      "maxLength": 60,
+      "x-fieldType": "text",
+      "title": "按鈕文字",
+      "description": "連結固定到應用方案頁。"
+    },
+    "tileCopy": {
+      "type": "array",
+      "maxItems": 4,
+      "x-fieldType": "repeatable",
+      "title": "四個部位格子",
+      "description": "依位置對應：膝部、足踝、腰背、特殊照護。沒填的項目顯示定稿文字。",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 60,
+            "x-fieldType": "text",
+            "title": "名稱"
+          },
+          "subtitle": {
+            "type": "string",
+            "maxLength": 120,
+            "x-fieldType": "text",
+            "title": "說明"
+          }
+        }
+      }
+    },
     "background": {
-      "type": "string", "format": "uuid",
-      "x-fieldType": "media", "x-mediaPreset": "section-bg", "x-localeInvariant": true
+      "type": "string",
+      "format": "uuid",
+      "x-fieldType": "media",
+      "x-mediaPreset": "section-bg",
+      "x-localeInvariant": true
     }
   }
 }

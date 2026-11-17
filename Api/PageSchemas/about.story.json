@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "About · 01 Our story & promise",
+  "x-order": 1,
   "type": "object",
   "additionalProperties": false,
   "required": ["title"],
