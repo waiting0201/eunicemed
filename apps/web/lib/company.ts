@@ -38,24 +38,24 @@ export const COMPANY_LOCALIZED: Record<
   { address: string; hours: string; postal: PostalAddress }
 > = {
   en: {
-    address: '11F, No. 123-9, Xingde Rd, Sanchong Dist, New Taipei City 24158, Taiwan',
+    address: 'No. 36, Toucheng St, Touqian Vil, Xinzhuang Dist, New Taipei City 242, Taiwan',
     hours: 'Mon–Fri 09:00–18:00 (UTC+8)',
     postal: {
-      streetAddress: '11F, No. 123-9, Xingde Rd',
-      addressLocality: 'Sanchong Dist',
+      streetAddress: 'No. 36, Toucheng St, Touqian Vil',
+      addressLocality: 'Xinzhuang Dist',
       addressRegion: 'New Taipei City',
-      postalCode: '24158',
+      postalCode: '242',
       addressCountry: 'TW',
     },
   },
   'zh-TW': {
-    address: '24158 新北市三重區興德路 123-9 號 11 樓',
+    address: '242 新北市新莊區頭前里頭成街 36 號',
     hours: '週一至週五 09:00–18:00（UTC+8）',
     postal: {
-      streetAddress: '興德路 123-9 號 11 樓',
-      addressLocality: '三重區',
+      streetAddress: '頭前里頭成街 36 號',
+      addressLocality: '新莊區',
       addressRegion: '新北市',
-      postalCode: '24158',
+      postalCode: '242',
       addressCountry: 'TW',
     },
   },
