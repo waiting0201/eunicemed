@@ -11,6 +11,7 @@ import { StatusTag } from '@/components/StatusTag';
 import { TranslationTabs } from '@/components/TranslationTabs';
 import { describeLevel, levelOf } from '@/lib/completeness';
 import type { Locale } from '@/components/LocaleTabs';
+import { PageBandPanel } from '@/components/PageBandPanel';
 
 type FaqDraft = {
   faqCategoryId: string;
@@ -44,6 +45,7 @@ export function Faqs() {
 
   return (
     <ListPage
+      band={<PageBandPanel bands={[{ pageKey: 'faq', path: '/faq' }]} />}
       eyebrow="內容"
       title="FAQ"
       summary={

@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { DataTable, ListPage } from '@/components/ListPage';
-import { PAGE_LABELS } from '@/lib/pages';
+import { BAND_ONLY_PAGES, PAGE_LABELS } from '@/lib/pages';
 import { formatDate } from '@/lib/format';
 
 /**
@@ -16,6 +16,8 @@ export function Pages() {
   const { data, isPending, error } = useQuery({
     queryKey: ['pages'],
     queryFn: () => api.pages(),
+    // 只有頁頂圖的頁在各自的清單畫面維護（docs/15 §15）
+    select: (pages) => pages.filter((p) => !(p.key in BAND_ONLY_PAGES)),
   });
 
   return (
@@ -80,13 +82,12 @@ export function Pages() {
       </DataTable>
 
       {/*
-        清單只有 12 列，而站上有 18 頁 —— 少了的那些不是還沒做，是定案不進後台
-        （docs/15 §2）。另一半的困惑是：FAQ、下載這些頁在清單上，點進去卻只有一張頁頂圖
-        —— 條目本身在側欄各自的項目裡。用側欄上的原字（FAQ、下載、銷售據點…）指路，
-        才接得上他們要去的地方。
+        清單只列有版面文案可改的頁。站上其他頁不是還沒做：版面文字定案寫死（docs/15 §2），
+        而 FAQ、下載這幾頁唯一能改的頁頂圖，放在側欄各自的項目最上方（docs/15 §15）。
+        用側欄上的原字指路，才接得上編輯者要去的地方。
       */}
       <p className="form-hint mt-3">
-        只列出有內容可以改的頁面。FAQ、下載、銷售據點、應用方案、文章這幾頁在這裡只能換頁頂圖，版面文字固定不變，實際條目在左側各自的項目裡維護。
+        只列出有文字內容可以改的頁面。應用方案、FAQ、下載、銷售據點、文章的頁頂圖，在左側各自的項目最上方更換。
       </p>
     </ListPage>
   );

@@ -7,6 +7,7 @@ import { LocaleGauges } from '@/components/Gauge';
 import { StatusTag } from '@/components/StatusTag';
 import { describeLevel, levelOf } from '@/lib/completeness';
 import { formatDate, isScheduled } from '@/lib/format';
+import { PageBandPanel } from '@/components/PageBandPanel';
 
 /** News 與 Insights 在後端是同一個實體，以 type 分流 —— 後台也用同一個畫面。 */
 const TYPES = [
@@ -44,6 +45,10 @@ export function Articles() {
 
   return (
     <ListPage
+      band={<PageBandPanel bands={[
+            { pageKey: 'news', label: '最新消息頁頂圖', path: '/news' },
+            { pageKey: 'insights', label: '專欄文章頁頂圖', path: '/insights' },
+          ]} />}
       eyebrow="內容"
       title="文章"
       summary={

@@ -595,3 +595,24 @@ EF migration `BackfillPageCopy`（20261117）把當日各頁 `COPY` 的定稿**�
   沒標的排在後面、維持伺服器順序。
 - **SEO 由後台蓋過時**，`generateMetadata` 與頁面各打一次 `GET /pages/{key}` —— 同一請求內 Next 會記憶化同網址的 GET，實際只打一次。
 - 頁級 JSON-LD（`webPageSchema(…, copy.meta)`）跟著用覆寫後的 SEO 值。
+
+---
+
+## 15. 2026-11-25：6 頁的頁頂圖搬回各自的清單畫面
+
+§10 讓 Applications／FAQ／Insights／News／Downloads／Where to Buy 的頁頂圖可換，
+但把它放在「頁面內容」裡。實際使用時，編輯者要改銷售據點的地址，點進
+「頁面內容 → 銷售據點」，結果只看到一張圖，於是回報「沒有欄位可以填」。
+條目本身其實在側欄的「銷售據點」裡。§10.2 預見了這個困惑，所以加了一句 hint，
+但光靠一句 hint 擋不住。
+
+**修法**：用 §7 的同一條判準，「一個單元在它露出的地方維護」。
+
+- 共用元件 `apps/admin/src/components/PageBandPanel.tsx` 放在各清單畫面的篩選列之上：
+  銷售據點、FAQ、下載、應用方案各一條；「文章」畫面放最新消息與專欄兩條。
+  縮圖照前台的真實比例 16:3 顯示。
+- 圖是所有語系共用的，所以沒有語系分頁。存檔時存一個語系並帶 `syncInvariantFields`。
+  **「移除」後儲存＝把 `hero` 區段的各語系內容刪掉**，前台就退回 `BRAND_BANDS` 預設圖。
+- 「頁面內容」清單用 `lib/pages.ts` 的 `BAND_ONLY_PAGES` 濾掉這 6 頁，剩下 6 頁。
+  舊網址 `/pages/{key}` 會導向對應的清單畫面。
+- **後端不動**：schema、`GET /admin/pages` 和區段的存取端點都照舊，只換了後台的入口。

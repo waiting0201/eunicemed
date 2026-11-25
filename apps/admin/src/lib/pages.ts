@@ -28,6 +28,23 @@ export const PAGE_LABELS: Record<string, { label: string; path?: string; note?: 
   privacy: { label: '隱私權與法律聲明', path: '/privacy' },
 };
 
+/**
+ * 頁頂圖是唯一可編輯欄位、條目另有側欄項目的頁 → 那個側欄項目的網址。
+ *
+ * <p>
+ * 這幾頁的頁頂圖在各自的清單畫面頂端維護（`PageBandPanel`），不列在「頁面內容」——
+ * 列在那裡的話，點進去只有一張圖，編輯者會以為條目「沒有欄位可以填」（docs/15 §15）。
+ * </p>
+ */
+export const BAND_ONLY_PAGES: Record<string, string> = {
+  applications: '/applications',
+  faq: '/faqs',
+  downloads: '/downloads',
+  'where-to-buy': '/locations',
+  news: '/articles',
+  insights: '/articles',
+};
+
 export function pageLabel(key: string): string {
   return PAGE_LABELS[key]?.label ?? key;
 }

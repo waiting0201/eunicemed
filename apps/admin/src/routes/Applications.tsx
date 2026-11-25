@@ -5,6 +5,7 @@ import { DataTable, ListPage, MissingCount } from '@/components/ListPage';
 import { LocaleGauges } from '@/components/Gauge';
 import { StatusTag } from '@/components/StatusTag';
 import { describeLevel, levelOf } from '@/lib/completeness';
+import { PageBandPanel } from '@/components/PageBandPanel';
 
 /**
  * 應用方案。**不分頁** —— 只有 7 筆，而且它們是網站的固定骨架（4 個部位 + 3 個特殊照護），
@@ -20,6 +21,7 @@ export function Applications() {
 
   return (
     <ListPage
+      band={<PageBandPanel bands={[{ pageKey: 'applications', path: '/applications' }]} />}
       eyebrow="內容"
       title="應用方案"
       actions={

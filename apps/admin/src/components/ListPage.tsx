@@ -16,6 +16,7 @@ export function ListPage({
   actions,
   tabs,
   filters,
+  band,
   children,
 }: {
   eyebrow: string;
@@ -26,6 +27,8 @@ export function ListPage({
   /** 同一個模組底下的分頁列（如產品／分類／系列），緊接在標題之下 */
   tabs?: ReactNode;
   filters?: ReactNode;
+  /** 這個畫面對應的前台頁頂圖（`PageBandPanel`），放在篩選列之上 —— 它屬於整頁，不屬於篩選後的那幾列 */
+  band?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -42,6 +45,8 @@ export function ListPage({
       </header>
 
       {tabs}
+
+      {band}
 
       {filters && <div className="mb-4 flex flex-wrap gap-2">{filters}</div>}
 

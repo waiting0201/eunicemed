@@ -12,6 +12,7 @@ import { StatusTag } from '@/components/StatusTag';
 import { TranslationTabs } from '@/components/TranslationTabs';
 import { describeLevel, levelOf } from '@/lib/completeness';
 import type { Locale } from '@/components/LocaleTabs';
+import { PageBandPanel } from '@/components/PageBandPanel';
 
 const TYPES = [
   { value: '', label: '全部' },
@@ -38,6 +39,7 @@ export function Downloads() {
 
   return (
     <ListPage
+      band={<PageBandPanel bands={[{ pageKey: 'downloads', path: '/downloads' }]} />}
       eyebrow="內容"
       title="下載"
       summary={

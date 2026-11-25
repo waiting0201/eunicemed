@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, Navigate, useParams } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, ApiError, type AdminPageSection } from '@/lib/api';
 import { SchemaForm } from '@/components/form/SchemaForm';
@@ -7,7 +7,7 @@ import { commitStagedMedia } from '@/lib/mediaStaging';
 import { LocaleTabs, LOCALES, type Locale } from '@/components/LocaleTabs';
 import { Icon } from '@/components/Icon';
 import { sectionTitle } from '@/lib/schema';
-import { PAGE_LABELS } from '@/lib/pages';
+import { BAND_ONLY_PAGES, PAGE_LABELS } from '@/lib/pages';
 import { formatDateTime } from '@/lib/format';
 import { levelOf, type LocaleLevels } from '@/lib/completeness';
 
@@ -26,6 +26,15 @@ import { levelOf, type LocaleLevels } from '@/lib/completeness';
  */
 export function PageEdit() {
   const { key = '' } = useParams<{ key: string }>();
+
+  // 舊書籤或舊網址：這幾頁的頁頂圖已搬到各自的清單畫面（docs/15 §15）
+  const owner = BAND_ONLY_PAGES[key];
+  if (owner) return <Navigate to={owner} replace />;
+
+  return <PageSectionsEditor pageKey={key} />;
+}
+
+function PageSectionsEditor({ pageKey: key }: { pageKey: string }) {
   const queryClient = useQueryClient();
 
   const [locale, setLocale] = useState<Locale>('zh-TW');

@@ -10,6 +10,7 @@ import { StatusTag } from '@/components/StatusTag';
 import { TranslationTabs } from '@/components/TranslationTabs';
 import { describeLevel, levelOf } from '@/lib/completeness';
 import type { Locale } from '@/components/LocaleTabs';
+import { PageBandPanel } from '@/components/PageBandPanel';
 
 /** 台灣／國際兩分頁（docs/03 §5）—— 兩者的欄位重點不同，分開看比混在一起清楚。 */
 const TYPES = [
@@ -33,6 +34,7 @@ export function Locations() {
 
   return (
     <ListPage
+      band={<PageBandPanel bands={[{ pageKey: 'where-to-buy', path: '/where-to-buy' }]} />}
       eyebrow="內容"
       title="銷售據點"
       summary={
